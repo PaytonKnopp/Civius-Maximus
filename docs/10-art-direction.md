@@ -6,13 +6,19 @@
 
 ## The look in one paragraph
 
-A tilted 3D world you could almost touch, rendered like a painting. Terrain is soft and sculpted,
-with no hard hex seams except an optional grid. Colors are saturated and warm in the light, cool
-and blue in the shade. Surfaces show visible brush texture instead of photographic detail. Water
-is the showpiece: painted bands of teal-to-indigo depth, drifting brush-stroke foam and soft
-shoreline highlights, all done in a cheap shader with no simulation. Cities grow on the map as
-clusters of chunky, readable buildings. Unexplored land sits under painted clouds that roll back
-as you explore, as in Civ VII.
+A dark, grand, beautiful world at dusk. A low golden sun throws long light across muted, natural
+land (moss greens, dry ochre, dark sand, slate rock); shadows are deep and cool. It reads as
+realistic first and painted second: Outer Wilds' hand-made warmth inside Civ VII's grandeur, never
+toy-like or candy-colored. Water is deep and dark, catches the sun in glints, reflects the sky at
+the horizon, and turns see-through in the shallows over a sandy seabed. Cloud shadows drift
+slowly over everything. Mountains gather into snow-capped rock ranges; forests are dense mixes of
+pines and broadleaf; rocks and shrubs fill open land, so the world has scale. Zoomed in, the camera
+drops low enough to see the horizon; zoomed out, it becomes a map. Unexplored land lies under a
+**dark**, slowly swirling mist and gives nothing away; land you've seen but can't see now is a
+dim, cold slate.
+
+> **Revised after the first prototype (D11):** darker and more realistic than the first pass,
+> less vibrant, less toon-shaded, and a much darker fog of war.
 
 ## What we take from each reference
 
@@ -46,8 +52,8 @@ as you explore, as in Civ VII.
 | **Resources** | Small 3D props on the tile (wheat sheaves, horses, iron outcrops), plus a crisp icon badge for readability. |
 | **Settlements** | Buildings grow in rings as population rises. Districts are distinct building clusters. Architecture style varies by civ's culture group and era. Wonders are hero models. |
 | **Units** | Chunky stylized figures, small squads on a tile, player-colored banners, pose-to-pose animation. Commanders carry a banner showing packed units. |
-| **Fog of war** | Civ VII style: rolling painted clouds over unexplored tiles, explored-but-unseen land desaturated with last-known structures, a soft animated edge as vision changes. |
-| **Lighting & sky** | One warm key light, cool ambient, painted gradient sky at the horizon when tilted. No day/night cycle (keeps it cheap and readable). |
+| **Fog of war** | Dark and mysterious: unexplored land is flattened under a near-black swirling mist with a faint silver edge; explored-but-unseen land is dim, desaturated slate with last-known structures. |
+| **Lighting & sky** | One low golden key light (late afternoon), cool sky ambient, film-style (ACES) tone mapping, a split-tone grade and vignette, drifting cloud shadows, a dusk sky at the horizon. No day/night cycle (keeps it cheap and readable). |
 | **Leaders** | Painted 2D portraits (bust and full-figure for diplomacy) in one consistent style, with gentle parallax/breathing motion. No 3D animated leaders (too heavy, too costly to make 30+). |
 | **Icons** | One unified painted icon set: yields, resources, units, buildings, promotions, policies. Big, bold, instantly readable at small size. Yields on tiles shown large with these icons. |
 | **UI** | Clean and calm like Civ VII, with Civ VI's information where you want it. Dark translucent panels, metallic gold/brass/copper for headings, numbers and highlights, Roman inscription type for titles. The map and the numbers are the stars. |

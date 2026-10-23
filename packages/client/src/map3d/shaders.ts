@@ -1,7 +1,8 @@
 /**
- * GLSL for the painterly look (docs/10-art-direction.md): stepped "toon" light with soft edges,
- * warm light / cool shade, brush-stroke texture from stretched noise, Civ VII-style fog states,
- * painted water bands with drifting foam. Cheap enough for integrated graphics.
+ * GLSL for the look in docs/10-art-direction.md: a darker, more realistic painted world. Low
+ * golden sun with cool sky light, subtle brush texture, slope-based rock and snow, drifting cloud
+ * shadows, dark Civ VII-style fog of war, deep water with sun glints and see-through shallows.
+ * Every shader ends with tone mapping + color space so it matches three's lit materials.
  */
 
 const NOISE = /* glsl */ `
@@ -19,36 +20,31 @@ const NOISE = /* glsl */ `
   }
 `;
 
-const FOG_OF_WAR = /* glsl */ `
+const ATMOSPHERE = /* glsl */ `
   uniform float uTime;
+  uniform vec3 uLightDir;
+  uniform vec3 uSunColor;
+  uniform vec3 uSkyColor;
+  uniform vec3 uGroundColor;
   uniform vec3 uHaze;
-  uniform vec3 uCloud;
+  uniform vec3 uFogDark;
   // vis: 1 visible, ~0.5 remembered, 0 unexplored.
   vec3 applyVisibility(vec3 col, float vis, vec2 wp) {
     float grey = dot(col, vec3(0.299, 0.587, 0.114));
-    vec3 memory = mix(vec3(grey), col, 0.25) * vec3(0.78, 0.82, 0.92);
-    vec3 seen = mix(memory, col, smoothstep(0.55, 0.95, vis));
-    float clouds = fbm(wp * 0.45 + vec2(uTime * 0.01, 0.0));
-    vec3 unknown = uCloud * (0.86 + 0.18 * clouds);
-    return mix(unknown, seen, smoothstep(0.05, 0.45, vis));
+    // Bright things (snow) shouldn't glow through the fog: compress them first.
+    grey = grey / (1.0 + grey * 1.5);
+    vec3 memory = mix(vec3(grey), col, 0.08) * vec3(0.3, 0.34, 0.42);
+    vec3 seen = mix(memory, col, smoothstep(0.6, 0.95, vis));
+    vec3 unknown = uFogDark * (0.75 + 0.5 * fbm(wp * 0.4 + vec2(uTime * 0.01, 0.0)));
+    return mix(unknown, seen, smoothstep(0.08, 0.45, vis));
   }
-  vec3 applyHaze(vec3 col, float dist) {
-    return mix(col, uHaze, smoothstep(55.0, 140.0, dist) * 0.85);
+  vec3 applyHaze(vec3 col, vec3 world) {
+    float d = distance(cameraPosition, world);
+    return mix(col, uHaze, smoothstep(38.0, 150.0, d) * 0.92);
   }
-`;
-
-const LIGHT = /* glsl */ `
-  uniform vec3 uLightDir;
-  // Two soft steps: shade, mid, light. Warm in the light, cool in the shade.
-  vec3 paintLight(vec3 base, vec3 n, vec2 wp) {
-    float l = dot(normalize(n), normalize(uLightDir));
-    float stroke = brush(wp);
-    l += (stroke - 0.5) * 0.22;
-    float band = 0.58 + 0.27 * smoothstep(0.08, 0.2, l) + 0.18 * smoothstep(0.55, 0.68, l);
-    vec3 warm = vec3(1.08, 1.0, 0.86);
-    vec3 cool = vec3(0.78, 0.86, 1.08);
-    vec3 tint = mix(cool, warm, smoothstep(0.62, 0.95, band));
-    return base * band * tint * (0.94 + stroke * 0.12);
+  // Slow cloud shadows drifting across land and sea.
+  float cloudShadow(vec2 wp) {
+    return smoothstep(0.48, 0.72, fbm(wp * 0.055 + vec2(uTime * 0.006, uTime * 0.003)));
   }
 `;
 
@@ -71,17 +67,55 @@ export const terrainVertex = /* glsl */ `
 
 export const terrainFragment = /* glsl */ `
   ${NOISE}
-  ${FOG_OF_WAR}
-  ${LIGHT}
+  ${ATMOSPHERE}
+  uniform vec3 uRock;
+  uniform vec3 uSnow;
   varying vec3 vColor;
   varying vec3 vNormal;
   varying vec3 vWorld;
   varying float vVis;
+
+  vec3 detailNormal(vec3 n, vec2 p) {
+    #ifdef DETAIL
+      float e = 0.07;
+      float h0 = fbm(p * 2.6);
+      float hx = fbm((p + vec2(e, 0.0)) * 2.6);
+      float hz = fbm((p + vec2(0.0, e)) * 2.6);
+      return normalize(n + vec3(h0 - hx, 0.0, h0 - hz) * 2.2);
+    #else
+      return n;
+    #endif
+  }
+
   void main() {
-    vec3 col = paintLight(vColor, vNormal, vWorld.xz);
-    col = applyVisibility(col, vVis, vWorld.xz);
-    col = applyHaze(col, distance(cameraPosition, vWorld));
+    vec3 n0 = normalize(vNormal);
+    vec2 wp = vWorld.xz;
+    vec3 base = vColor;
+
+    // Rock on steep slopes, snow on high ground that isn't too steep.
+    float slope = 1.0 - n0.y;
+    float rock = smoothstep(0.22, 0.42, slope) * smoothstep(0.1, 0.45, vWorld.y);
+    base = mix(base, uRock * (0.75 + 0.45 * fbm(wp * 2.4)), rock);
+    float snowLine = 1.28 + (fbm(wp * 1.3) - 0.5) * 0.4;
+    float snow = smoothstep(snowLine, snowLine + 0.3, vWorld.y) * smoothstep(0.62, 0.32, slope);
+    base = mix(base, uSnow, snow);
+
+    vec3 n = detailNormal(n0, wp);
+    float stroke = brush(wp);
+    float ndl = dot(n, normalize(uLightDir)) + (stroke - 0.5) * 0.1;
+    // Soft wrapped light with a hint of painted banding.
+    float diff = smoothstep(-0.1, 0.9, ndl);
+    diff = mix(diff, floor(diff * 4.0 + 0.5) / 4.0, 0.2);
+    float shade = 1.0 - cloudShadow(wp) * 0.55;
+    vec3 ambient = mix(uGroundColor, uSkyColor, 0.5 + 0.5 * n.y);
+    // Lower ground sits a little deeper in shadow, which reads as scale.
+    float valley = mix(0.78, 1.0, smoothstep(-0.2, 0.7, vWorld.y));
+    vec3 col = base * (uSunColor * diff * shade + ambient) * valley * (0.95 + stroke * 0.1);
+
+    col = applyVisibility(col, vVis, wp);
+    col = applyHaze(col, vWorld);
     gl_FragColor = vec4(col, 1.0);
+    #include <tonemapping_fragment>
     #include <colorspace_fragment>
   }
 `;
@@ -97,8 +131,7 @@ export const waterVertex = /* glsl */ `
     vDepth = aDepth;
     vVis = aVis;
     vec4 world = modelMatrix * vec4(position, 1.0);
-    // Gentle swell in deep water only.
-    world.y += sin(world.x * 0.9 + uTime * 0.8) * cos(world.z * 0.7 + uTime * 0.6) * 0.025 * smoothstep(0.2, 0.5, aDepth);
+    world.y += sin(world.x * 0.9 + uTime * 0.7) * cos(world.z * 0.7 + uTime * 0.5) * 0.03 * smoothstep(0.2, 0.5, aDepth);
     vWorld = world.xyz;
     gl_Position = projectionMatrix * viewMatrix * world;
   }
@@ -106,7 +139,7 @@ export const waterVertex = /* glsl */ `
 
 export const waterFragment = /* glsl */ `
   ${NOISE}
-  ${FOG_OF_WAR}
+  ${ATMOSPHERE}
   uniform vec3 uShallow;
   uniform vec3 uCoast;
   uniform vec3 uDeep;
@@ -117,35 +150,93 @@ export const waterFragment = /* glsl */ `
   varying vec3 vWorld;
   void main() {
     vec2 wp = vWorld.xz;
-    float wobble = (fbm(wp * 0.7 + uTime * 0.02) - 0.5) * 0.08;
-    float d = vDepth + wobble;
-    // Painted depth bands with soft edges.
-    vec3 col = mix(uShallow, uCoast, smoothstep(0.03, 0.14, d));
-    col = mix(col, uDeep, smoothstep(0.2, 0.34, d));
-    col = mix(col, uAbyss, smoothstep(0.42, 0.56, d));
-    // Brush strokes drifting across open water.
-    float strokes = brush(wp * 0.6 + vec2(uTime * 0.03, uTime * 0.01));
-    col *= 0.93 + strokes * 0.14;
-    float glint = smoothstep(0.78, 0.86, brush(wp * 0.35 - vec2(uTime * 0.02, 0.0)));
-    col = mix(col, uFoam, glint * 0.18 * smoothstep(0.15, 0.4, d));
-    // Shoreline foam: animated bands that lap toward the coast.
-    float wave = fract(d * 9.0 - uTime * 0.25 + fbm(wp * 1.3) * 0.8);
-    float foam = smoothstep(0.12, 0.0, d) * smoothstep(0.55, 0.75, wave) * (0.6 + 0.4 * fbm(wp * 3.0 + uTime * 0.1));
-    foam += smoothstep(0.035, 0.0, d);
-    col = mix(col, uFoam, clamp(foam, 0.0, 0.9));
+    // Wave normal from two drifting noise layers.
+    float e = 0.12;
+    vec2 p1 = wp * 1.1 + vec2(uTime * 0.05, uTime * 0.03);
+    vec2 p2 = wp * 2.4 - vec2(uTime * 0.04, -uTime * 0.05);
+    float h0 = fbm(p1) + 0.5 * fbm(p2);
+    float hx = fbm(p1 + vec2(e, 0.0)) + 0.5 * fbm(p2 + vec2(e, 0.0));
+    float hz = fbm(p1 + vec2(0.0, e)) + 0.5 * fbm(p2 + vec2(0.0, e));
+    vec3 n = normalize(vec3((h0 - hx) * 1.3, 1.0, (h0 - hz) * 1.3));
+    vec3 v = normalize(cameraPosition - vWorld);
+
+    float d = vDepth + (fbm(wp * 0.7 + uTime * 0.02) - 0.5) * 0.06;
+    vec3 col = mix(uShallow, uCoast, smoothstep(0.02, 0.16, d));
+    col = mix(col, uDeep, smoothstep(0.18, 0.36, d));
+    col = mix(col, uAbyss, smoothstep(0.4, 0.6, d));
+    col *= 0.8 + 0.25 * max(dot(n, normalize(uLightDir)), 0.0);
+    col *= 1.0 - cloudShadow(wp) * 0.4;
+
+    // Sky reflection at grazing angles and a glint of sun.
+    float fres = pow(1.0 - max(dot(n, v), 0.0), 4.0);
+    col = mix(col, uSkyColor * 1.4, fres * 0.6);
+    vec3 h = normalize(normalize(uLightDir) + v);
+    col += uSunColor * pow(max(dot(n, h), 0.0), 120.0) * 1.2;
+    col *= 0.95 + brush(wp * 0.5 + uTime * 0.01) * 0.08;
+
+    // Shoreline foam: thin bands lapping toward the coast.
+    float wave = fract(d * 8.0 - uTime * 0.2 + fbm(wp * 1.4) * 0.9);
+    float foam = smoothstep(0.1, 0.0, d) * smoothstep(0.62, 0.82, wave) * (0.5 + 0.5 * fbm(wp * 3.5 + uTime * 0.1));
+    foam += smoothstep(0.025, 0.0, d) * 0.7;
+    foam = clamp(foam, 0.0, 0.7);
+    col = mix(col, uFoam, foam);
+
+    // See-through shallows show the seabed.
+    float alpha = max(mix(0.5, 0.96, smoothstep(0.0, 0.32, d)), foam);
     col = applyVisibility(col, vVis, wp);
-    col = applyHaze(col, distance(cameraPosition, vWorld));
-    gl_FragColor = vec4(col, 1.0);
+    col = applyHaze(col, vWorld);
+    gl_FragColor = vec4(col, alpha);
+    #include <tonemapping_fragment>
     #include <colorspace_fragment>
   }
 `;
 
-/** Kuwahara filter: flattens areas into brush-like patches while keeping edges (High quality). */
+/** Fog of war cover: a dark mist that swirls slowly over unexplored land, with a soft edge. */
+export const mistVertex = /* glsl */ `
+  attribute float aVis;
+  uniform float uTime;
+  varying float vVis;
+  varying vec3 vWorld;
+  void main() {
+    vVis = aVis;
+    vec4 world = modelMatrix * vec4(position, 1.0);
+    world.y += sin(world.x * 0.4 + uTime * 0.3) * cos(world.z * 0.35 - uTime * 0.25) * 0.06;
+    vWorld = world.xyz;
+    gl_Position = projectionMatrix * viewMatrix * world;
+  }
+`;
+
+export const mistFragment = /* glsl */ `
+  ${NOISE}
+  ${ATMOSPHERE}
+  uniform vec3 uMist;
+  uniform vec3 uMistEdge;
+  varying float vVis;
+  varying vec3 vWorld;
+  void main() {
+    float cover = 1.0 - smoothstep(0.03, 0.5, vVis);
+    if (cover < 0.01) discard;
+    vec2 wp = vWorld.xz;
+    float swirl = fbm(wp * 0.3 + vec2(uTime * 0.02, uTime * 0.012)) + 0.6 * fbm(wp * 0.85 - vec2(uTime * 0.03, -uTime * 0.02));
+    vec3 col = mix(uFogDark, uMist, smoothstep(0.65, 1.35, swirl));
+    // A faint silver rim where the mist thins out.
+    float rim = cover * (1.0 - cover) * 4.0;
+    col = mix(col, uMistEdge, rim * 0.16 * (0.6 + 0.4 * swirl));
+    col = applyHaze(col, vWorld);
+    gl_FragColor = vec4(col, cover * (0.9 + 0.1 * swirl));
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+/** Final pass: optional Kuwahara brush filter (High), color grade and vignette. */
 export const paintPassFragment = /* glsl */ `
   uniform sampler2D tScene;
   uniform vec2 uTexel;
+  uniform float uPaint;
   varying vec2 vUv;
-  void main() {
+
+  vec3 kuwahara() {
     const int R = 3;
     vec3 m[4]; vec3 s[4];
     for (int k = 0; k < 4; k++) { m[k] = vec3(0.0); s[k] = vec3(0.0); }
@@ -167,7 +258,20 @@ export const paintPassFragment = /* glsl */ `
       float sigma = v.r + v.g + v.b;
       if (sigma < best) { best = sigma; outc = mean; }
     }
-    gl_FragColor = vec4(outc, 1.0);
+    return outc;
+  }
+
+  void main() {
+    vec3 c = texture2D(tScene, vUv).rgb;
+    if (uPaint > 0.0) c = mix(c, kuwahara(), uPaint);
+    // Split-tone grade: cool shadows, warm highlights.
+    float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+    c = mix(c * vec3(0.9, 0.97, 1.1), c * vec3(1.06, 1.0, 0.9), smoothstep(0.05, 0.7, l));
+    // Vignette draws the eye to the middle of the map.
+    vec2 q = vUv - 0.5;
+    c *= mix(0.62, 1.0, smoothstep(0.9, 0.28, length(q * vec2(1.15, 1.0))));
+    gl_FragColor = vec4(c, 1.0);
+    #include <tonemapping_fragment>
     #include <colorspace_fragment>
   }
 `;

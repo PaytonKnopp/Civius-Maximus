@@ -20,30 +20,34 @@ export function worldSize3(map: { width: number; height: number }): [number, num
   return [HEX_W3 * map.width, ROW_H3 * (map.height - 1) + 2];
 }
 
-/** Painted palette per base terrain (sRGB hex), richer than the 2D placeholders. */
+/**
+ * Natural, muted palette per base terrain (sRGB hex): moss, ochre, dark sand, slate. Water
+ * terrains color the seabed seen through the shallows.
+ */
 const TERRAIN_PALETTE: Record<string, number> = {
-  grassland: 0x7fae4a,
-  plains: 0xbfb45a,
-  desert: 0xe8c987,
-  tundra: 0x9a9a78,
-  snow: 0xf1f4f6,
-  coast: 0x3c9fb4,
-  lake: 0x4fb0b0,
-  ocean: 0x245b8f,
+  grassland: 0x55703a,
+  plains: 0x6f6b47,
+  desert: 0x8f7c5c,
+  tundra: 0x666956,
+  snow: 0xcfd6dc,
+  coast: 0x7d7052,
+  lake: 0x5e6a4e,
+  ocean: 0x2a3b3c,
 };
 const FEATURE_TINT: Record<string, number> = {
-  woods: 0x5f8a3e,
-  rainforest: 0x3f7a40,
-  marsh: 0x6f9a7a,
-  floodplains: 0xd9cf7f,
-  floodplains_grassland: 0x9ccc5e,
-  floodplains_plains: 0xcfc566,
+  woods: 0x3c5229,
+  rainforest: 0x2c4424,
+  marsh: 0x4a5c46,
+  floodplains: 0x857d50,
+  floodplains_grassland: 0x5f7a3a,
+  floodplains_plains: 0x74703f,
 };
-const ROCK = new Color(0x8a8378);
-const SNOW = new Color(0xf4f6f8);
-const SAND = new Color(0xf0dca0);
-const RIVER = new Color(0x4aa8d0);
-const RIVER_BANK = new Color(0x6f8f4a);
+const ROCK = new Color(0x55534f);
+const SAND = new Color(0xa89870);
+const SEABED_SHALLOW = new Color(0x8a7c58);
+const SEABED_DEEP = new Color(0x1e2e33);
+const RIVER = new Color(0x2a5a6c);
+const RIVER_BANK = new Color(0x4a5a34);
 
 export interface Sample {
   height: number;
@@ -115,7 +119,7 @@ export class TerrainSampler {
       );
       if (t.feature && FEATURE_TINT[t.feature] !== undefined)
         color.lerp(new Color(FEATURE_TINT[t.feature]), 0.55);
-      if (t.feature === 'ice') color.set(0xe8f1f6);
+      if (t.feature === 'ice') color.set(0x8f9ba4);
       const rivers: number[][] = [];
       for (const d of DIRECTIONS) {
         const n = neighbor(map, i, d);
@@ -162,7 +166,7 @@ export class TerrainSampler {
     const tile = this.tileAt(x, z);
     if (tile === undefined) {
       out.height = -0.6;
-      out.color.set(0x1d4a7a);
+      out.color.copy(SEABED_DEEP);
       return out;
     }
     let wSum = 0;
@@ -181,9 +185,11 @@ export class TerrainSampler {
       wSum += w;
       base += w * t.base;
       if (t.water && d < 1.6) nearWater = true;
-      if (t.hills) bumps += 0.34 * Math.max(0, 1 - d / 1.1) ** 2;
+      if (t.hills) bumps += 0.4 * Math.max(0, 1 - d / 1.1) ** 2;
       if (t.mountain) {
-        const m = Math.max(0, 1 - d / 1.02) ** 1.4 * (0.75 + 0.5 * smoothNoise(x * 2.3, z * 2.3));
+        // Broad bases merge neighbouring mountains into ranges; ridged noise makes crags.
+        const ridge = 1 - Math.abs(smoothNoise(x * 1.6, z * 1.6) * 2 - 1);
+        const m = Math.max(0, 1 - d / 1.32) ** 1.15 * (0.62 + 0.6 * ridge);
         mountain = Math.max(mountain, m);
       }
       const cwI = Math.max(0, 1.08 - d) ** 3;
@@ -192,20 +198,29 @@ export class TerrainSampler {
       g += cwI * t.color.g;
       b += cwI * t.color.b;
     }
-    let height = base / wSum + bumps + mountain * 2.1;
+    let height = base / wSum + bumps + mountain * 1.75;
+    if (mountain > 0)
+      height += (1 - Math.abs(smoothNoise(x * 4.3, z * 4.3) * 2 - 1)) * 0.22 * mountain;
     // Wandering shorelines: broad noise so coasts and lakes don't follow hex outlines.
     height +=
       (smoothNoise(x * 0.8 + 11.3, z * 0.8 - 4.2) - 0.5) * 0.2 +
       (smoothNoise(x * 2.1, z * 2.1) - 0.5) * 0.06;
     const land = height > 0;
+    // Fine relief so flat land isn't perfectly flat.
+    if (land) height += (smoothNoise(x * 3.3, z * 3.3) - 0.5) * 0.05;
 
     const color = out.color.setRGB(r / cw, g / cw, b / cw);
     // Painterly variation: broad soft patches of light and shade.
     const patch = smoothNoise(x * 0.9 + 3.1, z * 0.9) - 0.5;
-    color.multiplyScalar(1 + patch * 0.16);
-    if (mountain > 0.05) color.lerp(ROCK, Math.min(1, mountain * 1.6));
-    if (height > 1.55) color.lerp(SNOW, Math.min(1, (height - 1.55) * 2.5));
-    if (land && nearWater && height < 0.16 && mountain < 0.05) color.lerp(SAND, 0.55);
+    const fine = smoothNoise(x * 4.1 - 7.7, z * 4.1) - 0.5;
+    color.multiplyScalar(1 + patch * 0.2 + fine * 0.08);
+    if (mountain > 0.05) color.lerp(ROCK, Math.min(0.85, mountain * 1.4));
+    if (land && nearWater && height < 0.15 && mountain < 0.05) color.lerp(SAND, 0.5);
+    if (!land) {
+      // Seabed: sandy near the shore, darkening with depth (seen through the shallows).
+      const deep = Math.min(1, Math.max(0, (-height - 0.04) / 0.4));
+      color.copy(SEABED_SHALLOW).lerp(SEABED_DEEP, deep);
+    }
 
     const here = this.tiles[tile]!;
     if (here.feature === 'oasis') {
@@ -228,6 +243,26 @@ export class TerrainSampler {
     }
     out.height = height;
     return out;
+  }
+
+  /**
+   * A smooth blend of a per-tile value around a point (e.g. visibility), so edges between
+   * tiles fade instead of following hex outlines.
+   */
+  blend(xIn: number, z: number, value: (tile: number) => number, outside: number): number {
+    const x = this.map.wrapX ? ((xIn % this.width) + this.width) % this.width : xIn;
+    const tile = this.tileAt(x, z);
+    if (tile === undefined) return outside;
+    let wSum = 0;
+    let v = 0;
+    for (const i of this.around[tile]!) {
+      const t = this.tiles[i]!;
+      const d = Math.hypot(this.wrapDx(t.x - x), t.z - z);
+      const w = Math.max(0, 1.25 - d) ** 2;
+      wSum += w;
+      v += w * value(i);
+    }
+    return wSum > 0 ? v / wSum : outside;
   }
 
   /** Sampler helper for segment distance (wrap-aware). */

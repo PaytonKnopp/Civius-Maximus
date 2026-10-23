@@ -23,7 +23,7 @@ To change one, tell Claude in a session (or edit this file). The relevant docs g
 | D17 | Game modes | Single player (vs AI), hotseat, host multiplayer with a **join code** | 02 |
 | D18 | Design source | Best of Civ 5, 6 and 7, with each pick explained | 08 |
 | D19 | War fairness in simultaneous turns | **As in Civ**: fully simultaneous by default, with Civ's Dynamic turns (alternate turns between players at war) as a lobby option. Tune after playtests | 02 |
-| D11 | Art style | **Stylized painterly 3D**: Civ VII look + Outer Wilds / Puss in Boots painterly feel, light to run. 2D strategic view kept | 10 |
+| D11 | Art style | **Painted-realistic 3D, dark and grand**: Civ VII grandeur + Outer Wilds warmth, dusk light, muted natural colors, dark fog of war; light to run. 2D strategic view kept | 10 |
 | D22 | Starting roster | **30 leaders + 30 civs**, each with a full unique kit; more on request | 09 |
 | D23 | How content grows | **By asking Claude**, using checklist skills in the repo. No in-game civ creator | 00, 05 |
 | D24 | Breadth | Maximum options: many map types and settings, many lenses, all the best Civ V/VI/VII systems as toggles | 00, 03, 06 |

@@ -1,33 +1,32 @@
 import { resolveText } from '@cx/content';
 import { tilesWithin } from '@cx/engine';
 import {
+  ACESFilmicToneMapping,
   BufferAttribute,
   BufferGeometry,
   CanvasTexture,
   Color,
-  ConeGeometry,
   CylinderGeometry,
-  DataTexture,
-  DoubleSide,
   DirectionalLight,
+  DoubleSide,
+  Euler,
   Float32BufferAttribute,
+  Fog,
   Group,
+  HalfFloatType,
   HemisphereLight,
-  IcosahedronGeometry,
   InstancedMesh,
   LineBasicMaterial,
   LineLoop,
   LineSegments,
   Matrix4,
   Mesh,
-  MeshToonMaterial,
-  NearestFilter,
+  MeshStandardMaterial,
   PerspectiveCamera,
   Plane,
   PlaneGeometry,
   Quaternion,
   Raycaster,
-  RedFormat,
   Scene,
   ShaderMaterial,
   Sprite,
@@ -38,7 +37,6 @@ import {
   WebGLRenderer,
   WebGLRenderTarget,
 } from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {
   type MapRenderer,
   type MapViewData,
@@ -47,8 +45,11 @@ import {
   previewVisibility,
   type Quality,
 } from '../map/renderer';
+import { type PropKind, propGeometries, placeProps } from './props';
 import { center3, type Sample, TerrainSampler } from './sampler';
 import {
+  mistFragment,
+  mistVertex,
   paintPassFragment,
   paintPassVertex,
   terrainFragment,
@@ -59,48 +60,107 @@ import {
 
 const CHUNK_W = 8 * Math.sqrt(3);
 const CHUNK_H = 12;
-const MARGIN = 6; // ocean drawn beyond the top/bottom edges so the map doesn't end abruptly
-const FOV = 35;
-const HAZE = 0x9db6c6;
+const MARGIN = 16; // ocean drawn beyond the top/bottom edges so the map doesn't end abruptly
+const FOV = 40;
+/** Hidden (unexplored) land is flattened to this height so it gives nothing away. */
+const FOG_FLOOR = 0.12;
+const MIST_HEIGHT = 0.34;
+
+// Palette (sRGB). Dusk: a low golden sun, cool blue sky light, deep water, dark fog.
+const SUN = 0xffd6ad;
+const SKY = 0x6a809c;
+const GROUND = 0x3a3126;
+const HAZE = 0x46586a;
 
 const QUALITY: Record<
   Quality,
-  { step: number; waterStep: number; pixelRatio: number; trees: number; paint: boolean }
+  {
+    step: number;
+    waterStep: number;
+    pixelRatio: number;
+    trees: number;
+    scatter: number;
+    post: boolean;
+    paint: number;
+    detail: boolean;
+  }
 > = {
-  low: { step: 0.34, waterStep: 0.5, pixelRatio: 0.85, trees: 2, paint: false },
-  medium: { step: 0.24, waterStep: 0.38, pixelRatio: 1.5, trees: 3, paint: false },
-  high: { step: 0.18, waterStep: 0.3, pixelRatio: 2, trees: 4, paint: true },
+  low: {
+    step: 0.32,
+    waterStep: 0.5,
+    pixelRatio: 0.85,
+    trees: 3,
+    scatter: 0,
+    post: false,
+    paint: 0,
+    detail: false,
+  },
+  medium: {
+    step: 0.22,
+    waterStep: 0.36,
+    pixelRatio: 1.25,
+    trees: 5,
+    scatter: 2,
+    post: true,
+    paint: 0,
+    detail: true,
+  },
+  high: {
+    step: 0.17,
+    waterStep: 0.28,
+    pixelRatio: 2,
+    trees: 8,
+    scatter: 3,
+    post: true,
+    paint: 0.55,
+    detail: true,
+  },
 };
+
+interface Prop {
+  mesh: InstancedMesh;
+  tiles: Int32Array;
+  matrices: Float32Array;
+  colors: Color[];
+}
 
 interface Chunk {
   group: Group;
   midX: number;
   midZ: number;
-  terrainTiles: Int32Array;
+  terrain: BufferGeometry;
+  terrainY: Float32Array;
   terrainVis: BufferAttribute;
-  waterTiles: Int32Array;
+  water: BufferGeometry;
   waterVis: BufferAttribute;
+  mist: Mesh;
+  mistVis: BufferAttribute;
   /** Tiles whose centers fall in this chunk. */
   tiles: number[];
-  trees: InstancedMesh[];
-  treeTiles: number[][];
-  clouds: InstancedMesh | undefined;
+  props: Prop[];
   sprites: { sprite: Sprite; tile: number }[];
   grid: LineSegments;
 }
 
-/** Merging needs every part non-indexed; some primitives (icosahedrons) already are. */
-const flat = (g: BufferGeometry) => (g.index ? g.toNonIndexed() : g);
-
-function toonGradient(): DataTexture {
-  const tex = new DataTexture(new Uint8Array([90, 170, 255]), 3, 1, RedFormat);
-  tex.minFilter = NearestFilter;
-  tex.magFilter = NearestFilter;
-  tex.needsUpdate = true;
+function skyTexture(): CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 4;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+  const g = ctx.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, '#0b131d');
+  g.addColorStop(0.35, '#1c2b3c');
+  g.addColorStop(0.62, '#3b4c5d');
+  g.addColorStop(0.8, '#5d6266');
+  g.addColorStop(1, '#13283a');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 4, 256);
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
   return tex;
 }
 
-/** Painterly 3D map renderer (docs/10-art-direction.md). Same interface as the 2D MapView. */
+/** Painted 3D map renderer (docs/10-art-direction.md). Same interface as the 2D MapView. */
 export class World3D implements MapRenderer {
   onHover: (tile: number | undefined) => void = () => {};
   onSelect: (tile: number | undefined) => void = () => {};
@@ -108,17 +168,24 @@ export class World3D implements MapRenderer {
 
   private renderer: WebGLRenderer;
   private scene = new Scene();
-  private camera = new PerspectiveCamera(FOV, 1, 0.5, 400);
+  private camera = new PerspectiveCamera(FOV, 1, 0.3, 400);
   private uniforms = {
     uTime: { value: 0 },
-    uLightDir: { value: new Vector3(-0.45, 0.8, 0.35).normalize() },
+    uLightDir: { value: new Vector3(-0.62, 0.48, 0.42).normalize() },
+    uSunColor: { value: new Color(SUN).multiplyScalar(1.95) },
+    uSkyColor: { value: new Color(SKY).multiplyScalar(0.95) },
+    uGroundColor: { value: new Color(GROUND).multiplyScalar(0.9) },
     uHaze: { value: new Color(HAZE) },
-    uCloud: { value: new Color(0xdfe3ea) },
-    uShallow: { value: new Color(0x6fd0c4) },
-    uCoast: { value: new Color(0x3a9cc0) },
-    uDeep: { value: new Color(0x2a66a6) },
-    uAbyss: { value: new Color(0x1d4580) },
-    uFoam: { value: new Color(0xf7f3e6) },
+    uFogDark: { value: new Color(0x080d13) },
+    uMist: { value: new Color(0x223140) },
+    uMistEdge: { value: new Color(0x5d6b78) },
+    uRock: { value: new Color(0x55544f) },
+    uSnow: { value: new Color(0xc9d1d8) },
+    uShallow: { value: new Color(0x3f6e64) },
+    uCoast: { value: new Color(0x204e5e) },
+    uDeep: { value: new Color(0x143650) },
+    uAbyss: { value: new Color(0x0b2136) },
+    uFoam: { value: new Color(0xd6d1c0) },
   };
   private terrainMaterial = new ShaderMaterial({
     vertexShader: terrainVertex,
@@ -129,14 +196,26 @@ export class World3D implements MapRenderer {
     vertexShader: waterVertex,
     fragmentShader: waterFragment,
     uniforms: this.uniforms,
-  });
-  private gradient = toonGradient();
-  private treeMaterial = new MeshToonMaterial({ gradientMap: this.gradient, vertexColors: true });
-  private cloudMaterial = new MeshToonMaterial({ gradientMap: this.gradient, color: 0xf2f0ea });
-  private gridMaterial = new LineBasicMaterial({
-    color: 0x1a1a10,
     transparent: true,
-    opacity: 0.22,
+    depthWrite: false,
+  });
+  private mistMaterial = new ShaderMaterial({
+    vertexShader: mistVertex,
+    fragmentShader: mistFragment,
+    uniforms: this.uniforms,
+    transparent: true,
+    depthWrite: false,
+  });
+  private propMaterial = new MeshStandardMaterial({
+    roughness: 0.92,
+    metalness: 0,
+    flatShading: true,
+  });
+  private propGeometry = propGeometries();
+  private gridMaterial = new LineBasicMaterial({
+    color: 0x0a0d0a,
+    transparent: true,
+    opacity: 0.3,
   });
   private highlight = new LineLoop(
     new BufferGeometry(),
@@ -146,16 +225,16 @@ export class World3D implements MapRenderer {
   private chunks: Chunk[] = [];
   private data: MapViewData | undefined;
   private sampler: TerrainSampler | undefined;
-  private options: MapViewOptions = { grid: true, yields: false, viewer: null, quality: 'medium' };
+  private options: MapViewOptions = { grid: false, yields: false, viewer: null, quality: 'medium' };
   private visibility: Uint8Array = new Uint8Array(0);
   private target = new Vector3();
-  private dist = 30;
+  private dist = 22;
   private worldW = 1;
   private worldH = 1;
   private raf = 0;
   private resize: ResizeObserver;
   private cleanup: (() => void)[] = [];
-  private paint: {
+  private post: {
     target: WebGLRenderTarget;
     scene: Scene;
     camera: PerspectiveCamera;
@@ -166,27 +245,29 @@ export class World3D implements MapRenderer {
   constructor(private host: HTMLElement) {
     this.renderer = new WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     this.renderer.outputColorSpace = SRGBColorSpace;
-    this.renderer.setClearColor(HAZE);
-    this.scene.background = new Color(HAZE);
+    this.renderer.toneMapping = ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.05;
+    this.scene.background = skyTexture();
+    this.scene.fog = new Fog(HAZE, 38, 160);
     host.appendChild(this.renderer.domElement);
     this.renderer.domElement.style.display = 'block';
 
-    const sun = new DirectionalLight(0xfff1d6, 2.4);
+    const sun = new DirectionalLight(SUN, 6.2);
     sun.position.copy(this.uniforms.uLightDir.value).multiplyScalar(50);
-    this.scene.add(sun, new HemisphereLight(0xcfe3ff, 0x6a5a40, 1.3), this.world);
+    this.scene.add(sun, new HemisphereLight(SKY, GROUND, 2.2), this.world);
     this.highlight.renderOrder = 10;
     this.scene.add(this.highlight);
 
     const material = new ShaderMaterial({
       vertexShader: paintPassVertex,
       fragmentShader: paintPassFragment,
-      uniforms: { tScene: { value: null }, uTexel: { value: new Vector2() } },
+      uniforms: { tScene: { value: null }, uTexel: { value: new Vector2() }, uPaint: { value: 0 } },
       depthTest: false,
     });
     const quadScene = new Scene();
     quadScene.add(new Mesh(new PlaneGeometry(2, 2), material));
-    this.paint = {
-      target: new WebGLRenderTarget(1, 1),
+    this.post = {
+      target: new WebGLRenderTarget(1, 1, { type: HalfFloatType }),
       scene: quadScene,
       camera: new PerspectiveCamera(),
       material,
@@ -211,7 +292,7 @@ export class World3D implements MapRenderer {
     this.visibility = previewVisibility(data, options.viewer, (c, r) =>
       tilesWithin(data.map, c, r),
     );
-    this.applyPixelRatio();
+    this.applyQuality();
     this.build();
     if (!sameSize) this.focusPlayer(data.playerOrder[0]);
   }
@@ -221,7 +302,7 @@ export class World3D implements MapRenderer {
     this.options = options;
     if (!this.data) return;
     if (options.quality !== prev.quality) {
-      this.applyPixelRatio();
+      this.applyQuality();
       this.build();
       return;
     }
@@ -240,7 +321,7 @@ export class World3D implements MapRenderer {
     if (tile === undefined) return;
     const [x, z] = center3(tile % this.data.map.width, Math.floor(tile / this.data.map.width));
     this.target.set(x, 0, z);
-    this.dist = Math.min(this.dist, 26);
+    this.dist = Math.min(this.dist, 22);
   }
 
   destroy() {
@@ -257,8 +338,11 @@ export class World3D implements MapRenderer {
   private clearChunks() {
     for (const c of this.chunks) {
       c.group.traverse((o) => {
-        if (o instanceof Mesh || o instanceof LineSegments) o.geometry.dispose();
+        if ((o instanceof Mesh || o instanceof LineSegments) && !(o instanceof InstancedMesh)) {
+          o.geometry.dispose();
+        }
       });
+      for (const p of c.props) p.mesh.dispose();
       this.world.remove(c.group);
     }
     this.chunks = [];
@@ -267,6 +351,8 @@ export class World3D implements MapRenderer {
   private build() {
     const { map } = this.data!;
     const q = QUALITY[this.options.quality];
+    this.terrainMaterial.defines = q.detail ? { DETAIL: '' } : {};
+    this.terrainMaterial.needsUpdate = true;
     this.clearChunks();
     const tilesByChunk = new Map<string, number[]>();
     const key = (cx: number, cz: number) => `${cx},${cz}`;
@@ -304,6 +390,18 @@ export class World3D implements MapRenderer {
     return { nx, nz, index, sx: (x1 - x0) / (nx - 1), sz: (z1 - z0) / (nz - 1) };
   }
 
+  private flatPlane(x0: number, x1: number, z0: number, z1: number, step: number, y: number) {
+    const g = this.grid(x0, x1, z0, z1, step);
+    const pos = new Float32Array(g.nx * g.nz * 3);
+    for (let j = 0; j < g.nz; j++) {
+      for (let i = 0; i < g.nx; i++) pos.set([x0 + i * g.sx, y, z0 + j * g.sz], (j * g.nx + i) * 3);
+    }
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(pos, 3));
+    geo.setIndex(g.index);
+    return geo;
+  }
+
   private buildChunk(
     x0: number,
     x1: number,
@@ -321,7 +419,7 @@ export class World3D implements MapRenderer {
     const count = g.nx * g.nz;
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
-    const terrainTiles = new Int32Array(count);
+    const terrainY = new Float32Array(count);
     for (let j = 0; j < g.nz; j++) {
       for (let i = 0; i < g.nx; i++) {
         const k = j * g.nx + i;
@@ -329,8 +427,8 @@ export class World3D implements MapRenderer {
         const z = z0 + j * g.sz;
         sampler.sample(x, z, sample);
         pos.set([x, sample.height, z], k * 3);
+        terrainY[k] = sample.height;
         col.set([sample.color.r, sample.color.g, sample.color.b], k * 3);
-        terrainTiles[k] = sampler.tileAt(this.wrapX(x), z) ?? -1;
       }
     }
     const terrain = new BufferGeometry();
@@ -345,50 +443,50 @@ export class World3D implements MapRenderer {
     group.add(terrainMesh);
 
     // Water.
-    const w = this.grid(x0, x1, z0, z1, q.waterStep);
-    const wCount = w.nx * w.nz;
-    const wPos = new Float32Array(wCount * 3);
-    const depth = new Float32Array(wCount);
-    const waterTiles = new Int32Array(wCount);
-    for (let j = 0; j < w.nz; j++) {
-      for (let i = 0; i < w.nx; i++) {
-        const k = j * w.nx + i;
-        const x = x0 + i * w.sx;
-        const z = z0 + j * w.sz;
-        sampler.sample(x, z, sample);
-        wPos.set([x, 0, z], k * 3);
-        depth[k] = Math.max(0, -sample.height);
-        waterTiles[k] = sampler.tileAt(this.wrapX(x), z) ?? -1;
-      }
+    const water = this.flatPlane(x0, x1, z0, z1, q.waterStep, 0);
+    const wPos = water.getAttribute('position');
+    const depth = new Float32Array(wPos.count);
+    for (let k = 0; k < wPos.count; k++) {
+      depth[k] = Math.max(0, -sampler.sample(wPos.getX(k), wPos.getZ(k), sample).height);
     }
-    const water = new BufferGeometry();
-    water.setAttribute('position', new BufferAttribute(wPos, 3));
     water.setAttribute('aDepth', new BufferAttribute(depth, 1));
-    const waterVis = new BufferAttribute(new Float32Array(wCount), 1);
+    const waterVis = new BufferAttribute(new Float32Array(wPos.count), 1);
     water.setAttribute('aVis', waterVis);
-    water.setIndex(w.index);
     const waterMesh = new Mesh(water, this.waterMaterial);
     waterMesh.frustumCulled = false;
+    waterMesh.renderOrder = 1;
     group.add(waterMesh);
+
+    // Fog of war mist (only shown when viewing as a player).
+    const mistGeo = this.flatPlane(x0, x1, z0, z1, Math.max(q.waterStep, 0.4), MIST_HEIGHT);
+    const mistVis = new BufferAttribute(
+      new Float32Array(mistGeo.getAttribute('position').count),
+      1,
+    );
+    mistGeo.setAttribute('aVis', mistVis);
+    const mist = new Mesh(mistGeo, this.mistMaterial);
+    mist.frustumCulled = false;
+    mist.renderOrder = 2;
+    group.add(mist);
 
     const chunk: Chunk = {
       group,
       midX: (x0 + x1) / 2,
       midZ: (z0 + z1) / 2,
-      terrainTiles,
+      terrain,
+      terrainY,
       terrainVis,
-      waterTiles,
+      water,
       waterVis,
+      mist,
+      mistVis,
       tiles,
-      trees: [],
-      treeTiles: [],
-      clouds: undefined,
+      props: this.buildProps(group, tiles, q),
       sprites: [],
       grid: this.buildGrid(tiles),
     };
     group.add(chunk.grid);
     chunk.grid.visible = this.options.grid;
-    this.buildClouds(chunk);
     this.buildMarkers(chunk);
     this.world.add(group);
     return chunk;
@@ -396,6 +494,44 @@ export class World3D implements MapRenderer {
 
   private heightAt(x: number, z: number) {
     return this.sampler!.sample(x, z, { height: 0, color: new Color() }).height;
+  }
+
+  private buildProps(group: Group, tiles: number[], q: (typeof QUALITY)[Quality]): Prop[] {
+    const instances = placeProps(this.data!.map, tiles, { trees: q.trees, scatter: q.scatter });
+    const byKind = new Map<PropKind, typeof instances>();
+    for (const p of instances) {
+      const list = byKind.get(p.kind) ?? [];
+      list.push(p);
+      byKind.set(p.kind, list);
+    }
+    const props: Prop[] = [];
+    const m = new Matrix4();
+    const quat = new Quaternion();
+    const euler = new Euler();
+    for (const [kind, list] of byKind) {
+      const mesh = new InstancedMesh(this.propGeometry[kind], this.propMaterial, list.length);
+      mesh.frustumCulled = false;
+      const tileIds = new Int32Array(list.length);
+      list.forEach((p, i) => {
+        quat.setFromEuler(euler.set(0, p.rotation, 0));
+        m.compose(
+          new Vector3(p.x, Math.max(this.heightAt(p.x, p.z), -0.05) - 0.02, p.z),
+          quat,
+          new Vector3(...p.scale),
+        );
+        mesh.setMatrixAt(i, m);
+        mesh.setColorAt(i, p.color);
+        tileIds[i] = p.tile;
+      });
+      group.add(mesh);
+      props.push({
+        mesh,
+        tiles: tileIds,
+        matrices: new Float32Array(mesh.instanceMatrix.array),
+        colors: list.map((p) => p.color),
+      });
+    }
+    return props;
   }
 
   private buildGrid(tiles: number[]): LineSegments {
@@ -425,69 +561,6 @@ export class World3D implements MapRenderer {
     return lines;
   }
 
-  private treeGeometry(kind: 'woods' | 'rainforest') {
-    const paint = (geo: BufferGeometry, color: number) => {
-      const c = new Color(color);
-      const n = geo.getAttribute('position').count;
-      const arr = new Float32Array(n * 3);
-      for (let i = 0; i < n; i++) arr.set([c.r, c.g, c.b], i * 3);
-      geo.setAttribute('color', new BufferAttribute(arr, 3));
-      return geo;
-    };
-    const trunk = paint(new CylinderGeometry(0.035, 0.05, 0.22, 5).translate(0, 0.11, 0), 0xe6c29a);
-    if (kind === 'woods') {
-      const low = paint(new ConeGeometry(0.2, 0.36, 7).translate(0, 0.32, 0), 0xffffff);
-      const high = paint(new ConeGeometry(0.15, 0.3, 7).translate(0, 0.5, 0), 0xffffff);
-      return mergeGeometries([flat(trunk), flat(low), flat(high)])!;
-    }
-    const tall = paint(new CylinderGeometry(0.03, 0.045, 0.42, 5).translate(0, 0.21, 0), 0xd9b48a);
-    const crown = paint(
-      new IcosahedronGeometry(0.2, 0).scale(1.2, 0.7, 1.2).translate(0, 0.48, 0),
-      0xffffff,
-    );
-    return mergeGeometries([flat(tall), flat(crown)])!;
-  }
-
-  private buildTrees(chunk: Chunk, perTile: number) {
-    const { map } = this.data!;
-    for (const kind of ['woods', 'rainforest'] as const) {
-      const tiles = chunk.tiles.filter((t) => map.tiles[t]!.feature === kind);
-      if (tiles.length === 0) continue;
-      const n = kind === 'rainforest' ? perTile + 1 : perTile;
-      const mesh = new InstancedMesh(this.treeGeometry(kind), this.treeMaterial, tiles.length * n);
-      mesh.frustumCulled = false;
-      const m = new Matrix4();
-      const quat = new Quaternion();
-      const owners: number[] = [];
-      let k = 0;
-      for (const t of tiles) {
-        const [cx, cz] = center3(t % map.width, Math.floor(t / map.width));
-        for (let i = 0; i < n; i++) {
-          const a = ((t * 7 + i * 2.39) % 6.283) + i;
-          const r = 0.18 + ((t * 13 + i * 5) % 7) / 14;
-          const x = cx + Math.cos(a) * r;
-          const z = cz + Math.sin(a) * r;
-          const s = 0.85 + ((t + i * 3) % 5) * 0.09;
-          m.compose(new Vector3(x, this.heightAt(x, z) - 0.02, z), quat, new Vector3(s, s, s));
-          mesh.setMatrixAt(k++, m);
-          owners.push(t);
-        }
-      }
-      chunk.group.add(mesh);
-      chunk.trees.push(mesh);
-      chunk.treeTiles.push(owners);
-    }
-  }
-
-  private buildClouds(chunk: Chunk) {
-    const geo = new IcosahedronGeometry(1, 1);
-    const mesh = new InstancedMesh(geo, this.cloudMaterial, chunk.tiles.length * 2);
-    mesh.frustumCulled = false;
-    mesh.count = 0;
-    chunk.clouds = mesh;
-    chunk.group.add(mesh);
-  }
-
   private buildMarkers(chunk: Chunk) {
     const { map, content, starts, playerOrder } = this.data!;
     const owner = new Map(Object.entries(starts).map(([p, t]) => [t, p]));
@@ -499,21 +572,16 @@ export class World3D implements MapRenderer {
         const color = PLAYER_COLORS[playerOrder.indexOf(p) % PLAYER_COLORS.length]!;
         const h = Math.max(0, this.heightAt(cx, cz));
         const banner = new Group();
-        const pole = new Mesh(
-          new CylinderGeometry(0.025, 0.025, 0.9, 6),
-          new MeshToonMaterial({ color: 0x3b2f22, gradientMap: this.gradient }),
-        );
-        pole.position.set(0, 0.45, 0);
+        const metal = new MeshStandardMaterial({ color: 0xb8914a, roughness: 0.4, metalness: 0.8 });
+        const pole = new Mesh(new CylinderGeometry(0.022, 0.022, 0.95, 6), metal);
+        pole.position.set(0, 0.47, 0);
         const flag = new Mesh(
           new PlaneGeometry(0.42, 0.26),
-          new MeshToonMaterial({ color, gradientMap: this.gradient, side: DoubleSide }),
+          new MeshStandardMaterial({ color, roughness: 0.8, side: DoubleSide }),
         );
-        flag.position.set(0.21, 0.76, 0);
-        const base = new Mesh(
-          new CylinderGeometry(0.16, 0.2, 0.08, 8),
-          new MeshToonMaterial({ color: 0xd4a94e, gradientMap: this.gradient }),
-        );
-        base.position.set(0, 0.04, 0);
+        flag.position.set(0.21, 0.8, 0);
+        const base = new Mesh(new CylinderGeometry(0.15, 0.19, 0.07, 10), metal);
+        base.position.set(0, 0.035, 0);
         banner.add(pole, flag, base);
         banner.position.set(cx, h, cz);
         chunk.group.add(banner);
@@ -523,8 +591,8 @@ export class World3D implements MapRenderer {
         const sprite = new Sprite(this.resourceMaterial(resolveText(content, r.name), r.class));
         const x = cx + 0.42;
         const z = cz + 0.38;
-        sprite.position.set(x, Math.max(0, this.heightAt(x, z)) + 0.32, z);
-        sprite.scale.set(0.42, 0.42, 1);
+        sprite.position.set(x, Math.max(0, this.heightAt(x, z)) + 0.34, z);
+        sprite.scale.set(0.4, 0.4, 1);
         chunk.group.add(sprite);
         chunk.sprites.push({ sprite, tile: t });
       }
@@ -539,86 +607,78 @@ export class World3D implements MapRenderer {
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d')!;
-    const fill = { bonus: '#efe3b8', luxury: '#d9a0f2', strategic: '#f2876a' }[cls];
+    const ring = { bonus: '#c9b98a', luxury: '#b98ad6', strategic: '#d9785a' }[cls];
     ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2 - 6, 0, Math.PI * 2);
-    ctx.fillStyle = '#14202b';
+    ctx.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
+    ctx.fillStyle = ring;
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2 - 14, 0, Math.PI * 2);
-    ctx.fillStyle = fill;
+    ctx.arc(size / 2, size / 2, size / 2 - 13, 0, Math.PI * 2);
+    ctx.fillStyle = '#121a22';
     ctx.fill();
-    ctx.fillStyle = '#14202b';
-    ctx.font = '600 46px "IBM Plex Mono", monospace';
+    ctx.fillStyle = '#eadfc4';
+    ctx.font = '600 44px "IBM Plex Mono", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(name.slice(0, 2), size / 2, size / 2 + 2);
     const tex = new CanvasTexture(canvas);
     tex.colorSpace = SRGBColorSpace;
-    const material = new SpriteMaterial({ map: tex, depthTest: true });
+    const material = new SpriteMaterial({ map: tex, toneMapped: false, fog: true });
     this.spriteCache.set(key, material);
     return material;
   }
 
-  /** Fog of war: per-vertex visibility, cloud puffs over unexplored tiles, hidden props. */
+  /**
+   * Fog of war: smooth per-vertex visibility (soft edges), unexplored land flattened under a
+   * dark mist so it reveals nothing, remembered land darkened, props hidden or dimmed.
+   */
   private applyVisibility(c: Chunk) {
     const vis = this.visibility;
-    const level = (t: number) =>
-      t < 0 ? (this.options.viewer === null ? 1 : 0.5) : vis[t] === 2 ? 1 : vis[t] === 1 ? 0.5 : 0;
-    for (let i = 0; i < c.terrainTiles.length; i++) c.terrainVis.setX(i, level(c.terrainTiles[i]!));
+    const sampler = this.sampler!;
+    const fog = this.options.viewer !== null;
+    const level = (t: number) => (vis[t] === 2 ? 1 : vis[t] === 1 ? 0.5 : 0);
+    const outside = fog ? 0.5 : 1;
+    const smooth = (x: number, z: number) => (fog ? sampler.blend(x, z, level, outside) : 1);
+
+    const pos = c.terrain.getAttribute('position');
+    for (let i = 0; i < pos.count; i++) {
+      const v = smooth(pos.getX(i), pos.getZ(i));
+      c.terrainVis.setX(i, v);
+      const y = c.terrainY[i]!;
+      const reveal = Math.min(1, Math.max(0, (v - 0.08) / 0.3));
+      pos.setY(i, FOG_FLOOR + (y - FOG_FLOOR) * reveal);
+    }
+    pos.needsUpdate = true;
     c.terrainVis.needsUpdate = true;
-    for (let i = 0; i < c.waterTiles.length; i++) c.waterVis.setX(i, level(c.waterTiles[i]!));
+    c.terrain.computeVertexNormals();
+
+    const wPos = c.water.getAttribute('position');
+    for (let i = 0; i < wPos.count; i++) c.waterVis.setX(i, smooth(wPos.getX(i), wPos.getZ(i)));
     c.waterVis.needsUpdate = true;
 
-    // Trees are rebuilt so trees hidden by an earlier fog view come back.
-    for (const mesh of c.trees) {
-      c.group.remove(mesh);
-      mesh.geometry.dispose();
-      mesh.dispose();
-    }
-    c.trees = [];
-    c.treeTiles = [];
-    this.buildTrees(c, QUALITY[this.options.quality].trees);
-    const green = [
-      new Color(0x5e8f3a),
-      new Color(0x4f7f34),
-      new Color(0x6d9a40),
-      new Color(0x3f6f3a),
-    ];
-    const memory = new Color(0x7d857e);
-    const hidden = new Matrix4().makeScale(0, 0, 0);
-    c.trees.forEach((mesh, m) => {
-      c.treeTiles[m]!.forEach((t, i) => {
-        const v = vis[t];
-        mesh.setColorAt(i, v === 1 ? memory : green[(t + i) % green.length]!);
-        if (v === 0) mesh.setMatrixAt(i, hidden);
-      });
-      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-      mesh.instanceMatrix.needsUpdate = true;
-    });
-    for (const s of c.sprites) s.sprite.visible = vis[s.tile] !== 0;
+    const mPos = c.mist.geometry.getAttribute('position');
+    for (let i = 0; i < mPos.count; i++) c.mistVis.setX(i, smooth(mPos.getX(i), mPos.getZ(i)));
+    c.mistVis.needsUpdate = true;
+    c.mist.visible = fog;
 
-    const clouds = c.clouds!;
-    const { map } = this.data!;
-    let k = 0;
-    const m = new Matrix4();
-    for (const t of c.tiles) {
-      if (vis[t] !== 0) continue;
-      const [cx, cz] = center3(t % map.width, Math.floor(t / map.width));
-      for (let i = 0; i < 2; i++) {
-        const ox = ((t * 31 + i * 17) % 10) / 10 - 0.5;
-        const oz = ((t * 17 + i * 29) % 10) / 10 - 0.5;
-        const s = 0.9 + ((t + i) % 4) * 0.15;
-        m.compose(
-          new Vector3(cx + ox * 0.8, 1.0 + i * 0.15, cz + oz * 0.8),
-          new Quaternion(),
-          new Vector3(s * 1.15, s * 0.55, s),
-        );
-        clouds.setMatrixAt(k++, m);
+    const dim = new Color();
+    for (const p of c.props) {
+      const arr = p.mesh.instanceMatrix.array as Float32Array;
+      for (let i = 0; i < p.tiles.length; i++) {
+        const v = vis[p.tiles[i]!];
+        if (v === 0) {
+          arr.fill(0, i * 16, i * 16 + 16);
+        } else {
+          arr.set(p.matrices.subarray(i * 16, i * 16 + 16), i * 16);
+        }
+        const base = p.colors[i]!;
+        const grey = base.r * 0.3 + base.g * 0.59 + base.b * 0.11;
+        p.mesh.setColorAt(i, v === 1 ? dim.setRGB(grey * 0.22, grey * 0.24, grey * 0.3) : base);
       }
+      p.mesh.instanceMatrix.needsUpdate = true;
+      if (p.mesh.instanceColor) p.mesh.instanceColor.needsUpdate = true;
     }
-    clouds.count = k;
-    clouds.instanceMatrix.needsUpdate = true;
+    for (const s of c.sprites) s.sprite.visible = vis[s.tile] !== 0;
   }
 
   // --- Camera & rendering --------------------------------------------------------------------
@@ -627,10 +687,10 @@ export class World3D implements MapRenderer {
     return this.data?.map.wrapX ? ((x % this.worldW) + this.worldW) % this.worldW : x;
   }
 
-  private applyPixelRatio() {
-    this.renderer.setPixelRatio(
-      Math.min(window.devicePixelRatio || 1, QUALITY[this.options.quality].pixelRatio),
-    );
+  private applyQuality() {
+    const q = QUALITY[this.options.quality];
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
+    this.post.material.uniforms.uPaint!.value = q.paint;
     this.fit();
   }
 
@@ -643,26 +703,28 @@ export class World3D implements MapRenderer {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     const pr = this.renderer.getPixelRatio();
-    this.paint.target.setSize(Math.floor(w * pr), Math.floor(h * pr));
-    this.paint.material.uniforms.uTexel!.value.set(1 / (w * pr), 1 / (h * pr));
+    this.post.target.setSize(Math.floor(w * pr), Math.floor(h * pr));
+    this.post.material.uniforms.uTexel!.value.set(1 / (w * pr), 1 / (h * pr));
   }
 
   private maxDist() {
     const tan = Math.tan(((FOV / 2) * Math.PI) / 180);
     const wrapLimit = this.data?.map.wrapX
-      ? (this.worldW * 0.9) / (2 * tan * this.camera.aspect)
+      ? (this.worldW * 0.85) / (2 * tan * this.camera.aspect)
       : Infinity;
-    return Math.min(130, wrapLimit, (this.worldH * 1.1) / (2 * tan));
+    return Math.min(110, wrapLimit, (this.worldH * 1.0) / (2 * tan));
   }
 
   private updateCamera() {
     if (!this.data) return;
-    this.dist = Math.min(this.maxDist(), Math.max(5, this.dist));
+    const min = 6;
+    this.dist = Math.min(this.maxDist(), Math.max(min, this.dist));
     if (this.data.map.wrapX) this.target.x = this.wrapX(this.target.x);
     else this.target.x = Math.min(this.worldW, Math.max(0, this.target.x));
     this.target.z = Math.min(this.worldH, Math.max(0, this.target.z));
-    const t = (this.dist - 5) / Math.max(1, this.maxDist() - 5);
-    const pitch = ((50 + 22 * Math.min(1, t)) * Math.PI) / 180;
+    // Low and cinematic when close (you see the horizon), flatter and map-like when far.
+    const t = Math.min(1, (this.dist - min) / Math.max(1, this.maxDist() - min));
+    const pitch = ((36 + 32 * Math.sqrt(t)) * Math.PI) / 180;
     this.camera.position.set(
       this.target.x,
       this.dist * Math.sin(pitch),
@@ -671,7 +733,9 @@ export class World3D implements MapRenderer {
     this.camera.lookAt(this.target);
 
     const tan = Math.tan(((FOV / 2) * Math.PI) / 180);
-    const halfW = this.dist * tan * this.camera.aspect * 1.7 + CHUNK_W;
+    const halfW = this.dist * tan * this.camera.aspect * 2.2 + CHUNK_W;
+    const ahead = this.dist * (3.4 - 1.8 * t) + CHUNK_H;
+    const showSprites = this.dist < 30;
     for (const c of this.chunks) {
       const shift = this.data.map.wrapX
         ? Math.round((this.target.x - c.midX) / this.worldW) * this.worldW
@@ -680,8 +744,7 @@ export class World3D implements MapRenderer {
       const dx = Math.abs(c.midX + shift - this.target.x);
       const dz = c.midZ - this.target.z;
       c.group.visible =
-        dx < halfW && dz > -this.dist * 2.2 - CHUNK_H && dz < this.dist * 0.9 + CHUNK_H;
-      const showSprites = this.dist < 34;
+        dx < halfW + Math.max(0, -dz) * 0.8 && dz > -ahead && dz < this.dist + CHUNK_H;
       for (const s of c.sprites) s.sprite.visible = showSprites && this.visibility[s.tile] !== 0;
     }
   }
@@ -694,12 +757,12 @@ export class World3D implements MapRenderer {
       this.stepKeys();
       this.updateCamera();
       this.uniforms.uTime.value = performance.now() / 1000;
-      if (QUALITY[this.options.quality].paint) {
-        this.renderer.setRenderTarget(this.paint.target);
+      if (QUALITY[this.options.quality].post) {
+        this.renderer.setRenderTarget(this.post.target);
         this.renderer.render(this.scene, this.camera);
         this.renderer.setRenderTarget(null);
-        this.paint.material.uniforms.tScene!.value = this.paint.target.texture;
-        this.renderer.render(this.paint.scene, this.paint.camera);
+        this.post.material.uniforms.tScene!.value = this.post.target.texture;
+        this.renderer.render(this.post.scene, this.post.camera);
       } else {
         this.renderer.render(this.scene, this.camera);
       }
