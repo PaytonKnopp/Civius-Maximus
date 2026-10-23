@@ -58,10 +58,13 @@ features on top.
 
 ## Phase B — The core game (local / hotseat)
 
-### M5 · Units and movement
-- Unit content plus engine support: movement costs, A* pathfinding, ZOC, stacking, embarking,
-  multi-turn orders, vision, fog memory, and the scout/warrior/settler basics.
-- Client: selection, path preview with turn markers, and the unit panel.
+### M5 · Units and movement ✅
+- Unit content plus engine support: movement costs, pathfinding (fewest turns, then most moves
+  left), ZOC, stacking, embarking, multi-turn orders, vision with line of sight, fog memory, and
+  the scout/warrior/settler basics.
+- Client: the game screen (a local game against placeholder rivals who just end their turns),
+  selection, path preview with turn markers, the unit panel, Next Action / End Turn, and the
+  dark fog of war in both the 3D and 2D views.
 
 ### M6 · Settlements
 - Founding, towns vs cities, town specializations, workable tiles, border growth, citizens and

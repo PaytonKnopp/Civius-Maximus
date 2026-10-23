@@ -41,12 +41,15 @@ import {
   type MapRenderer,
   type MapViewData,
   type MapViewOptions,
+  type PathView,
   PLAYER_COLORS,
   previewVisibility,
   type Quality,
+  type UnitView,
 } from '../map/renderer';
 import { type PropKind, propGeometries, placeProps } from './props';
 import { center3, type Sample, TerrainSampler } from './sampler';
+import { UnitLayer } from './units3d';
 import {
   mistFragment,
   mistVertex,
@@ -126,6 +129,9 @@ interface Prop {
 
 interface Chunk {
   group: Group;
+  /** Grid position, for finding neighbours when fog changes. */
+  cx: number;
+  cz: number;
   midX: number;
   midZ: number;
   terrain: BufferGeometry;
@@ -164,6 +170,7 @@ function skyTexture(): CanvasTexture {
 export class World3D implements MapRenderer {
   onHover: (tile: number | undefined) => void = () => {};
   onSelect: (tile: number | undefined) => void = () => {};
+  onCommand: (tile: number) => void = () => {};
   onFps: (fps: number) => void = () => {};
 
   private renderer: WebGLRenderer;
@@ -227,6 +234,11 @@ export class World3D implements MapRenderer {
   private sampler: TerrainSampler | undefined;
   private options: MapViewOptions = { grid: false, yields: false, viewer: null, quality: 'medium' };
   private visibility: Uint8Array = new Uint8Array(0);
+  /** Fog from the game; when null, the Map Lab preview fog (options.viewer) is used. */
+  private gameFog: Uint8Array | null = null;
+  private chunkOfTile = new Int32Array(0);
+  private chunkGrid = { nx: 0, nz: 0 };
+  private units: UnitLayer;
   private target = new Vector3();
   private dist = 22;
   private worldW = 1;
@@ -257,6 +269,14 @@ export class World3D implements MapRenderer {
     this.scene.add(sun, new HemisphereLight(SKY, GROUND, 2.2), this.world);
     this.highlight.renderOrder = 10;
     this.scene.add(this.highlight);
+    this.units = new UnitLayer({
+      center: (tile) =>
+        center3(tile % this.data!.map.width, Math.floor(tile / this.data!.map.width)),
+      height: (x, z) => this.heightAt(x, z),
+      worldWidth: () => this.worldW,
+      wrap: () => this.data?.map.wrapX ?? false,
+    });
+    this.scene.add(this.units.group);
 
     const material = new ShaderMaterial({
       vertexShader: paintPassVertex,
@@ -289,9 +309,10 @@ export class World3D implements MapRenderer {
     this.options = options;
     this.sampler = new TerrainSampler(data.map, data.content);
     [this.worldW, this.worldH] = [this.sampler.width, this.sampler.depth];
-    this.visibility = previewVisibility(data, options.viewer, (c, r) =>
-      tilesWithin(data.map, c, r),
-    );
+    this.visibility =
+      this.gameFog && this.gameFog.length === data.map.tiles.length
+        ? this.gameFog
+        : previewVisibility(data, options.viewer, (c, r) => tilesWithin(data.map, c, r));
     this.applyQuality();
     this.build();
     if (!sameSize) this.focusPlayer(data.playerOrder[0]);
@@ -306,13 +327,68 @@ export class World3D implements MapRenderer {
       this.build();
       return;
     }
-    if (options.viewer !== prev.viewer) {
+    if (options.viewer !== prev.viewer && !this.gameFog) {
       this.visibility = previewVisibility(this.data, options.viewer, (c, r) =>
         tilesWithin(this.data!.map, c, r),
       );
       for (const c of this.chunks) this.applyVisibility(c);
     }
     if (options.grid !== prev.grid) for (const c of this.chunks) c.grid.visible = options.grid;
+  }
+
+  setFog(fog: Uint8Array | null) {
+    this.gameFog = fog;
+    if (!this.data) return;
+    const next =
+      fog ??
+      previewVisibility(this.data, this.options.viewer, (c, r) =>
+        tilesWithin(this.data!.map, c, r),
+      );
+    const prev = this.visibility;
+    this.visibility = next;
+    if (prev.length !== next.length) {
+      for (const c of this.chunks) this.applyVisibility(c);
+      return;
+    }
+    // Only refresh chunks near tiles whose fog changed (fog blends across chunk edges).
+    const dirty = new Set<number>();
+    for (let t = 0; t < next.length; t++) {
+      if (prev[t] === next[t]) continue;
+      const c = this.chunks[this.chunkOfTile[t]!];
+      if (!c) continue;
+      for (let dz = -1; dz <= 1; dz++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          let x = c.cx + dx;
+          const z = c.cz + dz;
+          if (z < 0 || z >= this.chunkGrid.nz) continue;
+          if (x < 0 || x >= this.chunkGrid.nx) {
+            if (!this.data.map.wrapX) continue;
+            x = (x + this.chunkGrid.nx) % this.chunkGrid.nx;
+          }
+          dirty.add(z * this.chunkGrid.nx + x);
+        }
+      }
+    }
+    for (const i of dirty) this.applyVisibility(this.chunks[i]!);
+  }
+
+  setUnits(units: UnitView[], moves?: { unit: string; path: number[] }[]) {
+    if (this.data) this.units.setUnits(units, moves);
+  }
+
+  setSelected(unit: string | null) {
+    this.units.setSelected(unit);
+  }
+
+  setPath(path: PathView | null, from: number | null) {
+    this.units.setPath(path, from);
+  }
+
+  focusTile(tile: number, close = false) {
+    if (!this.data) return;
+    const [x, z] = center3(tile % this.data.map.width, Math.floor(tile / this.data.map.width));
+    this.target.set(x, 0, z);
+    this.dist = Math.min(this.dist, close ? 13 : 26);
   }
 
   focusPlayer(player: string | undefined) {
@@ -365,13 +441,20 @@ export class World3D implements MapRenderer {
     });
     const nx = Math.ceil(this.worldW / CHUNK_W);
     const nz = Math.ceil((this.worldH + 2 * MARGIN) / CHUNK_H);
+    this.chunkGrid = { nx, nz };
+    this.chunkOfTile = new Int32Array(map.tiles.length);
     for (let cz = 0; cz < nz; cz++) {
       for (let cx = 0; cx < nx; cx++) {
         const x0 = cx * CHUNK_W;
         const x1 = Math.min(this.worldW, (cx + 1) * CHUNK_W);
         const z0 = cz * CHUNK_H - MARGIN;
         const z1 = Math.min(this.worldH + MARGIN, (cz + 1) * CHUNK_H - MARGIN);
-        this.chunks.push(this.buildChunk(x0, x1, z0, z1, tilesByChunk.get(key(cx, cz)) ?? [], q));
+        const tiles = tilesByChunk.get(key(cx, cz)) ?? [];
+        for (const t of tiles) this.chunkOfTile[t] = this.chunks.length;
+        const chunk = this.buildChunk(x0, x1, z0, z1, tiles, q);
+        chunk.cx = cx;
+        chunk.cz = cz;
+        this.chunks.push(chunk);
       }
     }
     for (const c of this.chunks) this.applyVisibility(c);
@@ -471,6 +554,8 @@ export class World3D implements MapRenderer {
 
     const chunk: Chunk = {
       group,
+      cx: 0,
+      cz: 0,
       midX: (x0 + x1) / 2,
       midZ: (z0 + z1) / 2,
       terrain,
@@ -635,7 +720,7 @@ export class World3D implements MapRenderer {
   private applyVisibility(c: Chunk) {
     const vis = this.visibility;
     const sampler = this.sampler!;
-    const fog = this.options.viewer !== null;
+    const fog = this.gameFog !== null || this.options.viewer !== null;
     const level = (t: number) => (vis[t] === 2 ? 1 : vis[t] === 1 ? 0.5 : 0);
     const outside = fog ? 0.5 : 1;
     const smooth = (x: number, z: number) => (fog ? sampler.blend(x, z, level, outside) : 1);
@@ -752,11 +837,16 @@ export class World3D implements MapRenderer {
   private loop() {
     let frames = 0;
     let last = performance.now();
+    let prevFrame = performance.now();
     const tick = () => {
       this.raf = requestAnimationFrame(tick);
+      const frameStart = performance.now();
+      const dt = Math.min(0.1, (frameStart - prevFrame) / 1000);
+      prevFrame = frameStart;
       this.stepKeys();
       this.updateCamera();
-      this.uniforms.uTime.value = performance.now() / 1000;
+      this.uniforms.uTime.value = frameStart / 1000;
+      this.units.update(dt, this.target.x, frameStart / 1000);
       if (QUALITY[this.options.quality].post) {
         this.renderer.setRenderTarget(this.post.target);
         this.renderer.render(this.scene, this.camera);
@@ -884,6 +974,12 @@ export class World3D implements MapRenderer {
       }
     });
     const end = (e: PointerEvent) => {
+      // Right-clicks are commands (contextmenu below), not selections.
+      if (e.button === 2) {
+        this.pointers.delete(e.pointerId);
+        this.drag = undefined;
+        return;
+      }
       const wasDrag = this.drag?.moved ?? true;
       this.pointers.delete(e.pointerId);
       if (this.pointers.size < 2) this.pinch = undefined;
@@ -897,6 +993,11 @@ export class World3D implements MapRenderer {
       }
     };
     on(canvas, 'pointerup', end);
+    on(canvas, 'contextmenu', (e) => {
+      e.preventDefault();
+      const t = this.tileUnder(e.clientX, e.clientY);
+      if (t !== undefined) this.onCommand(t);
+    });
     on(canvas, 'pointercancel', end);
     on(canvas, 'pointerleave', (e) => {
       if (e.pointerType === 'mouse') this.onHover(undefined);

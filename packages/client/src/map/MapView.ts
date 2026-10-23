@@ -16,7 +16,14 @@ import {
 /** Tiles per chunk side. Each chunk is drawn once into its own Graphics and culled as a unit. */
 const CHUNK = 8;
 
-import { type MapRenderer, type MapViewData, type MapViewOptions, PLAYER_COLORS } from './renderer';
+import {
+  type MapRenderer,
+  type MapViewData,
+  type MapViewOptions,
+  type PathView,
+  PLAYER_COLORS,
+  type UnitView,
+} from './renderer';
 
 export type { MapViewData, MapViewOptions };
 
@@ -74,9 +81,18 @@ export class MapView implements MapRenderer {
   private ready: Promise<void>;
   private keys = new Set<string>();
   private cleanup: (() => void)[] = [];
+  private gameFog: Uint8Array | null = null;
+  /** Units and path preview, drawn above the map in the world copy nearest the camera. */
+  private overlay = new Container();
+  private unitTokens = new Map<string, { node: Container; view: UnitView; baseX: number }>();
+  private selectedUnit: string | null = null;
+  private pathLayer = new Graphics();
+  private pathLabels = new Container();
+  private pathOrigin = 0;
 
   onHover: (tile: number | undefined) => void = () => {};
   onSelect: (tile: number | undefined) => void = () => {};
+  onCommand: (tile: number) => void = () => {};
   onFps: (fps: number) => void = () => {};
 
   constructor(private host: HTMLElement) {
@@ -97,6 +113,7 @@ export class MapView implements MapRenderer {
     }
     this.host.appendChild(this.app.canvas);
     this.app.stage.addChild(this.world);
+    this.overlay.addChild(this.pathLayer, this.pathLabels);
     this.bindInput(this.app.canvas);
     let frames = 0;
     let last = performance.now();
@@ -141,6 +158,115 @@ export class MapView implements MapRenderer {
   }
 
   /** Centers the camera on a player's start. */
+  setFog(fog: Uint8Array | null) {
+    this.gameFog = fog;
+    if (this.data) for (const c of this.chunks) this.drawFog(c);
+  }
+
+  setUnits(units: UnitView[]) {
+    void this.ready.then(() => {
+      if (!this.data) return;
+      const keep = new Set(units.map((u) => u.id));
+      for (const [id, t] of this.unitTokens) {
+        if (!keep.has(id)) {
+          t.node.destroy({ children: true });
+          this.unitTokens.delete(id);
+        }
+      }
+      for (const view of units) {
+        this.unitTokens.get(view.id)?.node.destroy({ children: true });
+        const node = new Container();
+        const color = PLAYER_COLORS[view.color % PLAYER_COLORS.length]!;
+        const g = new Graphics();
+        g.circle(0, 0, 13).fill(0x0b1620);
+        g.circle(0, 0, 11).fill(color);
+        if (view.id === this.selectedUnit) g.circle(0, 0, 16).stroke({ width: 3, color: 0xe6c070 });
+        if (view.needsOrders) g.circle(10, -10, 4).fill(0xd4a94e);
+        const label = new Text({
+          text: view.icon,
+          style: {
+            fontFamily: 'IBM Plex Sans, sans-serif',
+            fontSize: 11,
+            fontWeight: '700',
+            fill: 0x0b1620,
+          },
+        });
+        label.anchor.set(0.5);
+        node.addChild(g, label);
+        const [cx, cy] = tileCenter(
+          view.tile % this.data.map.width,
+          Math.floor(view.tile / this.data.map.width),
+        );
+        const dx = view.layer === 'civilian' ? 11 : view.layer === 'support' ? 0 : -9;
+        node.position.set(cx + dx, cy + (view.layer === 'support' ? 12 : 0));
+        this.overlay.addChild(node);
+        this.unitTokens.set(view.id, { node, view, baseX: node.x });
+      }
+      if (this.overlay.parent !== this.world) this.world.addChild(this.overlay);
+    });
+  }
+
+  setSelected(unit: string | null) {
+    this.selectedUnit = unit;
+    this.setUnits([...this.unitTokens.values()].map((t) => t.view));
+  }
+
+  setPath(path: PathView | null, from: number | null) {
+    void this.ready.then(() => {
+      const g = this.pathLayer;
+      g.clear();
+      for (const child of this.pathLabels.removeChildren()) child.destroy();
+      if (!this.data || !path || from === null) return;
+      const w = this.data.map.width;
+      const near = (x: number, ref: number) =>
+        this.data!.map.wrapX ? x + Math.round((ref - x) / this.worldW) * this.worldW : x;
+      const [fx, fy] = tileCenter(from % w, Math.floor(from / w));
+      let px = fx;
+      this.pathOrigin = fx;
+      g.moveTo(fx, fy);
+      const points: [number, number, (typeof path.steps)[number]][] = [];
+      for (const step of path.steps) {
+        const [x0, y] = tileCenter(step.tile % w, Math.floor(step.tile / w));
+        const x = near(x0, px);
+        g.lineTo(x, y);
+        points.push([x, y, step]);
+        px = x;
+      }
+      g.stroke({ width: 3, color: 0xe6c070, alpha: 0.8 });
+      points.forEach(([x, y, step], i) => {
+        const final = i === points.length - 1;
+        if (!step.endsTurn && !final) {
+          g.circle(x, y, 4).fill(step.turn === 0 ? 0xe6c070 : 0x9fb0bf);
+          return;
+        }
+        g.circle(x, y, 11)
+          .fill(final ? 0xd4a94e : 0x10161d)
+          .circle(x, y, 11)
+          .stroke({ width: 2, color: 0xd4a94e });
+        const t = new Text({
+          text: String(step.turn + 1),
+          style: {
+            fontFamily: 'IBM Plex Sans, sans-serif',
+            fontSize: 12,
+            fontWeight: '700',
+            fill: final ? 0x10161d : 0xecdcb4,
+          },
+        });
+        t.anchor.set(0.5);
+        t.position.set(x, y);
+        this.pathLabels.addChild(t);
+      });
+    });
+  }
+
+  focusTile(tile: number, close = false) {
+    if (!this.data) return;
+    const [x, y] = tileCenter(tile % this.data.map.width, Math.floor(tile / this.data.map.width));
+    this.cam.x = x;
+    this.cam.y = y;
+    this.cam.zoom = Math.max(this.cam.zoom, close ? 1.1 : 0.6);
+  }
+
   focusPlayer(player: string | undefined) {
     if (!this.data || player === undefined) return;
     const tile = this.data.starts[player];
@@ -167,7 +293,10 @@ export class MapView implements MapRenderer {
   // --- Building ------------------------------------------------------------------------------
 
   private build() {
-    for (const c of this.chunks) c.container.destroy({ children: true });
+    for (const c of this.chunks) {
+      c.container.destroy({ children: true });
+      c.fog.destroy();
+    }
     this.chunks = [];
     const { map } = this.data!;
     for (let r0 = 0; r0 < map.height; r0 += CHUNK) {
@@ -189,7 +318,7 @@ export class MapView implements MapRenderer {
           y1: ROW_H * Math.min(r0 + CHUNK, map.height) + HEX,
           tiles,
         };
-        container.addChild(chunk.terrain, chunk.overlay, chunk.labels, chunk.fog);
+        container.addChild(chunk.terrain, chunk.overlay, chunk.labels);
         this.world.addChild(container);
         this.drawTerrain(chunk);
         this.drawOverlay(chunk);
@@ -197,6 +326,9 @@ export class MapView implements MapRenderer {
         this.chunks.push(chunk);
       }
     }
+    // Fog goes above every chunk's terrain: river strokes and hex edges spill a little into
+    // neighbouring chunks and must not show through it.
+    for (const c of this.chunks) this.world.addChild(c.fog);
   }
 
   private drawTerrain(chunk: Chunk) {
@@ -382,6 +514,16 @@ export class MapView implements MapRenderer {
     const { map, starts } = this.data!;
     const g = chunk.fog;
     g.clear();
+    if (this.gameFog) {
+      for (const i of chunk.tiles) {
+        const v = this.gameFog[i];
+        if (v === 2) continue;
+        const [cx, cy] = tileCenter(i % map.width, Math.floor(i / map.width));
+        if (v === 0) g.poly(hexPoints(cx, cy, HEX + 0.8)).fill(0x05090d);
+        else g.poly(hexPoints(cx, cy, HEX + 0.8)).fill({ color: 0x0b1118, alpha: 0.55 });
+      }
+      return;
+    }
     const viewer = this.options.viewer;
     if (viewer === null || starts[viewer] === undefined) return;
     const visible = new Set(tilesWithin(map, starts[viewer]!, 3));
@@ -436,7 +578,17 @@ export class MapView implements MapRenderer {
       c.container.visible =
         c.x1 + shift >= view.x0 && c.x0 + shift <= view.x1 && c.y1 >= view.y0 && c.y0 <= view.y1;
       c.labels.visible = showLabels;
+      c.fog.x = shift;
+      c.fog.visible = c.container.visible;
     }
+    // Units and the path preview follow the same east-west wrap.
+    const near = (x: number) =>
+      this.data!.map.wrapX ? Math.round((cam.x - x) / this.worldW) * this.worldW : 0;
+    for (const t of this.unitTokens.values()) t.node.x = t.baseX + near(t.baseX);
+    this.pathLayer.x = near(this.pathOrigin);
+    this.pathLabels.x = this.pathLayer.x;
+    if (this.overlay.parent === this.world)
+      this.world.setChildIndex(this.overlay, this.world.children.length - 1);
   }
 
   private zoomAt(sx: number, sy: number, factor: number) {
@@ -528,11 +680,18 @@ export class MapView implements MapRenderer {
       this.pointers.delete(e.pointerId);
       if (this.pointers.size < 2) this.pinch = undefined;
       if (this.pointers.size === 0) {
-        if (!wasDrag && e.type === 'pointerup') this.onSelect(this.tileUnder(p.x, p.y));
+        if (!wasDrag && e.type === 'pointerup' && e.button !== 2)
+          this.onSelect(this.tileUnder(p.x, p.y));
         this.drag = undefined;
       }
     };
     on(canvas, 'pointerup', end);
+    on(canvas, 'contextmenu', (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const t = this.tileUnder(e.clientX - rect.left, e.clientY - rect.top);
+      if (t !== undefined) this.onCommand(t);
+    });
     on(canvas, 'pointercancel', end);
     on(canvas, 'pointerleave', (e) => {
       if (e.pointerType === 'mouse') this.onHover(undefined);

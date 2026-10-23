@@ -284,8 +284,10 @@ Captured settlements lose 25% of their population and some buildings (configurab
   move. Cavalry and some promotions ignore ZOC.
 - **Embarking:** land units can embark onto coast after Shipbuilding (ocean after Cartography).
   Embarked units are very weak.
-- **Pathfinding:** A* over move costs, with the path preview showing how many turns each step
-  takes. Multi-turn paths are queued as orders.
+- **Pathfinding:** the path with the fewest turns, then the most moves left, over tiles you've
+  explored (so paths never reveal what's in the fog). The preview marks where each turn ends.
+  Multi-turn paths are queued as orders and continue at the start of each turn.
+- **Starting units:** a Settler, a Warrior and a Scout (D31; content: `rules.units.startingUnits`).
 
 ### Vision and fog
 

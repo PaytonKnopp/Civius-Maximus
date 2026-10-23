@@ -14,6 +14,7 @@
   "dependencies": {
     "@cx/content": "workspace:*",
     "@cx/engine": "workspace:*",
+    "@cx/host": "workspace:*",
     "pixi.js": "^8.22.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

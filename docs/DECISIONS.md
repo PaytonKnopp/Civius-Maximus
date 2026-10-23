@@ -37,11 +37,13 @@ To change one, tell Claude in a session (or edit this file). The relevant docs g
 | D15 | Nukes | Included, setup toggle | 04 |
 | D16 | Victories | All on by default, each a setup toggle | 02 |
 | D20 | Leader / civ mixing | **Any leader with any civ.** The civ defaults to the leader's historical one. The host can restrict to historical pairs | 02, 09 |
+| D7 | Unit stacking | **1 military + 1 civilian (+1 support) per tile**, with commanders to pack units | 03 |
 
 ## Open
 
 | # | Decision | Recommended default | Alternatives | Blocks | Status |
 |---|---|---|---|---|---|
-| D7 | **Unit stacking** | 1 military + 1 civilian (+1 support) per tile, with commanders to pack units | Unlimited stacks | M5 | Open (default assumed) |
 | D8 | **Phone support** | Phone/tablet browser can play a turn. A full mobile-first UI is not a v1 goal | Mobile-first in v1 | M13+ | Open (default assumed) |
 | D21 | **Map wrap** | Wraps east–west by default | No wrap | M3 | Open (default assumed) |
+| D31 | **Starting units** | Settler + Warrior + Scout (exploring early is fun, and the scout finds goody huts and rivals sooner) | Settler + Warrior only (Civ VI); setup option for extra settlers | M5 | Open (default assumed) |
+| D32 | **Unit auto-cycling** | After a unit uses its moves, the next unit that needs orders is selected and the camera pans to it | Stay on the moved unit until you pick another | M5 | Open (default assumed; becomes a setting) |

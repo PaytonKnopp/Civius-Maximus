@@ -27,10 +27,13 @@
 | `pnpm cx mapcheck [count] [sizes]` | Generate + validate many maps (run after map generator changes) |
 
 Client checks: `pnpm build`, then `pnpm --filter @cx/client exec vite preview --port 4173` and
-`pnpm --filter @cx/client screenshot <out-dir>` (Playwright screenshots at desktop and phone
+`pnpm --filter @cx/client screenshot <out-dir>` (Map Lab screenshots at desktop and phone
 size, plus console errors); `node packages/client/scripts/screenshot-3d.mjs <out-dir>` captures
-the 3D view at Medium, in fog view, and at High. `pnpm --filter @cx/client build:artifact <file.html>` builds the
-client as one self-contained HTML page for sharing.
+the 3D view at Medium, in fog view, and at High; `node packages/client/scripts/screenshot-game.mjs
+<out-dir>` plays the first turns of a local game (select, path preview, move, end turn, 2D view,
+phone size). The app opens into a game; `#lab` in the URL opens the Map Lab.
+`pnpm --filter @cx/client build:artifact <file.html>` builds the client as one self-contained
+HTML page for sharing.
 
 The golden replay test uses `packages/engine/test-fixtures/frozen-content`; only re-copy it from
 base and update the hash when the engine's rules change on purpose.
@@ -41,7 +44,8 @@ Before committing, run `pnpm lint && pnpm format:check && pnpm typecheck && pnpm
 ## Layout
 
 `packages/engine` (rules), `packages/content` (data + schemas), `packages/protocol` (messages),
-`packages/host` (authoritative game host + transports), `packages/client` (React + PixiJS),
+`packages/host` (authoritative game host + transports; `LocalGame` runs a game in the browser),
+`packages/client` (React, PixiJS for 2D, Three.js for 3D; `src/game` is the game screen),
 `packages/backend` (Supabase migrations and policies), `packages/tools` (the `cx` CLI).
 Base game content lives in `packages/content/base/`; test mods in
 `packages/content/test-fixtures/`. Library packages export TypeScript

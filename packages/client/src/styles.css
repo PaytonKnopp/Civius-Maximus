@@ -435,3 +435,450 @@ input:focus-visible {
   color: var(--brass-ink);
   font-weight: 600;
 }
+
+/* ---------------------------------------------------------------------------------------------
+   Game screen: the map fills the screen; the bar, turn, players, unit panel and next-action
+   button sit over it at the edges, leaving the middle of the map clear. */
+.app,
+.game {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.game {
+  position: absolute;
+  inset: 0;
+}
+
+.game-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-block: 10px 18px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: linear-gradient(var(--ink), color-mix(in srgb, var(--ink) 0%, transparent));
+  pointer-events: none;
+}
+
+.game-bar > * {
+  pointer-events: auto;
+}
+
+.bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.segmented.compact button {
+  padding: 3px 10px;
+  font-size: 12px;
+}
+
+.compact-select {
+  width: auto;
+  padding: 3px 6px;
+  font-size: 12px;
+}
+
+/* Turn and era (top right, under the bar) */
+.turn-pill {
+  position: absolute;
+  top: 54px;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 12px;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  border: 1px solid var(--panel-edge);
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.turn-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.turn-number {
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1;
+  color: var(--brass);
+}
+
+.era {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.turn-pill .fps {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Players (top left, under the bar) */
+.players {
+  position: absolute;
+  top: 54px;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  max-width: calc(100% - 260px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  border: 1px solid var(--panel-edge);
+  border-radius: 999px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.player-chip.done {
+  color: var(--muted);
+}
+
+.player-chip.done::after {
+  content: '✓';
+  color: var(--brass);
+}
+
+/* Toast for turn starts and refused actions */
+.notice {
+  position: absolute;
+  top: 104px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  padding: 8px 18px;
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  border: 1px solid var(--brass);
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  color: var(--brass);
+  text-align: center;
+  pointer-events: none;
+  animation: notice-in 160ms ease-out;
+}
+
+@keyframes notice-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -6px);
+  }
+}
+
+/* Selected unit (bottom left) */
+.unit-panel {
+  position: absolute;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  width: min(320px, calc(100% - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  border: 1px solid var(--panel-edge);
+  border-top: 2px solid var(--brass);
+  border-radius: 6px;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 70%, transparent);
+}
+
+.unit-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.unit-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+}
+
+.unit-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid var(--brass);
+  font-size: 20px;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ink) 50%, transparent);
+}
+
+.unit-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.unit-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 0;
+}
+
+.unit-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  background: var(--ink);
+  border-radius: 4px;
+}
+
+.unit-stats dt {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.unit-stats dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.unit-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--panel-edge);
+  background: var(--ink);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.unit-actions button:hover:not(:disabled) {
+  border-color: var(--brass);
+}
+
+.unit-actions button:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.unit-head .disband {
+  align-self: flex-start;
+  margin-left: auto;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.unit-head .disband:hover {
+  color: var(--danger);
+}
+
+.unit-head .disband.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+kbd {
+  padding: 0 4px;
+  border: 1px solid var(--panel-edge);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* Tile inspector sits above the next-action button */
+.game-tile .tile-card {
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Next action / End turn (bottom right) */
+.next-action {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  min-width: 220px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 18px;
+  border: 1px solid var(--brass);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  color: var(--brass);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 70%, transparent);
+}
+
+.next-label {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.05em;
+}
+
+.next-action.end {
+  background: linear-gradient(#e2bb64, var(--brass) 55%, #a87c2c);
+  color: var(--brass-ink);
+}
+
+.next-action.end kbd {
+  border-color: color-mix(in srgb, var(--brass-ink) 40%, transparent);
+  color: var(--brass-ink);
+}
+
+.next-action:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.next-action:disabled {
+  cursor: default;
+  border-color: var(--panel-edge);
+  color: var(--muted);
+}
+
+/* New game dialog */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--ink) 70%, transparent);
+}
+
+.dialog {
+  width: min(420px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-top: 2px solid var(--brass);
+  border-radius: 6px;
+  box-shadow: 0 20px 60px color-mix(in srgb, var(--ink) 80%, transparent);
+}
+
+.dialog h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  color: var(--brass);
+}
+
+.dialog .hint {
+  margin-bottom: 6px;
+}
+
+.dialog .row {
+  margin-top: 4px;
+}
+
+.dialog .check {
+  margin-top: 6px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dialog-actions .primary {
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  .game-bar .brand-name {
+    font-size: 18px;
+    white-space: nowrap;
+  }
+
+  .bar-actions {
+    gap: 6px;
+  }
+
+  .players {
+    top: 96px;
+    max-width: calc(100% - 32px);
+  }
+
+  .player-chip {
+    padding: 3px 8px 3px 6px;
+    font-size: 11px;
+  }
+
+  .notice {
+    top: 132px;
+  }
+
+  .unit-panel {
+    right: max(16px, env(safe-area-inset-right, 0px));
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .next-action {
+    left: max(16px, env(safe-area-inset-left, 0px));
+    min-height: 54px;
+  }
+
+  .game-tile .tile-card {
+    top: 132px;
+    bottom: auto;
+    max-height: calc(100% - 340px);
+    overflow-y: auto;
+  }
+
+  kbd {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-bar .brand-name {
+    display: none;
+  }
+}

@@ -18,14 +18,50 @@ export interface MapViewData {
   playerOrder: string[];
 }
 
-/** What the Map Lab (and later the game screen) needs from a map renderer, 2D or 3D. */
+/** A unit as the renderer draws it (only units the viewer can see). */
+export interface UnitView {
+  id: string;
+  owner: string;
+  /** Index into PLAYER_COLORS. */
+  color: number;
+  name: string;
+  icon: string;
+  model: string;
+  layer: 'military' | 'civilian' | 'support';
+  tile: number;
+  mine: boolean;
+  needsOrders: boolean;
+}
+
+/** A planned move: each step, which turn it's reached on, and whether a turn ends there. */
+export interface PathView {
+  steps: { tile: number; turn: number; endsTurn: boolean }[];
+}
+
+/** What the Map Lab and the game screen need from a map renderer, 2D or 3D. */
 export interface MapRenderer {
   onHover: (tile: number | undefined) => void;
+  /** Left click / tap. */
   onSelect: (tile: number | undefined) => void;
+  /** Right click (desktop): "move here". */
+  onCommand: (tile: number) => void;
   onFps: (fps: number) => void;
   setData(data: MapViewData, options: MapViewOptions): Promise<void>;
   setOptions(options: MapViewOptions): Promise<void>;
+  /**
+   * Fog from the game (2 visible, 1 explored, 0 unexplored). `null` falls back to the Map Lab's
+   * preview fog driven by `options.viewer`.
+   */
+  setFog(fog: Uint8Array | null): void;
+  /** Units to draw; `moves` animates units along the paths they just took. */
+  setUnits(units: UnitView[], moves?: { unit: string; path: number[] }[]): void;
+  setSelected(unit: string | null): void;
+  /** `from` is the tile the selected unit stands on. */
+  setPath(path: PathView | null, from: number | null): void;
   focusPlayer(player: string | undefined): void;
+  /** Pans to a tile, zooming in only if the camera is too far out to see units; `close` zooms in
+   * for a good look (used at the start of a game). */
+  focusTile(tile: number, close?: boolean): void;
   destroy(): void;
 }
 

@@ -1,19 +1,15 @@
 import { type CompiledContent, resolveText } from '@cx/content';
 import {
-  computeTileYields,
   createRng,
-  explainYields,
-  formatFixed,
   generateMap,
-  isOnRiver,
   type MapSettings,
   makeRandom,
   MapGenerationError,
   type MapState,
-  neighbors,
   scoreStarts,
 } from '@cx/engine';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { TileCard } from '../components/TileCard';
 import { MapView } from '../map/MapView';
 import {
   type MapRenderer,
@@ -47,7 +43,7 @@ function cssColor(n: number) {
   return `#${n.toString(16).padStart(6, '0')}`;
 }
 
-export function MapLab({ content }: { content: CompiledContent }) {
+export function MapLab({ content, onBack }: { content: CompiledContent; onBack?: () => void }) {
   const sizes = useMemo(
     () =>
       [...content.ids.mapSize].sort(
@@ -157,6 +153,11 @@ export function MapLab({ content }: { content: CompiledContent }) {
           )}
           <span className="fps">{fps} fps</span>
         </div>
+        {onBack && (
+          <button type="button" className="panel-toggle" onClick={onBack}>
+            Back to game
+          </button>
+        )}
         <button type="button" className="panel-toggle" onClick={() => setPanelOpen((o) => !o)}>
           {panelOpen ? 'Hide controls' : 'Controls'}
         </button>
@@ -373,106 +374,5 @@ export function MapLab({ content }: { content: CompiledContent }) {
         />
       )}
     </div>
-  );
-}
-
-function TileCard({
-  content,
-  map,
-  tile,
-  pinned,
-  onClose,
-}: {
-  content: CompiledContent;
-  map: MapState;
-  tile: number;
-  pinned: boolean;
-  onClose: () => void;
-}) {
-  const t = map.tiles[tile]!;
-  const rivers = map.tiles.map((x) => x.river);
-  const facts = (i: number) => ({
-    ...map.tiles[i]!,
-    river: isOnRiver(map, rivers, i),
-    ownerId: null,
-  });
-  const ctx = {
-    content,
-    tile: facts(tile),
-    neighbors: neighbors(map, tile).map(facts),
-    playerId: '',
-  };
-  const breakdown = computeTileYields(ctx);
-  const lines = explainYields(ctx, breakdown);
-  const terrain = content.entities.terrain[t.terrain]!;
-  const name = (v: string) => resolveText(content, v);
-  const title = [
-    t.elevation === 'mountain'
-      ? 'Mountain'
-      : t.elevation === 'hills'
-        ? `${name(terrain.name)} Hills`
-        : name(terrain.name),
-    t.feature ? name(content.entities.feature[t.feature]!.name) : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-  const resource = t.resource ? content.entities.resource[t.resource] : undefined;
-
-  return (
-    <aside className="tile-card" aria-live="polite">
-      <div className="tile-head">
-        <h3>{title}</h3>
-        {pinned && (
-          <button type="button" className="ghost small" onClick={onClose}>
-            Close
-          </button>
-        )}
-      </div>
-      <dl className="facts">
-        <dt>Tile</dt>
-        <dd className="mono">
-          {tile % map.width}, {Math.floor(tile / map.width)}
-        </dd>
-        {resource && (
-          <>
-            <dt>Resource</dt>
-            <dd>
-              {name(resource.name)}{' '}
-              <span className={`chip ${resource.class}`}>{resource.class}</span>
-            </dd>
-          </>
-        )}
-        {isOnRiver(map, rivers, tile) && (
-          <>
-            <dt>River</dt>
-            <dd>Fresh water</dd>
-          </>
-        )}
-        {terrain.water && (
-          <>
-            <dt>Water</dt>
-            <dd>{terrain.deepWater ? 'Deep: needs Cartography' : 'Shallow'}</dd>
-          </>
-        )}
-      </dl>
-      {lines.length > 0 ? (
-        <ul className="yields">
-          {lines.map((l) => (
-            <li key={l} className="mono">
-              {l}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="hint">
-          No yields. {t.elevation === 'mountain' ? 'Mountains block movement and sight.' : ''}
-        </p>
-      )}
-      <p className="hint total">
-        {Object.entries(breakdown.total)
-          .map(([id, v]) => `${content.entities.yield[id]?.icon ?? ''} ${formatFixed(v)}`)
-          .join('   ')}
-      </p>
-    </aside>
   );
 }

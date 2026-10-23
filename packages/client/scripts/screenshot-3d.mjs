@@ -10,7 +10,9 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
-await page.goto(process.env.BASE_URL ?? 'http://localhost:4173/', { waitUntil: 'networkidle' });
+await page.goto(`${process.env.BASE_URL ?? 'http://localhost:4173/'}#lab`, {
+  waitUntil: 'networkidle',
+});
 await page.waitForFunction(
   () => /\d+ ms/.test(document.querySelector('.bar-stats')?.textContent ?? ''),
   null,
