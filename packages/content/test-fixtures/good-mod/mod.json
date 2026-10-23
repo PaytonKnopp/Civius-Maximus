@@ -1,0 +1,7 @@
+{
+  "id": "good-mod",
+  "name": "Fertile Lands",
+  "version": "1.0.0",
+  "authors": ["Test"],
+  "description": "Valid test mod: adds a terrain and an ability, and patches existing content."
+}

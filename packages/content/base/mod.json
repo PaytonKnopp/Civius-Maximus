@@ -1,0 +1,7 @@
+{
+  "id": "base",
+  "name": "Civius Maximus",
+  "version": "0.1.0",
+  "authors": ["Civius Maximus"],
+  "description": "The base game. Built with the same format as any mod."
+}

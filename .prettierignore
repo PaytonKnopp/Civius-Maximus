@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+dist/
+coverage/
+docs/
+*.md
+schemas/
+packages/content/test-fixtures/broken-mod/bad.json
+dist-artifact/

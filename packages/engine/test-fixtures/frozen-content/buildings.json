@@ -1,0 +1,66 @@
+[
+  {
+    "type": "building",
+    "id": "building_palace",
+    "name": "Palace",
+    "description": "The seat of your government. Granted to your first settlement.",
+    "icon": "Pa",
+    "cost": 0,
+    "yields": {
+      "production": 2,
+      "science": 2,
+      "culture": 3,
+      "gold": 5
+    },
+    "happiness": 2
+  },
+  {
+    "type": "building",
+    "id": "building_monument",
+    "name": "Monument",
+    "description": "Culture that grows your borders.",
+    "icon": "Mo",
+    "cost": 60,
+    "yields": {
+      "culture": 2
+    }
+  },
+  {
+    "type": "building",
+    "id": "building_granary",
+    "name": "Granary",
+    "description": "Stores food for a growing settlement.",
+    "icon": "Gr",
+    "cost": 65,
+    "maintenance": 1,
+    "yields": {
+      "food": 2
+    }
+  },
+  {
+    "type": "building",
+    "id": "building_shrine",
+    "name": "Shrine",
+    "description": "A place of worship.",
+    "icon": "Sh",
+    "cost": 55,
+    "maintenance": 1,
+    "yields": {
+      "faith": 2
+    }
+  },
+  {
+    "type": "building",
+    "id": "building_water_mill",
+    "name": "Water Mill",
+    "description": "Grinds grain with the river's flow.",
+    "icon": "WM",
+    "cost": 80,
+    "maintenance": 1,
+    "yields": {
+      "food": 1,
+      "production": 1
+    },
+    "requiresRiver": true
+  }
+]

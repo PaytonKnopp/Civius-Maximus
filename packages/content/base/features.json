@@ -1,0 +1,158 @@
+[
+  {
+    "type": "feature",
+    "id": "woods",
+    "name": "Woods",
+    "color": "#2f5d34",
+    "yields": {
+      "production": 1
+    },
+    "moveCostExtra": 1,
+    "defense": 3,
+    "appeal": 1,
+    "removable": true,
+    "blocksSight": true,
+    "validTerrains": ["grassland", "plains", "tundra"],
+    "validElevations": ["flat", "hills"],
+    "generation": {
+      "chance": 38,
+      "temperature": [14, 72],
+      "moisture": [38, 100],
+      "order": 50
+    }
+  },
+  {
+    "type": "feature",
+    "id": "rainforest",
+    "name": "Rainforest",
+    "color": "#1f6b4a",
+    "yields": {
+      "food": 1
+    },
+    "moveCostExtra": 1,
+    "defense": 3,
+    "appeal": -1,
+    "removable": true,
+    "blocksSight": true,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["flat", "hills"],
+    "generation": {
+      "chance": 55,
+      "temperature": [68, 100],
+      "moisture": [58, 100],
+      "order": 30
+    }
+  },
+  {
+    "type": "feature",
+    "id": "marsh",
+    "name": "Marsh",
+    "color": "#5d8a8a",
+    "yields": {
+      "food": 1
+    },
+    "moveCostExtra": 1,
+    "appeal": -1,
+    "removable": true,
+    "validTerrains": ["grassland"],
+    "generation": {
+      "chance": 10,
+      "temperature": [30, 80],
+      "moisture": [72, 100],
+      "order": 40
+    }
+  },
+  {
+    "type": "feature",
+    "id": "floodplains",
+    "name": "Floodplains",
+    "color": "#c9c27a",
+    "yields": {
+      "food": 3
+    },
+    "requiresRiver": true,
+    "validTerrains": ["desert"],
+    "generation": {
+      "chance": 75,
+      "order": 10
+    }
+  },
+  {
+    "type": "feature",
+    "id": "floodplains_grassland",
+    "name": "Floodplains",
+    "color": "#9fbf6a",
+    "yields": {
+      "food": 1
+    },
+    "requiresRiver": true,
+    "validTerrains": ["grassland"],
+    "generation": {
+      "chance": 45,
+      "order": 10
+    }
+  },
+  {
+    "type": "feature",
+    "id": "floodplains_plains",
+    "name": "Floodplains",
+    "color": "#c2b86a",
+    "yields": {
+      "food": 1
+    },
+    "requiresRiver": true,
+    "validTerrains": ["plains"],
+    "generation": {
+      "chance": 45,
+      "order": 10
+    }
+  },
+  {
+    "type": "feature",
+    "id": "oasis",
+    "name": "Oasis",
+    "color": "#3fa0c8",
+    "yields": {
+      "food": 3,
+      "gold": 1
+    },
+    "freshWater": true,
+    "appeal": 1,
+    "validTerrains": ["desert"],
+    "generation": {
+      "chance": 3,
+      "order": 20
+    }
+  },
+  {
+    "type": "feature",
+    "id": "reef",
+    "name": "Reef",
+    "color": "#e08a7a",
+    "yields": {
+      "food": 1,
+      "production": 1
+    },
+    "moveCostExtra": 1,
+    "appeal": 2,
+    "validTerrains": ["coast"],
+    "generation": {
+      "chance": 10,
+      "temperature": [55, 100],
+      "order": 60
+    }
+  },
+  {
+    "type": "feature",
+    "id": "ice",
+    "name": "Ice",
+    "color": "#eef4f7",
+    "impassable": true,
+    "validTerrains": ["coast", "ocean"],
+    "generation": {
+      "chance": 75,
+      "latitude": [93, 100],
+      "order": 5
+    }
+  }
+]

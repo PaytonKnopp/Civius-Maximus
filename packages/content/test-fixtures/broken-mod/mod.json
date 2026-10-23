@@ -1,0 +1,6 @@
+{
+  "id": "broken-mod",
+  "name": "Broken on Purpose",
+  "version": "1.0.0",
+  "description": "Test mod full of mistakes. Each one must produce a friendly error."
+}

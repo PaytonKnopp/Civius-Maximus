@@ -1,0 +1,274 @@
+[
+  {
+    "type": "civ",
+    "id": "civ_rome",
+    "name": "Rome",
+    "adjective": "Roman",
+    "colors": {
+      "primary": "#7a1f2b",
+      "secondary": "#e8c66a"
+    },
+    "cityNames": [
+      "Roma",
+      "Antium",
+      "Cumae",
+      "Neapolis",
+      "Ravenna",
+      "Arretium",
+      "Mediolanum",
+      "Arpinum",
+      "Ostia",
+      "Tarentum",
+      "Capua",
+      "Aquileia",
+      "Brundisium",
+      "Pompeii",
+      "Verona",
+      "Florentia"
+    ]
+  },
+  {
+    "type": "civ",
+    "id": "civ_egypt",
+    "name": "Egypt",
+    "adjective": "Egyptian",
+    "colors": {
+      "primary": "#1f5f7a",
+      "secondary": "#e6c26b"
+    },
+    "cityNames": [
+      "Thebes",
+      "Memphis",
+      "Alexandria",
+      "Heliopolis",
+      "Elephantine",
+      "Abydos",
+      "Akhetaten",
+      "Buto",
+      "Edfu",
+      "Giza",
+      "Hermopolis",
+      "Avaris",
+      "Sais",
+      "Bubastis",
+      "Tanis",
+      "Kom Ombo"
+    ]
+  },
+  {
+    "type": "civ",
+    "id": "civ_macedon",
+    "name": "Macedon",
+    "adjective": "Macedonian",
+    "colors": {
+      "primary": "#3b2a6b",
+      "secondary": "#d9b44a"
+    },
+    "cityNames": [
+      "Pella",
+      "Aigai",
+      "Amphipolis",
+      "Thessaloniki",
+      "Dion",
+      "Philippi",
+      "Beroea",
+      "Edessa",
+      "Methone",
+      "Pydna",
+      "Stagira",
+      "Olynthus",
+      "Kassandreia",
+      "Alexandria Eschate"
+    ]
+  },
+  {
+    "type": "civ",
+    "id": "civ_mongols",
+    "name": "Mongols",
+    "adjective": "Mongolian",
+    "colors": {
+      "primary": "#2c5f4a",
+      "secondary": "#e8d7a8"
+    },
+    "cityNames": [
+      "Karakorum",
+      "Avarga",
+      "Khanbaliq",
+      "Almaliq",
+      "Beshbalik",
+      "Saray",
+      "Tabriz",
+      "Sultaniyya",
+      "Kashgar",
+      "Otrar",
+      "Bukhara",
+      "Samarkand"
+    ]
+  },
+  {
+    "type": "civ",
+    "id": "civ_england",
+    "name": "England",
+    "adjective": "English",
+    "colors": {
+      "primary": "#a11d21",
+      "secondary": "#f2efe6"
+    },
+    "cityNames": [
+      "London",
+      "York",
+      "Nottingham",
+      "Hastings",
+      "Canterbury",
+      "Coventry",
+      "Warwick",
+      "Newcastle",
+      "Oxford",
+      "Liverpool",
+      "Dover",
+      "Norwich",
+      "Bristol",
+      "Plymouth",
+      "Leeds",
+      "Exeter"
+    ]
+  },
+  {
+    "type": "civ",
+    "id": "civ_france",
+    "name": "France",
+    "adjective": "French",
+    "colors": {
+      "primary": "#1d3b8a",
+      "secondary": "#f2e8c9"
+    },
+    "cityNames": [
+      "Paris",
+      "Orléans",
+      "Lyon",
+      "Troyes",
+      "Tours",
+      "Marseille",
+      "Chartres",
+      "Avignon",
+      "Rouen",
+      "Grenoble",
+      "Dijon",
+      "Amiens",
+      "Reims",
+      "Nantes",
+      "Bordeaux",
+      "Toulouse"
+    ]
+  },
+  {
+    "type": "civ",
+    "id": "civ_america",
+    "name": "United States",
+    "adjective": "American",
+    "colors": {
+      "primary": "#24477d",
+      "secondary": "#e9e4d8"
+    },
+    "cityNames": [
+      "Washington",
+      "New York",
+      "Boston",
+      "Philadelphia",
+      "Atlanta",
+      "Chicago",
+      "Seattle",
+      "San Francisco",
+      "Los Angeles",
+      "Houston",
+      "Portland",
+      "St. Louis",
+      "Miami",
+      "Denver",
+      "New Orleans",
+      "Baltimore"
+    ]
+  },
+  {
+    "type": "civ",
+    "id": "civ_china",
+    "name": "China",
+    "adjective": "Chinese",
+    "colors": {
+      "primary": "#b8862b",
+      "secondary": "#2b1d14"
+    },
+    "cityNames": [
+      "Xianyang",
+      "Chang'an",
+      "Luoyang",
+      "Handan",
+      "Linzi",
+      "Ying",
+      "Kaifeng",
+      "Hangzhou",
+      "Chengdu",
+      "Guangzhou",
+      "Suzhou",
+      "Datong",
+      "Changsha",
+      "Yangzhou",
+      "Nanjing",
+      "Beijing"
+    ]
+  },
+  {
+    "type": "civ",
+    "id": "civ_mali",
+    "name": "Mali",
+    "adjective": "Malian",
+    "colors": {
+      "primary": "#c2572b",
+      "secondary": "#f0d58a"
+    },
+    "cityNames": [
+      "Niani",
+      "Timbuktu",
+      "Gao",
+      "Djenné",
+      "Kangaba",
+      "Mopti",
+      "Ségou",
+      "Kayes",
+      "Walata",
+      "Tadmekka",
+      "Koulikoro",
+      "Kati",
+      "Sikasso",
+      "Bamako"
+    ]
+  },
+  {
+    "type": "civ",
+    "id": "civ_japan",
+    "name": "Japan",
+    "adjective": "Japanese",
+    "colors": {
+      "primary": "#e8e2d4",
+      "secondary": "#b3282d"
+    },
+    "cityNames": [
+      "Kyoto",
+      "Gifu",
+      "Azuchi",
+      "Osaka",
+      "Edo",
+      "Nara",
+      "Kamakura",
+      "Nagoya",
+      "Sakai",
+      "Hakata",
+      "Sendai",
+      "Kanazawa",
+      "Hiroshima",
+      "Kagoshima",
+      "Nagasaki",
+      "Kumamoto"
+    ]
+  }
+]

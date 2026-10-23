@@ -1,0 +1,33 @@
+[
+  { "type": "terrain", "id": "swamp", "name": "Swamp", "moveCost": "2", "color": "#445533" },
+  { "type": "feature", "id": "jungle", "name": "Jungle", "validTerrains": ["grasland"] },
+  { "type": "terrain", "id": "grassland", "name": "Grassland again", "color": "#00ff00" },
+  { "type": "starship", "id": "unit_longship" },
+  { "type": "terrain", "id": "Bad-Id", "name": "x", "color": "#000000", "colour": "#000000" },
+  { "type": "feature", "id": "glade", "name": "@broken.glade", "validTerrains": ["woods"] },
+  {
+    "type": "patch",
+    "target": "warrior",
+    "ops": [{ "op": "set", "path": "combat.melee", "value": 22 }]
+  },
+  {
+    "type": "patch",
+    "target": "plains",
+    "ops": [{ "op": "append", "path": "yields", "value": 1 }]
+  },
+  { "type": "patch", "target": "plains", "ops": [{ "op": "set", "path": "moveCost", "value": 0 }] },
+  {
+    "type": "ability",
+    "id": "ability_broken",
+    "name": "Broken",
+    "effects": [
+      { "effect": "teleport", "params": {}, "target": { "scope": "tiles" } },
+      {
+        "effect": "modify_yield",
+        "params": { "yield": "mana", "amount": 1 },
+        "target": { "scope": "tiles" },
+        "condition": { "tile_is_cool": true }
+      }
+    ]
+  }
+]

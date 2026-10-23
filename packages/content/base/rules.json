@@ -1,0 +1,114 @@
+{
+  "type": "rules",
+  "id": "rules",
+  "settlements": {
+    "minDistance": 3,
+    "workRadius": 3,
+    "ownRadius": 5,
+    "centerMinimumYields": {
+      "food": 2,
+      "production": 1
+    },
+    "foodPerCitizen": 2,
+    "growth": {
+      "base": 15,
+      "perPop": 8,
+      "exponent": 1.5
+    },
+    "borderGrowth": {
+      "base": 10,
+      "perTile": 6,
+      "exponent": 1.3
+    },
+    "startingLimit": 4,
+    "startingRadius": 1,
+    "capitalBuilding": "building_palace",
+    "townGoldPercent": 100,
+    "townUpgrade": {
+      "base": 100,
+      "perCity": 60
+    },
+    "purchase": {
+      "goldPerProduction": 4,
+      "tileBase": 25,
+      "tilePerAcquired": 5,
+      "tilePerDistance": 10
+    },
+    "happiness": {
+      "base": 2,
+      "citizensPerUnhappy": 2,
+      "perMaintainedBuilding": 1,
+      "perSettlementOverLimit": 2,
+      "thrivingAt": 5,
+      "unrestAt": -5,
+      "thrivingYieldPercent": 10,
+      "thrivingGrowthPercent": 10,
+      "unhappyYieldPercentPerPoint": -2,
+      "unrestYieldPercent": -25
+    },
+    "citizenWeights": {
+      "food": 30,
+      "production": 25,
+      "gold": 12,
+      "science": 15,
+      "culture": 15,
+      "faith": 10,
+      "happiness": 10
+    }
+  },
+  "elevation": {
+    "hills": {
+      "yields": {
+        "production": 1
+      },
+      "moveCostExtra": 1,
+      "defense": 3,
+      "sightBonus": 1
+    },
+    "mountain": {
+      "yields": {},
+      "passable": false,
+      "blocksSight": true,
+      "appeal": 1
+    }
+  },
+  "rivers": {
+    "crossingEndsMove": true,
+    "attackAcrossPenalty": 5
+  },
+  "movement": {
+    "canAlwaysMoveOneTile": true
+  },
+  "luxuryHappinessRadius": 3,
+  "mapgen": {
+    "coastTerrain": "coast",
+    "oceanTerrain": "ocean",
+    "lakeTerrain": "lake",
+    "fallbackLandTerrain": "plains",
+    "maxLakeSize": 6,
+    "polarRows": 1,
+    "resourceDensity": {
+      "sparse": 12,
+      "standard": 8,
+      "abundant": 5
+    },
+    "start": {
+      "minFood": 14,
+      "minProduction": 8,
+      "freshWaterBonus": 15,
+      "coastalBonus": 5,
+      "balancedPercent": 90
+    },
+    "landTilesPerLake": 70
+  },
+  "units": {
+    "stacking": {
+      "military": 1,
+      "civilian": 1,
+      "support": 1
+    },
+    "startingUnits": ["unit_settler", "unit_warrior", "unit_scout"],
+    "embarkFromStart": false,
+    "embarkedSight": 1
+  }
+}

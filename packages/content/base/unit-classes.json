@@ -1,0 +1,43 @@
+[
+  {
+    "type": "unitClass",
+    "id": "class_civilian",
+    "name": "Civilian",
+    "domain": "land",
+    "layer": "civilian",
+    "combat": false
+  },
+  {
+    "type": "unitClass",
+    "id": "class_recon",
+    "name": "Recon",
+    "domain": "land",
+    "layer": "military",
+    "combat": true
+  },
+  {
+    "type": "unitClass",
+    "id": "class_melee",
+    "name": "Melee",
+    "domain": "land",
+    "layer": "military",
+    "combat": true
+  },
+  {
+    "type": "unitClass",
+    "id": "class_ranged",
+    "name": "Ranged",
+    "domain": "land",
+    "layer": "military",
+    "combat": true
+  },
+  {
+    "type": "unitClass",
+    "id": "class_naval_melee",
+    "name": "Naval melee",
+    "domain": "sea",
+    "layer": "military",
+    "combat": true,
+    "embarks": false
+  }
+]

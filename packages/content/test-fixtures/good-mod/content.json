@@ -1,0 +1,49 @@
+[
+  {
+    "type": "terrain",
+    "id": "savanna",
+    "name": "@good_mod.savanna",
+    "yields": { "food": 1, "production": 1, "gold": 1 },
+    "elevations": ["flat", "hills"],
+    "color": "#b59a4a"
+  },
+  {
+    "type": "ability",
+    "id": "ability_sea_raiders",
+    "name": "Sea Raiders",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": { "yield": "production", "amount": 1 },
+        "target": { "scope": "tiles" },
+        "condition": { "tile_terrain": "coast" }
+      },
+      {
+        "effect": "yield_per_adjacent",
+        "params": { "yield": "science", "amount": 1, "per": { "elevation": "mountain" } },
+        "target": { "scope": "tiles" },
+        "condition": { "all": [{ "tile_feature": "woods" }, { "not": { "tile_on_river": true } }] }
+      }
+    ]
+  },
+  {
+    "type": "patch",
+    "target": "grassland",
+    "ops": [{ "op": "set", "path": "yields.gold", "value": 1 }]
+  },
+  {
+    "type": "patch",
+    "target": "woods",
+    "ops": [{ "op": "append", "path": "validTerrains", "value": "savanna" }]
+  },
+  {
+    "type": "patch",
+    "target": "improvement_mine",
+    "ops": [{ "op": "remove", "path": "resources", "value": "uranium" }]
+  },
+  {
+    "type": "patch",
+    "target": "uranium",
+    "ops": [{ "op": "delete" }]
+  }
+]

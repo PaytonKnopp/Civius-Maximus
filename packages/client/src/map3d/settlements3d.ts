@@ -1,0 +1,753 @@
+import {
+  BoxGeometry,
+  BufferGeometry,
+  CanvasTexture,
+  Color,
+  ConeGeometry,
+  CylinderGeometry,
+  DodecahedronGeometry,
+  DoubleSide,
+  Euler,
+  Float32BufferAttribute,
+  Group,
+  IcosahedronGeometry,
+  Matrix4,
+  Mesh,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  Quaternion,
+  SphereGeometry,
+  Sprite,
+  SpriteMaterial,
+  SRGBColorSpace,
+  Vector3,
+} from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import type { SettlementView, TerritoryView, TileHighlight } from '../map/renderer';
+
+/**
+ * Settlements in the 3D world: clusters of houses that grow with population (a keep for cities,
+ * a palace for the capital), border ribbons in each owner's color, improvement models on
+ * developed tiles, floating name banners, and tile highlights for choices (develop, buy).
+ * Everything for one settlement is merged into a few meshes, so draw calls stay low.
+ */
+
+export interface SettlementWorld {
+  center(tile: number): [number, number];
+  height(x: number, z: number): number;
+  neighbors(tile: number): number[];
+  worldWidth(): number;
+  wrap(): boolean;
+  /** Fog level per tile: 2 visible, 1 remembered, 0 unexplored. */
+  fog(tile: number): number;
+}
+
+// --- Geometry helpers ------------------------------------------------------------------------
+
+const tmp = new Matrix4();
+const q = new Quaternion();
+const yAxis = new Vector3(0, 1, 0);
+
+/** A geometry part, placed and colored, ready to merge (position + normal + color only). */
+function part(
+  g: BufferGeometry,
+  color: number | Color,
+  x = 0,
+  y = 0,
+  z = 0,
+  rotY = 0,
+  scale = 1,
+): BufferGeometry {
+  const out = g.index ? g.toNonIndexed() : g.clone();
+  out.deleteAttribute('uv');
+  q.setFromAxisAngle(yAxis, rotY);
+  out.applyMatrix4(tmp.compose(new Vector3(x, y, z), q, new Vector3(scale, scale, scale)));
+  const c = color instanceof Color ? color : new Color(color);
+  const n = out.getAttribute('position').count;
+  const colors = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) colors.set([c.r, c.g, c.b], i * 3);
+  out.setAttribute('color', new Float32BufferAttribute(colors, 3));
+  return out;
+}
+
+/** Deterministic pseudo-random numbers from a seed (so a town looks the same every frame). */
+function seeded(seed: number) {
+  let s = (seed * 2654435761) >>> 0 || 1;
+  return () => {
+    s ^= s << 13;
+    s ^= s >>> 17;
+    s ^= s << 5;
+    return ((s >>> 0) % 10000) / 10000;
+  };
+}
+
+const G = {
+  box: new BoxGeometry(1, 1, 1),
+  roof: new ConeGeometry(0.75, 1, 4).rotateY(Math.PI / 4),
+  cyl: new CylinderGeometry(1, 1, 1, 8),
+  cone: new ConeGeometry(1, 1, 8),
+  dome: new SphereGeometry(1, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2),
+  rock: new DodecahedronGeometry(1, 0),
+  bush: new IcosahedronGeometry(1, 0),
+};
+
+const WALLS = [0xa89679, 0x9c8a6e, 0xb3a385, 0x8f7f66];
+const ROOFS = [0x7a3f2c, 0x6b3a2a, 0x845034, 0x5e4a3c];
+
+function house(
+  parts: BufferGeometry[],
+  x: number,
+  y: number,
+  z: number,
+  rot: number,
+  r: () => number,
+  big = 1,
+) {
+  const w = (0.09 + r() * 0.05) * big;
+  const d = (0.08 + r() * 0.04) * big;
+  const h = (0.06 + r() * 0.04) * big;
+  const wall = WALLS[Math.floor(r() * WALLS.length)]!;
+  const roof = ROOFS[Math.floor(r() * ROOFS.length)]!;
+  parts.push(
+    scaled(G.box, wall, x, y + h / 2, z, w, h, d, rot),
+    scaled(G.roof, roof, x, y + h + h * 0.45, z, w * 0.95, h * 0.9, d * 0.95, rot),
+  );
+}
+
+function scaled(
+  g: BufferGeometry,
+  color: number,
+  x: number,
+  y: number,
+  z: number,
+  sx: number,
+  sy: number,
+  sz: number,
+  rot = 0,
+) {
+  return part(g, color).applyMatrix4(
+    new Matrix4().compose(
+      new Vector3(x, y, z),
+      new Quaternion().setFromAxisAngle(yAxis, rot),
+      new Vector3(sx, sy, sz),
+    ),
+  );
+}
+
+/** The buildings of one settlement, around its center tile at (cx, cz). */
+function settlementParts(
+  view: SettlementView,
+  cx: number,
+  cz: number,
+  height: (x: number, z: number) => number,
+) {
+  const parts: BufferGeometry[] = [];
+  const r = seeded(view.tile + 7);
+  const ground = (x: number, z: number) => Math.max(0, height(x, z)) - 0.01;
+  const city = view.kind === 'city';
+  // Paved plaza in the middle.
+  parts.push(scaled(G.cyl, 0x6f6658, cx, ground(cx, cz) + 0.005, cz, 0.3, 0.02, 0.3));
+  if (view.capital) {
+    const y = ground(cx, cz);
+    parts.push(
+      scaled(G.box, 0xc8b894, cx, y + 0.1, cz - 0.02, 0.34, 0.2, 0.2),
+      scaled(G.box, 0xb8a684, cx, y + 0.07, cz + 0.13, 0.22, 0.14, 0.1),
+      scaled(G.dome, 0xb08a3e, cx, y + 0.2, cz - 0.02, 0.09, 0.09, 0.09),
+      scaled(G.cyl, 0xc8b894, cx - 0.17, y + 0.14, cz - 0.1, 0.035, 0.28, 0.035),
+      scaled(G.cone, 0x8a6a34, cx - 0.17, y + 0.32, cz - 0.1, 0.05, 0.09, 0.05),
+    );
+  } else if (city) {
+    const y = ground(cx, cz);
+    parts.push(
+      scaled(G.cyl, 0x8f8574, cx, y + 0.13, cz, 0.08, 0.26, 0.08),
+      scaled(G.cone, 0x5e4a3c, cx, y + 0.31, cz, 0.1, 0.12, 0.1),
+    );
+  } else {
+    const y = ground(cx, cz);
+    parts.push(
+      scaled(G.cyl, 0x7d7466, cx, y + 0.03, cz, 0.05, 0.06, 0.05),
+      scaled(G.box, 0x6b4a2e, cx, y + 0.09, cz, 0.12, 0.012, 0.012),
+    );
+  }
+  const count = Math.min(40, (city ? 6 : 3) + view.population * (city ? 3 : 2));
+  const radius = city ? 0.8 : 0.62;
+  for (let i = 0; i < count; i++) {
+    // Rings outward from the plaza, with jitter.
+    const ring = 0.22 + Math.sqrt((i + 1) / count) * (radius - 0.22);
+    const a = i * 2.39996 + r() * 0.5;
+    const x = cx + Math.cos(a) * ring;
+    const z = cz + Math.sin(a) * ring * 0.92;
+    house(parts, x, ground(x, z), z, a + r(), r, city ? 1.1 : 1);
+  }
+  return parts;
+}
+
+/** Improvement models, sized to sit inside a tile around (x, z). */
+function improvementParts(
+  model: string,
+  x: number,
+  z: number,
+  y: number,
+  seed: number,
+): BufferGeometry[] {
+  const r = seeded(seed);
+  const rot = r() * Math.PI;
+  const at = (dx: number, dz: number): [number, number] => [
+    x + dx * Math.cos(rot) - dz * Math.sin(rot),
+    z + dx * Math.sin(rot) + dz * Math.cos(rot),
+  ];
+  const out: BufferGeometry[] = [];
+  switch (model) {
+    case 'farm': {
+      const fields = [0x9c8a45, 0x6f7a3a, 0xa8914f, 0x5f6b33];
+      [
+        [-0.22, -0.16],
+        [0.2, -0.16],
+        [-0.22, 0.17],
+        [0.2, 0.17],
+      ].forEach(([dx, dz], i) => {
+        const [px, pz] = at(dx!, dz!);
+        out.push(scaled(G.box, fields[i]!, px, y + 0.012, pz, 0.36, 0.02, 0.27, rot));
+        for (let k = -1; k <= 1; k++) {
+          const [fx, fz] = at(dx!, dz! + k * 0.08);
+          out.push(
+            scaled(
+              G.box,
+              new Color(fields[i]!).multiplyScalar(0.75).getHex(),
+              fx,
+              y + 0.024,
+              fz,
+              0.34,
+              0.006,
+              0.015,
+              rot,
+            ),
+          );
+        }
+      });
+      break;
+    }
+    case 'mine': {
+      const [ex, ez] = at(0, -0.05);
+      out.push(
+        scaled(G.box, 0x1f1b18, ex, y + 0.05, ez, 0.14, 0.1, 0.05, rot),
+        scaled(G.box, 0x6b4a2e, ex, y + 0.105, ez, 0.18, 0.02, 0.06, rot),
+      );
+      for (const s of [-1, 1]) {
+        const [px, pz] = at(s * 0.08, -0.05);
+        out.push(scaled(G.box, 0x6b4a2e, px, y + 0.05, pz, 0.02, 0.1, 0.02, rot));
+      }
+      for (const [dx, dz, s] of [
+        [0.22, 0.15, 0.06],
+        [-0.2, 0.18, 0.05],
+        [0.05, 0.25, 0.04],
+      ] as const) {
+        const [px, pz] = at(dx, dz);
+        out.push(scaled(G.rock, 0x6e6a64, px, y + s * 0.6, pz, s, s * 0.8, s));
+      }
+      const [cx2, cz2] = at(0.1, 0.12);
+      out.push(scaled(G.box, 0x5a4a3a, cx2, y + 0.03, cz2, 0.08, 0.05, 0.05, rot));
+      break;
+    }
+    case 'quarry': {
+      const [px, pz] = at(0, 0);
+      out.push(scaled(G.box, 0x4a4640, px, y + 0.005, pz, 0.4, 0.01, 0.3, rot));
+      for (const [dx, dz, h] of [
+        [-0.12, -0.05, 0.08],
+        [0.02, -0.06, 0.12],
+        [0.14, 0.04, 0.06],
+        [-0.05, 0.1, 0.05],
+      ] as const) {
+        const [bx, bz] = at(dx, dz);
+        out.push(scaled(G.box, 0xbdb5a2, bx, y + h / 2, bz, 0.09, h, 0.08, rot + r() * 0.4));
+      }
+      break;
+    }
+    case 'pasture': {
+      const s = 0.28;
+      for (const [dx, dz, w, d] of [
+        [0, -s, 2 * s, 0.012],
+        [0, s, 2 * s, 0.012],
+        [-s, 0, 0.012, 2 * s],
+        [s, 0, 0.012, 2 * s],
+      ] as const) {
+        const [px, pz] = at(dx, dz);
+        out.push(scaled(G.box, 0x6b4a2e, px, y + 0.03, pz, w, 0.025, d, rot));
+      }
+      for (let i = 0; i < 4; i++) {
+        const [px, pz] = at((r() - 0.5) * 0.4, (r() - 0.5) * 0.4);
+        const c = i % 2 ? 0xd9d4c8 : 0x7a5a3e;
+        out.push(
+          scaled(G.box, c, px, y + 0.035, pz, 0.07, 0.04, 0.035, rot + r()),
+          scaled(G.box, c, px + 0.035, y + 0.05, pz, 0.025, 0.025, 0.025, rot),
+        );
+      }
+      break;
+    }
+    case 'plantation': {
+      const [px, pz] = at(0, 0);
+      out.push(scaled(G.box, 0x3d3324, px, y + 0.004, pz, 0.5, 0.008, 0.4, rot));
+      for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+          const [bx, bz] = at(i * 0.15, j * 0.12);
+          const s = 0.045 + r() * 0.015;
+          out.push(scaled(G.bush, 0x3f6b2a, bx, y + s, bz, s, s * 1.1, s));
+        }
+      }
+      break;
+    }
+    case 'camp': {
+      const [tx, tz] = at(-0.06, 0);
+      const [fx, fz] = at(0.12, 0.08);
+      out.push(
+        scaled(G.cone, 0xa08a62, tx, y + 0.08, tz, 0.1, 0.16, 0.1),
+        scaled(G.cone, 0xd9772a, fx, y + 0.025, fz, 0.025, 0.05, 0.025),
+        scaled(G.box, 0x6b4a2e, fx + 0.06, y + 0.06, fz - 0.1, 0.012, 0.12, 0.012),
+      );
+      break;
+    }
+    case 'boats': {
+      for (const [dx, dz] of [
+        [-0.12, -0.08],
+        [0.14, 0.1],
+      ] as const) {
+        const [bx, bz] = at(dx, dz);
+        out.push(
+          scaled(G.box, 0x5a3e28, bx, 0.02, bz, 0.18, 0.04, 0.06, rot),
+          scaled(G.cyl, 0x5a3e28, bx, 0.1, bz, 0.006, 0.14, 0.006),
+          scaled(G.box, 0xd8d0bc, bx + 0.02, 0.11, bz, 0.005, 0.09, 0.06, rot + Math.PI / 2),
+        );
+      }
+      break;
+    }
+    case 'woodcutter': {
+      const lying = new Quaternion().setFromEuler(new Euler(0, rot, Math.PI / 2));
+      for (const [dx, dz, dy] of [
+        [0.1, 0.1, 0],
+        [0.1, 0.14, 0],
+        [0.1, 0.12, 0.035],
+      ] as const) {
+        const [lx, lz] = at(dx, dz);
+        out.push(
+          part(G.cyl, 0x6b4a2e).applyMatrix4(
+            new Matrix4().compose(
+              new Vector3(lx, y + 0.02 + dy, lz),
+              lying,
+              new Vector3(0.02, 0.2, 0.02),
+            ),
+          ),
+        );
+      }
+      const [hx, hz] = at(-0.15, -0.1);
+      house(out, hx, y, hz, rot, r, 0.9);
+      break;
+    }
+    default: {
+      const [px, pz] = at(0, 0);
+      out.push(
+        scaled(G.cyl, 0x6b4a2e, px, y + 0.08, pz, 0.008, 0.16, 0.008),
+        scaled(G.box, 0xb8914a, px + 0.04, y + 0.14, pz, 0.07, 0.04, 0.004),
+      );
+    }
+  }
+  return out;
+}
+
+// --- Banners and labels ----------------------------------------------------------------------
+
+const css = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
+
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: number } {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d')!;
+  const nameFont = '400 46px "Marcellus SC", Georgia, serif';
+  ctx.font = nameFont;
+  const name = `${view.capital ? '★ ' : ''}${view.name}`;
+  const nameW = ctx.measureText(name).width;
+  ctx.font = '500 26px "IBM Plex Sans", sans-serif';
+  const statusW = view.status ? ctx.measureText(view.status).width : 0;
+  const h = view.status ? 118 : 84;
+  const w = Math.ceil(Math.max(nameW, statusW) + 130);
+  canvas.width = w;
+  canvas.height = h;
+  roundRect(ctx, 3, 3, w - 6, h - 6, 14);
+  ctx.fillStyle = 'rgba(14, 20, 27, 0.9)';
+  ctx.fill();
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = view.mine ? '#d4a94e' : css(view.color);
+  ctx.stroke();
+  // Population medallion in the owner's colors.
+  ctx.beginPath();
+  ctx.arc(48, h / 2, 31, 0, Math.PI * 2);
+  ctx.fillStyle = css(view.color);
+  ctx.fill();
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = css(view.accent);
+  ctx.stroke();
+  ctx.fillStyle = css(view.accent);
+  ctx.font = '700 32px "IBM Plex Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(String(view.population), 48, h / 2 + 1);
+  ctx.textAlign = 'left';
+  ctx.fillStyle = view.kind === 'city' ? '#f0e6cc' : '#d9cfb6';
+  ctx.font = nameFont;
+  ctx.fillText(name, 94, view.status ? 42 : h / 2 + 2);
+  if (view.status) {
+    ctx.font = '500 26px "IBM Plex Sans", sans-serif';
+    ctx.fillStyle = '#c9b98a';
+    ctx.fillText(view.status, 96, 86);
+  }
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
+  return { texture, aspect: w / h };
+}
+
+const TONES: Record<TileHighlight['tone'], number> = {
+  develop: 0x9fd36a,
+  buy: 0xd4a94e,
+  worked: 0xe8dcc0,
+  selected: 0xe6c070,
+};
+
+const labelCache = new Map<string, SpriteMaterial>();
+function labelMaterial(text: string, tone: TileHighlight['tone']): SpriteMaterial {
+  const key = `${tone}:${text}`;
+  const cached = labelCache.get(key);
+  if (cached) return cached;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d')!;
+  ctx.font = '600 34px "IBM Plex Sans", sans-serif';
+  const w = Math.ceil(ctx.measureText(text).width + 36);
+  canvas.width = w;
+  canvas.height = 60;
+  roundRect(ctx, 2, 2, w - 4, 56, 12);
+  ctx.fillStyle = 'rgba(14, 20, 27, 0.88)';
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = css(TONES[tone]);
+  ctx.stroke();
+  ctx.font = '600 34px "IBM Plex Sans", sans-serif';
+  ctx.fillStyle = '#f0e6cc';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, w / 2, 31);
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
+  const m = new SpriteMaterial({ map: tex, toneMapped: false, depthTest: false });
+  (m.userData as { aspect: number }).aspect = w / 60;
+  labelCache.set(key, m);
+  return m;
+}
+
+// --- The layer -------------------------------------------------------------------------------
+
+const buildingMaterial = new MeshStandardMaterial({
+  vertexColors: true,
+  flatShading: true,
+  roughness: 0.88,
+  metalness: 0,
+});
+const ribbonMaterial = new MeshBasicMaterial({
+  vertexColors: true,
+  side: DoubleSide,
+  transparent: true,
+  toneMapped: false,
+  depthWrite: false,
+  polygonOffset: true,
+  polygonOffsetFactor: -4,
+});
+
+interface Drawn {
+  key: string;
+  group: Group;
+  /** Unwrapped x of the settlement center (for east-west wrap). */
+  x: number;
+}
+
+/** A ribbon along the inside of a tile edge, as RGBA triangles appended to `pos` / `col`. */
+function ribbon(
+  pos: number[],
+  col: number[],
+  world: SettlementWorld,
+  center: [number, number],
+  a: [number, number],
+  b: [number, number],
+  inner: number,
+  outer: number,
+  color: Color,
+  alphaOut: number,
+  alphaIn: number,
+  lift: number,
+) {
+  const steps = 4;
+  const point = (t: number, k: number): [number, number, number] => {
+    const ex = a[0] + (b[0] - a[0]) * t;
+    const ez = a[1] + (b[1] - a[1]) * t;
+    const x = ex + (center[0] - ex) * k;
+    const z = ez + (center[1] - ez) * k;
+    return [x, Math.max(0, world.height(x, z)) + lift, z];
+  };
+  for (let i = 0; i < steps; i++) {
+    const t0 = i / steps;
+    const t1 = (i + 1) / steps;
+    const o0 = point(t0, outer);
+    const o1 = point(t1, outer);
+    const i0 = point(t0, inner);
+    const i1 = point(t1, inner);
+    for (const [p, alpha] of [
+      [o0, alphaOut],
+      [i0, alphaIn],
+      [o1, alphaOut],
+      [o1, alphaOut],
+      [i0, alphaIn],
+      [i1, alphaIn],
+    ] as const) {
+      pos.push(...p);
+      col.push(color.r, color.g, color.b, alpha);
+    }
+  }
+}
+
+function ribbonMesh(pos: number[], col: number[]): Mesh {
+  const geo = new BufferGeometry();
+  geo.setAttribute('position', new Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new Float32BufferAttribute(col, 4));
+  const mesh = new Mesh(geo, ribbonMaterial);
+  mesh.renderOrder = 3;
+  mesh.frustumCulled = false;
+  return mesh;
+}
+
+export class SettlementLayer {
+  readonly group = new Group();
+  private drawn = new Map<string, Drawn>();
+  private highlights = new Group();
+  private highlightKey = '';
+  private highlightX: number[] = [];
+
+  constructor(private world: SettlementWorld) {
+    this.group.add(this.highlights);
+  }
+
+  /** The corners of the edge a tile shares with its neighbor, and the tile's center. */
+  private edge(
+    t: number,
+    n: number,
+  ): { c: [number, number]; a: [number, number]; b: [number, number] } {
+    const c = this.world.center(t);
+    const [x0, nz] = this.world.center(n);
+    let nx = x0;
+    if (this.world.wrap()) {
+      const w = this.world.worldWidth();
+      nx += Math.round((c[0] - nx) / w) * w;
+    }
+    const dx = nx - c[0];
+    const dz = nz - c[1];
+    const len = Math.hypot(dx, dz) || 1;
+    const ux = dx / len;
+    const uz = dz / len;
+    const mx = c[0] + ux * (Math.sqrt(3) / 2);
+    const mz = c[1] + uz * (Math.sqrt(3) / 2);
+    return { c, a: [mx - uz * 0.5, mz + ux * 0.5], b: [mx + uz * 0.5, mz - ux * 0.5] };
+  }
+
+  set(views: SettlementView[], territory: TerritoryView) {
+    const byId = new Map(views.map((v) => [v.id, v]));
+    const ownerOf = (t: number) => {
+      const s = territory.settlement[t];
+      return s ? (byId.get(s)?.owner ?? `?${s}`) : null;
+    };
+    const tilesOf = new Map<string, number[]>();
+    territory.settlement.forEach((s, t) => {
+      if (s === null || this.world.fog(t) === 0) return;
+      const list = tilesOf.get(s) ?? [];
+      list.push(t);
+      tilesOf.set(s, list);
+    });
+
+    const keep = new Set<string>();
+    for (const view of views) {
+      const tiles = tilesOf.get(view.id) ?? [];
+      const sig = tiles
+        .map((t) => {
+          const ns = this.world
+            .neighbors(t)
+            .map((n) => (ownerOf(n) === view.owner ? 1 : 0))
+            .join('');
+          return `${t}:${territory.improvements[t] ?? ''}:${this.world.fog(t)}:${ns}`;
+        })
+        .join('|');
+      const key = `${JSON.stringify(view)}#${this.world.fog(view.tile)}#${sig}`;
+      keep.add(view.id);
+      const prev = this.drawn.get(view.id);
+      if (prev?.key === key) continue;
+      if (prev) this.dispose(prev);
+      const drawn = this.build(view, tiles, territory, ownerOf);
+      drawn.key = key;
+      this.drawn.set(view.id, drawn);
+      this.group.add(drawn.group);
+    }
+    for (const [id, d] of this.drawn) {
+      if (keep.has(id)) continue;
+      this.dispose(d);
+      this.drawn.delete(id);
+    }
+  }
+
+  private build(
+    view: SettlementView,
+    tiles: number[],
+    territory: TerritoryView,
+    ownerOf: (t: number) => string | null,
+  ): Drawn {
+    const group = new Group();
+    const [cx, cz] = this.world.center(view.tile);
+    const height = (x: number, z: number) => this.world.height(x, z);
+    const centerKnown = this.world.fog(view.tile) !== 0;
+    const remembered = this.world.fog(view.tile) === 1;
+
+    // Buildings and improvements: one merged mesh.
+    const parts: BufferGeometry[] = centerKnown ? settlementParts(view, cx, cz, height) : [];
+    for (const t of tiles) {
+      const model = territory.improvements[t];
+      if (!model || t === view.tile) continue;
+      const [x, z] = this.world.center(t);
+      parts.push(...improvementParts(model, x, z, Math.max(0, height(x, z)) - 0.005, t));
+    }
+    if (parts.length > 0) {
+      const merged = mergeGeometries(parts);
+      for (const p of parts) p.dispose();
+      if (merged) {
+        if (remembered) {
+          const c = merged.getAttribute('color');
+          for (let i = 0; i < c.count; i++) {
+            c.setXYZ(i, c.getX(i) * 0.35, c.getY(i) * 0.37, c.getZ(i) * 0.42);
+          }
+        }
+        merged.computeBoundingSphere();
+        const mesh = new Mesh(merged, buildingMaterial);
+        group.add(mesh);
+      }
+    }
+
+    // Borders: a bright edge with a soft glow fading inward, on edges facing other owners.
+    const pos: number[] = [];
+    const col: number[] = [];
+    // Lifted toward white so dark civ colors still read against dark terrain.
+    const main = new Color(view.color).lerp(new Color(0xffffff), 0.12);
+    const edgeDark = new Color(0x0b0f14);
+    for (const t of tiles) {
+      const dim = this.world.fog(t) === 1 ? 0.55 : 1;
+      const color = main.clone().multiplyScalar(dim);
+      for (const n of this.world.neighbors(t)) {
+        if (ownerOf(n) === view.owner) continue;
+        const { c, a, b } = this.edge(t, n);
+        ribbon(pos, col, this.world, c, a, b, 0.015, 0, edgeDark, 0.6, 0.6, 0.045);
+        ribbon(pos, col, this.world, c, a, b, 0.065, 0.015, color, 1, 1, 0.045);
+        ribbon(pos, col, this.world, c, a, b, 0.3, 0.065, color, 0.45, 0, 0.04);
+      }
+    }
+    if (pos.length > 0) group.add(ribbonMesh(pos, col));
+
+    // Name banner.
+    if (centerKnown) {
+      const { texture, aspect } = bannerTexture(view);
+      const sprite = new Sprite(
+        new SpriteMaterial({
+          map: texture,
+          toneMapped: false,
+          depthTest: false,
+          transparent: true,
+        }),
+      );
+      const h = 0.42;
+      sprite.scale.set(h * aspect, h, 1);
+      sprite.position.set(cx, Math.max(0, height(cx, cz)) + 0.95, cz + 0.2);
+      sprite.renderOrder = 30;
+      if (remembered) sprite.material.color.setScalar(0.6);
+      group.add(sprite);
+    }
+    return { key: '', group, x: cx };
+  }
+
+  private dispose(d: Drawn) {
+    this.group.remove(d.group);
+    d.group.traverse((o) => {
+      if (o instanceof Mesh) o.geometry.dispose();
+      if (o instanceof Sprite) {
+        o.material.map?.dispose();
+        o.material.dispose();
+      }
+    });
+  }
+
+  setHighlights(list: TileHighlight[]) {
+    const key = JSON.stringify(list);
+    if (key === this.highlightKey) return;
+    this.highlightKey = key;
+    for (const child of [...this.highlights.children]) {
+      this.highlights.remove(child);
+      if (child instanceof Mesh) child.geometry.dispose();
+    }
+    this.highlightX = [];
+    for (const h of list) {
+      const holder = new Group();
+      const [cx, cz] = this.world.center(h.tile);
+      const pos: number[] = [];
+      const col: number[] = [];
+      const color = new Color(TONES[h.tone]);
+      if (h.tone !== 'worked') {
+        for (const n of this.world.neighbors(h.tile)) {
+          const { c, a, b } = this.edge(h.tile, n);
+          ribbon(pos, col, this.world, c, a, b, 0.1, 0.04, color, 0.9, 0.9, 0.05);
+        }
+        holder.add(ribbonMesh(pos, col));
+      }
+      if (h.label) {
+        const m = labelMaterial(h.label, h.tone);
+        const sprite = new Sprite(m);
+        const s = h.tone === 'worked' ? 0.18 : 0.2;
+        sprite.scale.set(s * (m.userData as { aspect: number }).aspect, s, 1);
+        sprite.position.set(cx, Math.max(0, this.world.height(cx, cz)) + 0.3, cz);
+        sprite.renderOrder = 25;
+        holder.add(sprite);
+      }
+      this.highlights.add(holder);
+      this.highlightX.push(cx);
+    }
+  }
+
+  /** Keeps everything in the copy of the world nearest the camera (east-west wrap). */
+  update(cameraX: number) {
+    if (!this.world.wrap()) return;
+    const w = this.world.worldWidth();
+    const shift = (x: number) => Math.round((cameraX - x) / w) * w;
+    for (const d of this.drawn.values()) d.group.position.x = shift(d.x);
+    this.highlights.children.forEach((c, i) => {
+      c.position.x = shift(this.highlightX[i] ?? 0);
+    });
+  }
+
+  clear() {
+    for (const d of this.drawn.values()) this.dispose(d);
+    this.drawn.clear();
+  }
+}
