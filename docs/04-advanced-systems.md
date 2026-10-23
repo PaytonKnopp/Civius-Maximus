@@ -11,7 +11,7 @@ several module combinations to check this.
 | Trade routes | ✅ | — |
 | Great people | ✅ | — |
 | Religion | ✅ | — |
-| City-states | ✅ | Diplomacy |
+| Independent powers (city-states + barbarians) | ✅ | Diplomacy |
 | Eras & golden ages | ✅ | — |
 | Governors | ✅ | — |
 | Tourism & great works | ✅ | Great people |
@@ -20,7 +20,8 @@ several module combinations to check this.
 | World congress & diplomatic victory | later | Diplomacy |
 | Climate & natural disasters | later | — |
 | Corporations / monopolies | later | Trade routes |
-| Barbarian clans | later | — |
+| Ages mode (switch civs at era changes, Civ 7-style) | later, optional | Eras |
+| Crises at the end of an era | later, optional | Eras |
 
 ---
 
@@ -37,6 +38,18 @@ Diplomacy between humans matters most in a friends' game, so it gets more depth 
 - **Alliances** (types: Research, Military, Economic, Cultural, Religious) level up over time and
   share bonuses. Allies share vision.
 - **Teams** (set in the lobby) are permanent alliances with shared victory.
+
+### Influence (from Civ 7)
+
+🤝 **Influence** is a yield (from the Palace, diplomatic policies, some buildings, alliances and
+leader abilities). It's the currency for diplomacy:
+- proposing formal treaties (open borders, research agreements, alliances) costs influence,
+- **endeavors** (joint projects with another player, e.g., "+2 science for both of us for 15 turns")
+  and **sanctions** (e.g., "−2 gold on their trade routes") cost influence to start and to keep running,
+- befriending independent powers and sending envoys costs influence,
+- denouncing someone costs influence and gives them war support if you attack them later.
+
+This makes diplomacy a real economy, so a "peaceful" player has something to spend their effort on.
 
 ### Deals (the trade screen)
 
@@ -62,11 +75,12 @@ AI leaders have **agendas** (e.g., "likes civs with big armies", "hates civs tha
 them"), defined in the leader's content file. Agendas drive how they talk and what deals they
 accept. The UI explains their opinion of you: "−6 You settled near them, +3 Shared enemy".
 
-### Grievances / warmongering
+### Reputation and war support
 
-Aggressive actions (surprise war, razing cities, capturing cities, breaking promises) create
-**grievances** with the victim and a smaller amount with witnesses. Grievances decay over time.
-They hurt AI attitude, and some casus belli require them.
+Aggressive actions (surprise war, razing, breaking promises) lower your **reputation** with every
+AI that witnesses them, which makes their deals and agendas less favorable. In the war itself, the
+same actions shift **war support** toward your enemy (see
+[03-core-mechanics.md](03-core-mechanics.md#war)). One number per war, and it's easy to read.
 
 ---
 
@@ -123,19 +137,26 @@ because each one is unique.
 
 ---
 
-## City-states
+## Independent powers (city-states and barbarians)
 
-City-states make duel games feel populated and give players something to compete over even when
-there's no war.
+From Civ 7, combined with Civ 6's envoys and Civ 5's quests. Independent powers make duel games
+feel populated and give players something to compete over even when there's no war.
 
-- Minor civs with one city each. Types: Scientific, Cultural, Trade, Religious, Militaristic,
-  Industrial, plus a unique **suzerain bonus** each (data-driven, so mods can add more).
-- **Envoys:** earned from civics and quests, and assigned to city-states. 1/3/6 envoys give
-  growing bonuses. The player with the most envoys (at least 3) becomes **suzerain** and gets the
-  unique bonus, the city-state's resources, and the option to **levy** its military.
-- **Quests:** "Build a Campus", "Send a trade route", "Clear the barbarian camp near us". Completing
-  one earns an envoy.
-- Conquering a city-state is possible, but every player with envoys there gets a grievance.
+- **Independent camps** spawn early in unclaimed land. Each has a disposition: **hostile**
+  (raids like classic barbarians) or **neutral** (trades, gives quests).
+- Players can **befriend** a camp by spending influence over several turns (other players can
+  compete and outbid). Or they can attack it.
+- A befriended camp eventually **becomes a city-state** (one settlement, never expands much) of a
+  type: Scientific, Cultural, Trade, Religious, Militaristic or Industrial. Each one also has a
+  unique **suzerain bonus** (data-driven, so mods can add more).
+- **Envoys** (from civics, quests, and influence) are assigned to city-states. 1/3/6 envoys give
+  growing type bonuses. The player with the most envoys (at least 3) is **suzerain**: they get the
+  unique bonus, the city-state's luxuries, and the option to **levy** its military for gold.
+- **Quests** ("build a Campus", "send a trade route", "clear the hostile camp near us") reward
+  envoys.
+- Conquering a city-state is allowed, but every player with envoys there gets war support against
+  you.
+- With the module off, camps are always hostile and never become city-states (classic barbarians).
 
 ---
 
@@ -151,14 +172,30 @@ there's no war.
   - high → **Golden Age** (pick one **dedication**, e.g., "+2 era points per wonder", plus a
     bonus).
   - Getting a Golden Age right after a Dark Age gives a **Heroic Age** (pick 3 dedications).
+- **Legacy goals** (from Civ 7): each era shows four visible goals, one each for Military, Science,
+  Culture and Economic (e.g., *Classical Military: control 6 settlements*, *Classical Science: 3
+  campuses with +3 adjacency*). Completing one gives a big chunk of era points and a small permanent
+  bonus. Players always know how to reach a Golden Age.
 - Historic moments double as a **timeline** shown in the end-of-game replay.
+
+### Ages mode (optional, later)
+
+Civ 7's signature system for groups that want it: the game is split into three ages (Antiquity,
+Exploration, Modern). At each age change, every player picks a **new civ** (from those unlocked
+by their history and legacy goals) while keeping their leader, settlements and some legacies.
+Off by default.
+
+### Crises (optional, later)
+
+Near the end of each era, a crisis can hit everyone: plague, revolts, invasions. Each crisis
+forces new crisis policies. Off by default, for groups that like chaos.
 
 ---
 
 ## Governors
 
 - You earn titles from civics. Each title appoints a new governor or promotes one you have.
-- About 7 governors, each with a 6-promotion tree (e.g., "The Builder: +1 builder charge,
+- About 7 governors, each with a 6-promotion tree (e.g., "The Planner: +1 tile developed on growth,
   +20% district production"). Each governor is assigned to one city.
 - Governors are data: name, portrait, promotion tree. Your friends can be governors.
 - If the Loyalty module is on, governors also add loyalty to their city.
@@ -174,6 +211,11 @@ there's no war.
 - **Culture victory:** your visiting tourists from every other civ outnumber that civ's own
   domestic tourists.
 - Bonus modifiers: open borders, trade routes, shared religion, the Online Communication tech.
+- **Ideological pressure** (from Civ 5): the Modern-era governments are grouped into three
+  ideologies. If a rival with a *different* ideology has a lot of tourism toward you, your
+  citizens get unhappy (−1 to −5 😊 per settlement) and, at extremes, demand a change of government.
+  Sharing an ideology gives a small happiness bonus instead. This creates great late-game tension
+  between friends.
 
 ---
 
@@ -190,7 +232,6 @@ there's no war.
 - **Climate & disasters:** floods (fertilize floodplains but damage improvements), volcanic
   eruptions, storms, and CO₂-driven global warming with rising sea levels in the late game.
 - **Corporations/monopolies:** control luxury resources for empire-wide bonuses.
-- **Barbarian clans:** hire, bribe, or convert camps into city-states.
 
 ---
 

@@ -1,14 +1,35 @@
-# 02 — Multiplayer and social
+# 02 — Game modes, multiplayer and social
 
 The most important doc for pillar #1 ("Friends first").
+
+## Main menu
+
+```
+[ Single Player ]   [ Host Multiplayer ]   [ Join with Code ]   [ Hotseat ]   [ Load Game ]
+[ Mods ]   [ Civ Creator ]   [ Hall of Fame ]   [ Settings ]   [ Profile / Log in ]
+```
+
+| Mode | What it is |
+|---|---|
+| **Single Player** | You against AI leaders, running fully in your browser or desktop app. Works offline, no login needed. |
+| **Host Multiplayer** | You create a game, get a **join code**, and send it to friends (Discord, text, whatever). Seats left empty can be filled by AI. |
+| **Join with Code** | Enter a friend's code (e.g., `MAX-7Q2K`), pick your leader, and click ready. |
+| **Hotseat** | Several people share one computer, taking turns. |
+| **Load Game** | Resume single player, hotseat or hosted games from cloud saves (multiplayer) or local saves. |
+
+## Accounts
+
+- Players create their own **username + password** inside the game. Login is remembered on each
+  device. See [01-architecture.md](01-architecture.md#accounts).
+- Single player and hotseat don't need an account.
 
 ## Game lifecycle
 
 ```
-Create game → Lobby (settings, seats, civs, mods) → Start → Turns ... → Victory → Replay / stats
+Host creates game → Lobby (code, settings, seats, leaders, mods) → Start → Turns ... → Victory → Replay / stats
 ```
 
-### Creating a game (host)
+### Game settings (host)
 
 The host picks these settings. All of them are saved as a **preset** so "our usual Friday game" is
 one click.
@@ -20,103 +41,108 @@ one click.
 | Fairness | Normal / Balanced starts / Mirrored map (every player gets an identical start region) |
 | Game speed | Online (fast), Quick, Standard, Epic. This scales all costs. |
 | Start era | Ancient (default), Classical, Medieval... |
-| Turn mode | Sequential / Simultaneous / **Dynamic** (see below) |
-| Turn timer | None / Fixed per turn / Chess-clock time bank / Async (e.g., 24 h per turn) |
+| Turn timer | None / Fixed per turn / Time bank (see below) |
 | Victories | Toggle each type, plus turn limit and score victory |
-| Rule modules | Toggle religion, city-states, great people, espionage, loyalty... |
-| Mods | Choose from the server's mod library. Load order is shown. |
-| AI | Number of AI seats, difficulty, and "AI takes over absent players" (on/off) |
+| Rule modules | Toggle religion, independent powers, great people, governors, loyalty, Ages mode, crises... |
+| Leaders | Historical pairs only / Any leader with any civ |
+| Mods | Choose from the mod library. Load order is shown. |
+| AI | AI seats and difficulty. "AI takes over a disconnected player" (on/off) |
 | Teams | Free-for-all, or assign teams (shared vision, shared victory) |
 | House rules | Free-form text shown to everyone, plus modded rule constants (e.g., "no war before turn 50" can be *enforced*) |
 
 ### Lobby
 
-- **Invite link** (`/join/ABCD-1234`). Friends click it, log in, and claim a seat.
-- **Seats:** human (open/claimed), AI (with difficulty), or closed.
-- **Civ selection:** pick a civ and leader, or random. The host can allow or forbid duplicates. An
-  optional **draft mode** lets each player ban one civ, then pick in snake order (fun for
-  competitive groups).
+- The **join code** is shown big at the top with a copy button. The host can regenerate it or lock
+  the lobby.
+- **Seats (up to 8):** open, claimed (human), AI (with difficulty), or closed.
+- **Leader selection:** pick a leader (and a civ, if mix-and-match is on), or random. The host
+  can allow or forbid duplicates. An optional **draft mode** lets each player ban one leader, then
+  pick in snake order.
 - **Ready check:** the host clicks start once everyone is ready.
-- **Mod preview:** everyone can browse the active mods' civs and rules before the game starts.
+- **Mod preview:** everyone can browse the active mods' leaders, civs and rules before the game starts.
+- Mods are sent to every player automatically. Nobody installs anything by hand.
 
-## Turn modes
+## Turns: always simultaneous
 
-| Mode | How it works | Best for |
-|---|---|---|
-| **Sequential** | Players act one at a time, in order | 2 players, or async games over days |
-| **Simultaneous** | Everyone acts at once. The turn ends when all have clicked "End Turn" (or the timer runs out) | Live sessions with 3+ players |
-| **Dynamic** (recommended default for 3+) | Simultaneous between players at peace. Sequential between players who are at war with each other | Live sessions. Keeps the game fast but keeps combat fair |
-
-**Conflict rules for simultaneous play:** actions are applied in the order the server receives them.
-Two settlers can't found a city on the same tile, and whoever's action arrives first wins. Players at
-war never act simultaneously against each other in dynamic mode, which removes "click faster" combat.
+- **Everyone plays their turn at the same time.** When you're done, click **End Turn**. A new turn
+  starts when *every* human player has ended their turn (or the timer runs out).
+- The top bar shows everyone's status: 🟢 still playing / ✅ done. After you end your turn you can
+  still look around, use chat, and prepare deals. You can also **un-end** your turn if you change
+  your mind before the others finish.
+- A "nudge" button sends a polite ping to whoever's still playing.
+- **Order of actions:** actions are applied in the order the host receives them. If two settlers
+  try to found a settlement on the same tile, the first one wins, and the other gets a clear
+  message.
+- **Fairness in wars:** in fully simultaneous turns, two players at war can end up racing to
+  click first. Two built-in rules soften this:
+  1. **Defender's first strike:** a unit that hasn't moved this turn and is attacked by a unit
+     that started the turn adjacent to it can be set to *alert* (like Civ's overwatch). Alert units
+     make a free counter-attack. This rewards planning over click speed.
+  2. **Move-then-attack delay (optional):** units that moved more than 1 tile this turn can't
+     attack until both sides have had at least 10 seconds in the turn.
+  Both are lobby options, so playtests can show whether they're needed.
 
 ## Turn timers and absent players
 
-- **Fixed timer:** N seconds per turn, scaled by era and number of cities.
+- **Fixed timer:** N seconds per turn, scaled by era and number of settlements.
 - **Time bank:** each player has a pool of time that carries over (like a chess clock).
-- **Async:** e.g., 24 h per turn, with reminders at 50% and 90%.
-- **Timeout behavior** (host chooses): auto end turn / AI plays the turn on the absent player's
-  behalf (conservative personality) / skip.
-- **Vacation mode:** a player can tell the server "I'm away for 3 days, let the AI hold the fort."
+- **Timeout behavior** (host chooses): auto end turn / AI plays the rest of the turn for that player.
+- **Disconnects:** the game waits a grace period (e.g., 2 minutes) for the player to reconnect, then
+  either pauses or hands the seat to the AI until they're back (host setting).
+
+## Saving and resuming
+
+- Hosted games are saved to the cloud every turn. Game nights can stop mid-game and pick up later.
+- "My games" lists every game you're in, with turn number, players, and last played date.
+- **Host handoff:** if the host can't make it, another seated player can resume the game as host.
 
 ## Notifications
 
-Async games die when people forget it's their turn, so this is a core feature, not polish.
+Simultaneous turns are played live, so notifications are mostly about getting everyone into the game:
 
-- **Discord webhook per game.** The host pastes a channel webhook, and the server posts
-  "⚔️ **Turn 87** — it's @Alex's turn" plus a digest of big events (wonders built, wars declared,
-  eliminations).
-- **Email** (opt-in per player).
-- **Browser / desktop push notifications.**
-- **In-app:** a list of your games, each showing whose turn it is and how much time is left.
+- **Discord webhook per game** (optional). The host pastes a channel webhook, and the game posts
+  "🎮 Game *Pangaea #3* is live, join code MAX-7Q2K", plus a game recap at the end. This is sent via
+  a small Supabase edge function, so webhook URLs never reach other players.
+- **Browser / desktop notifications:** "Turn 87 started", "Alex proposed a deal", "Everyone's
+  waiting on you".
 
 ## Communication
 
 - **Chat:** all-players, team, and private (1-to-1) channels, with emoji reactions and history
-  saved in the game.
+  saved with the game.
 - **Map pings:** click a tile to ping it to your team (or to a player during diplomacy).
 - **Diplomacy screen:** formal proposals (see [04-advanced-systems.md](04-advanced-systems.md)).
 - **Binding vs non-binding:** anything in a formal deal is **enforced by the engine** (if you sign
   30 turns of peace, you can't declare war for 30 turns). Anything said in chat is just talk.
-  That gap is part of the fun.
 
 ## Undo and mistakes
 
-- **Safe undo:** within your own turn, you can undo an action if it revealed no new information
-  and used no randomness. Moving a unit into already-visible terrain can be undone. A move that
-  revealed fog, an attack, or a hut pop cannot.
-- **Host rewind:** the host can propose rolling back to the start of a turn (all human players
-  must accept). This is useful for bugs or genuine misclicks. Snapshots make it free.
+- **Safe undo:** within the current turn, you can undo an action if it revealed no new information
+  and used no randomness. Moving into already-visible terrain can be undone. A move that revealed
+  fog, an attack, or anything random cannot.
+- **Host rewind:** the host can propose rolling back to the start of the turn (all human players
+  must accept). This is useful for bugs or genuine misclicks.
 
 ## Hotseat (same machine)
 
 - A "pass the device" screen hides the map between players.
-- Uses the same engine and rules. The local client simply plays the server role.
-- A hotseat game can be **uploaded to the server** and continued online.
+- Uses the same engine and rules. Turns are taken one player at a time on the shared screen.
 
 ## Spectators and eliminated players
 
-- The host can allow spectators, who get full map or fog-of-team views.
+- The host can allow spectators (via the join code), who get full-map or team views.
 - Eliminated players can choose to keep spectating with full vision (and are muted in all-chat,
   optionally, so they can't spill secrets).
-
-## Reconnection and multiple devices
-
-- A game is never "lost" when someone's connection drops. They reconnect and get their current view.
-- The same account can play from browser, desktop and phone. The latest connection wins.
-- The server keeps running games for days or weeks with no one connected (async).
 
 ## End of game
 
 - **Victory screen** showing who won and how.
-- **Replay:** a timeline scrubber of the whole map from turn 1 (borders growing, wars, cities
-  founded), with per-turn event markers. Shareable link.
+- **Replay:** a timeline scrubber of the whole map from turn 1 (borders growing, wars, settlements
+  founded), with per-turn event markers.
 - **Stats:** graphs of score, science, culture, military strength, and land over time.
-- **Hall of fame:** past games on the server with winners and civs played.
+- **Hall of fame:** past games with winners, leaders played, and memorable moments.
 
 ## Scale targets
 
-- v1: 2–8 players per game. The engine is not limited to 8, but UI and balance are tested up
-  to 8 (12 is a later goal).
-- One small server ($5 VPS) should handle dozens of concurrent friend games.
+- **2–8 players** per game, humans and AI in any mix. The engine isn't limited to 8. UI and balance
+  are tested up to 8, and 12 is a later goal.

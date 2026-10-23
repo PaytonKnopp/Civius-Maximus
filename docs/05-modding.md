@@ -1,7 +1,12 @@
 # 05 — Content and modding
 
-Goal: **anything a base civ can do, a mod can do**, and a non-programmer can make a new civ in an
-evening, either by editing JSON or with the in-game civ creator.
+Goal: **anything a base civ can do, a mod can do**, and a non-programmer can make a new leader or civ
+in an evening, either by editing JSON or with the in-game creator.
+
+**Leaders and civs are separate files** (see [08-best-of-civ.md](08-best-of-civ.md)). To add a
+famous leader, write one `leader` file that points at an existing civ as its default. To add a
+whole new people, also write a `civ` file. The starting roster is in
+[09-base-roster.md](09-base-roster.md).
 
 The base game is itself built as a mod (`content/base/`) using exactly the same format. So the
 format will always be complete enough for real content.
@@ -49,13 +54,13 @@ underlines mistakes while you type).
 | Type | Examples |
 |---|---|
 | `civ` | name, adjectives, colors, city names list, start bias, unique ability, unique unit/building/district/improvement |
-| `leader` | name, portrait, civ, leader ability, AI personality, agendas, quotes |
+| `leader` | name, portrait, default civ, leader ability, AI personality, agenda, quotes |
 | `unit`, `unitClass`, `promotion` | stats, costs, requirements, abilities |
-| `building`, `district`, `wonder`, `improvement` | yields, costs, placement rules, adjacency |
+| `building`, `district`, `wonder`, `improvement`, `townSpecialization` | yields, costs, placement rules, adjacency |
 | `terrain`, `feature`, `resource` | yields, move cost, defense, appearance rules |
 | `tech`, `civic`, `era` | cost, prerequisites, unlocks, boost condition |
 | `government`, `policy` | slots, effects |
-| `greatPerson`, `belief`, `pantheon`, `governor`, `cityState` | module content |
+| `greatPerson`, `belief`, `pantheon`, `governor`, `independentPower`, `legacyGoal`, `commanderPromotion` | module content |
 | `mapScript` | map generation parameters (later: scripted generation) |
 | `victory` | custom victory definitions |
 | `rules` | global constants (growth formula numbers, combat modifiers, min city distance...) |
@@ -84,11 +89,11 @@ lists of **effects**. An effect = *what changes* + *who it applies to* + *when*.
 - **Units:** `modify_combat_strength`, `modify_movement`, `modify_sight`, `grant_ability`
   (ignore ZOC, ignore terrain cost, heal after kill...), `grant_promotion`, `grant_unit`,
   `modify_upkeep`, `can_embark_early`
-- **Cities:** `modify_housing`, `modify_amenities`, `modify_growth`, `modify_border_growth`,
-  `extra_district_slot`, `free_building`
+- **Settlements:** `modify_happiness`, `modify_growth`, `modify_border_growth`, `modify_settlement_limit`,
+  `extra_district_slot`, `free_building`, `modify_town_upgrade_cost`
 - **Empire:** `extra_policy_slot`, `extra_trade_route`, `grant_envoys`, `grant_great_person_points`,
   `grant_tech_boost`, `reveal_resource`, `modify_era_points`
-- **Diplomacy/war:** `modify_grievances`, `modify_war_weariness`, `allow_casus_belli`
+- **Diplomacy/war:** `modify_influence`, `modify_war_support`, `modify_reputation`, `allow_casus_belli`
 - **Unlocks:** `unlock` (unit, building, improvement, policy, ability)
 - **Events:** `on_event` wrapper (e.g., on `city_founded`, `unit_killed`, `wonder_completed`,
   `tech_researched`) that triggers a one-time effect
@@ -101,7 +106,7 @@ These can be combined with `all`, `any` and `not`:
 `government_is`, `city_population_at_least`, `has_tech`, `has_civic`, `is_capital`,
 `within_tiles_of`, `turn_at_least`, `random_chance` (seeded).
 
-### Example: a complete custom civ
+### Example: a complete custom civ (a leader file looks similar)
 
 ```json
 {
@@ -162,13 +167,13 @@ time/memory budget and access only to an effects API). Until then, a new effect 
 - art files exist and are the right size and format
 - **balance hints** (warnings only), e.g., "this unit is 40% stronger than others of its era and cost"
 
-The server runs the same validation when a mod is uploaded, and the client shows the
+The game runs the same validation when a mod is uploaded, and the client shows the
 results in the mod manager.
 
 ## Mod manager (in-game)
 
-- Browse the server's mod library, with descriptions, author, version, and what each mod adds.
-- Upload a mod (zip or folder). It's validated, then becomes available to games on that server.
+- Browse the mod library, with descriptions, author, version, and what each mod adds.
+- Upload a mod (zip or folder). It's validated, then becomes available to everyone in your group.
 - Each game shows its locked mod list. Mods are downloaded automatically when you join.
 
 ## In-game civ creator

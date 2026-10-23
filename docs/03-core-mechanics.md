@@ -74,18 +74,22 @@ Generation is a pipeline of seeded steps that mods can replace:
 
 ### Rivers
 
-- Rivers run along tile edges. A tile next to a river has **fresh water** (more housing and
-  better farms).
+- Rivers run along tile edges. A tile next to a river has **fresh water** (faster growth for a
+  settlement on it, and better farms).
 - **Crossing a river** uses all remaining movement (until Bridge Building). Attacking across a river
   gives the attacker −5 combat strength.
 - Rivers give adjacency bonuses (e.g., Commercial Hub +2) and make floodplains possible.
+- **Navigable rivers** (from Civ 7): the largest rivers are marked navigable. Boats can travel
+  along them, so inland settlements on them count as coastal for harbors and naval trade, and
+  they can be attacked by ships. Land units cross navigable rivers only by embarking (or by bridge,
+  later).
 
 ### Resources
 
 | Type | Effect | Examples |
 |---|---|---|
 | Bonus | Extra tile yield | Wheat, Rice, Cattle, Sheep, Deer, Fish, Stone, Copper, Bananas |
-| Luxury | Tile yield + **amenities** for your empire (each copy serves up to 4 cities) | Silk, Spices, Wine, Incense, Diamonds, Pearls, Whales |
+| Luxury | Tile yield + **happiness** in the settlement that owns it and up to 3 others nearby | Silk, Spices, Wine, Incense, Diamonds, Pearls, Whales |
 | Strategic | Accumulates a **stockpile** per turn that units and buildings consume | Horses, Iron, Niter, Coal, Oil, Aluminum, Uranium |
 
 Strategic resources are only revealed once you research the matching tech.
@@ -93,7 +97,7 @@ Strategic resources are only revealed once you research the matching tech.
 ### Appeal
 
 Each tile has an **appeal** score from neighbors (mountains, coast, woods, natural wonders: +.
-Industrial zones, mines, marsh: −). Appeal affects neighborhoods' housing, national parks (culture),
+Industrial zones, mines, marsh: −). Appeal affects neighborhoods' happiness, resort towns, national parks (culture),
 seaside resorts, and some beliefs.
 
 ---
@@ -102,11 +106,13 @@ seaside resorts, and some beliefs.
 
 | Yield | Used for |
 |---|---|
-| 🍞 Food | City growth |
-| ⚙️ Production | Building units, buildings, districts, wonders, projects |
-| 💰 Gold | Buying, maintenance, deals |
+| 🍞 Food | Settlement growth |
+| ⚙️ Production | Building units, buildings, districts, wonders, projects (in towns, converted to gold) |
+| 💰 Gold | Buying, maintenance, deals, upgrading towns to cities |
 | 🔬 Science | Tech tree |
 | 🎭 Culture | Civics tree, border growth |
+| 😊 Happiness | Settlement mood, celebrations (see below) |
+| 🤝 Influence | Diplomacy: deals, befriending independent powers, envoys (see the diplomacy module) |
 | 🙏 Faith | Religion, buying religious units and some units/buildings (module) |
 | ✈️ Tourism | Culture victory (derived from great works, wonders and parks) |
 
@@ -115,78 +121,109 @@ Every yield displayed anywhere can be clicked to see a **breakdown tree**, e.g.,
 
 ---
 
-## 3. Cities
+## 3. Settlements: towns and cities
 
 ### Founding
 
-- A **Settler** founds a city. A city can't be founded within **3 tiles** of another city (minimum
-  distance, configurable).
-- The city center tile gets a minimum of **2🍞 1⚙️** (better if the terrain is better), and gets +1⚙️
+- A **Settler** founds a settlement. Settlements can't be founded within **3 tiles** of each other
+  (configurable).
+- Your first settlement is your **capital** and starts as a **City**, with a Palace (+2⚙️ +2🔬 +3🎭
+  +5💰 +2😊). Every later settlement starts as a **Town**.
+- The center tile gets a minimum of **2🍞 1⚙️** (better if the terrain is better), and gets +1⚙️
   if it's on hills.
-- A city starts with **1 citizen** and claims the 6 surrounding tiles (ring 1).
-- The first city is the **capital** (Palace: +2⚙️ +2🔬 +5🎭 +5💰, +1 housing, +1 amenity).
+- A new settlement has **1 citizen** and claims the 6 surrounding tiles (ring 1).
+
+### Towns vs Cities (from Civ 7)
+
+| | Town | City |
+|---|---|---|
+| Build queue | None. ⚙️ production is converted to 💰 gold | Full queue (units, buildings, districts, wonders, projects) |
+| Focus | Picks **one specialization** at pop 5 (see below) | Can build any district |
+| Districts | None (except through its specialization) | Yes, up to the district limit |
+| Buying | Can buy units and buildings with gold | Yes |
+| Upgrade | Pay gold to become a City (cost scales with the number of cities you already have) | — |
+
+**Town specializations** (one at a time, can be changed for gold):
+*Farming Town* (+food sent to nearby cities), *Mining Town* (+production sent to nearby cities),
+*Trade Outpost* (+trade route range, +influence), *Fort Town* (+defense, heals units, +1 commander
+radius), *Religious Site* (+faith, missionaries), *Resort Town* (+happiness and tourism by appeal).
+Mods can add more.
+
+Why: an empire can be wide without every settlement needing a build queue every turn. Only your
+important cities need constant attention, which keeps simultaneous turns fast with 8 players.
 
 ### Workable area and borders
 
-- Cities can work tiles up to **3 rings** away, and can *own* tiles up to 5 rings away.
-- **Border growth:** culture accumulates per city. When it reaches the threshold, the best tile is
-  claimed. The threshold is `10 + (6 × tiles_acquired)^1.3` (rounded).
+- Settlements work tiles up to **3 rings** away, and can *own* tiles up to 5 rings away.
+- **Border growth:** culture accumulates per settlement. When it reaches the threshold, the best
+  tile is claimed. The threshold is `10 + (6 × tiles_acquired)^1.3` (rounded).
 - **Buy tiles** with gold: the cost scales with distance and the number of tiles already owned.
+
+### Growth develops your land (from Civ 7, replaces builders)
+
+- Food surplus = food produced − (2 × population).
+- Food needed for the next citizen: `15 + 8 × (pop − 1) + (pop − 1)^1.5`.
+- **Each time a settlement grows, you choose one tile to develop.** The game proposes the best
+  improvement for that tile: a farm on grassland, a mine on hills, a plantation on bananas, fishing
+  boats on fish, and so on. If a tile allows more than one improvement, you pick which. The new
+  citizen works that tile right away.
+- A city can instead put its new citizen into a district as a **specialist** (fixed yields, extra
+  adjacency).
+- **Clear land** (removing woods, rainforest or marsh) is a cheap city project. It gives a one-time
+  production or food burst to the settlement, like Civ 6 chopping.
+- **Starvation:** a negative surplus drains the food store. At 0, the settlement loses a citizen
+  (and that tile's improvement stays, unworked).
 
 ### Citizens
 
-- Each citizen works one tile, or is a **specialist** in a district (fixed yields).
-- **Auto-assign** follows a city focus (balanced, food, production, gold, science, culture, faith).
-  Players can lock tiles manually.
+- Each citizen works a developed or natural tile, or is a specialist.
+- **Auto-assign** follows a focus (balanced, food, production, gold, science, culture, faith). Tiles
+  can be locked manually.
 
-### Growth
+### Happiness (replaces housing and amenities)
 
-- Food surplus = food produced − (2 × population).
-- Food needed for the next citizen: `15 + 8 × (pop − 1) + (pop − 1)^1.5` (Civ 6-style).
-- On growth, the stored food resets (optionally keeping some from buildings like the Granary/Aqueduct).
-- **Starvation:** a negative food surplus drains the store. At 0, the city loses a citizen.
+Each settlement has a 😊 **happiness** balance:
 
-### Housing (growth cap, soft)
+- **Sources:** luxuries, the Palace, certain buildings and districts (Entertainment Complex,
+  Aqueduct building, Thermae...), wonders, policies, religion, town specializations, and war
+  support when defending.
+- **Costs:** 1 per 2 citizens, 1 per building that has maintenance, settlements above your
+  **settlement limit** (−2 per settlement over the limit, in every settlement), and negative
+  war support.
 
-- Base: 2 (no water), 3 (coast), 5 (fresh water). Plus buildings, districts, improvements, policies.
-- At `pop ≥ housing − 1`, growth slows by 50%. At `pop ≥ housing`, it slows by 75%. At
-  `pop ≥ housing + 4`, growth stops.
+| Settlement balance | Effect |
+|---|---|
+| ≥ +5 | Thriving: +10% all yields, +10% growth |
+| 0 to +4 | Content |
+| −1 to −4 | Unhappy: −2% yields per point, growth halved |
+| ≤ −5 | Unrest: no growth, −25% yields, rebels may appear at −10 |
 
-### Amenities (happiness, per city)
+- **Celebrations:** your empire-wide happiness *surplus* each turn accumulates. When it reaches the
+  threshold (which rises with each celebration), you start a **Celebration**: for 10 turns you pick
+  one **bonus policy slot** from your government's list, and all settlements get +10% production.
+- **Settlement limit:** starts at 4 and grows with techs, civics and some policies. It's the Civ 5
+  "tall vs wide" balance, but softer.
 
-- Each city needs `ceil(pop / 2)` amenities. They come from luxuries, entertainment districts,
-  policies, wonders and religion.
-- The surplus or deficit sets the city mood:
-
-| Net amenities | Mood | Effect |
-|---|---|---|
-| ≥ +3 | Ecstatic | +20% non-food yields, +10% growth |
-| +1 to +2 | Happy | +10% non-food yields, +5% growth |
-| 0 | Content | — |
-| −1 to −2 | Displeased | −15% yields, −10% growth |
-| −3 to −4 | Unrest | −30% yields, no growth |
-| ≤ −5 | Revolt | Rebels spawn, −50% yields |
-
-> D6 asks whether to keep housing and amenities exactly like this or merge them into one
-> "happiness" stat. The recommendation is to keep both, with tooltips that make the reason
-> for any problem obvious.
-
-### Production
+### Production (cities)
 
 - One build queue per city (units, buildings, districts, wonders, projects).
 - **Overflow** carries extra production into the next item.
 - **Buying:** gold for units and buildings (not districts or wonders), and faith for religious units
   and some others (module).
-- **Chopping:** removing woods or rainforest gives a one-time production burst to the nearest city.
 - **Projects:** repeatable city projects that convert production into another yield (e.g., Campus
   Research Grants → science and great scientist points).
 
-### Capture, raze, liberate
+### Capture, puppet, raze, liberate
 
-- Capturing a city: keep it, raze it (shrinks by 1 pop per turn until destroyed, but original
-  capitals can't be razed), or liberate it (return it to its original owner, with a big
-  diplomatic boost).
-- Captured cities lose 50% of their population and some buildings (configurable).
+When you capture a settlement, you choose one of:
+- **Annex:** it's yours to manage fully (counts toward the settlement limit).
+- **Puppet** (from Civ 5): it runs itself on auto-focus, gives you its yields at −25%, can't build
+  wonders or be micromanaged, and counts as half a settlement toward the limit. You can annex it
+  later for gold.
+- **Raze:** it shrinks by 1 pop per turn until destroyed. Original capitals can't be razed.
+- **Liberate:** return it to its original owner, with a big diplomatic and war support boost.
+
+Captured settlements lose 25% of their population and some buildings (configurable).
 
 ---
 
@@ -196,7 +233,8 @@ Every yield displayed anywhere can be clicked to see a **breakdown tree**, e.g.,
 
 | Class | Examples (Ancient → Modern) | Role |
 |---|---|---|
-| Civilian | Settler, Builder, Trader, Great Person, Missionary | Non-combat, can be captured |
+| Civilian | Settler, Trader, Great Person, Missionary | Non-combat, can be captured |
+| Commander | Army Commander, Fleet Commander | Packs units, gives area bonuses (see below) |
 | Recon | Scout → Ranger → Spec Ops | Exploration, vision |
 | Melee | Warrior → Swordsman → Musketman → Infantry | Front line, captures cities |
 | Ranged | Slinger → Archer → Crossbowman → Machine Gun | Attack without retaliation |
@@ -212,7 +250,18 @@ Every yield displayed anywhere can be clicked to see a **breakdown tree**, e.g.,
 
 - One **military** unit and one **civilian** unit per tile (plus one support unit). This matches
   Civ 5/6. It makes positioning matter and avoids giant stacks of doom (D7).
-- **Formations** (later eras): combine 2 units into a Corps (+10 strength) or 3 into an Army (+17).
+### Commanders (from Civ 7, replaces corps/armies)
+
+- **Army Commanders** (land) and **Fleet Commanders** (naval) are units you train or earn.
+- **Pack:** a commander can carry up to 4 adjacent units (6 with promotions). Packed units move as
+  one stack at the commander's speed and don't block tiles. **Unpack** them next to the commander
+  to fight. This means moving an army across your empire takes one click instead of eight.
+- **Command radius** (1 tile, more with promotions): units in it get the commander's bonuses
+  (e.g., +2 strength, +1 movement, healing).
+- Commanders gain XP when units in their radius fight, and have their own promotion tree
+  (Assault, Logistics, Maneuver, Leadership, Bastion).
+- If a commander is defeated, it retreats to your nearest settlement and is out of action for a
+  few turns rather than dying. Units packed inside are unpacked first.
 
 ### Movement
 
@@ -299,8 +348,10 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
 
 - Declaring war gives a diplomatic penalty unless you have a reason (a **casus belli**, e.g., they
   converted your cities, they denounced you, liberation...). See the diplomacy module.
-- **War weariness:** ongoing war reduces amenities empire-wide, scaling with units lost.
-  Peace slowly heals it.
+- **War support** (from Civ 7, replaces war weariness): each war has a war support score per
+  side. It starts in favor of the defender if the war was a surprise (no casus belli). Captured
+  settlements, battles won, and allies joining shift it. Negative war support costs happiness in
+  every settlement, so long unpopular wars get harder to sustain.
 
 ---
 
@@ -338,20 +389,21 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
 - **Gold income:** tiles, commercial hubs, harbors, trade routes, policies, deals.
 - **Costs:** unit upkeep, building maintenance, district maintenance (some), deals.
 - **Negative gold:** if the treasury hits 0 with a negative income, a unit is disbanded each turn
-  and amenities drop.
+  and happiness drops.
 - **Buying:** units and buildings with gold. Prices scale with production cost (×4 by default).
 
 ---
 
-## 8. Builders and improvements (core)
+## 8. Improvements (core)
 
-- Builders have **charges** (3 by default). Each improvement uses one charge and is built instantly.
+- Improvements are created when a settlement **grows** (see section 3). No builder units.
 - Improvements: Farm, Mine, Quarry, Pasture, Plantation, Camp, Fishing Boats, Lumber Mill, Oil
   Well, Offshore Platform, Fort, Airstrip, Beach Resort, Ski Resort, Seaside Resort, plus unique
   ones from civs.
 - **Adjacency for improvements:** farms gain +1🍞 for every two adjacent farms (Feudalism makes it
   every one), mines gain from adjacent mines later, and so on.
-- Builders also **remove features** (chop, giving production or food) and **repair** pillaged tiles.
+- **Pillaged** improvements are repaired with a cheap city project or by a unit with the *Engineer*
+  ability (Military Engineer).
 - **Roads** are built automatically by trade routes. Military engineers can build them manually.
 
 ---
@@ -377,9 +429,9 @@ Districts are Civ 6's signature system and the main source of city planning.
 | Harbor | 💰 🍞 | +2 next to city center, +1 per coastal resource |
 | Industrial Zone | ⚙️ | +1 per mine/quarry, +2 next to Aqueduct/Dam |
 | Encampment | military | Defensive district with a ranged strike |
-| Entertainment Complex | amenities | — |
-| Aqueduct | housing | Must be next to a city center and fresh water or a mountain |
-| Neighborhood | housing by appeal | — |
+| Entertainment Complex | 😊 happiness | — |
+| Aqueduct | +growth, +😊 | Must be next to a city center and fresh water or a mountain |
+| Neighborhood | 😊 by appeal, +growth | — |
 | Government Plaza | unique | One per empire. Extra policy slot |
 | Spaceport | science victory | — |
 
@@ -392,12 +444,12 @@ Districts are Civ 6's signature system and the main source of city planning.
 
 ---
 
-## 10. Barbarians
+## 10. Independent powers (core)
 
-- Camps spawn in fog and spawn scouts. When a scout finds a city, the camp sends raids.
-- Clearing a camp gives gold and XP.
-- Settings: off / normal / raging. Optional **clans mode** later: camps can be bribed, hired, or
-  turned into city-states.
+Barbarians and city-states are one system (from Civ 7). See
+[04-advanced-systems.md](04-advanced-systems.md#independent-powers-city-states-and-barbarians).
+With the module off, they act as classic barbarians: camps spawn in fog, send scouts, then raid,
+and clearing one gives gold and XP. Settings: off / normal / raging.
 
 ---
 

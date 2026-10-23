@@ -5,7 +5,7 @@ how to try it, and any new decisions for you. **🎮 marks a playtest checkpoint
 playing decides what changes next.
 
 The order follows one rule: **build foundations that are painful to change later first**
-(determinism, N-player support, the content format, server authority, redaction), then add
+(determinism, N-player support, the content format, host authority, redaction), then add
 features on top.
 
 ## Phase A — Foundations (no playable game yet, by design)
@@ -13,7 +13,7 @@ features on top.
 ### M0 · Project skeleton
 - pnpm monorepo, strict TypeScript, ESLint/Prettier, Vitest, GitHub Actions CI.
 - `CLAUDE.md` with the working agreement for future sessions (fast checks, what CI runs).
-- **Done when:** `pnpm lint && pnpm test` pass in CI on an empty engine, client and server.
+- **Done when:** `pnpm lint && pnpm test` pass in CI on the empty packages.
 
 ### M1 · Content format and effects core
 - Zod schemas for the core content types, the loader (base + mods, load order, patches), and the
@@ -50,26 +50,28 @@ features on top.
 
 ### M5 · Units and movement
 - Unit content plus engine support: movement costs, A* pathfinding, ZOC, stacking, embarking,
-  multi-turn orders, vision, fog memory, and the scout/warrior/settler/builder basics.
+  multi-turn orders, vision, fog memory, and the scout/warrior/settler basics.
 - Client: selection, path preview with turn markers, and the unit panel.
 
-### M6 · Cities
-- Founding, workable tiles, border growth, citizens and auto-assign, growth, housing, amenities,
-  production queue, overflow, buying, and tile purchases.
-- City screen UI with yield breakdowns.
+### M6 · Settlements
+- Founding, towns vs cities, town specializations, workable tiles, border growth, citizens and
+  auto-assign, growth that develops tiles, happiness, the settlement limit, celebrations,
+  the production queue, overflow, buying, and tile purchases.
+- Settlement screen UI with yield breakdowns.
 
 ### M7 · Progress trees and government
 - Tech and civics trees (Ancient → Medieval at first), boosts, governments, policy cards, gold
   economy, and upkeep.
 - Tech/civics tree UI and the government screen.
 
-### M8 · Builders, improvements, districts, wonders
-- Builder charges, improvements with adjacency, chopping, district placement with adjacency
+### M8 · Improvements, districts, wonders
+- Improvements and their adjacency, the clear-land project, district placement with adjacency
   previews, the district limit, buildings in districts, and the first wonders.
 
 ### M9 · Combat and conflict
 - The combat formula (lookup tables), modifiers, ranged attacks, city HP, walls, city strikes,
-  capture/raze/liberate, promotions, healing, war weariness, and barbarians.
+  capture/puppet/raze/liberate, promotions, healing, commanders (pack/unpack, radius), war
+  support, and hostile camps (classic barbarians).
 - Combat preview UI.
 
 ### M10 · Hotseat alpha 🎮
@@ -78,22 +80,36 @@ features on top.
 - 🎮 **Big checkpoint: play 2–3 games.** Expect balance and UX notes. These decide the order of
   everything after this point.
 
-## Phase C — Online with friends
+## Phase C — Single player and online with friends
 
-### M11 · Server and online play
-- Accounts (D5), lobby, invite links, seats, presets, the authoritative game host, per-player
-  redaction, persistence (snapshots + action log), reconnection, and multi-device support.
+### M11 · AI v1 (moved earlier, because single player needs it)
+- Utility AI for expansion, building, research, and basic war and defense, using leader
+  personalities and agendas. Uses the same redacted view as a human player. Runs in a Web Worker.
+- **Single Player** mode on the main menu.
+- **Done when:** an AI finishes full games without crashing in CI simulations, and beats an "AFK"
+  player. (It doesn't need to beat you yet.)
+- 🎮 **Checkpoint:** play single player games against the AI.
+
+### M12 · Accounts and lobby (Supabase)
+- Supabase project setup (free tier), SQL migrations, row-level security policies, and the
+  keep-alive scheduled job.
+- In-game sign up / log in with username + password, remembered login, profiles.
+- Host Multiplayer / Join with Code, lobby seats (human, AI, closed), leader picks, presets,
+  ready check.
+
+### M13 · Online play
+- The host runs the engine in a Web Worker. The transport interface, with Supabase Realtime as the
+  first implementation. Per-player redaction, simultaneous turns with End Turn / un-end,
+  the war-fairness options, turn timers and time banks, disconnect grace and AI takeover,
+  cloud saves each turn, resume, and host handoff.
+- Chat, pings, the Discord webhook (via edge function), and browser notifications.
 - **Done when:** a test proves no hidden information reaches a client, and a 4-player online game
-  survives server restarts and dropped connections.
+  survives a host refresh and dropped connections.
+- 🎮 **Checkpoint:** first online game between you two, then a 4–8 player game with more friends.
 
-### M12 · Turn modes, timers and notifications
-- Sequential, simultaneous and dynamic turns; timers and time banks; timeout options
-  (auto end turn or skip; AI takeover arrives with M21); vacation mode; Discord webhooks, email and push; chat; pings.
-- 🎮 **Checkpoint:** first online game between you two, then a 3–4 player game with more friends.
-
-### M13 · Deploy
-- Hosted server plus hosted client, automatic deploys from `main`, backups of the game database.
-- **Done when:** your friends can join from a link with nothing to install.
+### M14 · Deploy
+- Client on Cloudflare Pages (free), auto-deploys from `main`. Desktop builds come later (M27).
+- **Done when:** your friends can open a link, make an account, and join your game by code.
 
 ## Phase D — Depth (modules)
 
@@ -101,53 +117,52 @@ The order inside this phase can change based on playtest feedback.
 
 | Milestone | Contents |
 |---|---|
-| M14 · Diplomacy & deals | States, friendship, alliances, enforced deals, promises, grievances, deal inbox |
-| M15 · Trade routes | Traders, routes, auto-roads, plunder |
-| M16 · Great people | Points race, named individuals, patronage, great works |
-| M17 · Religion | Pantheons, founding, beliefs, pressure, missionaries/apostles, religious victory |
-| M18 · City-states | Types, envoys, suzerains, quests, levies |
-| M19 · Eras & golden ages, governors | Historic moments, ages, dedications, governor trees |
-| M20 · Full trees & late game | Renaissance → Information eras, air units, nukes (toggleable), science victory, tourism & culture victory |
+| M15 · Diplomacy & deals | States, friendship, alliances, influence, endeavors and sanctions, enforced deals, promises, reputation, deal inbox |
+| M16 · Trade routes | Traders, routes, auto-roads, plunder |
+| M17 · Great people | Points race, named individuals, patronage, great works |
+| M18 · Religion | Pantheons, founding, beliefs, pressure, missionaries/apostles, religious victory |
+| M19 · Independent powers | Camps with dispositions, befriending, city-states, envoys, suzerains, quests, levies |
+| M20 · Eras, golden ages, governors | Historic moments, legacy goals, ages, dedications, governor trees |
+| M21 · Full trees & late game | Renaissance → Information eras, air units, nukes (toggleable), ideologies, science victory, tourism & culture victory |
 
 🎮 Playtest after every 1–2 milestones.
 
-## Phase E — AI
-
-### M21 · AI v1
-- Utility AI for expansion, building, research, basic war and defense, using leader
-  personalities and agendas. Uses the same redacted view as a human player.
-- Fills empty seats and takes over absent players.
-- **Done when:** an AI can finish a full game without crashing in a CI simulation, and beats an
-  "AFK" player. (It doesn't need to beat you yet.)
+## Phase E — Smarter AI
 
 ### M22 · AI v2
-- AI diplomacy (deals, alliances, agendas), better war planning (staging, siege), and religion and
-  city-state play. Difficulty levels with openly declared bonuses.
+- AI diplomacy (deals, alliances, agendas, influence), better war planning (commanders, staging,
+  siege), religion and independent-power play. Difficulty levels with openly declared bonuses.
+
+### M23 · AI v3
+- Long-term strategy per victory type, and AI tuned by large AI-vs-AI simulation runs.
 
 ## Phase F — Modding and content
 
-### M23 · Modding v1
-- Mod manager UI, server mod library and upload, conflict display, auto-download on join,
-  a modding guide, and JSON Schema for editor autocompletion.
+### M24 · Modding v1
+- Mod manager UI, a mod library stored in Supabase Storage (free tier) with upload, conflict
+  display, auto-download on join, a modding guide, and JSON Schema for editor autocompletion.
 
-### M24 · Civ creator
-- The form-based editor for civs, leaders, uniques, great people and governors, with a
+### M25 · Civ creator
+- The form-based editor for leaders, civs, uniques, great people and governors, with a
   plain-English effect preview.
 
-### M25 · Base content
-- About 12 base civs with leaders, uniques and agendas, a full unit roster, all buildings and
-  districts, and 30+ wonders. Balanced with simulation reports.
-- 🎮 **Checkpoint:** each friend makes their own civ. Play an all-custom-civs game.
+### M26 · Base content
+- The starting ten leaders and civs from [09-base-roster.md](09-base-roster.md) are built along the way
+  (they're needed for testing from M6 on). This milestone fills out the full unit roster, all
+  buildings and districts, 30+ wonders, and the leaders you add from the queue. Balanced with
+  simulation reports.
+- 🎮 **Checkpoint:** each friend makes their own leader. Play an all-custom game.
 
 ## Phase G — Polish and v1.0
 
-### M26 · Desktop apps
-- Tauri builds for Windows, macOS and Linux, with offline hotseat support and auto-updates.
+### M27 · Desktop apps
+- Tauri builds for Windows, macOS and Linux (offline single player and hotseat, multiplayer
+  hosting from the desktop app), with auto-updates via GitHub Releases.
 
-### M27 · Art and audio pass
+### M28 · Art and audio pass
 - The chosen art style (D11), unit and district sprites, leader portraits, animations, music and SFX.
 
-### M28 · UX polish and replays
+### M29 · UX polish and replays
 - Replays with timeline, stats graphs, hall of fame, Civilopedia, accessibility options, and a
   tutorial or first-game hints.
 
@@ -157,7 +172,8 @@ The order inside this phase can change based on playtest feedback.
 ## After v1.0 (backlog)
 
 Loyalty, espionage, world congress and diplomatic victory, climate and disasters, corporations,
-barbarian clans, scripted mods, 12-player support, a mobile-first UI, map editor,
+Ages mode, crises, scripted mods, 12-player support, WebRTC transport (if message limits are
+ever hit), a dedicated host for always-on async games, a mobile-first UI, map editor,
 scenarios (preset maps + rules + victory), and alternative 3D renderer experiments.
 
 ## Rough effort
@@ -169,9 +185,9 @@ one well-scoped chunk:
 |---|---|
 | A · Foundations | 6–10 |
 | B · Core game → hotseat alpha | 15–25 |
-| C · Online | 8–12 |
+| C · Single player + online | 12–20 |
 | D · Depth modules | 25–40 |
-| E · AI | 10–20 |
+| E · Smarter AI | 8–15 |
 | F · Modding & content | 10–20 |
 | G · Polish & v1.0 | 10–20 |
 

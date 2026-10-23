@@ -8,26 +8,26 @@ happened and what needs you".
 
 | Screen | Contents |
 |---|---|
-| **Home** | Your games (whose turn, time left), create/join, mod manager, civ creator, settings, hall of fame |
-| **Lobby** | Settings, seats, civ picks or draft, mods, chat, ready check |
+| **Home** | Single player, host multiplayer, join with code, hotseat, load game, mod manager, civ creator, settings, hall of fame, profile / log in |
+| **Lobby** | Join code, settings, seats, leader picks or draft, mods, chat, ready check |
 | **Map (main)** | The world view, plus the overlays below |
-| **City** | Tiles (with yields and lock buttons), citizens, production queue, buy, districts and buildings, growth/housing/amenities breakdown, religion, loyalty |
+| **Settlement** | Tiles (with yields and lock buttons), citizens, production queue (cities) or specialization (towns), upgrade to city, buy, districts and buildings, growth and happiness breakdown, religion |
 | **Tech tree / Civics tree** | Zoomable graph, boost conditions, unlock previews, "path to X" queueing |
 | **Government** | Government choice, policy card slots, drag-and-drop cards |
 | **Diplomacy** | Leaders list with relationships and opinion breakdowns, deal screen, promises, history |
 | **Trade** | Active routes, plan a route with a yield preview |
 | **Great people** | The current available person of each type, points race, patronage |
 | **Religion** | Beliefs, spread map, followers per city |
-| **City-states** | Envoys, suzerains, quests |
+| **Independent powers** | Camps and their disposition, befriending, city-states, envoys, suzerains, quests |
 | **Reports** | Cities overview, units list, yields over time, demographics, score |
-| **Turn summary** | What changed since your last turn (essential for async play) |
+| **Turn summary** | What changed since your last turn (what the other players did that you can see) |
 | **Victory progress** | Each victory type, with every player's progress (based on what you can see) |
 | **Replay** | Timeline scrubber, map playback, historic moments |
 
 ## Main map HUD
 
 - **Top bar:** yields per turn and stockpiles (click any one for a breakdown), turn number, era,
-  timer, whose turn it is, game menu.
+  timer, every player's turn status (🟢 playing / ✅ done), game menu.
 - **Bottom right:** the **Next Action** button: "Choose production", "Unit needs orders",
   "Choose research", "Pick policy", "End Turn". Clicking it jumps to the next thing that needs you.
 - **Bottom left:** the selected unit or city panel, with actions as big icon buttons plus
@@ -57,8 +57,8 @@ happened and what needs you".
 - Mouse: left click selects, right click moves or attacks, drag pans, and the wheel zooms.
 - Keyboard: WASD/arrows to pan, Enter for Next Action, standard Civ-like shortcuts (F = fortify,
   S = sleep, B = found city...). Everything is rebindable.
-- Touch: tap selects, tap again confirms a move, pinch zooms. This is enough to take an async
-  turn on a phone. Full phone play isn't a v1 goal (D8).
+- Touch: tap selects, tap again confirms a move, pinch zooms. This is enough to play a turn
+  on a tablet or phone. Full phone play isn't a v1 goal (D8).
 
 ## Accessibility
 
@@ -71,10 +71,10 @@ happened and what needs you".
 
 - **Quick combat / quick movement** toggles (skip animations).
 - **Auto-end turn** option when nothing needs your attention (live games).
-- A **"waiting for…"** indicator showing which players are still on their turn in
-  simultaneous mode, plus a polite "nudge" button.
-- Turn-start **digest** in async: "While you were away: Sam built the Pyramids, Alex's army moved
-  toward your border (last seen 4 tiles from Berlin)".
+- A **"waiting for…"** indicator showing which players are still on their turn, plus a polite
+  "nudge" button.
+- Turn-start **digest**: "Last turn: Sam built the Pyramids, Alex's army moved toward your border
+  (last seen 4 tiles from Berlin)". This also appears when you resume a saved game.
 
 ## Audio (later)
 
