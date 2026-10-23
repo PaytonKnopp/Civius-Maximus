@@ -11,6 +11,12 @@ whole new people, also write a `civ` file. The starting roster is in
 The base game is itself built as a mod (`content/base/`) using exactly the same format. So the
 format will always be complete enough for real content.
 
+> **Implemented so far (M1):** content types `yield`, `terrain`, `feature`, `resource`,
+> `ability`, `rules`, `strings` and `patch`; effects `modify_yield` (flat or percent) and
+> `yield_per_adjacent`; all tile conditions listed below. Other types and effects in this doc
+> are the plan and arrive with their milestones. `pnpm cx validate` and the schemas in
+> `schemas/` always reflect what's actually implemented.
+
 ## Content package layout
 
 ```
@@ -158,12 +164,12 @@ time/memory budget and access only to an effects API). Until then, a new effect 
 
 ## Validation
 
-`pnpm cx validate mods/vikings-plus` checks:
-- schema validity, with friendly messages ("units/longship.json: `combat.melee` must be a number,
+`pnpm cx validate mods/vikings-plus` checks (✅ = implemented):
+- ✅ schema validity, with friendly messages ("units/longship.json: `combat.melee` must be a number,
   got "25"")
-- every reference resolves (`unit_longship` exists, its `requiresTech` exists...)
-- no duplicate IDs, unless it's a declared patch
-- strings exist for every `@` key
+- ✅ every reference resolves (`unit_longship` exists, its `requiresTech` exists...)
+- ✅ no duplicate IDs, unless it's a declared patch
+- ✅ strings exist for every `@` key
 - art files exist and are the right size and format
 - **balance hints** (warnings only), e.g., "this unit is 40% stronger than others of its era and cost"
 

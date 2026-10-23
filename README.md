@@ -4,7 +4,7 @@ A turn-based 4X strategy game that takes the best of Civ 5, 6 and 7. Play solo a
 or host a game and have 2–8 friends join with a code. Everyone takes their turn at the same time.
 Built from the ground up to be modded: leaders, civs, units and rules are all data. Costs $0/month to run.
 
-> **Status:** M0 (project skeleton). The design is complete in `docs/`. Gameplay code starts at M1.
+> **Status:** M1 done (content format, mod validator, effects core). Next: M2, the engine core.
 
 ## Design docs
 
@@ -32,6 +32,7 @@ pnpm lint        # ESLint, including determinism rules for the engine
 pnpm typecheck   # TypeScript, all packages
 pnpm test        # Vitest, all packages
 pnpm dev         # client dev server
+pnpm cx validate mods/my-mod   # check a mod (see mods/README.md)
 ```
 
 ## Legal note

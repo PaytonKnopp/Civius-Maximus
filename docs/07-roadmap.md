@@ -10,12 +10,12 @@ features on top.
 
 ## Phase A — Foundations (no playable game yet, by design)
 
-### M0 · Project skeleton
+### M0 · Project skeleton ✅
 - pnpm monorepo, strict TypeScript, ESLint/Prettier, Vitest, GitHub Actions CI.
 - `CLAUDE.md` with the working agreement for future sessions (fast checks, what CI runs).
 - **Done when:** `pnpm lint && pnpm test` pass in CI on the empty packages.
 
-### M1 · Content format and effects core
+### M1 · Content format and effects core ✅
 - Zod schemas for the core content types, the loader (base + mods, load order, patches), and the
   validator CLI.
 - Effects/conditions evaluator, with tests. Yield breakdowns ("why?") are built from day one.

@@ -1,0 +1,71 @@
+[
+  {
+    "type": "terrain",
+    "id": "grassland",
+    "name": "Grassland",
+    "yields": { "food": 2 },
+    "elevations": ["flat", "hills", "mountain"],
+    "color": "#6b8f3a"
+  },
+  {
+    "type": "terrain",
+    "id": "plains",
+    "name": "Plains",
+    "yields": { "food": 1, "production": 1 },
+    "elevations": ["flat", "hills", "mountain"],
+    "color": "#a3a04a"
+  },
+  {
+    "type": "terrain",
+    "id": "desert",
+    "name": "Desert",
+    "yields": {},
+    "elevations": ["flat", "hills", "mountain"],
+    "color": "#d8c27a"
+  },
+  {
+    "type": "terrain",
+    "id": "tundra",
+    "name": "Tundra",
+    "yields": { "food": 1 },
+    "elevations": ["flat", "hills", "mountain"],
+    "color": "#8c8a6e"
+  },
+  {
+    "type": "terrain",
+    "id": "snow",
+    "name": "Snow",
+    "yields": {},
+    "elevations": ["flat", "hills", "mountain"],
+    "appeal": -1,
+    "color": "#e8eef0"
+  },
+  {
+    "type": "terrain",
+    "id": "coast",
+    "name": "Coast",
+    "yields": { "food": 1, "gold": 1 },
+    "water": true,
+    "appeal": 1,
+    "color": "#4f8fb8"
+  },
+  {
+    "type": "terrain",
+    "id": "lake",
+    "name": "Lake",
+    "yields": { "food": 1, "gold": 1 },
+    "water": true,
+    "freshWater": true,
+    "appeal": 1,
+    "color": "#5a9cc4"
+  },
+  {
+    "type": "terrain",
+    "id": "ocean",
+    "name": "Ocean",
+    "yields": { "food": 1 },
+    "water": true,
+    "deepWater": true,
+    "color": "#28597d"
+  }
+]

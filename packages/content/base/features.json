@@ -1,0 +1,87 @@
+[
+  {
+    "type": "feature",
+    "id": "woods",
+    "name": "Woods",
+    "yields": { "production": 1 },
+    "moveCostExtra": 1,
+    "defense": 3,
+    "appeal": 1,
+    "removable": true,
+    "blocksSight": true,
+    "validTerrains": ["grassland", "plains", "tundra"],
+    "validElevations": ["flat", "hills"]
+  },
+  {
+    "type": "feature",
+    "id": "rainforest",
+    "name": "Rainforest",
+    "yields": { "food": 1 },
+    "moveCostExtra": 1,
+    "defense": 3,
+    "appeal": -1,
+    "removable": true,
+    "blocksSight": true,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["flat", "hills"]
+  },
+  {
+    "type": "feature",
+    "id": "marsh",
+    "name": "Marsh",
+    "yields": { "food": 1 },
+    "moveCostExtra": 1,
+    "appeal": -1,
+    "removable": true,
+    "validTerrains": ["grassland"]
+  },
+  {
+    "type": "feature",
+    "id": "floodplains",
+    "name": "Floodplains",
+    "yields": { "food": 3 },
+    "requiresRiver": true,
+    "validTerrains": ["desert"]
+  },
+  {
+    "type": "feature",
+    "id": "floodplains_grassland",
+    "name": "Floodplains",
+    "yields": { "food": 1 },
+    "requiresRiver": true,
+    "validTerrains": ["grassland"]
+  },
+  {
+    "type": "feature",
+    "id": "floodplains_plains",
+    "name": "Floodplains",
+    "yields": { "food": 1 },
+    "requiresRiver": true,
+    "validTerrains": ["plains"]
+  },
+  {
+    "type": "feature",
+    "id": "oasis",
+    "name": "Oasis",
+    "yields": { "food": 3, "gold": 1 },
+    "freshWater": true,
+    "appeal": 1,
+    "validTerrains": ["desert"]
+  },
+  {
+    "type": "feature",
+    "id": "reef",
+    "name": "Reef",
+    "yields": { "food": 1, "production": 1 },
+    "moveCostExtra": 1,
+    "appeal": 2,
+    "validTerrains": ["coast"]
+  },
+  {
+    "type": "feature",
+    "id": "ice",
+    "name": "Ice",
+    "impassable": true,
+    "validTerrains": ["coast", "ocean"]
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": ["mods/*/mod.json", "packages/content/base/mod.json"],
+      "url": "./schemas/mod.schema.json"
+    },
+    {
+      "fileMatch": [
+        "mods/**/*.json",
+        "packages/content/base/**/*.json",
+        "!mods/*/mod.json",
+        "!packages/content/base/mod.json"
+      ],
+      "url": "./schemas/content-file.schema.json"
+    }
+  ]
+}

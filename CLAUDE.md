@@ -21,6 +21,8 @@
 | `pnpm typecheck` | `tsc` in every package |
 | `pnpm test` | Vitest across all packages |
 | `pnpm dev` / `pnpm build` | Client dev server / production build |
+| `pnpm cx validate [mods...]` | Compile base content (+ mods) and print every problem |
+| `pnpm cx schema` | Regenerate `schemas/` (a test fails if they're stale) |
 
 Before committing, run `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test`. CI
 (`.github/workflows/ci.yml`) runs the same checks plus the client build.
@@ -29,5 +31,7 @@ Before committing, run `pnpm lint && pnpm format:check && pnpm typecheck && pnpm
 
 `packages/engine` (rules), `packages/content` (data + schemas), `packages/protocol` (messages),
 `packages/host` (authoritative game host + transports), `packages/client` (React + PixiJS),
-`packages/backend` (Supabase migrations and policies). Library packages export TypeScript
+`packages/backend` (Supabase migrations and policies), `packages/tools` (the `cx` CLI).
+Base game content lives in `packages/content/base/`; test mods in
+`packages/content/test-fixtures/`. Library packages export TypeScript
 source directly (`exports: ./src/index.ts`). There's no build step except the client.
