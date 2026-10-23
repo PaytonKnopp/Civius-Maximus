@@ -66,11 +66,16 @@ features on top.
   selection, path preview with turn markers, the unit panel, Next Action / End Turn, and the
   dark fog of war in both the 3D and 2D views.
 
-### M6 · Settlements
-- Founding, towns vs cities, town specializations, workable tiles, border growth, citizens and
-  auto-assign, growth that develops tiles, happiness, the settlement limit, celebrations,
-  the production queue, overflow, buying, and tile purchases.
-- Settlement screen UI with yield breakdowns.
+### M6 · Settlements ✅
+- Founding, towns vs cities (towns sell production for gold, upgrade for gold), workable tiles,
+  border growth from culture, citizens with auto-assign, focus and locked tiles, growth that
+  develops tiles (8 improvements), starvation, happiness with moods, the settlement limit, the
+  production queue with overflow, buying, tile purchases, and the first buildings.
+- The 10 roster civs with city names and colors; placeholder AI seats found and build.
+- Client: settlements, borders and improvements in 3D and 2D, the settlement screen with yield
+  and happiness breakdowns, growth choices on the map, production and buying, the empire bar.
+- Moved later: **town specializations** and **specialists** (M8, with districts),
+  **celebrations** (M7, with policies), **clear land** (M8).
 
 ### M7 · Progress trees and government
 - Tech and civics trees (Ancient → Medieval at first), boosts, governments, policy cards, gold

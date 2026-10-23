@@ -1,9 +1,10 @@
-// Plays the first turns of a local game in a real browser and screenshots each step:
-// select a unit, preview a path, move, end turns, the 2D view, and phone size.
+// Plays the first turns of a local game in a real browser and screenshots each step: select the
+// settler, found a capital, pick production, grow and develop a tile, the 2D view, phone size.
 // Usage: node scripts/screenshot-game.mjs <out-dir>   (BASE_URL defaults to a vite preview)
 import { chromium } from 'playwright';
 const out = process.argv[2];
 const url = process.env.BASE_URL ?? 'http://localhost:4173/';
+const TURNS = Number(process.env.TURNS ?? 14);
 const browser = await chromium.launch({
   executablePath:
     process.env.CHROMIUM_PATH ??
@@ -12,7 +13,7 @@ const browser = await chromium.launch({
 });
 const errors = [];
 const watch = (page, tag) => {
-  page.on('pageerror', (e) => errors.push(`${tag} pageerror: ${e.message}`));
+  page.on('pageerror', (e) => errors.push(`${tag} pageerror: ${e.stack ?? e.message}`));
   page.on('console', (m) => m.type() === 'error' && errors.push(`${tag}: ${m.text()}`));
 };
 const rendering = (page) =>
@@ -21,64 +22,68 @@ const rendering = (page) =>
     null,
     { timeout: 30000 },
   );
-const turn = (page) => page.textContent('.turn-number');
+const turn = async (page) => Number(await page.textContent('.turn-number'));
+const label = (page) => page.textContent('.next-label');
 
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 watch(page, 'desktop');
 await page.goto(url, { waitUntil: 'networkidle' });
 await page.waitForSelector('canvas');
 await rendering(page);
-await page.waitForTimeout(1500);
+await page.waitForTimeout(1000);
 await page.screenshot({ path: `${out}/game-start.png` });
 
-// Next action selects the first unit that needs orders.
-console.log('next action:', await page.textContent('.next-label'));
+// The first unit is the settler: found the capital where it stands.
 await page.keyboard.press('Enter');
 await page.waitForSelector('.unit-panel');
-console.log('selected:', (await page.textContent('.unit-head'))?.trim());
-await page.mouse.move(640 + 190, 400 - 40);
+console.log('selected:', (await page.textContent('.unit-head h3'))?.trim());
+await page.screenshot({ path: `${out}/game-settler.png` });
+await page.keyboard.press('b');
+await page.waitForSelector('.settlement-panel');
+console.log('founded:', (await page.textContent('.settlement-head h3'))?.trim());
+await page.click('.items li:has-text("Warrior") button:has-text("Build")');
 await page.waitForTimeout(800);
-await page.screenshot({ path: `${out}/game-path.png` });
+await page.screenshot({ path: `${out}/game-founded.png` });
 
-// Right-click moves there.
-await page.mouse.click(640 + 190, 400 - 40, { button: 'right' });
-await page.waitForTimeout(1500);
-console.log('after move:', (await page.textContent('.unit-sub'))?.trim());
-await page.screenshot({ path: `${out}/game-moved.png` });
-
-// Skip everything else and end a few turns.
-const before = await turn(page);
-for (let i = 0; i < 12; i++) {
-  const label = await page.textContent('.next-label');
-  if (label === 'End turn') {
+// Play turns: skip units, take growth choices, keep building, end the turn.
+let developShot = false;
+for (let guard = 0; guard < 200 && (await turn(page)) < TURNS; guard++) {
+  const next = await label(page);
+  if (next === 'End turn') {
     await page.keyboard.press('Enter');
-    break;
+  } else if (next === 'Choose a tile to develop') {
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('.develop .choices button');
+    if (!developShot) {
+      await page.waitForTimeout(600);
+      await page.screenshot({ path: `${out}/game-develop.png` });
+      developShot = true;
+    }
+    console.log('develop:', (await page.textContent('.develop .choices button'))?.trim());
+    await page.click('.develop .choices button');
+  } else if (next === 'Choose production') {
+    await page.keyboard.press('Enter');
+    await page.click('.items li button:has-text("Build")');
+  } else if (/need/.test(next ?? '')) {
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('.unit-panel');
+    await page.keyboard.press(' ');
+  } else {
+    await page.waitForTimeout(100);
   }
-  if (await page.$('.unit-panel')) await page.keyboard.press(' ');
-  else await page.keyboard.press('Enter');
 }
-await page.waitForFunction(
-  (t) => document.querySelector('.turn-number')?.textContent !== t,
-  before,
-);
-console.log('turn', before, '->', await turn(page));
-await page.waitForTimeout(800);
-await page.screenshot({ path: `${out}/game-turn2.png` });
+console.log('turn reached:', await turn(page));
+console.log('empire:', (await page.textContent('.resource-bar'))?.replace(/\s+/g, ' '));
+// Open the capital to look at it.
+await page.keyboard.press('Escape');
+await page.mouse.move(640, 400);
+await page.waitForTimeout(500);
+await page.screenshot({ path: `${out}/game-later.png` });
 
 // 2D view of the same game.
 await page.click('.segmented.compact button:nth-child(2)');
 await page.waitForTimeout(1500);
-await page.keyboard.press('Enter');
-await page.waitForTimeout(500);
-await page.mouse.move(640 + 120, 400 + 60);
-await page.waitForTimeout(500);
 await page.screenshot({ path: `${out}/game-2d.png` });
-
-// New game dialog.
-await page.click('text=New game');
-await page.waitForSelector('.dialog');
-await page.screenshot({ path: `${out}/game-dialog.png` });
-await page.click('text=Cancel');
 
 const phone = await browser.newPage({
   viewport: { width: 400, height: 820 },
@@ -89,9 +94,11 @@ watch(phone, 'phone');
 await phone.goto(url, { waitUntil: 'networkidle' });
 await phone.waitForSelector('canvas');
 await rendering(phone);
-await phone.waitForTimeout(1000);
+await phone.waitForTimeout(800);
 await phone.click('.next-action');
 await phone.waitForSelector('.unit-panel');
+await phone.click('.unit-actions .found');
+await phone.waitForSelector('.settlement-panel');
 await phone.waitForTimeout(800);
 await phone.screenshot({ path: `${out}/game-phone.png` });
 const overflow = await phone.evaluate(

@@ -24,7 +24,7 @@ import {
   TorusGeometry,
   Vector3,
 } from 'three';
-import { PLAYER_COLORS, type PathView, type UnitView } from '../map/renderer';
+import type { PathView, UnitView } from '../map/renderer';
 
 /**
  * Units in the 3D world: small low-poly squads (oversized against the terrain so they read at
@@ -118,7 +118,7 @@ function figure(color: number, x: number, z: number, extra?: 'shield' | 'stick' 
 }
 
 function buildModel(view: UnitView): Group {
-  const color = PLAYER_COLORS[view.color % PLAYER_COLORS.length]!;
+  const color = view.color;
   const g = new Group();
   switch (view.model) {
     case 'warrior':
@@ -183,14 +183,14 @@ function buildModel(view: UnitView): Group {
 
 const badgeCache = new Map<string, SpriteMaterial>();
 function badge(view: UnitView): SpriteMaterial {
-  const key = `${view.color}:${view.icon}:${view.mine}:${view.needsOrders}`;
+  const key = `${view.color}:${view.accent}:${view.icon}:${view.mine}:${view.needsOrders}`;
   const cached = badgeCache.get(key);
   if (cached) return cached;
   const size = 128;
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext('2d')!;
-  const color = `#${PLAYER_COLORS[view.color % PLAYER_COLORS.length]!.toString(16).padStart(6, '0')}`;
+  const color = `#${view.color.toString(16).padStart(6, '0')}`;
   // Shield shape: rounded top, pointed bottom.
   ctx.beginPath();
   ctx.moveTo(20, 18);
@@ -208,7 +208,7 @@ function badge(view: UnitView): SpriteMaterial {
   ctx.arc(64, 60, 30, 0, Math.PI * 2);
   ctx.fillStyle = color;
   ctx.fill();
-  ctx.fillStyle = '#10161d';
+  ctx.fillStyle = `#${view.accent.toString(16).padStart(6, '0')}`;
   ctx.font = '700 34px "IBM Plex Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

@@ -200,7 +200,12 @@ export function foundSettlement(
   p.settlementsFounded++;
   const s = { id, owner: player };
   claim(draft, tile, s);
-  draft.map.tiles[tile]!.improvement = null;
+  // The center is cleared: no improvement, and woods, rainforest or marsh are removed.
+  const center = draft.map.tiles[tile]!;
+  center.improvement = null;
+  if (center.feature !== null && ctx.content.entities.feature[center.feature]?.removable) {
+    center.feature = null;
+  }
   for (const t of tilesWithin(draft.map, tile, rules.startingRadius)) {
     if (draft.map.tiles[t]!.owner === null) claim(draft, t, s);
   }
@@ -477,7 +482,8 @@ function processSettlement(draft: Draft<GameState>, ctx: EngineContext, id: stri
     player.gold += percentOf(production, rules.townGoldPercent);
   } else {
     while (s.queue.length > 0 && itemProblem(ctx, snap, s, s.queue[0]!)) s.queue.shift();
-    const head = s.queue[0];
+    // A plain copy: events outlive the draft.
+    const head = s.queue[0] && { kind: s.queue[0].kind, id: s.queue[0].id };
     if (!head) {
       if (production > 0)
         emit({ type: 'production_idle', settlement: id, owner, visibleTo: [owner] });

@@ -46,4 +46,7 @@ To change one, tell Claude in a session (or edit this file). The relevant docs g
 | D8 | **Phone support** | Phone/tablet browser can play a turn. A full mobile-first UI is not a v1 goal | Mobile-first in v1 | M13+ | Open (default assumed) |
 | D21 | **Map wrap** | Wraps east–west by default | No wrap | M3 | Open (default assumed) |
 | D31 | **Starting units** | Settler + Warrior + Scout (exploring early is fun, and the scout finds goody huts and rivals sooner) | Settler + Warrior only (Civ VI); setup option for extra settlers | M5 | Open (default assumed) |
+| D33 | **Where growth can develop** | Any tile of the settlement within 3, or an unclaimed tile touching its territory (claims it). Unchosen growth is developed automatically at turn end | Own tiles only (borders grow only by culture and buying) | M6 | Open (default assumed) |
+| D34 | **Town economy** | Towns sell 100% of their production as gold; upgrading to a city costs 100 + 60 per city you have | Towns keep a small build queue | M6 | Open (default assumed) |
+| D35 | **Base happiness** | Every settlement starts at +2; 1 unhappiness per 2 citizens; luxuries +2 each where improved | Harsher (0 base) or softer (+4 base) | M6 | Open (default assumed) |
 | D32 | **Unit auto-cycling** | After a unit uses its moves, the next unit that needs orders is selected and the camera pans to it | Stay on the moved unit until you pick another | M5 | Open (default assumed; becomes a setting) |

@@ -22,8 +22,9 @@ export interface MapViewData {
 export interface UnitView {
   id: string;
   owner: string;
-  /** Index into PLAYER_COLORS. */
+  /** The owner's colors (RGB numbers): main and accent. */
   color: number;
+  accent: number;
   name: string;
   icon: string;
   model: string;
@@ -31,6 +32,37 @@ export interface UnitView {
   tile: number;
   mine: boolean;
   needsOrders: boolean;
+}
+
+/** A settlement as the renderer draws it (only ones on tiles the viewer has explored). */
+export interface SettlementView {
+  id: string;
+  owner: string;
+  color: number;
+  accent: number;
+  name: string;
+  population: number;
+  tile: number;
+  kind: 'town' | 'city';
+  capital: boolean;
+  mine: boolean;
+  /** Second banner line for your own settlements, e.g. "Warrior · 3". */
+  status?: string;
+}
+
+/** Territory and improvements, per tile, as the viewer knows them. */
+export interface TerritoryView {
+  /** The settlement each tile belongs to, or null. Borders are drawn between different owners. */
+  settlement: (string | null)[];
+  /** Improvement model per tile (see the content's `improvement.model`), or null. */
+  improvements: (string | null)[];
+}
+
+/** A tile marked for a choice: developing it, buying it... `label` is drawn on the tile. */
+export interface TileHighlight {
+  tile: number;
+  tone: 'develop' | 'buy' | 'worked' | 'selected';
+  label?: string;
 }
 
 /** A planned move: each step, which turn it's reached on, and whether a turn ends there. */
@@ -58,6 +90,8 @@ export interface MapRenderer {
   setSelected(unit: string | null): void;
   /** `from` is the tile the selected unit stands on. */
   setPath(path: PathView | null, from: number | null): void;
+  setSettlements(settlements: SettlementView[], territory: TerritoryView): void;
+  setHighlights(highlights: TileHighlight[]): void;
   focusPlayer(player: string | undefined): void;
   /** Pans to a tile, zooming in only if the camera is too far out to see units; `close` zooms in
    * for a good look (used at the start of a game). */

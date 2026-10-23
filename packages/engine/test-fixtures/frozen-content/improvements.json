@@ -16,7 +16,8 @@
         "features": ["floodplains", "floodplains_grassland", "floodplains_plains"]
       }
     ],
-    "color": "#c9a74a"
+    "color": "#c9a74a",
+    "model": "farm"
   },
   {
     "type": "improvement",
@@ -34,7 +35,8 @@
         "elevations": ["hills"]
       }
     ],
-    "color": "#8a8076"
+    "color": "#8a8076",
+    "model": "mine"
   },
   {
     "type": "improvement",
@@ -46,7 +48,8 @@
     },
     "order": 5,
     "resources": ["stone"],
-    "color": "#b9b2a4"
+    "color": "#b9b2a4",
+    "model": "quarry"
   },
   {
     "type": "improvement",
@@ -58,7 +61,8 @@
     },
     "order": 5,
     "resources": ["cattle", "sheep", "horses"],
-    "color": "#9fbf5a"
+    "color": "#9fbf5a",
+    "model": "pasture"
   },
   {
     "type": "improvement",
@@ -70,7 +74,8 @@
     },
     "order": 5,
     "resources": ["bananas", "silk", "spices", "wine", "incense"],
-    "color": "#6f9a3c"
+    "color": "#6f9a3c",
+    "model": "plantation"
   },
   {
     "type": "improvement",
@@ -82,7 +87,8 @@
     },
     "order": 5,
     "resources": ["deer"],
-    "color": "#7a5a3a"
+    "color": "#7a5a3a",
+    "model": "camp"
   },
   {
     "type": "improvement",
@@ -101,7 +107,8 @@
         "features": ["reef"]
       }
     ],
-    "color": "#4f86a8"
+    "color": "#4f86a8",
+    "model": "boats"
   },
   {
     "type": "improvement",
@@ -119,6 +126,7 @@
         "needsFeature": true
       }
     ],
-    "color": "#4d6b34"
+    "color": "#4d6b34",
+    "model": "woodcutter"
   }
 ]

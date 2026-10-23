@@ -4,9 +4,9 @@ A turn-based 4X strategy game that takes the best of Civ 5, 6 and 7. Play solo a
 or host a game and have 2–8 friends join with a code. Everyone takes their turn at the same time.
 Built from the ground up to be modded: leaders, civs, units and rules are all data. Costs $0/month to run.
 
-> **Status:** M5 done: `pnpm dev` starts a local game where you explore with your settler, warrior
-> and scout under a dark fog of war (3D or 2D). The Map Lab is one click away.
-> Next: M6, settlements.
+> **Status:** M6 done: `pnpm dev` starts a local game where you found settlements, grow them by
+> developing tiles, build and buy units and buildings, and watch borders spread (3D or 2D).
+> Next: M7, the tech and civics trees and governments.
 
 ## Design docs
 

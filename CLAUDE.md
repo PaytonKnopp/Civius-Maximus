@@ -47,6 +47,7 @@ Before committing, run `pnpm lint && pnpm format:check && pnpm typecheck && pnpm
 `packages/host` (authoritative game host + transports; `LocalGame` runs a game in the browser),
 `packages/client` (React, PixiJS for 2D, Three.js for 3D; `src/game` is the game screen),
 `packages/backend` (Supabase migrations and policies), `packages/tools` (the `cx` CLI).
+Engine tests build hand-drawn maps with `packages/engine/src/testing/world.ts`.
 Base game content lives in `packages/content/base/`; test mods in
 `packages/content/test-fixtures/`. Library packages export TypeScript
 source directly (`exports: ./src/index.ts`). There's no build step except the client.

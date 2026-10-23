@@ -526,15 +526,63 @@ input:focus-visible {
   color: var(--muted);
 }
 
-/* Players (top left, under the bar) */
+/* Players (right, under the turn) */
 .players {
+  position: absolute;
+  top: 96px;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  max-width: min(520px, calc(100% - 32px));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* Empire resources (top left, under the bar) */
+.resource-bar {
   position: absolute;
   top: 54px;
   left: max(16px, env(safe-area-inset-left, 0px));
-  max-width: calc(100% - 260px);
   display: flex;
-  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  border: 1px solid var(--panel-edge);
+  border-radius: 999px;
+}
+
+.resource-bar li {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 3px 10px;
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.resource-bar li + li {
+  border-left: 1px solid var(--panel-edge);
+}
+
+.resource-bar .delta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.notices {
+  position: absolute;
+  top: 104px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 6px;
+  max-width: calc(100% - 32px);
+  pointer-events: none;
 }
 
 .player-chip {
@@ -558,13 +606,8 @@ input:focus-visible {
   color: var(--brass);
 }
 
-/* Toast for turn starts and refused actions */
+/* Toasts: turn starts, settlement news, refused actions */
 .notice {
-  position: absolute;
-  top: 104px;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: calc(100% - 32px);
   padding: 8px 18px;
   background: color-mix(in srgb, var(--panel) 96%, transparent);
   border: 1px solid var(--brass);
@@ -581,7 +624,7 @@ input:focus-visible {
 @keyframes notice-in {
   from {
     opacity: 0;
-    transform: translate(-50%, -6px);
+    transform: translateY(-6px);
   }
 }
 
@@ -720,6 +763,309 @@ kbd {
   color: var(--muted);
 }
 
+/* Found settlement: the settler's main action */
+.unit-actions button.found:not(:disabled) {
+  border-color: var(--brass);
+  background: color-mix(in srgb, var(--brass) 18%, var(--ink));
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Settlement screen (left side) */
+.settlement-panel {
+  position: absolute;
+  top: 100px;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  width: min(360px, calc(100% - 32px));
+  box-sizing: border-box;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  border: 1px solid var(--panel-edge);
+  border-top: 2px solid var(--brass);
+  border-radius: 6px;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 70%, transparent);
+}
+
+.settlement-panel > * {
+  flex-shrink: 0;
+}
+
+.settlement-panel section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--panel-edge);
+}
+
+.settlement-panel h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: var(--brass);
+}
+
+.settlement-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settlement-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+}
+
+.capital-star {
+  color: var(--brass);
+}
+
+.settlement-head .pop {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid var(--brass);
+  background: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close {
+  align-self: flex-start;
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.close:hover {
+  color: var(--text);
+  border-color: var(--panel-edge);
+}
+
+.bar {
+  position: relative;
+  height: 24px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--ink);
+  border: 1px solid var(--panel-edge);
+}
+
+.bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+}
+
+.bar-fill.food {
+  background: color-mix(in srgb, #7fb35a 45%, var(--ink));
+}
+
+.bar-fill.production {
+  background: color-mix(in srgb, #d98f3c 45%, var(--ink));
+}
+
+.bar-text {
+  position: relative;
+  display: block;
+  padding: 0 8px;
+  line-height: 22px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yield-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.yield-row li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: var(--ink);
+  font-size: 13px;
+  cursor: help;
+}
+
+.yield-row .mood.unhappy,
+.mood-line.unhappy {
+  color: #e8b45a;
+}
+
+.yield-row .mood.unrest,
+.mood-line.unrest {
+  color: var(--danger);
+}
+
+.yield-row .mood.thriving,
+.mood-line.thriving {
+  color: #9fd36a;
+}
+
+.mood-line {
+  margin: -4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.develop {
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, #9fd36a 60%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, #9fd36a 8%, transparent);
+}
+
+.develop h4 {
+  color: #b9e08c;
+}
+
+.choices,
+.items,
+.queue {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choices button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--panel-edge);
+  background: var(--ink);
+  color: var(--text);
+  text-align: left;
+  font-size: 13px;
+}
+
+.choices button:hover {
+  border-color: #9fd36a;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.callout {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--brass) 14%, transparent);
+  color: var(--brass);
+  font-size: 13px;
+}
+
+.queue {
+  font-size: 12px;
+  color: var(--muted);
+  list-style: decimal inside;
+}
+
+.queue li {
+  display: flex;
+  justify-content: space-between;
+}
+
+.link {
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+
+.link:hover {
+  color: var(--danger);
+}
+
+.items li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.item-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.items button,
+.citizens button,
+.wide {
+  padding: 4px 8px;
+  border: 1px solid var(--panel-edge);
+  background: var(--ink);
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.items button:hover:not(:disabled),
+.citizens button:hover,
+.wide:hover:not(:disabled) {
+  border-color: var(--brass);
+}
+
+.items button:disabled,
+.wide:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.citizens button.on {
+  border-color: var(--brass);
+  background: var(--brass);
+  color: var(--brass-ink);
+}
+
+.row-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.row-inline select {
+  width: auto;
+  flex: 1;
+  padding: 4px 6px;
+}
+
+.buildings {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 /* Tile inspector sits above the next-action button */
 .game-tile .tile-card {
   bottom: calc(92px + env(safe-area-inset-bottom, 0px));
@@ -838,9 +1184,23 @@ kbd {
     gap: 6px;
   }
 
-  .players {
+  .resource-bar {
     top: 96px;
-    max-width: calc(100% - 32px);
+  }
+
+  .resource-bar li {
+    padding: 2px 7px;
+    font-size: 12px;
+  }
+
+  .resource-bar .delta {
+    display: none;
+  }
+
+  .players {
+    top: 136px;
+    left: max(16px, env(safe-area-inset-left, 0px));
+    justify-content: flex-start;
   }
 
   .player-chip {
@@ -848,8 +1208,16 @@ kbd {
     font-size: 11px;
   }
 
-  .notice {
-    top: 132px;
+  .notices {
+    top: 172px;
+  }
+
+  .settlement-panel {
+    top: auto;
+    right: max(16px, env(safe-area-inset-right, 0px));
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-height: 52%;
   }
 
   .unit-panel {

@@ -1097,6 +1097,21 @@
             "color": {
               "type": "string",
               "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "model": {
+              "default": "generic",
+              "type": "string",
+              "enum": [
+                "farm",
+                "mine",
+                "quarry",
+                "pasture",
+                "plantation",
+                "camp",
+                "boats",
+                "woodcutter",
+                "generic"
+              ]
             }
           },
           "required": [
@@ -3019,6 +3034,21 @@
               "color": {
                 "type": "string",
                 "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "model": {
+                "default": "generic",
+                "type": "string",
+                "enum": [
+                  "farm",
+                  "mine",
+                  "quarry",
+                  "pasture",
+                  "plantation",
+                  "camp",
+                  "boats",
+                  "woodcutter",
+                  "generic"
+                ]
               }
             },
             "required": [

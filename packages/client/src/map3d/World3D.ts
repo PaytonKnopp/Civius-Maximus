@@ -1,5 +1,5 @@
 import { resolveText } from '@cx/content';
-import { tilesWithin } from '@cx/engine';
+import { neighbors, tilesWithin } from '@cx/engine';
 import {
   ACESFilmicToneMapping,
   BufferAttribute,
@@ -45,10 +45,14 @@ import {
   PLAYER_COLORS,
   previewVisibility,
   type Quality,
+  type SettlementView,
+  type TerritoryView,
+  type TileHighlight,
   type UnitView,
 } from '../map/renderer';
 import { type PropKind, propGeometries, placeProps } from './props';
 import { center3, type Sample, TerrainSampler } from './sampler';
+import { SettlementLayer } from './settlements3d';
 import { UnitLayer } from './units3d';
 import {
   mistFragment,
@@ -239,6 +243,10 @@ export class World3D implements MapRenderer {
   private chunkOfTile = new Int32Array(0);
   private chunkGrid = { nx: 0, nz: 0 };
   private units: UnitLayer;
+  private settlements: SettlementLayer;
+  private settlementData: { views: SettlementView[]; territory: TerritoryView } | undefined;
+  /** Settlement centers: trees and rocks there are hidden under the buildings. */
+  private cleared = new Set<number>();
   private target = new Vector3();
   private dist = 22;
   private worldW = 1;
@@ -277,6 +285,16 @@ export class World3D implements MapRenderer {
       wrap: () => this.data?.map.wrapX ?? false,
     });
     this.scene.add(this.units.group);
+    this.settlements = new SettlementLayer({
+      center: (tile) =>
+        center3(tile % this.data!.map.width, Math.floor(tile / this.data!.map.width)),
+      height: (x, z) => this.heightAt(x, z),
+      neighbors: (tile) => neighbors(this.data!.map, tile),
+      worldWidth: () => this.worldW,
+      wrap: () => this.data?.map.wrapX ?? false,
+      fog: (tile) => (this.gameFog ? (this.visibility[tile] ?? 0) : 2),
+    });
+    this.scene.add(this.settlements.group);
 
     const material = new ShaderMaterial({
       vertexShader: paintPassVertex,
@@ -315,6 +333,8 @@ export class World3D implements MapRenderer {
         : previewVisibility(data, options.viewer, (c, r) => tilesWithin(data.map, c, r));
     this.applyQuality();
     this.build();
+    this.settlements.clear();
+    this.refreshSettlements();
     if (!sameSize) this.focusPlayer(data.playerOrder[0]);
   }
 
@@ -370,6 +390,31 @@ export class World3D implements MapRenderer {
       }
     }
     for (const i of dirty) this.applyVisibility(this.chunks[i]!);
+    this.refreshSettlements();
+  }
+
+  setSettlements(views: SettlementView[], territory: TerritoryView) {
+    this.settlementData = { views, territory };
+    const centers = new Set(views.map((v) => v.tile));
+    const changed = [...centers, ...this.cleared].filter(
+      (t) => centers.has(t) !== this.cleared.has(t),
+    );
+    this.cleared = centers;
+    if (this.data) {
+      const chunks = new Set(changed.map((t) => this.chunkOfTile[t]!));
+      for (const i of chunks) if (this.chunks[i]) this.applyVisibility(this.chunks[i]!);
+    }
+    this.refreshSettlements();
+  }
+
+  setHighlights(highlights: TileHighlight[]) {
+    if (this.data) this.settlements.setHighlights(highlights);
+  }
+
+  private refreshSettlements() {
+    if (this.data && this.sampler && this.settlementData) {
+      this.settlements.set(this.settlementData.views, this.settlementData.territory);
+    }
   }
 
   setUnits(units: UnitView[], moves?: { unit: string; path: number[] }[]) {
@@ -405,6 +450,7 @@ export class World3D implements MapRenderer {
     this.resize.disconnect();
     for (const fn of this.cleanup) fn();
     this.clearChunks();
+    this.settlements.clear();
     this.renderer.dispose();
     this.renderer.domElement.remove();
   }
@@ -750,7 +796,7 @@ export class World3D implements MapRenderer {
     for (const p of c.props) {
       const arr = p.mesh.instanceMatrix.array as Float32Array;
       for (let i = 0; i < p.tiles.length; i++) {
-        const v = vis[p.tiles[i]!];
+        const v = this.cleared.has(p.tiles[i]!) ? 0 : vis[p.tiles[i]!];
         if (v === 0) {
           arr.fill(0, i * 16, i * 16 + 16);
         } else {
@@ -847,6 +893,7 @@ export class World3D implements MapRenderer {
       this.updateCamera();
       this.uniforms.uTime.value = frameStart / 1000;
       this.units.update(dt, this.target.x, frameStart / 1000);
+      this.settlements.update(this.target.x);
       if (QUALITY[this.options.quality].post) {
         this.renderer.setRenderTarget(this.post.target);
         this.renderer.render(this.scene, this.camera);

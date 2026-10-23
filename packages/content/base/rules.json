@@ -29,7 +29,7 @@
       "perCity": 60
     },
     "purchase": {
-      "goldPerProduction": 3,
+      "goldPerProduction": 4,
       "tileBase": 25,
       "tilePerAcquired": 5,
       "tilePerDistance": 10

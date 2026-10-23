@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getBit } from '../bitset';
+import type { GameEvent } from '../events';
 import { applyAction } from '../game';
 import { powFloor } from '../fixed';
 import { distance, neighbors } from '../map/hex';
@@ -241,6 +242,31 @@ describe('production', () => {
     }
     expect(s.settlements[id]!.buildings).toContain('building_monument');
     expect(s.settlements[id]!.queue).toEqual([]);
+  });
+
+  it('reports finished items in events that outlive the turn', () => {
+    const start = founded();
+    let s = act(start.s, {
+      type: 'set_queue',
+      player: 'p1',
+      settlement: start.id,
+      queue: [{ kind: 'unit', id: 'unit_warrior' }],
+    }).state;
+    const events: GameEvent[] = [];
+    for (let i = 0; i < 40 && !events.some((e) => e.type === 'item_completed'); i++) {
+      for (const p of s.playerOrder) {
+        const r = act(s, { type: 'end_turn', player: p });
+        s = r.state;
+        events.push(...r.events);
+      }
+    }
+    // Throws "proxy has been revoked" if an event kept a reference into the turn's draft.
+    expect(JSON.parse(JSON.stringify(events))).toContainEqual(
+      expect.objectContaining({
+        type: 'item_completed',
+        item: { kind: 'unit', id: 'unit_warrior' },
+      }),
+    );
   });
 
   it("won't queue a building twice, one already built, or anything in a town", () => {

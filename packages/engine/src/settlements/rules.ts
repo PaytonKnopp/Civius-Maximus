@@ -145,7 +145,7 @@ export function improvementsFor(ctx: EngineContext, state: GameState, tile: numb
 
 /**
  * Tiles a growing settlement may develop: within the work radius, not the center, not improved,
- * and either its own or unclaimed (developing an unclaimed tile claims it, as in Civ 7).
+ * and either its own or unclaimed but touching its territory (developing claims it, as in Civ 7).
  */
 export function developCandidates(
   ctx: EngineContext,
@@ -158,7 +158,9 @@ export function developCandidates(
       return (
         t !== s.tile &&
         tile.improvement === null &&
-        (tile.settlement === s.id || tile.owner === null) &&
+        (tile.settlement === s.id ||
+          (tile.owner === null &&
+            neighbors(state.map, t).some((n) => state.map.tiles[n]!.settlement === s.id))) &&
         improvementsFor(ctx, state, t).length > 0
       );
     })

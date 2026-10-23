@@ -1,5 +1,5 @@
 import { resolveText } from '@cx/content';
-import { computeTileYields, isOnRiver, tilesWithin } from '@cx/engine';
+import { computeTileYields, isOnRiver, neighbor, NO_TILE, tilesWithin } from '@cx/engine';
 import { Application, Container, Graphics, Text } from 'pixi.js';
 import {
   corner,
@@ -22,6 +22,9 @@ import {
   type MapViewOptions,
   type PathView,
   PLAYER_COLORS,
+  type SettlementView,
+  type TerritoryView,
+  type TileHighlight,
   type UnitView,
 } from './renderer';
 
@@ -30,6 +33,8 @@ export type { MapViewData, MapViewOptions };
 interface Chunk {
   container: Container;
   terrain: Graphics;
+  /** Borders, territory tint and improvements. */
+  territory: Graphics;
   overlay: Graphics;
   labels: Container;
   fog: Graphics;
@@ -89,6 +94,10 @@ export class MapView implements MapRenderer {
   private pathLayer = new Graphics();
   private pathLabels = new Container();
   private pathOrigin = 0;
+  private settlementData: { views: SettlementView[]; territory: TerritoryView } | undefined;
+  /** Settlement badges and choice highlights, each with its unwrapped x. */
+  private markers: { node: Container; baseX: number }[] = [];
+  private highlightMarkers: { node: Container; baseX: number }[] = [];
 
   onHover: (tile: number | undefined) => void = () => {};
   onSelect: (tile: number | undefined) => void = () => {};
@@ -141,6 +150,7 @@ export class MapView implements MapRenderer {
     this.options = options;
     [this.worldW, this.worldH] = worldSize(data.map.width, data.map.height);
     this.build();
+    this.drawSettlements();
     if (!keepCamera) this.focusPlayer(data.playerOrder[0]);
   }
 
@@ -160,7 +170,182 @@ export class MapView implements MapRenderer {
   /** Centers the camera on a player's start. */
   setFog(fog: Uint8Array | null) {
     this.gameFog = fog;
-    if (this.data) for (const c of this.chunks) this.drawFog(c);
+    if (this.data) {
+      for (const c of this.chunks) {
+        this.drawFog(c);
+        this.drawTerritory(c);
+      }
+      this.drawSettlements();
+    }
+  }
+
+  setSettlements(views: SettlementView[], territory: TerritoryView) {
+    this.settlementData = { views, territory };
+    void this.ready.then(() => {
+      if (!this.data) return;
+      for (const c of this.chunks) this.drawTerritory(c);
+      this.drawSettlements();
+    });
+  }
+
+  setHighlights(highlights: TileHighlight[]) {
+    void this.ready.then(() => {
+      for (const m of this.highlightMarkers) m.node.destroy({ children: true });
+      this.highlightMarkers = [];
+      if (!this.data) return;
+      const tones = { develop: 0x9fd36a, buy: 0xd4a94e, worked: 0xe8dcc0, selected: 0xe6c070 };
+      for (const h of highlights) {
+        const node = new Container();
+        const [cx, cy] = tileCenter(
+          h.tile % this.data.map.width,
+          Math.floor(h.tile / this.data.map.width),
+        );
+        const g = new Graphics();
+        if (h.tone === 'worked') g.circle(0, -12, 4).fill(tones.worked);
+        else g.poly(hexPoints(0, 0, HEX - 3)).stroke({ width: 3, color: tones[h.tone] });
+        node.addChild(g);
+        if (h.label && h.tone !== 'worked') {
+          const t = new Text({
+            text: h.label,
+            style: {
+              fontFamily: 'IBM Plex Sans, sans-serif',
+              fontSize: 10,
+              fontWeight: '600',
+              fill: 0xf0e6cc,
+            },
+          });
+          t.anchor.set(0.5);
+          t.position.set(0, -2);
+          const bg = new Graphics()
+            .roundRect(-t.width / 2 - 4, -10, t.width + 8, 16, 4)
+            .fill({ color: 0x0e141b, alpha: 0.88 });
+          node.addChild(bg, t);
+        }
+        node.position.set(cx, cy);
+        this.overlay.addChild(node);
+        this.highlightMarkers.push({ node, baseX: cx });
+      }
+      if (this.overlay.parent !== this.world) this.world.addChild(this.overlay);
+    });
+  }
+
+  private drawSettlements() {
+    for (const m of this.markers) m.node.destroy({ children: true });
+    this.markers = [];
+    const d = this.settlementData;
+    if (!d || !this.data) return;
+    const w = this.data.map.width;
+    for (const view of d.views) {
+      const fog = this.gameFog?.[view.tile] ?? 2;
+      if (fog === 0) continue;
+      const [cx, cy] = tileCenter(view.tile % w, Math.floor(view.tile / w));
+      const node = new Container();
+      const g = new Graphics();
+      // A small walled town: houses inside a ring in the owner's color.
+      g.circle(0, 0, 15).fill(0x10161d).circle(0, 0, 15).stroke({ width: 3, color: view.color });
+      g.poly([-8, 1, 0, -7, 8, 1, 8, 8, -8, 8]).fill(view.kind === 'city' ? 0xe0d2b0 : 0xb8a888);
+      if (view.capital) g.star(0, -11, 5, 4.5, 2).fill(0xd4a94e);
+      const label = new Text({
+        text: `${view.population}  ${view.name}`,
+        style: { fontFamily: 'Marcellus SC, Georgia, serif', fontSize: 12, fill: 0xf0e6cc },
+      });
+      label.anchor.set(0.5, 0);
+      label.position.set(0, 19);
+      const bg = new Graphics()
+        .roundRect(-label.width / 2 - 6, 17, label.width + 12, 18, 5)
+        .fill({ color: 0x0e141b, alpha: 0.9 })
+        .roundRect(-label.width / 2 - 6, 17, label.width + 12, 18, 5)
+        .stroke({ width: 1.5, color: view.mine ? 0xd4a94e : view.color });
+      node.addChild(g, bg, label);
+      if (fog === 1) node.alpha = 0.6;
+      node.position.set(cx, cy);
+      this.overlay.addChildAt(node, 0);
+      this.markers.push({ node, baseX: cx });
+    }
+    if (this.overlay.parent !== this.world) this.world.addChild(this.overlay);
+  }
+
+  private drawTerritory(chunk: Chunk) {
+    const g = chunk.territory;
+    g.clear();
+    const d = this.settlementData;
+    if (!d || !this.data) return;
+    const { map } = this.data;
+    const byId = new Map(d.views.map((v) => [v.id, v]));
+    const ownerOf = (t: number) => {
+      const sid = d.territory.settlement[t];
+      return sid ? (byId.get(sid)?.owner ?? null) : null;
+    };
+    for (const i of chunk.tiles) {
+      const fog = this.gameFog?.[i] ?? 2;
+      if (fog === 0) continue;
+      const sid = d.territory.settlement[i];
+      const view = sid ? byId.get(sid) : undefined;
+      const [cx, cy] = tileCenter(i % map.width, Math.floor(i / map.width));
+      const model = d.territory.improvements[i];
+      if (model) this.drawImprovement(g, model, cx, cy);
+      if (!view) continue;
+      g.poly(hexPoints(cx, cy, HEX)).fill({ color: view.color, alpha: 0.12 });
+      for (let dir = 0; dir < 6; dir++) {
+        const n = neighbor(map, i, dir as 0 | 1 | 2 | 3 | 4 | 5);
+        if (n !== NO_TILE && ownerOf(n) === view.owner) continue;
+        const [a, b] = EDGE_CORNERS[dir]!;
+        const [x1, y1] = corner(cx, cy, a, HEX - 2.5);
+        const [x2, y2] = corner(cx, cy, b, HEX - 2.5);
+        g.moveTo(x1, y1).lineTo(x2, y2).stroke({ width: 3.5, color: view.color, cap: 'round' });
+      }
+    }
+  }
+
+  private drawImprovement(g: Graphics, model: string, cx: number, cy: number) {
+    const x = cx - 13;
+    const y = cy + 11;
+    switch (model) {
+      case 'farm':
+        for (const dy of [-4, 0, 4])
+          g.moveTo(x - 7, y + dy)
+            .lineTo(x + 7, y + dy)
+            .stroke({ width: 2, color: 0xc9a74a });
+        break;
+      case 'mine':
+        g.poly([x - 7, y + 5, x, y - 6, x + 7, y + 5])
+          .fill(0x2a2622)
+          .stroke({ width: 1.5, color: 0x8a6a44 });
+        break;
+      case 'quarry':
+        g.rect(x - 7, y - 3, 6, 6)
+          .fill(0xbdb5a2)
+          .rect(x + 1, y - 1, 6, 6)
+          .fill(0xa8a090);
+        break;
+      case 'pasture':
+        g.rect(x - 7, y - 5, 14, 10)
+          .stroke({ width: 1.5, color: 0x8a6a44 })
+          .circle(x, y, 2.5)
+          .fill(0xe8e2d4);
+        break;
+      case 'plantation':
+        for (const dx of [-5, 0, 5]) g.circle(x + dx, y, 2.6).fill(0x4f8a34);
+        break;
+      case 'camp':
+        g.poly([x - 6, y + 5, x, y - 6, x + 6, y + 5]).fill(0xa08a62);
+        break;
+      case 'boats':
+        g.poly([x - 7, y, x + 7, y, x + 4, y + 4, x - 4, y + 4])
+          .fill(0x6b4a2e)
+          .moveTo(x, y)
+          .lineTo(x, y - 8)
+          .stroke({ width: 1.5, color: 0xd8d0bc });
+        break;
+      case 'woodcutter':
+        g.roundRect(x - 7, y - 4, 14, 3.5, 1.5)
+          .fill(0x7a5236)
+          .roundRect(x - 6, y + 1, 12, 3.5, 1.5)
+          .fill(0x6b4a2e);
+        break;
+      default:
+        g.circle(x, y, 3).fill(0xb8914a);
+    }
   }
 
   setUnits(units: UnitView[]) {
@@ -176,7 +361,7 @@ export class MapView implements MapRenderer {
       for (const view of units) {
         this.unitTokens.get(view.id)?.node.destroy({ children: true });
         const node = new Container();
-        const color = PLAYER_COLORS[view.color % PLAYER_COLORS.length]!;
+        const color = view.color;
         const g = new Graphics();
         g.circle(0, 0, 13).fill(0x0b1620);
         g.circle(0, 0, 11).fill(color);
@@ -188,7 +373,7 @@ export class MapView implements MapRenderer {
             fontFamily: 'IBM Plex Sans, sans-serif',
             fontSize: 11,
             fontWeight: '700',
-            fill: 0x0b1620,
+            fill: view.accent,
           },
         });
         label.anchor.set(0.5);
@@ -309,6 +494,7 @@ export class MapView implements MapRenderer {
         const chunk: Chunk = {
           container,
           terrain: new Graphics(),
+          territory: new Graphics(),
           overlay: new Graphics(),
           labels: new Container(),
           fog: new Graphics(),
@@ -318,9 +504,10 @@ export class MapView implements MapRenderer {
           y1: ROW_H * Math.min(r0 + CHUNK, map.height) + HEX,
           tiles,
         };
-        container.addChild(chunk.terrain, chunk.overlay, chunk.labels);
+        container.addChild(chunk.terrain, chunk.territory, chunk.overlay, chunk.labels);
         this.world.addChild(container);
         this.drawTerrain(chunk);
+        this.drawTerritory(chunk);
         this.drawOverlay(chunk);
         this.drawFog(chunk);
         this.chunks.push(chunk);
@@ -585,6 +772,8 @@ export class MapView implements MapRenderer {
     const near = (x: number) =>
       this.data!.map.wrapX ? Math.round((cam.x - x) / this.worldW) * this.worldW : 0;
     for (const t of this.unitTokens.values()) t.node.x = t.baseX + near(t.baseX);
+    for (const m of this.markers) m.node.x = m.baseX + near(m.baseX);
+    for (const m of this.highlightMarkers) m.node.x = m.baseX + near(m.baseX);
     this.pathLayer.x = near(this.pathOrigin);
     this.pathLabels.x = this.pathLayer.x;
     if (this.overlay.parent === this.world)

@@ -140,7 +140,9 @@ Every yield displayed anywhere can be clicked to see a **breakdown tree**, e.g.,
   +5💰 +2😊). Every later settlement starts as a **Town**.
 - The center tile gets a minimum of **2🍞 1⚙️** (better if the terrain is better), and gets +1⚙️
   if it's on hills.
-- A new settlement has **1 citizen** and claims the 6 surrounding tiles (ring 1).
+- A new settlement has **1 citizen** and claims the 6 surrounding tiles (ring 1). Woods,
+  rainforest or marsh on the center tile are cleared.
+- Training a Settler costs its settlement **1 citizen** (it needs at least 2).
 
 ### Towns vs Cities (from Civ 7)
 
@@ -176,6 +178,9 @@ important cities need constant attention, which keeps simultaneous turns fast wi
   improvement for that tile: a farm on grassland, a mine on hills, a plantation on bananas, fishing
   boats on fish, and so on. If a tile allows more than one improvement, you pick which. The new
   citizen works that tile right away.
+- The tile can be one of the settlement's own (within 3 tiles), or an **unclaimed tile touching
+  its territory**, which developing claims (D33). End the turn without choosing and the best tile
+  is developed for you.
 - A city can instead put its new citizen into a district as a **specialist** (fixed yields, extra
   adjacency).
 - **Clear land** (removing woods, rainforest or marsh) is a cheap city project. It gives a one-time
@@ -400,7 +405,7 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
 - **Gold income:** tiles, commercial hubs, harbors, trade routes, policies, deals.
 - **Costs:** unit upkeep, building maintenance, district maintenance (some), deals.
 - **Negative gold:** if the treasury hits 0 with a negative income, a unit is disbanded each turn
-  and happiness drops.
+  and happiness drops. (Until unit upkeep exists in M9, the treasury simply stops at 0.)
 - **Buying:** units and buildings with gold. Prices scale with production cost (×4 by default).
 
 ---

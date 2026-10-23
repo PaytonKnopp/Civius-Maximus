@@ -371,6 +371,20 @@ export const ImprovementDef = z.strictObject({
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #c9a74a')
     .optional(),
+  /** Which 3D model family the renderer uses. */
+  model: z
+    .enum([
+      'farm',
+      'mine',
+      'quarry',
+      'pasture',
+      'plantation',
+      'camp',
+      'boats',
+      'woodcutter',
+      'generic',
+    ])
+    .default('generic'),
 });
 
 /** A building in a settlement. Districts arrive in M8; these sit in the settlement center. */

@@ -1,37 +1,45 @@
 import { type CompiledContent, resolveText } from '@cx/content';
 import {
   type Action,
+  developCandidates,
   type EngineContext,
   findPath,
   fogOfWar,
+  formatFixed,
   type GameEvent,
   type GameSetup,
   type GameState,
-  MP,
-  unitClassOf,
-  unitDef,
+  improvementsFor,
+  purchasableTiles,
+  tilePurchaseCost,
   unitIds,
-  unitsNeedingOrders,
+  workableTiles,
 } from '@cx/engine';
 import { LocalGame } from '@cx/host';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TileCard } from '../components/TileCard';
 import { MapView } from '../map/MapView';
-import {
-  type MapRenderer,
-  type PathView,
-  PLAYER_COLORS,
-  type Quality,
-  type UnitView,
-} from '../map/renderer';
+import type { MapRenderer, PathView, Quality, TileHighlight } from '../map/renderer';
 import { World3D } from '../map3d/World3D';
+import {
+  civName,
+  cssColor,
+  empireSummary,
+  itemName,
+  nextAction,
+  perTurn,
+  playerColors,
+  settlementViews,
+  territoryView,
+  unitViews,
+  whole,
+} from './model';
+import { type PanelMode, SettlementPanel } from './SettlementPanel';
+import { UnitPanel } from './UnitPanel';
 
 const ME = 'p1';
-const coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
 
-function cssColor(n: number) {
-  return `#${n.toString(16).padStart(6, '0')}`;
-}
+type Selection = { kind: 'unit'; id: string } | { kind: 'settlement'; id: string } | null;
 
 function toPathView(steps: ReturnType<typeof findPath>): PathView | null {
   if (!steps) return null;
@@ -44,6 +52,31 @@ function toPathView(steps: ReturnType<typeof findPath>): PathView | null {
   };
 }
 
+/** A notification for the viewer, or undefined if the event isn't worth one. */
+function noticeFor(content: CompiledContent, state: GameState, e: GameEvent): string | undefined {
+  const name = (id: string) => state.settlements[id]?.name ?? 'A settlement';
+  switch (e.type) {
+    case 'turn_started':
+      return `Turn ${e.turn}`;
+    case 'settlement_founded':
+      return e.owner === ME
+        ? `${e.name} founded`
+        : `${civName(content, state, e.owner)} founded ${e.name}`;
+    case 'settlement_grew':
+      return e.owner === ME ? `${name(e.settlement)} grew to ${e.population}` : undefined;
+    case 'settlement_starved':
+      return e.owner === ME ? `${name(e.settlement)} is starving` : undefined;
+    case 'item_completed':
+      return e.owner === ME
+        ? `${name(e.settlement)} finished ${itemName(content, e.item)}`
+        : undefined;
+    case 'town_upgraded':
+      return e.owner === ME ? `${name(e.settlement)} is now a city` : undefined;
+    default:
+      return undefined;
+  }
+}
+
 interface Props {
   content: CompiledContent;
   setup: GameSetup;
@@ -51,48 +84,41 @@ interface Props {
   quality: Quality;
 }
 
-/** The main game view: the map, your units, and the controls to play a turn. */
+/** The main game view: the map, your units and settlements, and the controls to play a turn. */
 export function GameScreen({ content, setup, mode, quality }: Props) {
   const ctx: EngineContext = useMemo(() => ({ content }), [content]);
   const game = useMemo(() => new LocalGame(setup, ctx), [setup, ctx]);
   const [state, setState] = useState<GameState>(game.state);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selection, setSelection] = useState<Selection>(null);
   const [hover, setHover] = useState<number>();
   const [pinned, setPinned] = useState<number | null>(null);
   const [inspect, setInspect] = useState<number>();
-  const [notice, setNotice] = useState<string>();
-  const [confirmDisband, setConfirmDisband] = useState(false);
+  const [panelMode, setPanelMode] = useState<PanelMode>('citizens');
+  const [notices, setNotices] = useState<{ id: number; text: string }[]>([]);
   const [fps, setFps] = useState(0);
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<MapRenderer>(undefined);
   const pendingMoves = useRef<{ unit: string; path: number[] }[]>([]);
+  const noticeId = useRef(0);
 
-  const playerIndex = (id: string) => state.playerOrder.indexOf(id);
+  const notify = useCallback((text: string) => {
+    const id = ++noticeId.current;
+    setNotices((n) => [...n.slice(-2), { id, text }]);
+    setTimeout(() => setNotices((n) => n.filter((x) => x.id !== id)), 2600);
+  }, []);
+
+  const colors = useMemo(() => playerColors(content, state), [content, state.playerOrder]);
   const fog = useMemo(() => fogOfWar(ctx, state, ME), [ctx, state]);
-  const needing = useMemo(() => unitsNeedingOrders(state, ME), [state]);
-
-  const unitViews: UnitView[] = useMemo(
-    () =>
-      unitIds(state)
-        .map((id) => state.units[id]!)
-        .filter((u) => u.owner === ME || fog[u.tile] === 2)
-        .map((u) => {
-          const def = unitDef(ctx, u);
-          return {
-            id: u.id,
-            owner: u.owner,
-            color: playerIndex(u.owner),
-            name: resolveText(content, def.name),
-            icon: def.icon,
-            model: def.model,
-            layer: unitClassOf(ctx, u).layer,
-            tile: u.tile,
-            mine: u.owner === ME,
-            needsOrders: needing.includes(u.id),
-          };
-        }),
-    [state, fog, needing],
+  const units = useMemo(() => unitViews(ctx, state, ME, fog, colors), [ctx, state, fog, colors]);
+  const territory = useMemo(() => territoryView(ctx, state, fog), [ctx, state, fog]);
+  const settlements = useMemo(
+    () => settlementViews(ctx, state, ME, territory, colors),
+    [ctx, state, territory, colors],
   );
+  const empire = useMemo(() => empireSummary(ctx, state, ME), [ctx, state]);
+  const unit = selection?.kind === 'unit' ? state.units[selection.id] : undefined;
+  const settlement = selection?.kind === 'settlement' ? state.settlements[selection.id] : undefined;
+  const next = nextAction(state, ME, selection?.kind === 'unit' ? selection.id : null);
 
   // Renderer lifecycle (recreated when switching 2D/3D).
   useEffect(() => {
@@ -107,7 +133,9 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
         { grid: false, yields: false, viewer: null, quality },
       )
       .then(() => {
-        view.setUnits(unitViews);
+        view.setUnits(units);
+        view.setSettlements(settlements, territory);
+        view.setHighlights(highlights);
         const mine = Object.values(game.state.units).find((u) => u.owner === ME);
         if (mine) view.focusTile(mine.tile, true);
       });
@@ -128,34 +156,33 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
               : [],
           ),
         );
-        const started = events.find(
-          (e): e is Extract<GameEvent, { type: 'turn_started' }> => e.type === 'turn_started',
-        );
-        if (started) setNotice(`Turn ${started.turn}`);
+        for (const e of events) {
+          if (e.visibleTo !== 'all' && !e.visibleTo.includes(ME)) continue;
+          const text = noticeFor(content, s, e);
+          if (text) notify(text);
+        }
         setState(s);
       }),
-    [game],
+    [game, content, notify],
   );
 
   useEffect(() => {
     viewRef.current?.setFog(fog);
   }, [fog]);
-
   useEffect(() => {
-    viewRef.current?.setUnits(unitViews, pendingMoves.current.splice(0));
-  }, [unitViews]);
-
+    viewRef.current?.setUnits(units, pendingMoves.current.splice(0));
+  }, [units]);
   useEffect(() => {
-    if (!notice) return;
-    const t = setTimeout(() => setNotice(undefined), 1800);
-    return () => clearTimeout(t);
-  }, [notice]);
+    viewRef.current?.setSettlements(settlements, territory);
+  }, [settlements, territory]);
 
-  // Keep the selection valid; show the planned path to the hovered (or pinned) tile.
-  const unit = selected ? state.units[selected] : undefined;
+  // Keep the selection valid.
   useEffect(() => {
-    if (selected && !state.units[selected]) setSelected(null);
-  }, [state, selected]);
+    if (selection?.kind === 'unit' && !state.units[selection.id]) setSelection(null);
+    if (selection?.kind === 'settlement' && !state.settlements[selection.id]) setSelection(null);
+  }, [state, selection]);
+
+  // The planned path to the hovered (or pinned) tile.
   const pathTarget = pinned ?? hover;
   const path = useMemo(() => {
     if (!unit || unit.owner !== ME || pathTarget === undefined || pathTarget === unit.tile)
@@ -163,56 +190,103 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     return toPathView(findPath(ctx, state, unit, pathTarget));
   }, [ctx, state, unit, pathTarget]);
   useEffect(() => {
-    viewRef.current?.setSelected(selected);
-  }, [selected, unitViews]);
+    viewRef.current?.setSelected(selection?.kind === 'unit' ? selection.id : null);
+  }, [selection, units]);
   useEffect(() => {
     viewRef.current?.setPath(path, unit?.tile ?? null);
   }, [path, unit?.tile]);
 
+  // Tiles to mark for the selected settlement: growth choices, tiles to buy, worked tiles.
+  const highlights = useMemo((): TileHighlight[] => {
+    if (!settlement || settlement.owner !== ME) return [];
+    const out: TileHighlight[] = [{ tile: settlement.tile, tone: 'selected' }];
+    if (settlement.pendingDevelop > 0) {
+      for (const tile of developCandidates(ctx, state, settlement)) {
+        const imp = content.entities.improvement[improvementsFor(ctx, state, tile)[0]!]!;
+        const gain = Object.entries(imp.yields)
+          .map(([y, v]) => `+${v}${content.entities.yield[y]?.icon ?? ''}`)
+          .join(' ');
+        out.push({ tile, tone: 'develop', label: `${resolveText(content, imp.name)} ${gain}` });
+      }
+      return out;
+    }
+    if (panelMode === 'buy') {
+      for (const tile of purchasableTiles(ctx, state, settlement)) {
+        const cost = tilePurchaseCost(ctx, state, settlement, tile);
+        out.push({ tile, tone: 'buy', label: `💰 ${formatFixed(cost)}` });
+      }
+      return out;
+    }
+    for (const tile of settlement.worked) {
+      out.push({ tile, tone: 'worked', label: settlement.locked.includes(tile) ? '📌' : '●' });
+    }
+    return out;
+  }, [ctx, content, state, settlement, panelMode]);
+  useEffect(() => {
+    viewRef.current?.setHighlights(highlights);
+  }, [highlights]);
+
   const act = useCallback(
     (action: Action) => {
       const r = game.act(action);
-      if (!r.ok) setNotice(r.error.message);
+      if (!r.ok) notify(r.error.message);
       return r.ok;
     },
-    [game],
+    [game, notify],
   );
 
   const select = useCallback(
-    (id: string | null, focus = false) => {
-      setSelected(id);
+    (next: Selection, focus = false) => {
+      setSelection(next);
       setPinned(null);
-      setConfirmDisband(false);
-      if (id && focus) viewRef.current?.focusTile(game.state.units[id]!.tile);
+      setPanelMode('citizens');
+      if (!next || !focus) return;
+      const tile =
+        next.kind === 'unit'
+          ? game.state.units[next.id]?.tile
+          : game.state.settlements[next.id]?.tile;
+      if (tile !== undefined) viewRef.current?.focusTile(tile);
     },
     [game],
   );
 
-  /** Selects the next unit that needs orders (after the current one); false if there are none. */
-  const selectNext = useCallback(() => {
-    const list = unitsNeedingOrders(game.state, ME);
-    if (list.length === 0) {
+  const doNext = useCallback(() => {
+    const n = nextAction(game.state, ME, selection?.kind === 'unit' ? selection.id : null);
+    if (n.kind === 'unit') select({ kind: 'unit', id: n.id }, true);
+    else if (n.kind === 'develop' || n.kind === 'production')
+      select({ kind: 'settlement', id: n.id }, true);
+    else if (n.kind === 'end') {
+      act({ type: 'end_turn', player: ME });
       select(null);
-      return false;
     }
-    const after = selected
-      ? list.find((id) => Number(id.slice(1)) > Number(selected.slice(1)))
-      : undefined;
-    select(after ?? list[0]!, true);
-    return true;
-  }, [game, selected, select]);
+  }, [game, selection, select, act]);
 
-  // The Next Action button: units needing orders first, then End Turn.
-  const nextAction = useCallback(() => {
-    if (!selectNext()) act({ type: 'end_turn', player: ME });
-  }, [selectNext, act]);
+  /** After a unit is done for the turn: on to the next unit, like Civ's auto-cycling (D32). */
+  const selectNextUnit = useCallback(
+    (after: string) => {
+      const n = nextAction(game.state, ME, after);
+      if (n.kind === 'unit') select({ kind: 'unit', id: n.id }, true);
+      else select(null);
+    },
+    [game, select],
+  );
 
   const skip = useCallback(
     (id: string) => {
       act({ type: 'skip_unit', player: ME, unit: id });
-      selectNext();
+      selectNextUnit(id);
     },
-    [act, selectNext],
+    [act, selectNextUnit],
+  );
+
+  const found = useCallback(
+    (id: string) => {
+      const tile = game.state.units[id]?.tile;
+      if (!act({ type: 'found_settlement', player: ME, unit: id })) return;
+      const s = Object.values(game.state.settlements).find((x) => x.tile === tile);
+      if (s) select({ kind: 'settlement', id: s.id }, true);
+    },
+    [game, act, select],
   );
 
   const moveTo = useCallback(
@@ -220,33 +294,66 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
       if (!unit || unit.owner !== ME) return;
       if (!act({ type: 'move_unit', player: ME, unit: unit.id, to: tile })) return;
       setPinned(null);
-      // Out of moves (or still travelling): on to the next unit, like Civ's auto-cycling.
-      if (!unitsNeedingOrders(game.state, ME).includes(unit.id)) selectNext();
+      const after = game.state.units[unit.id];
+      if (!after || after.moves === 0 || after.orders) selectNextUnit(unit.id);
     },
-    [game, unit, act, selectNext],
+    [game, unit, act, selectNextUnit],
   );
 
-  // Map input: click selects your unit (cycling through a stack) or plans a move; a second click on
-  // the planned tile (or a right-click) moves there.
+  // Map input.
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
     view.onHover = setHover;
     view.onSelect = (tile) => {
       if (tile === undefined) return;
-      const mine = unitIds(game.state).filter((id) => {
-        const u = game.state.units[id]!;
-        return u.owner === ME && u.tile === tile;
-      });
-      if (mine.length > 0 && !(unit && pinned === tile)) {
-        const i = selected ? mine.indexOf(selected) : -1;
-        select(mine[(i + 1) % mine.length]!);
+      const s = game.state;
+      // A choice the selected settlement is making takes the click first.
+      if (settlement && settlement.owner === ME) {
+        if (settlement.pendingDevelop > 0 && developCandidates(ctx, s, settlement).includes(tile)) {
+          const improvement = improvementsFor(ctx, s, tile)[0]!;
+          act({ type: 'develop_tile', player: ME, settlement: settlement.id, tile, improvement });
+          return;
+        }
+        if (panelMode === 'buy' && purchasableTiles(ctx, s, settlement).includes(tile)) {
+          act({ type: 'buy_tile', player: ME, settlement: settlement.id, tile });
+          return;
+        }
+      }
+      // Cycle through your units on the tile, then the settlement there.
+      const here = s.map.tiles[tile]!;
+      const center = Object.values(s.settlements).find((x) => x.tile === tile);
+      const cycle: Selection[] = [
+        ...unitIds(s)
+          .filter((id) => s.units[id]!.owner === ME && s.units[id]!.tile === tile)
+          .map((id) => ({ kind: 'unit' as const, id })),
+        ...(center ? [{ kind: 'settlement' as const, id: center.id }] : []),
+      ];
+      const planning = unit !== undefined && unit.owner === ME && unit.tile !== tile;
+      if (cycle.length > 0 && !(planning && pinned === tile)) {
+        const i = cycle.findIndex((c) => c?.kind === selection?.kind && c?.id === selection?.id);
+        select(cycle[(i + 1) % cycle.length]!);
         setInspect(undefined);
         return;
       }
-      if (unit && unit.owner === ME && tile !== unit.tile) {
+      if (planning) {
         if (pinned === tile) moveTo(tile);
         else setPinned(tile);
+        return;
+      }
+      if (
+        settlement &&
+        settlement.owner === ME &&
+        here.settlement === settlement.id &&
+        workableTiles(ctx, s, settlement).includes(tile)
+      ) {
+        act({
+          type: 'lock_tile',
+          player: ME,
+          settlement: settlement.id,
+          tile,
+          locked: !settlement.locked.includes(tile),
+        });
         return;
       }
       setInspect(tile);
@@ -261,7 +368,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement)?.closest?.('input, select, textarea')) return;
-      if (e.key === 'Enter') nextAction();
+      if (e.key === 'Enter') doNext();
       else if (e.key === 'Escape') select(null);
       else if (!unit || unit.owner !== ME) return;
       else if (e.key === ' ') {
@@ -269,27 +376,14 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
         skip(unit.id);
       } else if (e.key === 'z') act({ type: 'sleep_unit', player: ME, unit: unit.id });
       else if (e.key === 'f') act({ type: 'fortify_unit', player: ME, unit: unit.id });
+      else if (e.key === 'b') found(unit.id);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [unit, act, nextAction, select, skip]);
+  }, [unit, act, doNext, select, skip, found]);
 
-  const me = state.players[ME]!;
-  const waiting = me.turnEnded;
-  const def = unit ? unitDef(ctx, unit) : undefined;
-  const cls = unit ? unitClassOf(ctx, unit) : undefined;
-  const status = !unit
-    ? ''
-    : unit.orders?.kind === 'move'
-      ? 'Moving'
-      : unit.orders?.kind === 'sleep'
-        ? 'Asleep'
-        : unit.orders?.kind === 'fortify'
-          ? 'Fortified'
-          : unit.moves === 0
-            ? 'Out of moves'
-            : 'Ready';
-  const inspected = pathTarget ?? inspect;
+  const icon = (y: string) => content.entities.yield[y]?.icon ?? '';
+  const inspected = selection?.kind === 'settlement' ? undefined : (pathTarget ?? inspect);
 
   return (
     <div className="game">
@@ -298,6 +392,23 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
         ref={hostRef}
         aria-label="Map. Drag to pan, scroll or pinch to zoom."
       />
+
+      <ul className="resource-bar" aria-label="Your empire">
+        <li title="Gold (per turn)">
+          {icon('gold')} <span className="mono">{whole(empire.gold)}</span>
+          <span className="delta mono">({perTurn(empire.goldPerTurn)})</span>
+        </li>
+        <li title="Science per turn">
+          {icon('science')} <span className="mono">{perTurn(empire.science)}</span>
+        </li>
+        <li title="Culture per turn">
+          {icon('culture')} <span className="mono">{perTurn(empire.culture)}</span>
+        </li>
+        <li title="Faith (per turn)">
+          {icon('faith')} <span className="mono">{whole(empire.faith)}</span>
+          <span className="delta mono">({perTurn(empire.faithPerTurn)})</span>
+        </li>
+      </ul>
 
       <div className="turn-pill" aria-live="polite">
         <span className="turn-label">Turn</span>
@@ -313,134 +424,50 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
             className={`player-chip ${state.players[p]!.turnEnded ? 'done' : ''}`}
             title={`${state.players[p]!.name}${state.players[p]!.turnEnded ? ' (turn ended)' : ''}`}
           >
-            <span
-              className="swatch"
-              style={{
-                background: cssColor(PLAYER_COLORS[playerIndex(p) % PLAYER_COLORS.length]!),
-              }}
-            />
-            {p === ME ? 'You' : state.players[p]!.name}
+            <span className="swatch" style={{ background: cssColor(colors[p]!.main) }} />
+            {p === ME ? `You · ${civName(content, state, p)}` : civName(content, state, p)}
           </span>
         ))}
       </div>
 
-      {notice && <div className="notice">{notice}</div>}
-
-      {unit && def && cls && (
-        <aside className="unit-panel">
-          <div className="unit-head">
-            <span
-              className="unit-icon"
-              style={{
-                background: cssColor(
-                  PLAYER_COLORS[playerIndex(unit.owner) % PLAYER_COLORS.length]!,
-                ),
-              }}
-            >
-              {def.icon}
-            </span>
-            <div>
-              <h3>{resolveText(content, def.name)}</h3>
-              <p className="unit-sub">
-                {resolveText(content, cls.name)} · {status}
-              </p>
-            </div>
-            {unit.owner === ME &&
-              (confirmDisband ? (
-                <button
-                  type="button"
-                  className="disband danger"
-                  onClick={() => {
-                    act({ type: 'disband_unit', player: ME, unit: unit.id });
-                    setConfirmDisband(false);
-                  }}
-                >
-                  Confirm disband
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="disband"
-                  title="Disband this unit"
-                  onClick={() => setConfirmDisband(true)}
-                >
-                  Disband
-                </button>
-              ))}
+      <div className="notices" aria-live="polite">
+        {notices.map((n) => (
+          <div key={n.id} className="notice">
+            {n.text}
           </div>
-          <dl className="unit-stats">
-            <div>
-              <dt>Moves</dt>
-              <dd>
-                {unit.moves / MP}/{def.movement}
-              </dd>
-            </div>
-            <div>
-              <dt>Strength</dt>
-              <dd>{def.strength || '—'}</dd>
-            </div>
-            <div>
-              <dt>Sight</dt>
-              <dd>{def.sight}</dd>
-            </div>
-            <div>
-              <dt>Health</dt>
-              <dd>{unit.health}</dd>
-            </div>
-          </dl>
-          {unit.owner === ME && (
-            <div className="unit-actions">
-              {def.actions.includes('found_settlement') && (
-                <button
-                  type="button"
-                  disabled
-                  title="Founding settlements arrives in the next milestone"
-                >
-                  Found settlement
-                </button>
-              )}
-              <button type="button" onClick={() => skip(unit.id)}>
-                Skip <kbd>Space</kbd>
-              </button>
-              {unit.orders ? (
-                <button
-                  type="button"
-                  onClick={() => act({ type: 'wake_unit', player: ME, unit: unit.id })}
-                >
-                  {unit.orders.kind === 'move' ? 'Cancel move' : 'Wake'}
-                </button>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => act({ type: 'sleep_unit', player: ME, unit: unit.id })}
-                  >
-                    Sleep <kbd>Z</kbd>
-                  </button>
-                  {cls.combat && (
-                    <button
-                      type="button"
-                      onClick={() => act({ type: 'fortify_unit', player: ME, unit: unit.id })}
-                    >
-                      Fortify <kbd>F</kbd>
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-          {unit.owner === ME && (
-            <p className="hint">
-              {pinned !== null
-                ? path
-                  ? 'Tap the marked tile again to move there.'
-                  : "Can't get there."
-                : coarsePointer
-                  ? 'Tap a tile to plan a move, then tap it again to go.'
-                  : 'Right-click a tile to move there, or click it twice.'}
-            </p>
-          )}
-        </aside>
+        ))}
+      </div>
+
+      {unit && (
+        <UnitPanel
+          key={unit.id}
+          ctx={ctx}
+          state={state}
+          viewer={ME}
+          unit={unit}
+          colors={colors[unit.owner]!}
+          planned={pinned !== null ? { reachable: path !== null } : null}
+          act={(a) => {
+            if (a.type !== 'found_settlement') return act(a);
+            found(a.unit);
+            return true;
+          }}
+          onSkip={() => skip(unit.id)}
+        />
+      )}
+
+      {settlement && (
+        <SettlementPanel
+          ctx={ctx}
+          state={state}
+          viewer={ME}
+          id={settlement.id}
+          mode={panelMode}
+          onMode={setPanelMode}
+          act={act}
+          onClose={() => select(null)}
+          onFocusTile={(t) => setHover(t)}
+        />
       )}
 
       {inspected !== undefined && fog[inspected] !== 0 && (
@@ -457,17 +484,11 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
 
       <button
         type="button"
-        className={`next-action ${needing.length === 0 && !waiting ? 'end' : ''}`}
-        onClick={nextAction}
-        disabled={waiting}
+        className={`next-action ${next.kind === 'end' ? 'end' : ''}`}
+        onClick={doNext}
+        disabled={next.kind === 'waiting'}
       >
-        <span className="next-label">
-          {waiting
-            ? 'Waiting for others'
-            : needing.length > 0
-              ? `${needing.length} unit${needing.length === 1 ? '' : 's'} need${needing.length === 1 ? 's' : ''} orders`
-              : 'End turn'}
-        </span>
+        <span className="next-label">{next.label}</span>
         <kbd>Enter</kbd>
       </button>
     </div>
