@@ -20,7 +20,41 @@
       "perTile": 6,
       "exponent": 1.3
     },
-    "startingLimit": 4
+    "startingLimit": 4,
+    "startingRadius": 1,
+    "capitalBuilding": "building_palace",
+    "townGoldPercent": 100,
+    "townUpgrade": {
+      "base": 100,
+      "perCity": 60
+    },
+    "purchase": {
+      "goldPerProduction": 3,
+      "tileBase": 25,
+      "tilePerAcquired": 5,
+      "tilePerDistance": 10
+    },
+    "happiness": {
+      "base": 2,
+      "citizensPerUnhappy": 2,
+      "perMaintainedBuilding": 1,
+      "perSettlementOverLimit": 2,
+      "thrivingAt": 5,
+      "unrestAt": -5,
+      "thrivingYieldPercent": 10,
+      "thrivingGrowthPercent": 10,
+      "unhappyYieldPercentPerPoint": -2,
+      "unrestYieldPercent": -25
+    },
+    "citizenWeights": {
+      "food": 30,
+      "production": 25,
+      "gold": 12,
+      "science": 15,
+      "culture": 15,
+      "faith": 10,
+      "happiness": 10
+    }
   },
   "elevation": {
     "hills": {

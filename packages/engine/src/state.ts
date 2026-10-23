@@ -25,6 +25,53 @@ export interface GameState {
   units: Record<UnitId, UnitState>;
   /** Pairs of players at war, as sorted `"a|b"` keys. Declaring war arrives with diplomacy (M15). */
   wars: string[];
+  /** Every settlement, by id (`s3`...). Iterate with `settlementIds()` for a stable order. */
+  settlements: Record<SettlementId, SettlementState>;
+}
+
+export type SettlementId = string;
+
+/** Something a city can produce. */
+export interface BuildItem {
+  kind: 'unit' | 'building';
+  /** A `unit` or `building` content id. */
+  id: string;
+}
+
+/** Which yield auto-assign favors when picking tiles for citizens. */
+export type CitizenFocus =
+  'balanced' | 'food' | 'production' | 'gold' | 'science' | 'culture' | 'faith';
+
+/** A town or city (docs/03-core-mechanics.md, section 3). Amounts are fixed-point hundredths. */
+export interface SettlementState {
+  id: SettlementId;
+  owner: PlayerId;
+  name: string;
+  /** The center tile. */
+  tile: number;
+  kind: 'town' | 'city';
+  capital: boolean;
+  founded: number;
+  population: number;
+  /** Food stored toward the next citizen. */
+  food: number;
+  /** Culture stored toward the next border tile. */
+  culture: number;
+  /** Tiles gained by border growth or purchase (raises the cost of the next one). */
+  tilesAcquired: number;
+  /** Production put into each item started, keyed `unit:unit_warrior` / `building:...`. */
+  progress: Record<string, number>;
+  /** Cities only: what to build, first item first. */
+  queue: BuildItem[];
+  /** `building` content ids, in the order they were finished. */
+  buildings: string[];
+  /** Tiles the citizens work (the center is always worked and isn't listed). */
+  worked: number[];
+  /** Tiles the player pinned so auto-assign keeps them worked. */
+  locked: number[];
+  focus: CitizenFocus;
+  /** Growth choices waiting: each lets the player develop one tile with an improvement. */
+  pendingDevelop: number;
 }
 
 export type UnitId = string;
@@ -74,4 +121,13 @@ export interface PlayerState {
   explored: string;
   /** Land units may embark onto water (from rules now, from a tech in M7). */
   canEmbark: boolean;
+  /** A `civ` content id. */
+  civ: string;
+  /** Treasury, in hundredths. */
+  gold: number;
+  /** Faith stored, in hundredths (spent from M13). */
+  faith: number;
+  capital: SettlementId | null;
+  /** How many settlements this player has founded (picks the next name). */
+  settlementsFounded: number;
 }

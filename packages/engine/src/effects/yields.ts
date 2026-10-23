@@ -31,7 +31,7 @@ function appliesTo(ctx: TileContext, effect: Effect): boolean {
 
 /**
  * Computes a tile's yields and explains them. Order: terrain (or mountain), hills, feature,
- * resource, flat effects, then percentage effects (each on the subtotal before percentages,
+ * resource, improvement, flat effects, then percentage effects (each on the subtotal before percentages,
  * so they add up instead of compounding). Totals never go below zero.
  */
 export function computeTileYields(
@@ -66,6 +66,11 @@ export function computeTileYields(
     const resource = content.entities.resource[tile.resource];
     if (!resource) throw new Error(`Unknown resource "${tile.resource}"`);
     addMap(resource.yields, resource.id, resolveText(content, resource.name));
+  }
+  if (tile.improvement) {
+    const improvement = content.entities.improvement[tile.improvement];
+    if (!improvement) throw new Error(`Unknown improvement "${tile.improvement}"`);
+    addMap(improvement.yields, improvement.id, resolveText(content, improvement.name));
   }
 
   const percents: { yieldId: string; percent: number; source: EffectSource }[] = [];

@@ -118,6 +118,42 @@ export const RulesDef = z.strictObject({
     growth: z.strictObject({ base: z.number(), perPop: z.number(), exponent: z.number() }),
     borderGrowth: z.strictObject({ base: z.number(), perTile: z.number(), exponent: z.number() }),
     startingLimit: z.int().min(1),
+    /** Tiles claimed around a new settlement (1 = the 6 neighbors). */
+    startingRadius: z.int().min(0).max(3),
+    /** The building every player's first settlement gets for free. */
+    capitalBuilding: Id,
+    /** Percent of a town's production that becomes gold. */
+    townGoldPercent: z.int().min(0).max(1000),
+    /** Gold to turn a town into a city: `base + perCity × cities you already have`. */
+    townUpgrade: z.strictObject({ base: z.int().min(0), perCity: z.int().min(0) }),
+    purchase: z.strictObject({
+      /** Gold cost of buying a unit or building = production cost × this. */
+      goldPerProduction: z.int().min(1),
+      /** Tile cost = `tileBase + tilePerAcquired × tiles acquired + tilePerDistance × distance`. */
+      tileBase: z.int().min(0),
+      tilePerAcquired: z.int().min(0),
+      tilePerDistance: z.int().min(0),
+    }),
+    happiness: z.strictObject({
+      /** Every settlement starts with this much. */
+      base: z.int(),
+      /** One unhappiness per this many citizens. */
+      citizensPerUnhappy: z.int().min(1),
+      perMaintainedBuilding: z.int().min(0),
+      /** In every settlement, for each settlement you have over the settlement limit. */
+      perSettlementOverLimit: z.int().min(0),
+      /** At or above: thriving. */
+      thrivingAt: z.int(),
+      /** At or below: unrest. Between 0 and this: unhappy. */
+      unrestAt: z.int().max(-1),
+      thrivingYieldPercent: z.int().min(0),
+      thrivingGrowthPercent: z.int().min(0),
+      /** Applied per point below zero (a negative number). */
+      unhappyYieldPercentPerPoint: z.int().max(0),
+      unrestYieldPercent: z.int().max(0),
+    }),
+    /** How auto-assign values yields when picking tiles for citizens (focus triples one). */
+    citizenWeights: YieldMap,
   }),
   elevation: z.strictObject({
     hills: z.strictObject({
@@ -213,8 +249,10 @@ export const UnitDef = z.strictObject({
   strength: z.int().min(0).default(0),
   rangedStrength: z.int().min(0).default(0),
   range: z.int().min(0).default(0),
-  /** Production cost (used from M6). */
+  /** Production cost. 0 = can't be built. */
   cost: z.int().min(0).default(0),
+  /** Citizens the settlement gives up when this unit is finished (settlers: 1). */
+  populationCost: z.int().min(0).default(0),
   /** Special actions this unit can take. */
   actions: z.array(z.enum(['found_settlement'])).default([]),
   /** Sea units: can enter deep ocean. */
@@ -301,6 +339,75 @@ export const AbilityDef = z.strictObject({
   effects: z.array(Effect).min(1),
 });
 
+/**
+ * Where an improvement can be placed without a resource. A tile qualifies if it matches every
+ * field given. A tile with a feature only qualifies if that feature is listed in `features`.
+ */
+const ImprovementSite = z.strictObject({
+  terrains: z.array(Id).min(1).optional(),
+  elevations: z.array(Elevation).min(1).default(['flat', 'hills']),
+  /** Features the tile may have. */
+  features: z.array(Id).default([]),
+  /** The tile must have one of `features` (e.g. a woodcutter needs woods). */
+  needsFeature: z.boolean().default(false),
+});
+
+/** A tile improvement (farm, mine...). Settlements build them as they grow (docs/03, "Growth"). */
+export const ImprovementDef = z.strictObject({
+  type: z.literal('improvement'),
+  id: Id,
+  name: Text,
+  /** Short placeholder glyph until icons exist. */
+  icon: z.string().min(1).max(3),
+  yields: YieldMap.default({}),
+  /** Goes on tiles with any of these resources, whatever the terrain or feature... */
+  resources: z.array(Id).default([]),
+  /** ...or on tiles matching any of these sites. */
+  sites: z.array(ImprovementSite).default([]),
+  /** When several improvements fit a tile, the lower number is proposed first. */
+  order: z.int().default(100),
+  /** Placeholder map color until models exist. */
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #c9a74a')
+    .optional(),
+});
+
+/** A building in a settlement. Districts arrive in M8; these sit in the settlement center. */
+export const BuildingDef = z.strictObject({
+  type: z.literal('building'),
+  id: Id,
+  name: Text,
+  description: Text.optional(),
+  icon: z.string().min(1).max(3),
+  /** Production cost. 0 = can't be built (e.g. the Palace, which is granted). */
+  cost: z.int().min(0),
+  /** Gold per turn. */
+  maintenance: z.int().min(0).default(0),
+  /** Added to the settlement's yields. */
+  yields: YieldMap.default({}),
+  happiness: z.int().default(0),
+  /** Only in a settlement on a river / on the coast. */
+  requiresRiver: z.boolean().default(false),
+  requiresCoast: z.boolean().default(false),
+  /** Towns can buy buildings but not build them; some are city-only. */
+  cityOnly: z.boolean().default(false),
+});
+
+/** A civilization: its names and colors (abilities and uniques arrive with the leader kits). */
+export const CivDef = z.strictObject({
+  type: z.literal('civ'),
+  id: Id,
+  name: Text,
+  adjective: Text,
+  colors: z.strictObject({
+    primary: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #8e1b1b'),
+    secondary: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #e8c66a'),
+  }),
+  /** Settlement names in founding order; the first is the capital. */
+  cityNames: z.array(Text).min(1),
+});
+
 /** Schemas for entities that have an `id` and are stored in compiled content. */
 export const ENTITY_SCHEMAS = {
   yield: YieldDef,
@@ -312,6 +419,9 @@ export const ENTITY_SCHEMAS = {
   mapSize: MapSizeDef,
   unitClass: UnitClassDef,
   unit: UnitDef,
+  improvement: ImprovementDef,
+  building: BuildingDef,
+  civ: CivDef,
   rules: RulesDef,
 } as const;
 
@@ -332,6 +442,9 @@ export type MapScriptDef = z.infer<typeof MapScriptDef>;
 export type MapSizeDef = z.infer<typeof MapSizeDef>;
 export type UnitClassDef = z.infer<typeof UnitClassDef>;
 export type UnitDef = z.infer<typeof UnitDef>;
+export type ImprovementDef = z.infer<typeof ImprovementDef>;
+export type BuildingDef = z.infer<typeof BuildingDef>;
+export type CivDef = z.infer<typeof CivDef>;
 export type StringsDef = z.infer<typeof StringsDef>;
 export type PatchDef = z.infer<typeof PatchDef>;
 
@@ -345,6 +458,9 @@ export interface EntityByType {
   mapSize: MapSizeDef;
   unitClass: UnitClassDef;
   unit: UnitDef;
+  improvement: ImprovementDef;
+  building: BuildingDef;
+  civ: CivDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

@@ -33,6 +33,18 @@ describe('LocalGame', () => {
     expect(seen).toContain('turn_started');
   });
 
+  it('gives AI seats settlements that keep building', () => {
+    const game = new LocalGame(setup(['human', 'ai', 'ai']), ctx);
+    for (let i = 0; i < 12; i++) game.act({ type: 'end_turn', player: 'p1' });
+    for (const p of ['p2', 'p3']) {
+      const mine = Object.values(game.state.settlements).filter((s) => s.owner === p);
+      expect(mine.length).toBeGreaterThanOrEqual(1);
+      expect(
+        Object.values(game.state.units).some((u) => u.owner === p && u.type === 'unit_warrior'),
+      ).toBe(true);
+    }
+  });
+
   it('waits for every human in hotseat', () => {
     const game = new LocalGame(setup(['human', 'human']), ctx);
     game.act({ type: 'end_turn', player: 'p1' });

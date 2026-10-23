@@ -11,7 +11,7 @@ export {
   type YieldLine,
 } from './effects/yields';
 export type { GameEvent } from './events';
-export { type Fixed, FIXED_ONE, formatFixed, percentOf, toFixed } from './fixed';
+export { type Fixed, FIXED_ONE, formatFixed, percentOf, powFloor, toFixed } from './fixed';
 export {
   type ActionResult,
   applyAction,
@@ -52,11 +52,47 @@ export {
 export { findPath, type PathStep } from './units/pathfind';
 export { fogOfWar, lineOfSight, sightOf, visibleTiles } from './units/vision';
 export type {
+  BuildItem,
+  CitizenFocus,
   GameSettings,
   GameState,
   PlayerId,
   PlayerState,
+  SettlementId,
+  SettlementState,
   UnitId,
   UnitOrders,
   UnitState,
 } from './state';
+export {
+  availableItems,
+  borderThreshold,
+  developCandidates,
+  foundingProblem,
+  goldPerTurn,
+  growthPerTurn,
+  growthThreshold,
+  type Happiness,
+  happinessOf,
+  improvementsFor,
+  isCoastal,
+  itemCost,
+  itemDef,
+  itemKey,
+  itemProblem,
+  type Line,
+  type Mood,
+  purchasableTiles,
+  purchaseCost,
+  settlementIds,
+  settlementLimit,
+  settlementsOf,
+  type SettlementYields,
+  settlementYields,
+  tileOnRiver,
+  tilePurchaseCost,
+  tileYields,
+  townUpgradeCost,
+  workableTiles,
+} from './settlements/rules';
+export { bestDevelopChoice } from './settlements/handlers';

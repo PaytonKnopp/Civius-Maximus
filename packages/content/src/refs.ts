@@ -90,6 +90,19 @@ export function collectRefs(entity: AnyEntity): Ref[] {
     case 'unit':
       out.push({ path: ['class'], kind: 'unitClass', id: entity.class });
       break;
+    case 'improvement':
+      yieldKeys(out, entity.yields, ['yields']);
+      ids(out, 'resource', entity.resources, ['resources']);
+      entity.sites.forEach((site, i) => {
+        ids(out, 'terrain', site.terrains, ['sites', i, 'terrains']);
+        ids(out, 'feature', site.features, ['sites', i, 'features']);
+      });
+      break;
+    case 'building':
+      yieldKeys(out, entity.yields, ['yields']);
+      break;
+    case 'civ':
+      break;
     case 'rules':
       yieldKeys(out, entity.settlements.centerMinimumYields, [
         'settlements',
@@ -106,6 +119,12 @@ export function collectRefs(entity: AnyEntity): Ref[] {
         out.push({ path: ['mapgen', key], kind: 'terrain', id: entity.mapgen[key] });
       }
       ids(out, 'unit', entity.units.startingUnits, ['units', 'startingUnits']);
+      out.push({
+        path: ['settlements', 'capitalBuilding'],
+        kind: 'building',
+        id: entity.settlements.capitalBuilding,
+      });
+      yieldKeys(out, entity.settlements.citizenWeights, ['settlements', 'citizenWeights']);
       break;
     default: {
       // Adding a content type? Teach this function which of its fields point at other content.

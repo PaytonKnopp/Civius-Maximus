@@ -6,6 +6,8 @@ export interface TileFacts {
   feature: string | null;
   elevation: Elevation;
   resource: string | null;
+  /** An `improvement` content id (missing = none). */
+  improvement?: string | null;
   /** True if a river runs along any edge of the tile. */
   river: boolean;
   ownerId: string | null;

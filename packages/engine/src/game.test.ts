@@ -6,6 +6,8 @@ import { type Action, parseAction } from './actions';
 import { applyAction, createGame, type EngineContext, type GameSetup, MAX_PLAYERS } from './game';
 import { stateHash } from './hash';
 import { type Replay, runReplay } from './replay';
+import { settlementIds } from './settlements/rules';
+import { bestDevelopChoice } from './settlements/handlers';
 import type { GameState } from './state';
 
 const ctx: EngineContext = { content: compileFromDirs().content! };
@@ -184,12 +186,43 @@ describe('parseAction', () => {
 });
 
 describe('replays', () => {
-  /** A scripted 8-player game: 25 turns, with players changing their minds along the way. */
+  /**
+   * A scripted 8-player game: 25 turns. Everyone founds a capital on turn 1, builds, and develops
+   * tiles as they grow, with players changing their minds about ending turns along the way.
+   */
   function scriptedReplay(): Replay {
     const s = setup(8, 25);
     let state = createGame(s, ctx);
     const actions: Action[] = [];
+    const play = (...more: Action[]) => {
+      state = apply(state, ...more);
+      actions.push(...more);
+    };
+    for (const player of state.playerOrder) {
+      const settler = Object.values(state.units).find(
+        (u) => u.owner === player && u.type === 'unit_settler',
+      )!;
+      play({ type: 'found_settlement', player, unit: settler.id });
+      const capital = state.players[player]!.capital!;
+      play({
+        type: 'set_queue',
+        player,
+        settlement: capital,
+        queue: [
+          { kind: 'unit', id: 'unit_warrior' },
+          { kind: 'building', id: 'building_monument' },
+          { kind: 'unit', id: 'unit_settler' },
+        ],
+      });
+    }
     for (let turn = 1; turn <= 25; turn++) {
+      for (const id of settlementIds(state)) {
+        const settlement = state.settlements[id]!;
+        const choice = bestDevelopChoice(ctx, state, settlement);
+        if (settlement.pendingDevelop > 0 && choice) {
+          play({ type: 'develop_tile', player: settlement.owner, settlement: id, ...choice });
+        }
+      }
       const order = endAll(state);
       // Rotate who ends first each turn, and have someone un-end and re-end.
       const rotated = [...order.slice(turn % 8), ...order.slice(0, turn % 8)];
@@ -212,7 +245,8 @@ describe('replays', () => {
     const b = runReplay(structuredClone(replay), ctx);
     expect(a.hash).toBe(b.hash);
     expect(a.state.status).toBe('ended');
-    expect(replay.actions).toHaveLength(25 * 10);
+    expect(Object.keys(a.state.settlements)).toHaveLength(8);
+    expect(Object.values(a.state.settlements).every((x) => x.population > 1)).toBe(true);
   });
 
   it('match a recorded golden hash (fails if a rules change would break old saves)', () => {
@@ -223,13 +257,17 @@ describe('replays', () => {
       readPackageDir(new URL('../test-fixtures/frozen-content', import.meta.url).pathname),
     ]).content!;
     expect(runReplay(scriptedReplay(), { content: frozen }).hash).toMatchInlineSnapshot(
-      `"5ac6b8d398ee3fb7330c02bd3c"`,
+      `"918853e5d0fecf24048d0679e3"`,
     );
   });
 
   it('report where a replay diverges', () => {
     const replay = scriptedReplay();
-    replay.actions.splice(1, 1); // drop an unend_turn, so a later end_turn becomes illegal
+    // Drop an unend_turn, so a later end_turn becomes illegal.
+    replay.actions.splice(
+      replay.actions.findIndex((a) => a.type === 'unend_turn'),
+      1,
+    );
     expect(() => runReplay(replay, ctx)).toThrow(/Replay diverged at action \d+ \(end_turn\)/);
   });
 });

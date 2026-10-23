@@ -26,7 +26,7 @@ export default tseslint.config(
   },
   {
     files: DETERMINISTIC,
-    ignores: ['**/*.test.ts'],
+    ignores: ['**/*.test.ts', '**/src/testing/**'],
     rules: {
       'no-restricted-properties': [
         'error',

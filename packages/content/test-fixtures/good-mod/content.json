@@ -38,6 +38,11 @@
   },
   {
     "type": "patch",
+    "target": "improvement_mine",
+    "ops": [{ "op": "remove", "path": "resources", "value": "uranium" }]
+  },
+  {
+    "type": "patch",
     "target": "uranium",
     "ops": [{ "op": "delete" }]
   }

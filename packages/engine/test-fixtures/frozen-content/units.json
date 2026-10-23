@@ -9,7 +9,8 @@
     "cost": 80,
     "actions": ["found_settlement"],
     "icon": "S",
-    "model": "settler"
+    "model": "settler",
+    "populationCost": 1
   },
   {
     "type": "unit",

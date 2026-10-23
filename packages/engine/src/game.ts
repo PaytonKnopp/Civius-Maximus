@@ -6,6 +6,7 @@ import { generateMap } from './map/generate';
 import { makeRandom } from './map/random';
 import type { StartBias } from './map/types';
 import { createRng } from './rng';
+import { settlementHandlers, settlementsTurn } from './settlements/handlers';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
 
@@ -21,6 +22,8 @@ export interface GameSetup {
     name: string;
     kind: PlayerState['kind'];
     team?: number | null;
+    /** A `civ` content id. Players without one get a civ nobody else picked, at random. */
+    civ?: string;
     /** From the player's civ (later); influences where they start. */
     startBias?: StartBias[];
   }[];
@@ -62,9 +65,20 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     random,
   );
 
+  // Civs: as chosen, then the unpicked ones shuffled (repeating if there are more players).
+  for (const p of setup.players) {
+    if (p.civ !== undefined && !ctx.content.entities.civ[p.civ])
+      throw new Error(`Unknown civ "${p.civ}" for ${p.id}`);
+  }
+  const chosen = new Set(setup.players.flatMap((p) => (p.civ ? [p.civ] : [])));
+  const pool = random.shuffle(ctx.content.ids.civ.filter((c) => !chosen.has(c)));
+  const civs = pool.length > 0 ? pool : [...ctx.content.ids.civ];
+  let nextCiv = 0;
+
   const players: Record<PlayerId, PlayerState> = {};
   for (const id of playerOrder) {
     const p = byId(id);
+    const civ = p.civ ?? civs[nextCiv++ % civs.length] ?? '';
     players[id] = {
       id,
       name: p.name,
@@ -75,6 +89,11 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       startTile: starts[id]!,
       explored: '',
       canEmbark: ctx.content.rules.units.embarkFromStart,
+      civ,
+      gold: 0,
+      faith: 0,
+      capital: null,
+      settlementsFounded: 0,
     };
   }
   const state: GameState = {
@@ -91,6 +110,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     map,
     units: {},
     wars: [],
+    settlements: {},
   };
   spawnStartingUnits(state, ctx);
   return state;
@@ -98,6 +118,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
 
 const handlers: Handlers = {
   ...unitHandlers,
+  ...settlementHandlers,
   end_turn: {
     validate(state, action) {
       const p = state.players[action.player];
@@ -130,7 +151,7 @@ const handlers: Handlers = {
 };
 
 /** Per-turn processing. Modules add steps here as they're built (growth, research, ...). */
-const turnSteps: TurnStep[] = [];
+const turnSteps: TurnStep[] = [{ id: 'settlements', order: 100, run: settlementsTurn }];
 
 function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   for (const step of [...turnSteps].sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : 1))) {

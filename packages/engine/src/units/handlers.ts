@@ -16,7 +16,11 @@ import { exploreVisible, visibleTiles } from './vision';
 
 type UnitAction<T extends Action['type']> = Extract<Action, { type: T }>;
 
-function ownedUnit(state: GameState, player: PlayerId, unitId: string): UnitState | RuleError {
+export function ownedUnit(
+  state: GameState,
+  player: PlayerId,
+  unitId: string,
+): UnitState | RuleError {
   if (!state.players[player]?.alive)
     return { code: 'not_playing', message: `${player} is not playing` };
   const unit = state.units[unitId];
@@ -44,8 +48,8 @@ function simple<T extends Action['type']>(
   };
 }
 
-/** Players (other than the owner) who can see any tile of a path right now. */
-function watchers(
+/** The owner, plus every other player who can see any of `tiles` right now. */
+export function watchers(
   ctx: EngineContext,
   state: GameState,
   owner: PlayerId,
@@ -148,7 +152,9 @@ export const unitHandlers = {
     },
   ),
 } satisfies {
-  [T in Exclude<Action['type'], 'end_turn' | 'unend_turn'>]: ActionHandler<UnitAction<T>>;
+  [
+    T in 'move_unit' | 'skip_unit' | 'sleep_unit' | 'fortify_unit' | 'wake_unit' | 'disband_unit'
+  ]: ActionHandler<UnitAction<T>>;
 };
 
 /** Units that still want orders this turn (drives the "Next action" button). */

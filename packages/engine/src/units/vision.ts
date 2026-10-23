@@ -1,6 +1,6 @@
 import { decodeBits, emptyBits, encodeBits, getBit, setBit } from '../bitset';
 import { type EngineContext, unitClassOf, unitDef } from '../context';
-import { distance, hexLine, tilesWithin } from '../map/hex';
+import { distance, hexLine, neighbors, tilesWithin } from '../map/hex';
 import type { GameState, PlayerId, UnitState } from '../state';
 import { isWater } from './movement';
 
@@ -42,9 +42,19 @@ export function sightOf(ctx: EngineContext, state: GameState, unit: UnitState): 
   return def.sight + (hills ? ctx.content.rules.elevation.hills.sightBonus : 0);
 }
 
-/** Tiles a player can see right now (1 = visible), from all of their units. */
+/** Tiles a player can see right now (1 = visible): around their units, and their territory
+ * plus one tile beyond it. */
 export function visibleTiles(ctx: EngineContext, state: GameState, player: PlayerId): Uint8Array {
   const vis = new Uint8Array(state.map.tiles.length);
+  const radius = ctx.content.rules.settlements.ownRadius;
+  for (const s of Object.values(state.settlements)) {
+    if (s.owner !== player) continue;
+    for (const t of tilesWithin(state.map, s.tile, radius)) {
+      if (state.map.tiles[t]!.owner !== player) continue;
+      vis[t] = 1;
+      for (const n of neighbors(state.map, t)) vis[n] = 1;
+    }
+  }
   for (const unit of Object.values(state.units)) {
     if (unit.owner !== player) continue;
     for (const t of tilesWithin(state.map, unit.tile, sightOf(ctx, state, unit))) {

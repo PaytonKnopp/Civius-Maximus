@@ -945,6 +945,12 @@
               "minimum": 0,
               "maximum": 9007199254740991
             },
+            "populationCost": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
             "actions": {
               "default": [],
               "type": "array",
@@ -993,6 +999,242 @@
             "class",
             "movement",
             "icon"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "improvement"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 3
+            },
+            "yields": {
+              "default": {},
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "additionalProperties": {
+                "type": "number",
+                "multipleOf": 0.5
+              }
+            },
+            "resources": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              }
+            },
+            "sites": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "terrains": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                  },
+                  "elevations": {
+                    "default": [
+                      "flat",
+                      "hills"
+                    ],
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "flat",
+                        "hills",
+                        "mountain"
+                      ]
+                    }
+                  },
+                  "features": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                  },
+                  "needsFeature": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "order": {
+              "default": 100,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "name",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "building"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 3
+            },
+            "cost": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "maintenance": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "yields": {
+              "default": {},
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "additionalProperties": {
+                "type": "number",
+                "multipleOf": 0.5
+              }
+            },
+            "happiness": {
+              "default": 0,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "requiresRiver": {
+              "default": false,
+              "type": "boolean"
+            },
+            "requiresCoast": {
+              "default": false,
+              "type": "boolean"
+            },
+            "cityOnly": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "name",
+            "icon",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "civ"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "adjective": {
+              "type": "string",
+              "minLength": 1
+            },
+            "colors": {
+              "type": "object",
+              "properties": {
+                "primary": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "secondary": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$"
+                }
+              },
+              "required": [
+                "primary",
+                "secondary"
+              ],
+              "additionalProperties": false
+            },
+            "cityNames": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "name",
+            "adjective",
+            "colors",
+            "cityNames"
           ],
           "additionalProperties": false
         },
@@ -1085,6 +1327,151 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 9007199254740991
+                },
+                "startingRadius": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 3
+                },
+                "capitalBuilding": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "townGoldPercent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000
+                },
+                "townUpgrade": {
+                  "type": "object",
+                  "properties": {
+                    "base": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "perCity": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "base",
+                    "perCity"
+                  ],
+                  "additionalProperties": false
+                },
+                "purchase": {
+                  "type": "object",
+                  "properties": {
+                    "goldPerProduction": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "tileBase": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "tilePerAcquired": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "tilePerDistance": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "goldPerProduction",
+                    "tileBase",
+                    "tilePerAcquired",
+                    "tilePerDistance"
+                  ],
+                  "additionalProperties": false
+                },
+                "happiness": {
+                  "type": "object",
+                  "properties": {
+                    "base": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "citizensPerUnhappy": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "perMaintainedBuilding": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "perSettlementOverLimit": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "thrivingAt": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "unrestAt": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": -1
+                    },
+                    "thrivingYieldPercent": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "thrivingGrowthPercent": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "unhappyYieldPercentPerPoint": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 0
+                    },
+                    "unrestYieldPercent": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 0
+                    }
+                  },
+                  "required": [
+                    "base",
+                    "citizensPerUnhappy",
+                    "perMaintainedBuilding",
+                    "perSettlementOverLimit",
+                    "thrivingAt",
+                    "unrestAt",
+                    "thrivingYieldPercent",
+                    "thrivingGrowthPercent",
+                    "unhappyYieldPercentPerPoint",
+                    "unrestYieldPercent"
+                  ],
+                  "additionalProperties": false
+                },
+                "citizenWeights": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "additionalProperties": {
+                    "type": "number",
+                    "multipleOf": 0.5
+                  }
                 }
               },
               "required": [
@@ -1095,7 +1482,14 @@
                 "foodPerCitizen",
                 "growth",
                 "borderGrowth",
-                "startingLimit"
+                "startingLimit",
+                "startingRadius",
+                "capitalBuilding",
+                "townGoldPercent",
+                "townUpgrade",
+                "purchase",
+                "happiness",
+                "citizenWeights"
               ],
               "additionalProperties": false
             },
@@ -2473,6 +2867,12 @@
                 "minimum": 0,
                 "maximum": 9007199254740991
               },
+              "populationCost": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
               "actions": {
                 "default": [],
                 "type": "array",
@@ -2521,6 +2921,242 @@
               "class",
               "movement",
               "icon"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "improvement"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "icon": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 3
+              },
+              "yields": {
+                "default": {},
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "additionalProperties": {
+                  "type": "number",
+                  "multipleOf": 0.5
+                }
+              },
+              "resources": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                }
+              },
+              "sites": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "terrains": {
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      }
+                    },
+                    "elevations": {
+                      "default": [
+                        "flat",
+                        "hills"
+                      ],
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "flat",
+                          "hills",
+                          "mountain"
+                        ]
+                      }
+                    },
+                    "features": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      }
+                    },
+                    "needsFeature": {
+                      "default": false,
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "order": {
+                "default": 100,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "name",
+              "icon"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "building"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "icon": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 3
+              },
+              "cost": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "maintenance": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "yields": {
+                "default": {},
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "additionalProperties": {
+                  "type": "number",
+                  "multipleOf": 0.5
+                }
+              },
+              "happiness": {
+                "default": 0,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "requiresRiver": {
+                "default": false,
+                "type": "boolean"
+              },
+              "requiresCoast": {
+                "default": false,
+                "type": "boolean"
+              },
+              "cityOnly": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "name",
+              "icon",
+              "cost"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "civ"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "adjective": {
+                "type": "string",
+                "minLength": 1
+              },
+              "colors": {
+                "type": "object",
+                "properties": {
+                  "primary": {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  },
+                  "secondary": {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  }
+                },
+                "required": [
+                  "primary",
+                  "secondary"
+                ],
+                "additionalProperties": false
+              },
+              "cityNames": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "name",
+              "adjective",
+              "colors",
+              "cityNames"
             ],
             "additionalProperties": false
           },
@@ -2613,6 +3249,151 @@
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 9007199254740991
+                  },
+                  "startingRadius": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3
+                  },
+                  "capitalBuilding": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "townGoldPercent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "townUpgrade": {
+                    "type": "object",
+                    "properties": {
+                      "base": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "perCity": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "base",
+                      "perCity"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "purchase": {
+                    "type": "object",
+                    "properties": {
+                      "goldPerProduction": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "tileBase": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "tilePerAcquired": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "tilePerDistance": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "goldPerProduction",
+                      "tileBase",
+                      "tilePerAcquired",
+                      "tilePerDistance"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "happiness": {
+                    "type": "object",
+                    "properties": {
+                      "base": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "citizensPerUnhappy": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "perMaintainedBuilding": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "perSettlementOverLimit": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "thrivingAt": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "unrestAt": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": -1
+                      },
+                      "thrivingYieldPercent": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "thrivingGrowthPercent": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "unhappyYieldPercentPerPoint": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 0
+                      },
+                      "unrestYieldPercent": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 0
+                      }
+                    },
+                    "required": [
+                      "base",
+                      "citizensPerUnhappy",
+                      "perMaintainedBuilding",
+                      "perSettlementOverLimit",
+                      "thrivingAt",
+                      "unrestAt",
+                      "thrivingYieldPercent",
+                      "thrivingGrowthPercent",
+                      "unhappyYieldPercentPerPoint",
+                      "unrestYieldPercent"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "citizenWeights": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "additionalProperties": {
+                      "type": "number",
+                      "multipleOf": 0.5
+                    }
                   }
                 },
                 "required": [
@@ -2623,7 +3404,14 @@
                   "foodPerCitizen",
                   "growth",
                   "borderGrowth",
-                  "startingLimit"
+                  "startingLimit",
+                  "startingRadius",
+                  "capitalBuilding",
+                  "townGoldPercent",
+                  "townUpgrade",
+                  "purchase",
+                  "happiness",
+                  "citizenWeights"
                 ],
                 "additionalProperties": false
               },

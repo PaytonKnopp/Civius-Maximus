@@ -1,0 +1,124 @@
+[
+  {
+    "type": "improvement",
+    "id": "improvement_farm",
+    "name": "Farm",
+    "icon": "Fa",
+    "yields": {
+      "food": 1
+    },
+    "order": 10,
+    "resources": ["wheat", "rice"],
+    "sites": [
+      {
+        "terrains": ["grassland", "plains", "desert", "tundra"],
+        "elevations": ["flat"],
+        "features": ["floodplains", "floodplains_grassland", "floodplains_plains"]
+      }
+    ],
+    "color": "#c9a74a"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_mine",
+    "name": "Mine",
+    "icon": "Mi",
+    "yields": {
+      "production": 1
+    },
+    "order": 20,
+    "resources": ["copper", "iron", "niter", "coal", "diamonds", "aluminum", "uranium"],
+    "sites": [
+      {
+        "terrains": ["grassland", "plains", "desert", "tundra", "snow"],
+        "elevations": ["hills"]
+      }
+    ],
+    "color": "#8a8076"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_quarry",
+    "name": "Quarry",
+    "icon": "Qu",
+    "yields": {
+      "production": 1
+    },
+    "order": 5,
+    "resources": ["stone"],
+    "color": "#b9b2a4"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_pasture",
+    "name": "Pasture",
+    "icon": "Pa",
+    "yields": {
+      "production": 1
+    },
+    "order": 5,
+    "resources": ["cattle", "sheep", "horses"],
+    "color": "#9fbf5a"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_plantation",
+    "name": "Plantation",
+    "icon": "Pl",
+    "yields": {
+      "gold": 2
+    },
+    "order": 5,
+    "resources": ["bananas", "silk", "spices", "wine", "incense"],
+    "color": "#6f9a3c"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_camp",
+    "name": "Camp",
+    "icon": "Ca",
+    "yields": {
+      "gold": 2
+    },
+    "order": 5,
+    "resources": ["deer"],
+    "color": "#7a5a3a"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_fishing_boats",
+    "name": "Fishing Boats",
+    "icon": "Fb",
+    "yields": {
+      "food": 1
+    },
+    "order": 10,
+    "resources": ["fish", "crabs", "pearls", "whales"],
+    "sites": [
+      {
+        "terrains": ["coast", "lake"],
+        "elevations": ["flat"],
+        "features": ["reef"]
+      }
+    ],
+    "color": "#4f86a8"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_woodcutter",
+    "name": "Woodcutter",
+    "icon": "Wc",
+    "yields": {
+      "production": 1
+    },
+    "order": 30,
+    "sites": [
+      {
+        "elevations": ["flat", "hills"],
+        "features": ["woods", "rainforest"],
+        "needsFeature": true
+      }
+    ],
+    "color": "#4d6b34"
+  }
+]

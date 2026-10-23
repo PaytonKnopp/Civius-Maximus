@@ -8,7 +8,12 @@ export interface MapTile {
   resource: string | null;
   /** River edges owned by this tile: bit 0 = E, bit 1 = SW, bit 2 = SE (see hex.ts). */
   river: number;
+  /** The player whose territory this is (kept in step with `settlement`). */
   owner: PlayerId | null;
+  /** The settlement this tile belongs to. */
+  settlement: string | null;
+  /** An `improvement` content id. */
+  improvement: string | null;
 }
 
 export interface MapState {
