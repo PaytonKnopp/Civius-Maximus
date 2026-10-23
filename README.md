@@ -20,7 +20,8 @@ Built from the ground up to be modded: leaders, civs, units and rules are all da
 | [06 · UI/UX](docs/06-ui-ux.md) | Screens, HUD, lenses, explainability, controls, accessibility |
 | [07 · Roadmap](docs/07-roadmap.md) | Milestones M0–M29, playtest checkpoints, effort estimates |
 | [08 · Best of Civ 5/6/7](docs/08-best-of-civ.md) | Which version of each system we use, and why |
-| [09 · Base roster](docs/09-base-roster.md) | The starting ten leaders and civs, plus the queue |
+| [09 · Base roster](docs/09-base-roster.md) | The starting 30 leaders and civs, plus the queue |
+| [10 · Art direction](docs/10-art-direction.md) | Painterly stylized 3D: Civ VII + Outer Wilds + Puss in Boots |
 | [Decisions](docs/DECISIONS.md) | Decided and open questions |
 
 ## Development

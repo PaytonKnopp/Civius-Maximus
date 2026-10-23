@@ -18,6 +18,23 @@ touching engine code.
 - It is not aimed at a public storefront. Everything is built so that it *could* go there later
   (desktop build, no copyrighted assets), but that is not a goal.
 
+## What Payton loves (the north star)
+
+Every feature decision checks against this list, straight from the person this game is for:
+
+- **Breadth and options above all.** Lots of map types and map settings, lots of leaders and civs,
+  lots of characters, all the best systems from Civ V, VI and VII, plus more on top.
+- **Every leader and civ is unique** and has its own complete kit that actually works in play.
+- **The race for great people** (Civ VI): named individuals, world-wide competition.
+- **Map lenses and filters:** the more, the better.
+- **Adjacency and placement puzzles:** planning where things go to make big numbers.
+- **Big yields on tiles**, shown with beautiful icons that match the art style.
+- **Civ VII's fog of war** and a **painterly 3D look** (see [10-art-direction.md](10-art-direction.md)).
+- **Growing the game by asking Claude:** new leaders, civs, wonders, map types and features get
+  added by describing them in a Claude session, not through an in-game editor. The codebase is
+  built so that's fast and safe (data-driven content, validators, tests, and a written checklist
+  for each kind of addition).
+
 ## Design pillars
 
 Every feature decision gets checked against these, in this order.
@@ -25,9 +42,10 @@ Every feature decision gets checked against these, in this order.
 1. **Friends first.** It should be fun to play with people you know. That means simultaneous
    turns so nobody waits, join codes, trash-talk chat, binding deals between players, replays,
    and games that fit around real life (cloud saves, turn timers, AI takeover when someone drops).
-2. **Everything is customizable.** Civs, leaders, units, buildings, techs, rules and constants
-   all live in data files. Each game is created with a chosen set of mods and rule modules.
-   Nothing about "what Rome does" is hard-coded.
+2. **Everything is customizable, and breadth is a feature.** Civs, leaders, units, buildings,
+   techs, map types, rules and constants all live in data files, so adding more is cheap. Every
+   game has a deep settings screen; when in doubt, add the option. Nothing about "what Rome does"
+   is hard-coded.
 3. **Civ 6 depth, but readable.** The systems are deep (districts, adjacency, policies, great
    people, religion, city-states), but every number in the UI can be clicked to see *why* it is
    that number. No hidden math.
@@ -41,7 +59,8 @@ Every feature decision gets checked against these, in this order.
 ## What "finished" (v1.0) means
 
 - **Platforms:** browser (any modern desktop browser), plus desktop apps for Windows, macOS
-  and Linux built from the same code. A turn can be played from a tablet or phone browser.
+  and Linux built from the same code. Stylized painterly 3D with quality presets, plus a 2D
+  strategic view. A turn can be played from a tablet or phone browser.
 - **Modes:** single player vs AI, hotseat, and online multiplayer for 2–8 players. The host
   makes a game and friends join with a **code**. Players have their own in-game login. Turns
   are simultaneous with an End Turn button, with turn timers and teams. AI can fill empty seats or
@@ -56,16 +75,18 @@ Every feature decision gets checked against these, in this order.
   with influence and deals, trade routes, eras with golden ages and legacy goals, governors.
 - **Victories:** domination, science, culture, religious, score, plus custom victories defined by
   mods. Each can be toggled per game.
-- **Content:** the ten starting leaders and civs ([09-base-roster.md](09-base-roster.md)) plus any
-  added from the queue, with a full set of base units, buildings and wonders.
-- **Modding:** mod folders, an in-game mod manager, and an in-game civ and leader creator. Mods
-  are sent to every player in a game automatically.
+- **Content:** 30 leaders and 30 civs to start ([09-base-roster.md](09-base-roster.md)), each with
+  a complete, working kit, plus more added on request; a full set of units, buildings and 40+ wonders.
+- **Adding content:** by asking Claude. Every content type has a checklist skill in the repo
+  (`.claude/skills/`) so any session adds a leader, civ, wonder or map type the same careful
+  way, with validation and tests. (Data-only mod folders still work, but there's no in-game
+  editor; that time goes into more content instead.)
 - **Social:** chat (all, team and private), an optional Discord webhook, browser notifications,
   and end-of-game replays with a timeline.
 
 ## What we are explicitly *not* doing (v1)
 
-- 3D graphics. The map is 2D/isometric, with art you can swap in later.
+- Photorealism, heavy animation or physics. The 3D is stylized to stay light (see doc 10).
 - Real-time anything. It's turn-based throughout.
 - Matchmaking with strangers, ranked play, or anti-cheat beyond what host authority already gives.
 - Copying Firaxis/2K assets, text, icons, ability names or the "Civilization" name. Game *mechanics* are fair to

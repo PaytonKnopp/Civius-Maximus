@@ -30,6 +30,11 @@ deliberately differ from Civ 6, the doc says so and gives a reason.
 
 ### Map generation
 
+Map types now: Continents, Pangaea, Archipelago, Fractal. Planned (M21a): small continents,
+island plates, inland sea, lakes, highlands, seven seas, Terra (old world / new world), shuffle,
+duel arena, and Earth with true start locations. World settings planned: world age (how
+mountainous), temperature, rainfall, sea level, natural wonder count.
+
 Generation is a pipeline of seeded steps, driven by content wherever possible (map types and
 sizes are content; each terrain declares the temperature/moisture box it belongs in; each feature
 declares its placement chance and climate). Preview any map with `pnpm cx map pangaea small 42`.

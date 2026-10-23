@@ -47,6 +47,15 @@ features on top.
   around generated worlds.
 - 🎮 **Checkpoint:** look at the maps. Do they feel like good Civ maps? Tune the generator.
 
+### M4b · 3D painterly renderer (look prototype)
+- Three.js renderer per [10-art-direction.md](10-art-direction.md): sculpted terrain from the hex
+  map, painted water with foam, instanced stylized trees and mountains, rivers, Civ VII-style
+  cloud fog, tilted camera with zoom, quality presets. The 2D renderer stays as the strategic view.
+- **Done when:** the Map Lab has a 3D mode that runs at 60 fps on Medium on integrated graphics,
+  and you can compare it side by side with the 2D view.
+- 🎮 **Checkpoint:** react to the look (palette, water, trees, fog) before everything else is
+  drawn in it.
+
 ## Phase B — The core game (local / hotseat)
 
 ### M5 · Units and movement
@@ -124,6 +133,8 @@ The order inside this phase can change based on playtest feedback.
 | M18 · Religion | Pantheons, founding, beliefs, pressure, missionaries/apostles, religious victory |
 | M19 · Independent powers | Camps with dispositions, befriending, city-states, envoys, suzerains, quests, levies |
 | M20 · Eras, golden ages, governors | Historic moments, legacy goals, ages, dedications, governor trees |
+| M21a · Map breadth | 12+ map types (small continents, island plates, inland sea, lakes, highlands, seven seas, Terra old/new world, shuffle, duel arena, Earth with true starts...), world settings (world age, temperature, rainfall, sea level), natural wonders |
+| M21b · Lenses and filters | Every lens in [06-ui-ux.md](06-ui-ux.md), map pins with notes, planning ghosts for districts and wonders |
 | M21 · Full trees & late game | Renaissance → Information eras, air units, nukes (toggleable), ideologies, science victory, tourism & culture victory |
 
 🎮 Playtest after every 1–2 milestones.
@@ -139,20 +150,23 @@ The order inside this phase can change based on playtest feedback.
 
 ## Phase F — Modding and content
 
-### M24 · Modding v1
-- Mod manager UI, a mod library stored in Supabase Storage (free tier) with upload, conflict
-  display, auto-download on join, a modding guide, and JSON Schema for editor autocompletion.
+### M24 · Content pipeline ("just ask Claude")
+- Repo skills in `.claude/skills/` with step-by-step checklists for adding a leader, civ, unit,
+  building, wonder, great person, map type, lens and game option, so any session adds content the
+  same careful way.
+- A **kit test harness**: every leader and civ ability is exercised by an automated test in a
+  scripted game, so "it works properly" is checked, not hoped.
+- An art-prompt style guide for portraits and icons, so supplied art matches.
+- (Replaces the in-game mod manager and civ creator. Mod folders still load, without UI.)
 
-### M25 · Civ creator
-- The form-based editor for leaders, civs, uniques, great people and governors, with a
-  plain-English effect preview.
+### M25 · Leaders 11–30
+- Full kits for the second and third waves of the roster, each with tests.
 
 ### M26 · Base content
-- The starting ten leaders and civs from [09-base-roster.md](09-base-roster.md) are built along the way
-  (they're needed for testing from M6 on). This milestone fills out the full unit roster, all
-  buildings and districts, 30+ wonders, and the leaders you add from the queue. Balanced with
-  simulation reports.
-- 🎮 **Checkpoint:** each friend makes their own leader. Play an all-custom game.
+- Leaders 1–10 are built along the way (needed for testing from M6 on). This milestone fills out
+  the full unit roster, all buildings and districts, 40+ wonders, and anyone added from the queue.
+  Balanced with simulation reports.
+- 🎮 **Checkpoint:** add your friends as great people and custom leaders, and play an all-custom game.
 
 ## Phase G — Polish and v1.0
 
@@ -161,7 +175,8 @@ The order inside this phase can change based on playtest feedback.
   hosting from the desktop app), with auto-updates via GitHub Releases.
 
 ### M28 · Art and audio pass
-- The chosen art style (D11), unit and district sprites, leader portraits, animations, music and SFX.
+- Finish the look from doc 10: civ architecture sets, unit models, wonder hero models, portraits,
+  the painted icon set, effects, music and SFX.
 
 ### M29 · UX polish and replays
 - Replays with timeline, stats graphs, hall of fame, Civilopedia, accessibility options, and a

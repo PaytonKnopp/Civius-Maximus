@@ -36,11 +36,30 @@ happened and what needs you".
 - **Minimap**, with a lens selector.
 - **Chat**, collapsible, with an unread badge.
 
-## Map lenses (overlays)
+## Map lenses and filters (lots of them, by design)
 
-- Yields (all or per yield), settler (good city spots, invalid spots greyed out), district
-  adjacency (when placing), appeal, religion, loyalty, empire (borders highlighted), trade routes,
-  resources, continents, plus a **strategic view**: a flat icon-style map for fast late-game play.
+| Lens | Shows |
+|---|---|
+| Yields | All yields as big icons with numbers, or one yield at a time as a heatmap |
+| Settler | Good settlement spots scored, invalid spots greyed out, fresh water and coast marked |
+| Adjacency | For each district type, the bonus it would get on every tile (also shown while placing) |
+| Appeal | Tile appeal for neighborhoods, resorts and parks |
+| Resources | Filter by bonus / luxury / strategic, or by a single resource; owned vs. unowned |
+| Empire | Borders, settlement ranges, who owns what |
+| Religion | Majority religion and pressure per settlement |
+| Loyalty | Loyalty pressure (when the module is on) |
+| Trade | Trade routes, ranges, and route yields |
+| Tourism | Tourism sources and visitors |
+| Military | Units you can see, zones of control, threat, war support |
+| Continents | Continent names and boundaries |
+| Climate | Temperature, rainfall, elevation |
+| Great works & archaeology | Slots and dig sites |
+| Governors | Who governs where |
+| Natural wonders | Every known natural wonder |
+
+Plus **filters** (show or hide resource icons, yield icons, units, grid, clouds), **map pins**
+with notes (shared with your team), **planning ghosts** to sketch districts and wonders before you
+can build them, and the **strategic view** (flat 2D map) for fast late-game play.
 
 ## Explainability features
 

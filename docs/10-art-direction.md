@@ -1,0 +1,65 @@
+# 10 — Art direction
+
+> **Direction (decided):** stylized **3D**, close to Civ VII's look, painted like **Outer Wilds**
+> and **Puss in Boots: The Last Wish**. Light enough to run on ordinary laptops. No heavy
+> physics or animation.
+
+## The look in one paragraph
+
+A tilted 3D world you could almost touch, rendered like a painting. Terrain is soft and sculpted,
+with no hard hex seams except an optional grid. Colors are saturated and warm in the light, cool
+and blue in the shade. Surfaces show visible brush texture instead of photographic detail. Water
+is the showpiece: painted bands of teal-to-indigo depth, drifting brush-stroke foam and soft
+shoreline highlights, all done in a cheap shader with no simulation. Cities grow on the map as
+clusters of chunky, readable buildings. Unexplored land sits under painted clouds that roll back
+as you explore, as in Civ VII.
+
+## What we take from each reference
+
+| Reference | What we borrow |
+|---|---|
+| **Civ VII** | Tilted camera with smooth zoom, continuous sculpted terrain, settlements and districts that physically grow on their tiles, readable silhouettes at strategy zoom, fog of war (clouds over the unknown, a faded "memory" look for explored land you can't currently see) |
+| **Outer Wilds** | Hand-painted texture feel, simple chunky shapes, warm/cool color contrast, soft gradient skies, cozy small-world charm |
+| **Puss in Boots: The Last Wish** | Painterly shading with visible brush strokes, bold stepped lighting, stylized stepped-frame effects (explosions, spells and impacts animate "on twos") so effects feel crafted and cost little |
+
+## How it's built (and why it stays light)
+
+- **Three.js (WebGL2)** in the same web/desktop client. The 2D map from M4 becomes the **strategic
+  view** (Civ V's flat map), always one key away, and the fallback on very weak devices.
+- **Stylization does the work, not polygons:** low-poly geometry, vertex colors plus a few
+  tiling brush-stroke textures, toon/stepped lighting with soft color ramps, subtle outlines.
+- **Painterly post-process** (a Kuwahara-style brush filter) only on the High quality preset.
+- **Instancing everywhere:** thousands of trees, rocks and buildings drawn in a handful of calls.
+  Terrain in chunked meshes with frustum culling and lower detail at strategy zoom.
+- **Animation budget:** idle bobs, slides and pose-to-pose attacks. No skeletal crowds, no cloth,
+  no physics. Effects use flipbook-style stepped frames.
+- **Quality presets** Low / Medium / High, plus render scale. **Target:** 60 fps on Medium at
+  1080p on a laptop with integrated graphics; 30+ fps on a recent phone on Low.
+
+## Element by element
+
+| Element | Treatment |
+|---|---|
+| **Terrain** | Sculpted heightfield from the hex map, blended between tiles. Hills are rolling, mountains are tall painted peaks with snow caps. Each terrain has its own painted palette and brush texture. |
+| **Water** | Depth-banded painted colors, animated scrolling brush foam on coasts, gentle vertex swell on ocean, lakes calmer and greener. Rivers are carved painted ribbons along tile edges, navigable rivers wider. |
+| **Features** | Instanced stylized trees (broad canopy blobs for woods, tall layered fronds for rainforest), reeds for marsh, reef coral clusters in shallow water, ice sheets. |
+| **Resources** | Small 3D props on the tile (wheat sheaves, horses, iron outcrops), plus a crisp icon badge for readability. |
+| **Settlements** | Buildings grow in rings as population rises. Districts are distinct building clusters. Architecture style varies by civ's culture group and era. Wonders are hero models. |
+| **Units** | Chunky stylized figures, small squads on a tile, player-colored banners, pose-to-pose animation. Commanders carry a banner showing packed units. |
+| **Fog of war** | Civ VII style: rolling painted clouds over unexplored tiles, explored-but-unseen land desaturated with last-known structures, a soft animated edge as vision changes. |
+| **Lighting & sky** | One warm key light, cool ambient, painted gradient sky at the horizon when tilted. No day/night cycle (keeps it cheap and readable). |
+| **Leaders** | Painted 2D portraits (bust and full-figure for diplomacy) in one consistent style, with gentle parallax/breathing motion. No 3D animated leaders (too heavy, too costly to make 30+). |
+| **Icons** | One unified painted icon set: yields, resources, units, buildings, promotions, policies. Big, bold, instantly readable at small size. Yields on tiles shown large with these icons. |
+| **UI** | The chart-room look from the Map Lab (deep navy, brass, Roman inscription type), upgraded with subtle paper/brush textures on panels. |
+
+## Where art comes from
+
+1. **Procedural first:** terrain, water, trees, rocks, clouds and simple buildings are generated in
+   code with the painterly shaders, so the world looks finished without any asset files.
+2. **Free CC0 model packs** (e.g. Quaternius, Kenney) for units and buildings, restyled by our
+   shaders so they match. Only CC0 / public-domain assets, with a credits file.
+3. **Portraits and key art:** painted images you supply (e.g. made with an image generator from
+   a prompt style guide Claude writes, so all 30+ leaders match), dropped into the content files.
+   Until then, generated silhouette placeholders.
+
+All art is referenced from content files, so swapping a placeholder for real art never touches code.

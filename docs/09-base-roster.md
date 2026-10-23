@@ -10,7 +10,12 @@ All abilities and names below are original to Civius Maximus. Numbers are first-
 will be tuned by playtests and AI simulations. Adding a leader later is one JSON file, so just
 ask for whoever you want next.
 
-## The starting ten
+**Starting roster: 30 leaders and 30 civs.** Leaders 1–10 have full kits below. Leaders 11–30
+have their signature idea fixed; their full kits (ability numbers, unique unit, unique
+building/district/improvement, agenda) are written when units and buildings exist (M6–M8), so
+every number can be checked against the real systems.
+
+## Leaders 1–10 (full kits)
 
 ### 1. Julius Caesar — Rome
 - **Leader: *Crossing the Rubicon.*** Declaring war gives your units +5 combat strength for
@@ -118,11 +123,36 @@ ask for whoever you want next.
 - **Agenda: *Unifier.*** Respects players who capture cities. Dislikes players with weak armies.
 - **Personality:** aggression high, district planning high.
 
+## Leaders 11–30 (signature ideas; full kits in M6–M8)
+
+| # | Leader | Civ | Signature idea |
+|---|---|---|---|
+| 11 | Harald Hardrada | Vikings | Raiding from the sea: coastal pillaging pays culture and gold; longships carry troops early |
+| 12 | Shaka | Zulu | Disciplined impis: units that win fights become commanders faster; corps-style formations early |
+| 13 | Montezuma | Aztecs | Luxuries fuel war: each distinct luxury boosts combat; captured units become laborers |
+| 14 | Hannibal Barca | Carthage | Crossing the impossible: units ignore mountain penalties once; trade colonies on every coast |
+| 15 | Saladin | Ayyubids | Faith and chivalry: worship buildings cost less and grant science; strong defensive cavalry |
+| 16 | Catherine the Great | Russia | Vast frontier: extra tiles on founding, tundra becomes productive, great people from the cold |
+| 17 | Ashoka | Maurya India | Dharma after conquest: peace and religion spread grant big yields after wars end |
+| 18 | Suleiman the Magnificent | Ottomans | Siege masters: siege units and conquered cities stay loyal and productive |
+| 19 | Pachacuti | Inca | Mountain empire: terrace farms on hills, mountain tiles can be worked, roads through peaks |
+| 20 | Boudica | Celts | Rally the tribes: bonus versus larger empires; holy sites in woods |
+| 21 | Charlemagne | Franks | Crowned by faith: religious and military policies stack; holy knights |
+| 22 | Cyrus the Great | Persia | Tolerant conqueror: captured cities keep happiness, satrapies boost trade |
+| 23 | Sejong the Great | Korea | Scholar king: campuses next to mountains become powerhouses; science from writing |
+| 24 | Theodora | Byzantium | Holy city politics: spreading religion boosts combat; dromons and hippodromes |
+| 25 | Isabella | Spain | Distant lands: settlements on other continents boosted, treasure fleets |
+| 26 | Pericles | Greece | Golden age of Athens: culture from city-states you lead; acropolis on hills |
+| 27 | Lady Six Sky | Maya | Calendar and observatories: farms feed science; a tight empire around the capital |
+| 28 | Hammurabi | Babylon | Code of laws: boosts complete whole techs; slower raw science |
+| 29 | Pedro II | Brazil | Patron of the arts: great people refunds; rainforest becomes an asset |
+| 30 | Menelik II | Ethiopia | Highland resilience: hills give faith and defense; resources trade for faith |
+
 ## Queued for later (just say "add X")
 
-Harald Hardrada (Vikings), Shaka (Zulu), Montezuma (Aztecs), Hannibal (Carthage), Saladin
-(Ayyubids), Catherine the Great (Russia), Ashoka (Maurya India), Suleiman (Ottomans), Pachacuti
-(Inca), Boudica (Celts), Charlemagne (Franks), Ramesses II (Egypt, as a second Egyptian leader),
-Theodore Roosevelt (United States), Queen Victoria (England), Hammurabi (Babylon), Peter the Great
-(Russia), Wu Zetian (China), Isabella (Spain), Simón Bolívar (Gran Colombia), plus any custom
-characters.
+Second leaders for existing civs: Ramesses II (Egypt), Theodore Roosevelt (United States),
+Queen Victoria (England), Peter the Great (Russia), Wu Zetian (China), Gandhi (India),
+Augustus (Rome). New civs: Simón Bolívar (Gran Colombia), Gilgamesh (Sumer), Tomyris (Scythia),
+Njinga (Ndongo), Gustavus Adolphus (Sweden), Robert the Bruce (Scotland), Wilhelmina
+(Netherlands), Kublai Khan (Yuan), Tamar (Georgia), Jayavarman VII (Khmer), Lautaro (Mapuche),
+Frederick Barbarossa (Germany), plus any custom characters.

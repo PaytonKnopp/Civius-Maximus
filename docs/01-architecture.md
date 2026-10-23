@@ -7,7 +7,7 @@
 | Language | **TypeScript** (strict) everywhere | One language for engine, client, host and tools. Types catch rule bugs early. |
 | Repo | **pnpm monorepo** | Engine, content, client and host code live side by side and share types. |
 | Game engine | Pure TS library, no I/O | Can be tested, replayed, and run in a browser tab, a Web Worker, or Node. |
-| Map rendering | **PixiJS v8** (WebGL) | Fast 2D rendering of thousands of hex tiles, sprites, fog and overlays. |
+| Map rendering | **Three.js** (WebGL2) for the painterly 3D world; **PixiJS v8** for the 2D strategic view | Stylized 3D per [10-art-direction.md](10-art-direction.md), kept light with instancing and quality presets. The 2D view is fast, clear, and a fallback for weak devices. |
 | UI (menus, panels) | **React** + CSS | Civ is mostly panels and tooltips. React is the best-supported way to build lots of UI. |
 | Accounts & database | **Supabase** (free tier): Auth + Postgres | Players make their own login. It stores profiles, games, join codes, saves and chat. |
 | Live connection | **Supabase Realtime** at first, **WebRTC** later | Relays actions between players. WebRTC (peer-to-peer) removes the message limits when needed. |

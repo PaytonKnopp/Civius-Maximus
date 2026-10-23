@@ -1,5 +1,9 @@
 # 05 — Content and modding
 
+> **How content grows (decided):** by asking Claude in a session. The data format below is what
+> Claude writes; the validator and tests keep it correct. The in-game creator and mod manager
+> described further down are no longer planned for v1.
+
 Goal: **anything a base civ can do, a mod can do**, and a non-programmer can make a new leader or civ
 in an evening, either by editing JSON or with the in-game creator.
 
