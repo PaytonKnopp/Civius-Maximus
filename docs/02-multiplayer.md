@@ -29,26 +29,49 @@ The most important doc for pillar #1 ("Friends first").
 Host creates game → Lobby (code, settings, seats, leaders, mods) → Start → Turns ... → Victory → Replay / stats
 ```
 
-### Game settings (host)
+### Game setup (host, or you in single player)
 
-The host picks these settings. All of them are saved as a **preset** so "our usual Friday game" is
-one click.
+A full Civ VI-style setup screen, with **Basic** and **Advanced** tabs. Everything is saved as a
+**preset** so "our usual Friday game" is one click. Every rule module in
+[04-advanced-systems.md](04-advanced-systems.md) appears here as a toggle.
+
+**Game**
 
 | Setting | Options |
 |---|---|
-| Map type | Continents, Pangaea, Archipelago, Fractal, Inland Sea, Islands, Balanced Duel, plus mod map scripts |
-| Map size | Duel, Tiny, Small, Standard, Large, Huge (see [03-core-mechanics.md](03-core-mechanics.md)) |
-| Fairness | Normal / Balanced starts (Mirrored maps later) |
-| Game speed | Online (fast), Quick, Standard, Epic. This scales all costs. |
-| Start era | Ancient (default), Classical, Medieval... |
-| Turn timer | None / Fixed per turn / Time bank (see below) |
-| Victories | Toggle each type, plus turn limit and score victory |
-| Rule modules | Toggle religion, independent powers, great people, governors, loyalty, Ages mode, crises... |
-| Leaders | Any leader with any civ (default) / Historical pairs only |
-| Mods | Choose from the mod library. Load order is shown. |
-| AI | AI seats and difficulty. "AI takes over a disconnected player" (on/off) |
-| Teams | Free-for-all, or assign teams (shared vision, shared victory) |
-| House rules | Free-form text shown to everyone, plus modded rule constants (e.g., "no war before turn 50" can be *enforced*) |
+| Game speed | **Online** (×0.5), **Quick** (×0.67), **Standard** (×1), **Epic** (×1.5), **Marathon** (×3). Scales every cost (research, culture, production, growth, great people, era length), like Civ VI |
+| Start era | Ancient (default) through Atomic, with era-appropriate starting units and techs |
+| Turn limit | Off, or a number (defaults scale with speed: 250 / 330 / 500 / 750 / 1500) |
+| Victories | Toggle each: domination, science, culture, religious, diplomatic, score, plus mod-defined |
+| Difficulty | Per AI seat, and optional per-player handicaps |
+| Turn timer | None / Fixed per turn / Time bank / Dynamic (scales with empire size) |
+| Turn mode | Simultaneous (default) / Dynamic (players at war alternate) |
+| Leaders | Any leader with any civ (default) / Historical pairs only. Duplicates allowed or not. Random pick, draft mode (bans + picks) |
+
+**Rules (toggles)**
+
+Religion, theological combat, great people, independent powers (city-states and barbarians),
+barbarian intensity, governors, loyalty, espionage, world congress, climate & natural disasters
+(with intensity), corporations, nukes, eras & golden/dark ages, legacy goals, **Ages mode (civ
+switching)**, crises, tribal villages (goody huts), secret societies-style mod modules, war
+support, policy-swap cost, tech boosts on/off, "no war before turn N", and any house rule a mod
+defines.
+
+**Map**
+
+| Setting | Options |
+|---|---|
+| Map type | Continents, Pangaea, Archipelago, Fractal, and (M21a) small continents, island plates, inland sea, lakes, highlands, seven seas, Terra, shuffle, duel arena, **Earth** (with optional true start locations) |
+| Map size | Duel (2), Tiny (4), Small (6), Standard (8), Large (10), Huge (12), plus Enormous (16) for big games |
+| World age | New (more mountains) / Standard / Old |
+| Temperature | Hot / Standard / Cold |
+| Rainfall | Wet / Standard / Dry |
+| Sea level | Low / Standard / High |
+| Resources | Sparse / Standard / Abundant, plus strategic-resource balance (standard / guaranteed near starts) |
+| Natural wonders | Count slider |
+| Starts | Normal / Balanced |
+| Wrap | East-west wrap on/off |
+| Seed | Random or a typed seed (to replay a map you liked) |
 
 ### Lobby
 

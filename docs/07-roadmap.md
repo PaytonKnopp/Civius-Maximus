@@ -135,6 +135,9 @@ The order inside this phase can change based on playtest feedback.
 | M20 · Eras, golden ages, governors | Historic moments, legacy goals, ages, dedications, governor trees |
 | M21a · Map breadth | 12+ map types (small continents, island plates, inland sea, lakes, highlands, seven seas, Terra old/new world, shuffle, duel arena, Earth with true starts...), world settings (world age, temperature, rainfall, sea level), natural wonders |
 | M21b · Lenses and filters | Every lens in [06-ui-ux.md](06-ui-ux.md), map pins with notes, planning ghosts for districts and wonders |
+| M21c · Espionage, world congress, loyalty | Spies and missions, congress votes and diplomatic victory, loyalty pressure and city flipping |
+| M21d · Climate, disasters, corporations, Ages mode, crises | All as setup toggles |
+| M21e · Graphs and statistics | The full graphs screen from doc 06 |
 | M21 · Full trees & late game | Renaissance → Information eras, air units, nukes (toggleable), ideologies, science victory, tourism & culture victory |
 
 🎮 Playtest after every 1–2 milestones.
@@ -187,8 +190,7 @@ The order inside this phase can change based on playtest feedback.
 
 ## After v1.0 (backlog)
 
-Mirrored maps, natural wonders (with M8), loyalty, espionage, world congress and diplomatic victory, climate and disasters, corporations,
-Ages mode, crises, scripted mods, 12-player support, WebRTC transport (if message limits are
+Mirrored maps, scripted mods, 12-player support, WebRTC transport (if message limits are
 ever hit), a dedicated host for always-on async games, a mobile-first UI, map editor,
 scenarios (preset maps + rules + victory), and alternative 3D renderer experiments.
 

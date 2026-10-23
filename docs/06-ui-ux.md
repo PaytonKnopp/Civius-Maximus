@@ -1,5 +1,10 @@
 # 06 — UI and UX
 
+**Look (decided):** clean and easy to read like **Civ VII**, with **Civ VI's** information
+density where you want it. Metallic accent tones (**gold, brass, copper**) for headings, numbers
+and highlights; everything else as clean and calm as possible so the map and the numbers stand
+out. Players know Civ well, so tooltips are thorough but there's no beginner hand-holding.
+
 Principle: **you should never have to leave the game to understand the game.** Every number
 has a breakdown, every button explains why it's disabled, and every turn starts with "here's what
 happened and what needs you".
@@ -23,6 +28,8 @@ happened and what needs you".
 | **Turn summary** | What changed since your last turn (what the other players did that you can see) |
 | **Victory progress** | Each victory type, with every player's progress (based on what you can see) |
 | **Replay** | Timeline scrubber, map playback, historic moments |
+| **Graphs** | Civ VI-style end-of-game (and mid-game) graphs, with more options (below) |
+| **Game setup** | Basic and Advanced setup tabs with every option (see [02-multiplayer.md](02-multiplayer.md)) |
 
 ## Main map HUD
 
@@ -70,6 +77,38 @@ can build them, and the **strategic view** (flat 2D map) for fast late-game play
 - **Placement previews:** hover a district or wonder spot to see adjacency and what you'd lose
   (e.g., "removes Woods: −1 ⚙️").
 - **Civilopedia:** an in-game encyclopedia generated from content, so mods show up automatically.
+
+## End Turn (works like Civ)
+
+The big **Next Action** button doesn't let you end the turn while something needs you: it shows
+the next blocker ("Choose production in Rome", "Units need orders", "Choose a research", "Fill
+an empty policy slot", "Pick a pantheon") and takes you there on click. Once nothing's left it
+becomes **End Turn**. Units can sleep, fortify or skip so they stop asking. Optional setting:
+also stop for "a city finished a building" style notices.
+
+## Graphs and statistics (a favourite, so more than Civ VI)
+
+Available any time for what you know about, and in full for everyone at the end of the game.
+
+- **Line graphs over turns** for every yield (food, production, gold, science, culture, faith,
+  happiness, influence, tourism), score and score breakdown, population, number of settlements,
+  land owned, military strength, units lost and killed, techs and civics known, great people
+  earned, wonders built, religion followers, trade routes, era score, war support.
+- **Per-player toggles**, smoothing, log scale, and "per settlement" / "per citizen" normalization.
+- **Stacked area charts** (share of the world's science, culture, land...), **rankings over time**
+  (bump chart), and **demographics** (best / average / worst with your rank).
+- **Event markers** on every graph: wars, wonders, golden/dark ages, eras, eliminations; hover any
+  point to see the exact value and what happened that turn.
+- **Summary cards** at the end: biggest empire, most wonders, deadliest war, fastest tech, longest
+  golden age, and each player's best moment.
+- Graphs export as images, and stay in the hall of fame with the replay.
+
+## Music and sound
+
+- **Classical soundtrack:** a shuffled playlist of public-domain classical recordings (e.g.
+  Musopen's public-domain catalog), with options for **shuffle**, **by era** (Baroque in early
+  eras, Romantic later), skip, and volume. You can add your own tracks to the playlist folder.
+- Separate volume sliders for music, effects, ambience and UI.
 
 ## Controls
 

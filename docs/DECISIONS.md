@@ -27,6 +27,15 @@ To change one, tell Claude in a session (or edit this file). The relevant docs g
 | D22 | Starting roster | **30 leaders + 30 civs**, each with a full unique kit; more on request | 09 |
 | D23 | How content grows | **By asking Claude**, using checklist skills in the repo. No in-game civ creator | 00, 05 |
 | D24 | Breadth | Maximum options: many map types and settings, many lenses, all the best Civ V/VI/VII systems as toggles | 00, 03, 06 |
+| D25 | UI look | Clean like Civ VII, info-dense like Civ VI where useful; gold/brass/copper metallic accents; standard (not beginner) tooltips | 06, 10 |
+| D26 | Game setup | Full Civ VI-style Basic/Advanced setup with every option; speeds Online/Quick/Standard/Epic/Marathon at Civ VI multipliers | 02 |
+| D27 | Graphs | Civ VI end-game graphs plus many more graph types and options | 06 |
+| D28 | Music | Shuffled public-domain classical playlist, by-era option, your own tracks addable | 06 |
+| D29 | Scope of systems | Everything from Ancient to Future era; espionage, world congress, loyalty, disasters/climate, corporations, nukes, Ages mode (civ switching), crises, goody huts all in v1 as setup toggles | 02, 04 |
+| D30 | Earth map | Included, with optional true start locations | 02, 03 |
+| D9 | Theological combat | Setup toggle, off by default | 04 |
+| D15 | Nukes | Included, setup toggle | 04 |
+| D16 | Victories | All on by default, each a setup toggle | 02 |
 | D20 | Leader / civ mixing | **Any leader with any civ.** The civ defaults to the leader's historical one. The host can restrict to historical pairs | 02, 09 |
 
 ## Open
@@ -35,7 +44,4 @@ To change one, tell Claude in a session (or edit this file). The relevant docs g
 |---|---|---|---|---|---|
 | D7 | **Unit stacking** | 1 military + 1 civilian (+1 support) per tile, with commanders to pack units | Unlimited stacks | M5 | Open (default assumed) |
 | D8 | **Phone support** | Phone/tablet browser can play a turn. A full mobile-first UI is not a v1 goal | Mobile-first in v1 | M13+ | Open (default assumed) |
-| D9 | **Theological combat** | Off by default (lobby option) | On by default / removed | M18 | Open |
-| D15 | **Nukes** | Included in the late game, toggle per game | Not in base | M21 | Open |
-| D16 | **Default victory set** | All on, with a turn limit (score victory) | Per-group preset | M10 | Open |
 | D21 | **Map wrap** | Wraps east–west by default | No wrap | M3 | Open (default assumed) |

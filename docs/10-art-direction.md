@@ -50,7 +50,7 @@ as you explore, as in Civ VII.
 | **Lighting & sky** | One warm key light, cool ambient, painted gradient sky at the horizon when tilted. No day/night cycle (keeps it cheap and readable). |
 | **Leaders** | Painted 2D portraits (bust and full-figure for diplomacy) in one consistent style, with gentle parallax/breathing motion. No 3D animated leaders (too heavy, too costly to make 30+). |
 | **Icons** | One unified painted icon set: yields, resources, units, buildings, promotions, policies. Big, bold, instantly readable at small size. Yields on tiles shown large with these icons. |
-| **UI** | The chart-room look from the Map Lab (deep navy, brass, Roman inscription type), upgraded with subtle paper/brush textures on panels. |
+| **UI** | Clean and calm like Civ VII, with Civ VI's information where you want it. Dark translucent panels, metallic gold/brass/copper for headings, numbers and highlights, Roman inscription type for titles. The map and the numbers are the stars. |
 
 ## Where art comes from
 

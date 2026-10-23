@@ -15,13 +15,15 @@ several module combinations to check this.
 | Eras & golden ages | ✅ | — |
 | Governors | ✅ | — |
 | Tourism & great works | ✅ | Great people |
-| Loyalty | later | Governors |
-| Espionage | later | Diplomacy |
-| World congress & diplomatic victory | later | Diplomacy |
-| Climate & natural disasters | later | — |
-| Corporations / monopolies | later | Trade routes |
-| Ages mode (switch civs at era changes, Civ 7-style) | later, optional | Eras |
-| Crises at the end of an era | later, optional | Eras |
+| Loyalty | ✅ toggle | Governors |
+| Espionage | ✅ toggle | Diplomacy |
+| World congress & diplomatic victory | ✅ toggle | Diplomacy |
+| Climate & natural disasters | ✅ toggle | — |
+| Corporations / monopolies | ✅ toggle | Trade routes |
+| Ages mode (switch civs at era changes, Civ 7-style) | ✅ toggle, off by default | Eras |
+| Crises at the end of an era | ✅ toggle, off by default | Eras |
+| Nukes | ✅ toggle | Full tech tree |
+| Tribal villages (goody huts) | ✅ toggle | — |
 
 ---
 
@@ -219,7 +221,7 @@ forces new crisis policies. Off by default, for groups that like chaos.
 
 ---
 
-## Later modules (post-v1, already designed for)
+## More modules (all in v1 as toggles)
 
 - **Loyalty:** cities near your population centers stay loyal. A city far from home and next to
   a big rival can **flip** (become a free city, then join someone else). This makes settling
