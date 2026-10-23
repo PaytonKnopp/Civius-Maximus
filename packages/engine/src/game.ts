@@ -1,17 +1,15 @@
-import type { CompiledContent } from '@cx/content';
 import { type Draft, produce } from 'immer';
 import type { Action, ActionType } from './actions';
+import type { ActionHandler, Emit, EngineContext, RuleError } from './context';
 import type { GameEvent } from './events';
 import { generateMap } from './map/generate';
 import { makeRandom } from './map/random';
 import type { StartBias } from './map/types';
 import { createRng } from './rng';
+import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
 
-/** The fixed inputs to every rules call: compiled content and (later) enabled modules. */
-export interface EngineContext {
-  content: CompiledContent;
-}
+export type { EngineContext, RuleError } from './context';
 
 export const MAX_PLAYERS = 16;
 
@@ -28,17 +26,8 @@ export interface GameSetup {
   }[];
 }
 
-export type RuleError = { code: string; message: string };
 export type ActionResult =
   { ok: true; state: GameState; events: GameEvent[] } | { ok: false; error: RuleError };
-
-type Emit = (event: GameEvent) => void;
-
-interface ActionHandler<A extends Action> {
-  /** Returns why the action isn't allowed, or undefined if it is. Must not modify anything. */
-  validate(state: GameState, action: A, ctx: EngineContext): RuleError | undefined;
-  apply(draft: Draft<GameState>, action: A, ctx: EngineContext, emit: Emit): void;
-}
 
 type Handlers = { [T in ActionType]: ActionHandler<Extract<Action, { type: T }>> };
 
@@ -84,9 +73,11 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       alive: true,
       turnEnded: false,
       startTile: starts[id]!,
+      explored: '',
+      canEmbark: ctx.content.rules.units.embarkFromStart,
     };
   }
-  return {
+  const state: GameState = {
     stateVersion: 1,
     gameId: setup.gameId,
     contentHash: ctx.content.hash,
@@ -98,10 +89,15 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     playerOrder,
     nextEntityId: 1,
     map,
+    units: {},
+    wars: [],
   };
+  spawnStartingUnits(state, ctx);
+  return state;
 }
 
 const handlers: Handlers = {
+  ...unitHandlers,
   end_turn: {
     validate(state, action) {
       const p = state.players[action.player];
@@ -149,6 +145,7 @@ function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   draft.turn += 1;
   for (const id of draft.playerOrder) draft.players[id]!.turnEnded = false;
   emit({ type: 'turn_started', turn: draft.turn, visibleTo: 'all' });
+  startTurnForUnits(draft, ctx, emit);
 }
 
 /** Checks an action against the rules without applying it (for greying out buttons). */

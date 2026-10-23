@@ -2,7 +2,7 @@
   { "type": "terrain", "id": "swamp", "name": "Swamp", "moveCost": "2", "color": "#445533" },
   { "type": "feature", "id": "jungle", "name": "Jungle", "validTerrains": ["grasland"] },
   { "type": "terrain", "id": "grassland", "name": "Grassland again", "color": "#00ff00" },
-  { "type": "unit", "id": "unit_longship" },
+  { "type": "starship", "id": "unit_longship" },
   { "type": "terrain", "id": "Bad-Id", "name": "x", "color": "#000000", "colour": "#000000" },
   { "type": "feature", "id": "glade", "name": "@broken.glade", "validTerrains": ["woods"] },
   {

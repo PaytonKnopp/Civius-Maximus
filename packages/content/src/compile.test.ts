@@ -104,7 +104,7 @@ describe('a broken mod', () => {
   });
 
   it('reports unknown content types', () => {
-    expectMessage('[3].type', 'unknown type "unit"');
+    expectMessage('[3].type', 'unknown type "starship"');
   });
 
   it('reports bad ids and unknown fields', () => {
@@ -238,6 +238,53 @@ describe('load order', () => {
         ),
       ]),
     );
+  });
+});
+
+describe('references in rules and units', () => {
+  const base = readPackageDir(BASE_CONTENT_DIR);
+  const withPatch = (data: unknown[]) =>
+    compileContent([base, pkg('m', {}, [{ path: 'p.json', data }])]).diagnostics.map(
+      formatDiagnostic,
+    );
+
+  it('checks map generator terrains and starting units', () => {
+    const out = withPatch([
+      {
+        type: 'patch',
+        target: 'rules',
+        ops: [
+          { op: 'set', path: 'mapgen.coastTerrain', value: 'coastt' },
+          { op: 'set', path: 'units.startingUnits', value: ['unit_settler', 'unit_knight'] },
+        ],
+      },
+    ]);
+    expect(out).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining(
+          'mapgen.coastTerrain  unknown terrain "coastt" (did you mean "coast"?)',
+        ),
+        expect.stringContaining('units.startingUnits[1]  unknown unit "unit_knight"'),
+      ]),
+    );
+  });
+
+  it("checks a unit's class", () => {
+    const out = withPatch([
+      {
+        type: 'unit',
+        id: 'unit_axe',
+        name: 'Axeman',
+        class: 'class_meele',
+        movement: 2,
+        icon: 'A',
+      },
+    ]);
+    expect(out).toEqual([
+      expect.stringContaining(
+        'class  unknown unitClass "class_meele" (did you mean "class_melee"?)',
+      ),
+    ]);
   });
 });
 

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 const PlayerRef = z.string().min(1).max(64);
+const UnitRef = z.string().regex(/^u\d+$/);
+const TileRef = z.int().min(0).max(1_000_000);
 
 /**
  * Everything a player can ask the engine to do. Actions arrive from the network, so they are
@@ -11,6 +13,15 @@ export const Action = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('end_turn'), player: PlayerRef }),
   /** Take back End Turn while others are still playing. */
   z.strictObject({ type: z.literal('unend_turn'), player: PlayerRef }),
+  /** Move toward a tile; long journeys continue automatically on later turns. */
+  z.strictObject({ type: z.literal('move_unit'), player: PlayerRef, unit: UnitRef, to: TileRef }),
+  /** "Not this turn": the unit stops asking for orders until next turn. */
+  z.strictObject({ type: z.literal('skip_unit'), player: PlayerRef, unit: UnitRef }),
+  z.strictObject({ type: z.literal('sleep_unit'), player: PlayerRef, unit: UnitRef }),
+  z.strictObject({ type: z.literal('fortify_unit'), player: PlayerRef, unit: UnitRef }),
+  /** Clears sleep, fortify or a queued move. */
+  z.strictObject({ type: z.literal('wake_unit'), player: PlayerRef, unit: UnitRef }),
+  z.strictObject({ type: z.literal('disband_unit'), player: PlayerRef, unit: UnitRef }),
 ]);
 export type Action = z.infer<typeof Action>;
 export type ActionType = Action['type'];

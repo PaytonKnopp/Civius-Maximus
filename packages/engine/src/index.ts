@@ -37,4 +37,26 @@ export { validateMap } from './map/validate';
 export type { MapSettings, MapState, MapTile, StartBias } from './map/types';
 export { type Replay, runReplay } from './replay';
 export { createRng, nextInt, nextRange, nextU32, type RngState } from './rng';
-export type { GameSettings, GameState, PlayerId, PlayerState } from './state';
+export { decodeBits, encodeBits, getBit } from './bitset';
+export { atWar, unitClassOf, unitDef, unitIds, warKey } from './context';
+export { unitsNeedingOrders } from './units/handlers';
+export {
+  canTraverse,
+  fullMoves,
+  hasRoom,
+  landCost,
+  MP,
+  stepMoves,
+  unitsOn,
+} from './units/movement';
+export { findPath, type PathStep } from './units/pathfind';
+export { fogOfWar, lineOfSight, sightOf, visibleTiles } from './units/vision';
+export type {
+  GameSettings,
+  GameState,
+  PlayerId,
+  PlayerState,
+  UnitId,
+  UnitOrders,
+  UnitState,
+} from './state';

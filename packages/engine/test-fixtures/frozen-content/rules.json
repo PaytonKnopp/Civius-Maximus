@@ -66,5 +66,15 @@
       "balancedPercent": 90
     },
     "landTilesPerLake": 70
+  },
+  "units": {
+    "stacking": {
+      "military": 1,
+      "civilian": 1,
+      "support": 1
+    },
+    "startingUnits": ["unit_settler", "unit_warrior", "unit_scout"],
+    "embarkFromStart": false,
+    "embarkedSight": 1
   }
 }

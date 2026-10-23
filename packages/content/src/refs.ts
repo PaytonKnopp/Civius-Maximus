@@ -83,6 +83,13 @@ export function collectRefs(entity: AnyEntity): Ref[] {
     case 'ability':
       entity.effects.forEach((e, i) => effectRefs(out, e, ['effects', i]));
       break;
+    case 'mapScript':
+    case 'mapSize':
+    case 'unitClass':
+      break;
+    case 'unit':
+      out.push({ path: ['class'], kind: 'unitClass', id: entity.class });
+      break;
     case 'rules':
       yieldKeys(out, entity.settlements.centerMinimumYields, [
         'settlements',
@@ -90,7 +97,21 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ]);
       yieldKeys(out, entity.elevation.hills.yields, ['elevation', 'hills', 'yields']);
       yieldKeys(out, entity.elevation.mountain.yields, ['elevation', 'mountain', 'yields']);
+      for (const key of [
+        'coastTerrain',
+        'oceanTerrain',
+        'lakeTerrain',
+        'fallbackLandTerrain',
+      ] as const) {
+        out.push({ path: ['mapgen', key], kind: 'terrain', id: entity.mapgen[key] });
+      }
+      ids(out, 'unit', entity.units.startingUnits, ['units', 'startingUnits']);
       break;
+    default: {
+      // Adding a content type? Teach this function which of its fields point at other content.
+      const unhandled: never = entity;
+      throw new Error(`collectRefs: unhandled type ${(unhandled as AnyEntity).type}`);
+    }
   }
   stringRefs(out, entity, []);
   return out;

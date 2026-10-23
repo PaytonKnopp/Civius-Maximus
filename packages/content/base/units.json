@@ -1,0 +1,64 @@
+[
+  {
+    "type": "unit",
+    "id": "unit_settler",
+    "name": "Settler",
+    "class": "class_civilian",
+    "movement": 2,
+    "sight": 2,
+    "cost": 80,
+    "actions": ["found_settlement"],
+    "icon": "S",
+    "model": "settler"
+  },
+  {
+    "type": "unit",
+    "id": "unit_scout",
+    "name": "Scout",
+    "class": "class_recon",
+    "movement": 3,
+    "sight": 3,
+    "strength": 10,
+    "cost": 30,
+    "icon": "Sc",
+    "model": "scout"
+  },
+  {
+    "type": "unit",
+    "id": "unit_warrior",
+    "name": "Warrior",
+    "class": "class_melee",
+    "movement": 2,
+    "sight": 2,
+    "strength": 20,
+    "cost": 40,
+    "icon": "W",
+    "model": "warrior"
+  },
+  {
+    "type": "unit",
+    "id": "unit_slinger",
+    "name": "Slinger",
+    "class": "class_ranged",
+    "movement": 2,
+    "sight": 2,
+    "strength": 5,
+    "rangedStrength": 15,
+    "range": 1,
+    "cost": 35,
+    "icon": "Sl",
+    "model": "archer"
+  },
+  {
+    "type": "unit",
+    "id": "unit_galley",
+    "name": "Galley",
+    "class": "class_naval_melee",
+    "movement": 3,
+    "sight": 2,
+    "strength": 25,
+    "cost": 65,
+    "icon": "G",
+    "model": "ship"
+  }
+]

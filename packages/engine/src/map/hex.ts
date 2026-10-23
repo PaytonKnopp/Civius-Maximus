@@ -85,6 +85,52 @@ export function distance(grid: Grid, a: number, b: number): number {
   return best;
 }
 
+/**
+ * Tiles on the straight line from `a` to `b` (both included), taking the short way around on
+ * wrapping maps. `nudge` shifts the line slightly to one side; lines that pass exactly between two
+ * tiles are checked with both nudges by line-of-sight.
+ */
+export function hexLine(grid: Grid, a: number, b: number, nudge: 1 | -1 = 1): number[] {
+  const [aq, ar] = axial(grid, a);
+  const [bq0, br] = axial(grid, b);
+  let bq = bq0;
+  if (grid.wrapX) {
+    let best = Infinity;
+    let bestQ = bq;
+    for (const shift of [-grid.width, 0, grid.width]) {
+      const dq = bq + shift - aq;
+      const dr = br - ar;
+      const d = (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+      if (d < best) {
+        best = d;
+        bestQ = bq + shift;
+      }
+    }
+    bq = bestQ;
+  }
+  const n = (Math.abs(bq - aq) + Math.abs(br - ar) + Math.abs(bq - aq + br - ar)) / 2;
+  const out: number[] = [];
+  const eps = 1e-6 * nudge;
+  for (let i = 0; i <= n; i++) {
+    const t = n === 0 ? 0 : i / n;
+    // Cube lerp + rounding (basic arithmetic only, so every engine agrees).
+    const x = aq + eps + (bq - aq) * t;
+    const z = ar + eps + (br - ar) * t;
+    const y = -x - z;
+    let rx = Math.round(x);
+    let rz = Math.round(z);
+    const ry = Math.round(y);
+    const dx = Math.abs(rx - x);
+    const dy = Math.abs(ry - y);
+    const dz = Math.abs(rz - z);
+    if (dx > dy && dx > dz) rx = -ry - rz;
+    else if (dy <= dz) rz = -rx - ry;
+    const tile = tileIndex(grid, rx + (rz - (rz & 1)) / 2, rz);
+    if (tile !== NO_TILE && out[out.length - 1] !== tile) out.push(tile);
+  }
+  return out;
+}
+
 /** Every tile within `radius` steps (the tile itself included), nearest first. */
 export function tilesWithin(grid: Grid, center: number, radius: number): number[] {
   const seen = new Set([center]);

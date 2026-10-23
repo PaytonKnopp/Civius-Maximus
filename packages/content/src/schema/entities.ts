@@ -142,6 +142,20 @@ export const RulesDef = z.strictObject({
     canAlwaysMoveOneTile: z.boolean(),
   }),
   luxuryHappinessRadius: z.int().min(0),
+  units: z.strictObject({
+    /** Units of one player allowed on a tile, per layer. Other players' units never share a tile. */
+    stacking: z.strictObject({
+      military: z.int().min(1),
+      civilian: z.int().min(1),
+      support: z.int().min(1),
+    }),
+    /** Every player starts with these units on their start tile (and next to it if crowded). */
+    startingUnits: z.array(Id).min(1),
+    /** Land units may embark onto coast from the start (later this comes from a tech). */
+    embarkFromStart: z.boolean(),
+    /** Sight of embarked land units. */
+    embarkedSight: z.int().min(0),
+  }),
   mapgen: z.strictObject({
     coastTerrain: Id,
     oceanTerrain: Id,
@@ -170,6 +184,50 @@ export const RulesDef = z.strictObject({
       balancedPercent: z.int().min(0).max(100),
     }),
   }),
+});
+
+/** A family of units sharing rules: domain, stacking layer, whether it fights. */
+export const UnitClassDef = z.strictObject({
+  type: z.literal('unitClass'),
+  id: Id,
+  name: Text,
+  domain: z.enum(['land', 'sea', 'air']),
+  /** Which stacking layer the unit occupies (see rules.units.stacking). */
+  layer: z.enum(['military', 'civilian', 'support']),
+  /** Military units exert zone of control and can fight. */
+  combat: z.boolean(),
+  /** Land units of this class can embark onto water (once the player can embark). */
+  embarks: z.boolean().default(true),
+  ignoresZoc: z.boolean().default(false),
+});
+
+/** A unit type: stats, special actions, and how it looks. */
+export const UnitDef = z.strictObject({
+  type: z.literal('unit'),
+  id: Id,
+  name: Text,
+  class: Id,
+  /** Movement points per turn (whole points). */
+  movement: z.int().min(0).max(20),
+  sight: z.int().min(0).max(10).default(2),
+  strength: z.int().min(0).default(0),
+  rangedStrength: z.int().min(0).default(0),
+  range: z.int().min(0).default(0),
+  /** Production cost (used from M6). */
+  cost: z.int().min(0).default(0),
+  /** Special actions this unit can take. */
+  actions: z.array(z.enum(['found_settlement'])).default([]),
+  /** Sea units: can enter deep ocean. */
+  deepWater: z.boolean().default(false),
+  /** Every tile costs 1 movement (e.g. some scouts and cavalry). */
+  ignoresTerrainCost: z.boolean().default(false),
+  ignoresZoc: z.boolean().default(false),
+  /** Short placeholder glyph until icons exist. */
+  icon: z.string().min(1).max(3),
+  /** Which 3D model family the renderer uses. */
+  model: z
+    .enum(['settler', 'warrior', 'scout', 'archer', 'cavalry', 'ship', 'generic'])
+    .default('generic'),
 });
 
 /** A map type the host can pick in the lobby: a generator algorithm plus its parameters. */
@@ -252,6 +310,8 @@ export const ENTITY_SCHEMAS = {
   ability: AbilityDef,
   mapScript: MapScriptDef,
   mapSize: MapSizeDef,
+  unitClass: UnitClassDef,
+  unit: UnitDef,
   rules: RulesDef,
 } as const;
 
@@ -270,6 +330,8 @@ export type AbilityDef = z.infer<typeof AbilityDef>;
 export type RulesDef = z.infer<typeof RulesDef>;
 export type MapScriptDef = z.infer<typeof MapScriptDef>;
 export type MapSizeDef = z.infer<typeof MapSizeDef>;
+export type UnitClassDef = z.infer<typeof UnitClassDef>;
+export type UnitDef = z.infer<typeof UnitDef>;
 export type StringsDef = z.infer<typeof StringsDef>;
 export type PatchDef = z.infer<typeof PatchDef>;
 
@@ -281,6 +343,8 @@ export interface EntityByType {
   ability: AbilityDef;
   mapScript: MapScriptDef;
   mapSize: MapSizeDef;
+  unitClass: UnitClassDef;
+  unit: UnitDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

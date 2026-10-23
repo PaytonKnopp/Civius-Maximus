@@ -843,6 +843,164 @@
           "properties": {
             "type": {
               "type": "string",
+              "const": "unitClass"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "domain": {
+              "type": "string",
+              "enum": [
+                "land",
+                "sea",
+                "air"
+              ]
+            },
+            "layer": {
+              "type": "string",
+              "enum": [
+                "military",
+                "civilian",
+                "support"
+              ]
+            },
+            "combat": {
+              "type": "boolean"
+            },
+            "embarks": {
+              "default": true,
+              "type": "boolean"
+            },
+            "ignoresZoc": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "name",
+            "domain",
+            "layer",
+            "combat"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "unit"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "class": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "movement": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20
+            },
+            "sight": {
+              "default": 2,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "strength": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "rangedStrength": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "range": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "cost": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "actions": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "found_settlement"
+                ]
+              }
+            },
+            "deepWater": {
+              "default": false,
+              "type": "boolean"
+            },
+            "ignoresTerrainCost": {
+              "default": false,
+              "type": "boolean"
+            },
+            "ignoresZoc": {
+              "default": false,
+              "type": "boolean"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 3
+            },
+            "model": {
+              "default": "generic",
+              "type": "string",
+              "enum": [
+                "settler",
+                "warrior",
+                "scout",
+                "archer",
+                "cavalry",
+                "ship",
+                "generic"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "name",
+            "class",
+            "movement",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
               "const": "rules"
             },
             "id": {
@@ -1058,6 +1216,60 @@
               "minimum": 0,
               "maximum": 9007199254740991
             },
+            "units": {
+              "type": "object",
+              "properties": {
+                "stacking": {
+                  "type": "object",
+                  "properties": {
+                    "military": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "civilian": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "support": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "military",
+                    "civilian",
+                    "support"
+                  ],
+                  "additionalProperties": false
+                },
+                "startingUnits": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "embarkFromStart": {
+                  "type": "boolean"
+                },
+                "embarkedSight": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "stacking",
+                "startingUnits",
+                "embarkFromStart",
+                "embarkedSight"
+              ],
+              "additionalProperties": false
+            },
             "mapgen": {
               "type": "object",
               "properties": {
@@ -1179,6 +1391,7 @@
             "rivers",
             "movement",
             "luxuryHappinessRadius",
+            "units",
             "mapgen"
           ],
           "additionalProperties": false
@@ -2158,6 +2371,164 @@
             "properties": {
               "type": {
                 "type": "string",
+                "const": "unitClass"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "domain": {
+                "type": "string",
+                "enum": [
+                  "land",
+                  "sea",
+                  "air"
+                ]
+              },
+              "layer": {
+                "type": "string",
+                "enum": [
+                  "military",
+                  "civilian",
+                  "support"
+                ]
+              },
+              "combat": {
+                "type": "boolean"
+              },
+              "embarks": {
+                "default": true,
+                "type": "boolean"
+              },
+              "ignoresZoc": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "name",
+              "domain",
+              "layer",
+              "combat"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "unit"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "class": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "movement": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 20
+              },
+              "sight": {
+                "default": 2,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10
+              },
+              "strength": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "rangedStrength": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "range": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "cost": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "actions": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "found_settlement"
+                  ]
+                }
+              },
+              "deepWater": {
+                "default": false,
+                "type": "boolean"
+              },
+              "ignoresTerrainCost": {
+                "default": false,
+                "type": "boolean"
+              },
+              "ignoresZoc": {
+                "default": false,
+                "type": "boolean"
+              },
+              "icon": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 3
+              },
+              "model": {
+                "default": "generic",
+                "type": "string",
+                "enum": [
+                  "settler",
+                  "warrior",
+                  "scout",
+                  "archer",
+                  "cavalry",
+                  "ship",
+                  "generic"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "name",
+              "class",
+              "movement",
+              "icon"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
                 "const": "rules"
               },
               "id": {
@@ -2373,6 +2744,60 @@
                 "minimum": 0,
                 "maximum": 9007199254740991
               },
+              "units": {
+                "type": "object",
+                "properties": {
+                  "stacking": {
+                    "type": "object",
+                    "properties": {
+                      "military": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "civilian": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "support": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "military",
+                      "civilian",
+                      "support"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "startingUnits": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                  },
+                  "embarkFromStart": {
+                    "type": "boolean"
+                  },
+                  "embarkedSight": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "stacking",
+                  "startingUnits",
+                  "embarkFromStart",
+                  "embarkedSight"
+                ],
+                "additionalProperties": false
+              },
               "mapgen": {
                 "type": "object",
                 "properties": {
@@ -2494,6 +2919,7 @@
               "rivers",
               "movement",
               "luxuryHappinessRadius",
+              "units",
               "mapgen"
             ],
             "additionalProperties": false
