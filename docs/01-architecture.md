@@ -120,7 +120,10 @@ human and several AI seats, all on your machine.
    the engine, then sends **each player only their own redacted view and events** (fog of war is
    enforced by what the host sends).
 4. At the end of every turn, the host saves a **snapshot + action log** to Postgres. This gives
-   resume, replays and crash recovery.
+   resume, replays and crash recovery. The game's **compiled content** (base + mods, about
+   100–300 KB compressed) is stored once per game too, since every game is locked to the content
+   it started with (the engine refuses to apply actions under different content). Base-game
+   updates and mod updates never break a game in progress.
 5. **Host handoff:** if the host leaves, the game pauses. The host can resume it later, or hand
    hosting to another seated player, who loads the latest snapshot. This works because the engine
    is deterministic.

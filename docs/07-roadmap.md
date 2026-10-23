@@ -23,7 +23,7 @@ features on top.
 - **Done when:** `pnpm cx validate` passes on base content, and a test mod with a patch and a
   broken reference produces the expected friendly errors.
 
-### M2 · Engine core: state, actions, determinism
+### M2 · Engine core: state, actions, determinism ✅
 - Game state model for N players (no 2-player assumptions anywhere), the seeded RNG, the action
   pipeline (validate → apply → events), turn processing order, and state hashing.
 - Golden-replay test harness.

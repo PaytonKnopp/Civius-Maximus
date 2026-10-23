@@ -8,6 +8,9 @@
 
 export type RngState = readonly [number, number, number, number];
 
+/** 2^32, the number of distinct 32-bit outputs. */
+const U32_RANGE = 0x1_0000_0000;
+
 /** Hashes a seed string into four 32-bit words (cyrb128). */
 function hashSeed(seed: string): RngState {
   let h1 = 1779033703;
@@ -54,12 +57,12 @@ export function nextU32(state: RngState): [number, RngState] {
 
 /** Returns an integer in [0, maxExclusive) without modulo bias, and the next state. */
 export function nextInt(state: RngState, maxExclusive: number): [number, RngState] {
-  if (!Number.isInteger(maxExclusive) || maxExclusive <= 0 || maxExclusive > 2 ** 32) {
+  if (!Number.isInteger(maxExclusive) || maxExclusive <= 0 || maxExclusive > U32_RANGE) {
     throw new RangeError(
       `nextInt: maxExclusive must be an integer in 1..2^32, got ${maxExclusive}`,
     );
   }
-  const limit = 2 ** 32 - (2 ** 32 % maxExclusive);
+  const limit = U32_RANGE - (U32_RANGE % maxExclusive);
   let current = state;
   for (;;) {
     const [value, next] = nextU32(current);

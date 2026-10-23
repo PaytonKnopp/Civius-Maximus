@@ -10,6 +10,8 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json"
   },
   "dependencies": {
-    "@cx/content": "workspace:*"
+    "@cx/content": "workspace:*",
+    "immer": "^11.2.9",
+    "zod": "^4.6.7"
   }
 }
