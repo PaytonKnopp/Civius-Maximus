@@ -2,6 +2,9 @@ import type { CompiledContent } from '@cx/content';
 import { type Draft, produce } from 'immer';
 import type { Action, ActionType } from './actions';
 import type { GameEvent } from './events';
+import { generateMap } from './map/generate';
+import { makeRandom } from './map/random';
+import type { StartBias } from './map/types';
 import { createRng } from './rng';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
 
@@ -15,7 +18,14 @@ export const MAX_PLAYERS = 16;
 export interface GameSetup {
   gameId: string;
   settings: GameSettings;
-  players: { id: PlayerId; name: string; kind: PlayerState['kind']; team?: number | null }[];
+  players: {
+    id: PlayerId;
+    name: string;
+    kind: PlayerState['kind'];
+    team?: number | null;
+    /** From the player's civ (later); influences where they start. */
+    startBias?: StartBias[];
+  }[];
 }
 
 export type RuleError = { code: string; message: string };
@@ -39,7 +49,7 @@ export interface TurnStep {
   run(draft: Draft<GameState>, ctx: EngineContext, emit: Emit): void;
 }
 
-/** Creates a new game. The same setup always produces the same state. */
+/** Creates a new game, including its map. The same setup always produces the same state. */
 export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
   if (setup.players.length < 1 || setup.players.length > MAX_PLAYERS) {
     throw new RangeError(`A game needs 1-${MAX_PLAYERS} players, got ${setup.players.length}`);
@@ -48,9 +58,24 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
   if (new Set(ids).size !== ids.length) throw new Error('Player IDs must be unique');
 
   const playerOrder = [...ids].sort();
+  const byId = (id: PlayerId) => setup.players.find((x) => x.id === id)!;
+
+  const random = makeRandom(createRng(`${setup.settings.seed}:${setup.gameId}`));
+  const { map, starts } = generateMap(
+    {
+      content: ctx.content,
+      settings: setup.settings.map,
+      players: playerOrder.map((id) => {
+        const bias = byId(id).startBias;
+        return bias ? { id, startBias: bias } : { id };
+      }),
+    },
+    random,
+  );
+
   const players: Record<PlayerId, PlayerState> = {};
   for (const id of playerOrder) {
-    const p = setup.players.find((x) => x.id === id)!;
+    const p = byId(id);
     players[id] = {
       id,
       name: p.name,
@@ -58,19 +83,21 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       team: p.team ?? null,
       alive: true,
       turnEnded: false,
+      startTile: starts[id]!,
     };
   }
   return {
     stateVersion: 1,
     gameId: setup.gameId,
     contentHash: ctx.content.hash,
-    settings: { ...setup.settings },
+    settings: { ...setup.settings, map: { ...setup.settings.map } },
     status: 'playing',
     turn: 1,
-    rng: createRng(`${setup.settings.seed}:${setup.gameId}`),
+    rng: random.state(),
     players,
     playerOrder,
     nextEntityId: 1,
+    map,
   };
 }
 

@@ -38,7 +38,7 @@ one click.
 |---|---|
 | Map type | Continents, Pangaea, Archipelago, Fractal, Inland Sea, Islands, Balanced Duel, plus mod map scripts |
 | Map size | Duel, Tiny, Small, Standard, Large, Huge (see [03-core-mechanics.md](03-core-mechanics.md)) |
-| Fairness | Normal / Balanced starts / Mirrored map (every player gets an identical start region) |
+| Fairness | Normal / Balanced starts (Mirrored maps later) |
 | Game speed | Online (fast), Quick, Standard, Epic. This scales all costs. |
 | Start era | Ancient (default), Classical, Medieval... |
 | Turn timer | None / Fixed per turn / Time bank (see below) |

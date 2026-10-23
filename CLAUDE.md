@@ -23,6 +23,11 @@
 | `pnpm dev` / `pnpm build` | Client dev server / production build |
 | `pnpm cx validate [mods...]` | Compile base content (+ mods) and print every problem |
 | `pnpm cx schema` | Regenerate `schemas/` (a test fails if they're stale) |
+| `pnpm cx map [script] [size] [seed]` | Print a generated map as text |
+| `pnpm cx mapcheck [count] [sizes]` | Generate + validate many maps (run after map generator changes) |
+
+The golden replay test uses `packages/engine/test-fixtures/frozen-content`; only re-copy it from
+base and update the hash when the engine's rules change on purpose.
 
 Before committing, run `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test`. CI
 (`.github/workflows/ci.yml`) runs the same checks plus the client build.

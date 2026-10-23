@@ -1,3 +1,4 @@
+import type { MapSettings, MapState } from './map/types';
 import type { RngState } from './rng';
 
 export type PlayerId = string;
@@ -19,12 +20,14 @@ export interface GameState {
   playerOrder: PlayerId[];
   /** Counter for IDs of things created during play (units, settlements...). */
   nextEntityId: number;
+  map: MapState;
 }
 
 export interface GameSettings {
   seed: string;
   /** The game ends after this turn (score victory). `null` = no limit. */
   turnLimit: number | null;
+  map: MapSettings;
 }
 
 export interface PlayerState {
@@ -36,4 +39,6 @@ export interface PlayerState {
   alive: boolean;
   /** Simultaneous turns: true once the player clicked End Turn this turn. */
   turnEnded: boolean;
+  /** Tile index where the player starts (their first settler appears here). */
+  startTile: number;
 }

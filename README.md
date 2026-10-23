@@ -4,7 +4,8 @@ A turn-based 4X strategy game that takes the best of Civ 5, 6 and 7. Play solo a
 or host a game and have 2–8 friends join with a code. Everyone takes their turn at the same time.
 Built from the ground up to be modded: leaders, civs, units and rules are all data. Costs $0/month to run.
 
-> **Status:** M2 done (engine core: game state, simultaneous turns, replays). Next: M3, world generation.
+> **Status:** M3 done (world generation). Next: M4, the map renderer: the first thing you can see in a browser.
+> Until then, `pnpm cx map continents small 7` prints a generated map as text.
 
 ## Design docs
 

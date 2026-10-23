@@ -3,17 +3,32 @@
     "type": "terrain",
     "id": "grassland",
     "name": "Grassland",
-    "yields": { "food": 2 },
+    "yields": {
+      "food": 2
+    },
     "elevations": ["flat", "hills", "mountain"],
-    "color": "#6b8f3a"
+    "color": "#6b8f3a",
+    "generation": {
+      "temperature": [27, 100],
+      "moisture": [52, 100],
+      "priority": 10
+    }
   },
   {
     "type": "terrain",
     "id": "plains",
     "name": "Plains",
-    "yields": { "food": 1, "production": 1 },
+    "yields": {
+      "food": 1,
+      "production": 1
+    },
     "elevations": ["flat", "hills", "mountain"],
-    "color": "#a3a04a"
+    "color": "#a3a04a",
+    "generation": {
+      "temperature": [27, 100],
+      "moisture": [0, 100],
+      "priority": 0
+    }
   },
   {
     "type": "terrain",
@@ -21,15 +36,27 @@
     "name": "Desert",
     "yields": {},
     "elevations": ["flat", "hills", "mountain"],
-    "color": "#d8c27a"
+    "color": "#d8c27a",
+    "generation": {
+      "temperature": [50, 100],
+      "moisture": [0, 26],
+      "priority": 20
+    }
   },
   {
     "type": "terrain",
     "id": "tundra",
     "name": "Tundra",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "elevations": ["flat", "hills", "mountain"],
-    "color": "#8c8a6e"
+    "color": "#8c8a6e",
+    "generation": {
+      "temperature": [11, 26],
+      "moisture": [0, 100],
+      "priority": 30
+    }
   },
   {
     "type": "terrain",
@@ -38,13 +65,21 @@
     "yields": {},
     "elevations": ["flat", "hills", "mountain"],
     "appeal": -1,
-    "color": "#e8eef0"
+    "color": "#e8eef0",
+    "generation": {
+      "temperature": [0, 10],
+      "moisture": [0, 100],
+      "priority": 40
+    }
   },
   {
     "type": "terrain",
     "id": "coast",
     "name": "Coast",
-    "yields": { "food": 1, "gold": 1 },
+    "yields": {
+      "food": 1,
+      "gold": 1
+    },
     "water": true,
     "appeal": 1,
     "color": "#4f8fb8"
@@ -53,7 +88,10 @@
     "type": "terrain",
     "id": "lake",
     "name": "Lake",
-    "yields": { "food": 1, "gold": 1 },
+    "yields": {
+      "food": 1,
+      "gold": 1
+    },
     "water": true,
     "freshWater": true,
     "appeal": 1,
@@ -63,7 +101,9 @@
     "type": "terrain",
     "id": "ocean",
     "name": "Ocean",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "water": true,
     "deepWater": true,
     "color": "#28597d"

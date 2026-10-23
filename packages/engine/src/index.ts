@@ -24,6 +24,17 @@ export {
   validateAction,
 } from './game';
 export { stateHash } from './hash';
+export * from './map/hex';
+export {
+  generateMap,
+  type GenerateInput,
+  type GenerateResult,
+  MapGenerationError,
+  scoreStarts,
+} from './map/generate';
+export { makeRandom, type Random } from './map/random';
+export { validateMap } from './map/validate';
+export type { MapSettings, MapState, MapTile, StartBias } from './map/types';
 export { type Replay, runReplay } from './replay';
 export { createRng, nextInt, nextRange, nextU32, type RngState } from './rng';
 export type { GameSettings, GameState, PlayerId, PlayerState } from './state';

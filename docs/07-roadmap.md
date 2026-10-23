@@ -30,11 +30,12 @@ features on top.
 - **Done when:** a scripted 8-player game of no-op turns replays to an identical hash, and the
   engine has no `Math.random()` or floating-point math in the rules (enforced by a lint rule).
 
-### M3 · World generation
+### M3 · World generation ✅
 - Hex math (axial coordinates, wrapping, distance, rings, line of sight), plus map scripts:
   Continents, Pangaea, Archipelago and Fractal.
 - Climate, rivers on edges, features, resources, start positions with civ bias, and
-  balanced/mirrored modes.
+  balanced starts. (Mirrored maps moved to the backlog: hex grids don't mirror cleanly for 3+
+  players, and balanced starts cover most of the need.)
 - **Done when:** 1,000 seeded maps per script generate with valid starts (minimum yields, no
   overlapping starts, every start reachable) in under 1 s each.
 
@@ -171,7 +172,7 @@ The order inside this phase can change based on playtest feedback.
 
 ## After v1.0 (backlog)
 
-Loyalty, espionage, world congress and diplomatic victory, climate and disasters, corporations,
+Mirrored maps, natural wonders (with M8), loyalty, espionage, world congress and diplomatic victory, climate and disasters, corporations,
 Ages mode, crises, scripted mods, 12-player support, WebRTC transport (if message limits are
 ever hit), a dedicated host for always-on async games, a mobile-first UI, map editor,
 scenarios (preset maps + rules + victory), and alternative 3D renderer experiments.

@@ -112,6 +112,58 @@
             "color": {
               "type": "string",
               "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "generation": {
+              "type": "object",
+              "properties": {
+                "temperature": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "moisture": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "priority": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "temperature",
+                "moisture"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
@@ -209,6 +261,80 @@
                   "mountain"
                 ]
               }
+            },
+            "generation": {
+              "type": "object",
+              "properties": {
+                "chance": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "temperature": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "moisture": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "latitude": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "order": {
+                  "default": 100,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "chance"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
@@ -587,6 +713,132 @@
           "properties": {
             "type": {
               "type": "string",
+              "const": "mapScript"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "algorithm": {
+              "type": "string",
+              "enum": [
+                "continents",
+                "pangaea",
+                "archipelago",
+                "fractal"
+              ]
+            },
+            "landPercent": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 90
+            },
+            "mountainPercent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 50
+            },
+            "hillPercent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 60
+            },
+            "continents": {
+              "default": 2,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 8
+            },
+            "minStartLandmass": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "landTilesPerRiver": {
+              "default": 35,
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 9007199254740991
+            },
+            "detail": {
+              "default": 6,
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 32
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "name",
+            "algorithm",
+            "landPercent",
+            "mountainPercent",
+            "hillPercent"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "mapSize"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 16,
+              "maximum": 256
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 12,
+              "maximum": 160
+            },
+            "players": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            },
+            "order": {
+              "default": 100,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "name",
+            "width",
+            "height",
+            "players"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
               "const": "rules"
             },
             "id": {
@@ -801,6 +1053,118 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 9007199254740991
+            },
+            "mapgen": {
+              "type": "object",
+              "properties": {
+                "coastTerrain": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "oceanTerrain": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "lakeTerrain": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "fallbackLandTerrain": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "maxLakeSize": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "landTilesPerLake": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "polarRows": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "resourceDensity": {
+                  "type": "object",
+                  "properties": {
+                    "sparse": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "standard": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "abundant": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "sparse",
+                    "standard",
+                    "abundant"
+                  ],
+                  "additionalProperties": false
+                },
+                "start": {
+                  "type": "object",
+                  "properties": {
+                    "minFood": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "minProduction": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "freshWaterBonus": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "coastalBonus": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "balancedPercent": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  },
+                  "required": [
+                    "minFood",
+                    "minProduction",
+                    "freshWaterBonus",
+                    "coastalBonus",
+                    "balancedPercent"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "coastTerrain",
+                "oceanTerrain",
+                "lakeTerrain",
+                "fallbackLandTerrain",
+                "maxLakeSize",
+                "landTilesPerLake",
+                "polarRows",
+                "resourceDensity",
+                "start"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
@@ -810,7 +1174,8 @@
             "elevation",
             "rivers",
             "movement",
-            "luxuryHappinessRadius"
+            "luxuryHappinessRadius",
+            "mapgen"
           ],
           "additionalProperties": false
         },
@@ -1058,6 +1423,58 @@
               "color": {
                 "type": "string",
                 "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "generation": {
+                "type": "object",
+                "properties": {
+                  "temperature": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "moisture": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "priority": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "temperature",
+                  "moisture"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -1155,6 +1572,80 @@
                     "mountain"
                   ]
                 }
+              },
+              "generation": {
+                "type": "object",
+                "properties": {
+                  "chance": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "temperature": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "moisture": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "latitude": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "order": {
+                    "default": 100,
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "chance"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -1533,6 +2024,132 @@
             "properties": {
               "type": {
                 "type": "string",
+                "const": "mapScript"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "algorithm": {
+                "type": "string",
+                "enum": [
+                  "continents",
+                  "pangaea",
+                  "archipelago",
+                  "fractal"
+                ]
+              },
+              "landPercent": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 90
+              },
+              "mountainPercent": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50
+              },
+              "hillPercent": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 60
+              },
+              "continents": {
+                "default": 2,
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8
+              },
+              "minStartLandmass": {
+                "default": 20,
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "landTilesPerRiver": {
+                "default": 35,
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 9007199254740991
+              },
+              "detail": {
+                "default": 6,
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 32
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "name",
+              "algorithm",
+              "landPercent",
+              "mountainPercent",
+              "hillPercent"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "mapSize"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 16,
+                "maximum": 256
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 12,
+                "maximum": 160
+              },
+              "players": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16
+              },
+              "order": {
+                "default": 100,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "name",
+              "width",
+              "height",
+              "players"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
                 "const": "rules"
               },
               "id": {
@@ -1747,6 +2364,118 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              "mapgen": {
+                "type": "object",
+                "properties": {
+                  "coastTerrain": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "oceanTerrain": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "lakeTerrain": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "fallbackLandTerrain": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "maxLakeSize": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "landTilesPerLake": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "polarRows": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "resourceDensity": {
+                    "type": "object",
+                    "properties": {
+                      "sparse": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "standard": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "abundant": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "sparse",
+                      "standard",
+                      "abundant"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "start": {
+                    "type": "object",
+                    "properties": {
+                      "minFood": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "minProduction": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "freshWaterBonus": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "coastalBonus": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "balancedPercent": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "minFood",
+                      "minProduction",
+                      "freshWaterBonus",
+                      "coastalBonus",
+                      "balancedPercent"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "coastTerrain",
+                  "oceanTerrain",
+                  "lakeTerrain",
+                  "fallbackLandTerrain",
+                  "maxLakeSize",
+                  "landTilesPerLake",
+                  "polarRows",
+                  "resourceDensity",
+                  "start"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -1756,7 +2485,8 @@
               "elevation",
               "rivers",
               "movement",
-              "luxuryHappinessRadius"
+              "luxuryHappinessRadius",
+              "mapgen"
             ],
             "additionalProperties": false
           },

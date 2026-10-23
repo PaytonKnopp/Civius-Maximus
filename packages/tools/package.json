@@ -7,6 +7,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@cx/content": "workspace:*"
+    "@cx/content": "workspace:*",
+    "@cx/engine": "workspace:*"
   }
 }

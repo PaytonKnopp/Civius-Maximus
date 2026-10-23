@@ -11,8 +11,9 @@ whole new people, also write a `civ` file. The starting roster is in
 The base game is itself built as a mod (`content/base/`) using exactly the same format. So the
 format will always be complete enough for real content.
 
-> **Implemented so far (M1):** content types `yield`, `terrain`, `feature`, `resource`,
-> `ability`, `rules`, `strings` and `patch`; effects `modify_yield` (flat or percent) and
+> **Implemented so far (M1–M3):** content types `yield`, `terrain`, `feature`, `resource`,
+> `ability`, `mapScript`, `mapSize`, `rules`, `strings` and `patch` (terrain and features carry
+> `generation` settings for the map generator); effects `modify_yield` (flat or percent) and
 > `yield_per_adjacent`; all tile conditions listed below. Other types and effects in this doc
 > are the plan and arrive with their milestones. `pnpm cx validate` and the schemas in
 > `schemas/` always reflect what's actually implemented.

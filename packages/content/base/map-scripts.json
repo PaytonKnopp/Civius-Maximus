@@ -1,0 +1,47 @@
+[
+  {
+    "type": "mapScript",
+    "id": "continents",
+    "name": "Continents",
+    "description": "Two or three large continents separated by ocean.",
+    "algorithm": "continents",
+    "landPercent": 34,
+    "mountainPercent": 7,
+    "hillPercent": 20,
+    "continents": 2
+  },
+  {
+    "type": "mapScript",
+    "id": "pangaea",
+    "name": "Pangaea",
+    "description": "One huge landmass. Lots of borders, lots of wars.",
+    "algorithm": "pangaea",
+    "landPercent": 40,
+    "mountainPercent": 7,
+    "hillPercent": 20
+  },
+  {
+    "type": "mapScript",
+    "id": "archipelago",
+    "name": "Archipelago",
+    "description": "Many small islands. Navies decide everything.",
+    "algorithm": "archipelago",
+    "landPercent": 27,
+    "mountainPercent": 5,
+    "hillPercent": 20,
+    "minStartLandmass": 8,
+    "detail": 12
+  },
+  {
+    "type": "mapScript",
+    "id": "fractal",
+    "name": "Fractal",
+    "description": "Unpredictable shapes: anything from one continent to scattered islands.",
+    "algorithm": "fractal",
+    "landPercent": 35,
+    "mountainPercent": 7,
+    "hillPercent": 20,
+    "minStartLandmass": 15,
+    "detail": 5
+  }
+]

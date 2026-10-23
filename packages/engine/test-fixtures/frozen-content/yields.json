@@ -1,0 +1,11 @@
+[
+  { "type": "yield", "id": "food", "name": "Food", "icon": "🍞", "order": 10 },
+  { "type": "yield", "id": "production", "name": "Production", "icon": "⚙️", "order": 20 },
+  { "type": "yield", "id": "gold", "name": "Gold", "icon": "💰", "order": 30 },
+  { "type": "yield", "id": "science", "name": "Science", "icon": "🔬", "order": 40 },
+  { "type": "yield", "id": "culture", "name": "Culture", "icon": "🎭", "order": 50 },
+  { "type": "yield", "id": "faith", "name": "Faith", "icon": "🙏", "order": 60 },
+  { "type": "yield", "id": "happiness", "name": "Happiness", "icon": "😊", "order": 70 },
+  { "type": "yield", "id": "influence", "name": "Influence", "icon": "🤝", "order": 80 },
+  { "type": "yield", "id": "tourism", "name": "Tourism", "icon": "✈️", "order": 90 }
+]

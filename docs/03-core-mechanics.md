@@ -30,7 +30,10 @@ deliberately differ from Civ 6, the doc says so and gives a reason.
 
 ### Map generation
 
-Generation is a pipeline of seeded steps that mods can replace:
+Generation is a pipeline of seeded steps, driven by content wherever possible (map types and
+sizes are content; each terrain declares the temperature/moisture box it belongs in; each feature
+declares its placement chance and climate). Preview any map with `pnpm cx map pangaea small 42`.
+All math is integer-only so every browser generates the identical map from the same seed.
 
 1. **Landmass shape**, chosen by the map script (continents, pangaea, islands...).
 2. **Elevation:** mountains along "plate" boundaries, hills in clusters.
@@ -42,8 +45,9 @@ Generation is a pipeline of seeded steps that mods can replace:
 7. **Natural wonders.**
 8. **Start positions:** the scorer guarantees minimum food, production and fresh water within 2
    rings, and respects civ start biases (coast, river, hills, tundra...).
-9. **Fairness pass:** in *Balanced* mode, starts are equalized by adding or swapping resources. In
-   *Mirrored* mode, one region is generated and copied for every player.
+9. **Fairness pass:** every start is topped up to a minimum food and production (adding bonus
+   resources, woods or hills). In *Balanced* mode, weaker starts are also raised to about 90% of
+   the best one. (*Mirrored* mode is in the backlog.)
 10. **City-states and barbarian spawn zones.**
 
 ### Terrain (base yields: 🍞 food, ⚙️ production, 💰 gold)

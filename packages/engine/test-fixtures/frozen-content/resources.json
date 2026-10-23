@@ -1,0 +1,246 @@
+[
+  {
+    "type": "resource",
+    "id": "wheat",
+    "name": "Wheat",
+    "class": "bonus",
+    "yields": { "food": 1 },
+    "validTerrains": ["plains"],
+    "validFeatures": ["floodplains", "floodplains_plains"]
+  },
+  {
+    "type": "resource",
+    "id": "rice",
+    "name": "Rice",
+    "class": "bonus",
+    "yields": { "food": 1 },
+    "validTerrains": ["grassland"],
+    "validFeatures": ["marsh", "floodplains_grassland"],
+    "validElevations": ["flat"]
+  },
+  {
+    "type": "resource",
+    "id": "cattle",
+    "name": "Cattle",
+    "class": "bonus",
+    "yields": { "food": 1 },
+    "validTerrains": ["grassland"],
+    "validElevations": ["flat"]
+  },
+  {
+    "type": "resource",
+    "id": "sheep",
+    "name": "Sheep",
+    "class": "bonus",
+    "yields": { "food": 1 },
+    "validTerrains": ["grassland", "plains", "desert", "tundra"],
+    "validElevations": ["hills"]
+  },
+  {
+    "type": "resource",
+    "id": "deer",
+    "name": "Deer",
+    "class": "bonus",
+    "yields": { "production": 1 },
+    "validTerrains": ["tundra"],
+    "validFeatures": ["woods"]
+  },
+  {
+    "type": "resource",
+    "id": "bananas",
+    "name": "Bananas",
+    "class": "bonus",
+    "yields": { "food": 1 },
+    "validFeatures": ["rainforest"]
+  },
+  {
+    "type": "resource",
+    "id": "fish",
+    "name": "Fish",
+    "class": "bonus",
+    "yields": { "food": 1 },
+    "validTerrains": ["coast", "lake"],
+    "validElevations": ["flat"]
+  },
+  {
+    "type": "resource",
+    "id": "crabs",
+    "name": "Crabs",
+    "class": "bonus",
+    "yields": { "gold": 2 },
+    "validTerrains": ["coast"],
+    "validElevations": ["flat"]
+  },
+  {
+    "type": "resource",
+    "id": "stone",
+    "name": "Stone",
+    "class": "bonus",
+    "yields": { "production": 1 },
+    "validTerrains": ["grassland", "plains", "desert"]
+  },
+  {
+    "type": "resource",
+    "id": "copper",
+    "name": "Copper",
+    "class": "bonus",
+    "yields": { "gold": 2 },
+    "validTerrains": ["grassland", "plains", "desert", "tundra"],
+    "validElevations": ["hills"]
+  },
+
+  {
+    "type": "resource",
+    "id": "silk",
+    "name": "Silk",
+    "class": "luxury",
+    "yields": { "culture": 1 },
+    "happiness": 2,
+    "validFeatures": ["woods"],
+    "frequency": 6
+  },
+  {
+    "type": "resource",
+    "id": "spices",
+    "name": "Spices",
+    "class": "luxury",
+    "yields": { "food": 2 },
+    "happiness": 2,
+    "validFeatures": ["rainforest"],
+    "frequency": 6
+  },
+  {
+    "type": "resource",
+    "id": "wine",
+    "name": "Wine",
+    "class": "luxury",
+    "yields": { "food": 1, "gold": 1 },
+    "happiness": 2,
+    "validTerrains": ["grassland", "plains"],
+    "frequency": 6
+  },
+  {
+    "type": "resource",
+    "id": "incense",
+    "name": "Incense",
+    "class": "luxury",
+    "yields": { "faith": 1 },
+    "happiness": 2,
+    "validTerrains": ["plains", "desert"],
+    "validElevations": ["flat"],
+    "frequency": 6
+  },
+  {
+    "type": "resource",
+    "id": "diamonds",
+    "name": "Diamonds",
+    "class": "luxury",
+    "yields": { "gold": 3 },
+    "happiness": 2,
+    "validTerrains": ["tundra"],
+    "validFeatures": ["rainforest"],
+    "validElevations": ["hills"],
+    "frequency": 4
+  },
+  {
+    "type": "resource",
+    "id": "pearls",
+    "name": "Pearls",
+    "class": "luxury",
+    "yields": { "faith": 1 },
+    "happiness": 2,
+    "validTerrains": ["coast"],
+    "validElevations": ["flat"],
+    "frequency": 5
+  },
+  {
+    "type": "resource",
+    "id": "whales",
+    "name": "Whales",
+    "class": "luxury",
+    "yields": { "gold": 1, "production": 1 },
+    "happiness": 2,
+    "validTerrains": ["coast"],
+    "validElevations": ["flat"],
+    "frequency": 5
+  },
+
+  {
+    "type": "resource",
+    "id": "horses",
+    "name": "Horses",
+    "class": "strategic",
+    "yields": { "food": 1, "production": 1 },
+    "stockpilePerTurn": 2,
+    "validTerrains": ["grassland", "plains", "tundra"],
+    "validElevations": ["flat"],
+    "frequency": 8
+  },
+  {
+    "type": "resource",
+    "id": "iron",
+    "name": "Iron",
+    "class": "strategic",
+    "yields": { "science": 1 },
+    "stockpilePerTurn": 2,
+    "validTerrains": ["grassland", "plains", "desert", "tundra", "snow"],
+    "validElevations": ["hills"],
+    "frequency": 8
+  },
+  {
+    "type": "resource",
+    "id": "niter",
+    "name": "Niter",
+    "class": "strategic",
+    "yields": { "food": 1, "production": 1 },
+    "stockpilePerTurn": 2,
+    "validTerrains": ["grassland", "plains", "desert", "tundra"],
+    "validElevations": ["flat"],
+    "frequency": 6
+  },
+  {
+    "type": "resource",
+    "id": "coal",
+    "name": "Coal",
+    "class": "strategic",
+    "yields": { "production": 2 },
+    "stockpilePerTurn": 3,
+    "validFeatures": ["woods", "rainforest"],
+    "validElevations": ["hills"],
+    "frequency": 6
+  },
+  {
+    "type": "resource",
+    "id": "oil",
+    "name": "Oil",
+    "class": "strategic",
+    "yields": { "production": 3 },
+    "stockpilePerTurn": 3,
+    "validTerrains": ["desert", "tundra", "snow", "coast"],
+    "validFeatures": ["marsh"],
+    "validElevations": ["flat"],
+    "frequency": 6
+  },
+  {
+    "type": "resource",
+    "id": "aluminum",
+    "name": "Aluminum",
+    "class": "strategic",
+    "yields": { "science": 1 },
+    "stockpilePerTurn": 2,
+    "validTerrains": ["plains", "desert"],
+    "validElevations": ["flat", "hills"],
+    "frequency": 5
+  },
+  {
+    "type": "resource",
+    "id": "uranium",
+    "name": "Uranium",
+    "class": "strategic",
+    "yields": { "production": 2 },
+    "stockpilePerTurn": 1,
+    "validTerrains": ["grassland", "plains", "desert", "tundra", "snow"],
+    "validFeatures": ["woods", "rainforest", "marsh"],
+    "frequency": 3
+  }
+]

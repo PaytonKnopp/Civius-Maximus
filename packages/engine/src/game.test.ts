@@ -1,5 +1,5 @@
 import { compileContent } from '@cx/content';
-import { BASE_CONTENT_DIR, compileFromDirs, readPackageDir } from '@cx/content/node';
+import { compileFromDirs, readPackageDir } from '@cx/content/node';
 import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 import { type Action, parseAction } from './actions';
@@ -13,7 +13,24 @@ const ctx: EngineContext = { content: compileFromDirs().content! };
 function setup(playerCount: number, turnLimit: number | null = null): GameSetup {
   return {
     gameId: 'test-game',
-    settings: { seed: 'seed-1', turnLimit },
+    settings: {
+      seed: 'seed-1',
+      turnLimit,
+      map: {
+        script: 'continents',
+        size:
+          playerCount <= 2
+            ? 'duel'
+            : playerCount <= 4
+              ? 'tiny'
+              : playerCount <= 8
+                ? 'standard'
+                : 'huge',
+        wrapX: true,
+        resources: 'standard',
+        startBalance: 'normal',
+      },
+    },
     players: Array.from({ length: playerCount }, (_, i) => ({
       id: `p${i + 1}`,
       name: `Player ${i + 1}`,
@@ -199,15 +216,14 @@ describe('replays', () => {
   });
 
   it('match a recorded golden hash (fails if a rules change would break old saves)', () => {
-    // Uses frozen content (just rules + yields) so balance changes to base data don't trip it;
+    // Uses a frozen copy of the content so balance changes to base data don't trip it;
     // only changes to the engine's rules or state shape do. If you change those on purpose,
     // update this hash and note it in the changelog: older saves and replays will need migrating.
-    const base = readPackageDir(BASE_CONTENT_DIR);
     const frozen = compileContent([
-      { ...base, files: base.files.filter((f) => ['rules.json', 'yields.json'].includes(f.path)) },
+      readPackageDir(new URL('../test-fixtures/frozen-content', import.meta.url).pathname),
     ]).content!;
     expect(runReplay(scriptedReplay(), { content: frozen }).hash).toMatchInlineSnapshot(
-      `"09a619da2d8fdf8c3d33d2b375"`,
+      `"4d3cef714e76a0ae96f89de9e1"`,
     );
   });
 

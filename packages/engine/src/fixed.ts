@@ -26,3 +26,17 @@ export function formatFixed(value: Fixed): string {
   if (frac === 0) return `${sign}${whole}`;
   return `${sign}${whole}.${String(frac).padStart(2, '0').replace(/0$/, '')}`;
 }
+
+/** Integer square root (floor), exact for any safe integer. */
+export function isqrt(n: number): number {
+  if (!Number.isSafeInteger(n) || n < 0)
+    throw new RangeError(`isqrt needs a non-negative integer, got ${n}`);
+  if (n < 2) return n;
+  let x = n;
+  let y = Math.floor((x + 1) / 2);
+  while (y < x) {
+    x = y;
+    y = Math.floor((x + Math.floor(n / x)) / 2);
+  }
+  return x;
+}

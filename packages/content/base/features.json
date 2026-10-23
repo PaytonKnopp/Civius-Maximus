@@ -3,85 +3,147 @@
     "type": "feature",
     "id": "woods",
     "name": "Woods",
-    "yields": { "production": 1 },
+    "yields": {
+      "production": 1
+    },
     "moveCostExtra": 1,
     "defense": 3,
     "appeal": 1,
     "removable": true,
     "blocksSight": true,
     "validTerrains": ["grassland", "plains", "tundra"],
-    "validElevations": ["flat", "hills"]
+    "validElevations": ["flat", "hills"],
+    "generation": {
+      "chance": 38,
+      "temperature": [14, 72],
+      "moisture": [38, 100],
+      "order": 50
+    }
   },
   {
     "type": "feature",
     "id": "rainforest",
     "name": "Rainforest",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "moveCostExtra": 1,
     "defense": 3,
     "appeal": -1,
     "removable": true,
     "blocksSight": true,
     "validTerrains": ["grassland", "plains"],
-    "validElevations": ["flat", "hills"]
+    "validElevations": ["flat", "hills"],
+    "generation": {
+      "chance": 55,
+      "temperature": [68, 100],
+      "moisture": [58, 100],
+      "order": 30
+    }
   },
   {
     "type": "feature",
     "id": "marsh",
     "name": "Marsh",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "moveCostExtra": 1,
     "appeal": -1,
     "removable": true,
-    "validTerrains": ["grassland"]
+    "validTerrains": ["grassland"],
+    "generation": {
+      "chance": 10,
+      "temperature": [30, 80],
+      "moisture": [72, 100],
+      "order": 40
+    }
   },
   {
     "type": "feature",
     "id": "floodplains",
     "name": "Floodplains",
-    "yields": { "food": 3 },
+    "yields": {
+      "food": 3
+    },
     "requiresRiver": true,
-    "validTerrains": ["desert"]
+    "validTerrains": ["desert"],
+    "generation": {
+      "chance": 75,
+      "order": 10
+    }
   },
   {
     "type": "feature",
     "id": "floodplains_grassland",
     "name": "Floodplains",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "requiresRiver": true,
-    "validTerrains": ["grassland"]
+    "validTerrains": ["grassland"],
+    "generation": {
+      "chance": 45,
+      "order": 10
+    }
   },
   {
     "type": "feature",
     "id": "floodplains_plains",
     "name": "Floodplains",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "requiresRiver": true,
-    "validTerrains": ["plains"]
+    "validTerrains": ["plains"],
+    "generation": {
+      "chance": 45,
+      "order": 10
+    }
   },
   {
     "type": "feature",
     "id": "oasis",
     "name": "Oasis",
-    "yields": { "food": 3, "gold": 1 },
+    "yields": {
+      "food": 3,
+      "gold": 1
+    },
     "freshWater": true,
     "appeal": 1,
-    "validTerrains": ["desert"]
+    "validTerrains": ["desert"],
+    "generation": {
+      "chance": 3,
+      "order": 20
+    }
   },
   {
     "type": "feature",
     "id": "reef",
     "name": "Reef",
-    "yields": { "food": 1, "production": 1 },
+    "yields": {
+      "food": 1,
+      "production": 1
+    },
     "moveCostExtra": 1,
     "appeal": 2,
-    "validTerrains": ["coast"]
+    "validTerrains": ["coast"],
+    "generation": {
+      "chance": 10,
+      "temperature": [55, 100],
+      "order": 60
+    }
   },
   {
     "type": "feature",
     "id": "ice",
     "name": "Ice",
     "impassable": true,
-    "validTerrains": ["coast", "ocean"]
+    "validTerrains": ["coast", "ocean"],
+    "generation": {
+      "chance": 75,
+      "latitude": [93, 100],
+      "order": 5
+    }
   }
 ]

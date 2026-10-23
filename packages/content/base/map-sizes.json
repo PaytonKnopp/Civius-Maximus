@@ -1,0 +1,56 @@
+[
+  {
+    "type": "mapSize",
+    "id": "duel",
+    "name": "Duel",
+    "width": 44,
+    "height": 26,
+    "players": 2,
+    "order": 10
+  },
+  {
+    "type": "mapSize",
+    "id": "tiny",
+    "name": "Tiny",
+    "width": 60,
+    "height": 38,
+    "players": 4,
+    "order": 20
+  },
+  {
+    "type": "mapSize",
+    "id": "small",
+    "name": "Small",
+    "width": 74,
+    "height": 46,
+    "players": 6,
+    "order": 30
+  },
+  {
+    "type": "mapSize",
+    "id": "standard",
+    "name": "Standard",
+    "width": 84,
+    "height": 54,
+    "players": 8,
+    "order": 40
+  },
+  {
+    "type": "mapSize",
+    "id": "large",
+    "name": "Large",
+    "width": 96,
+    "height": 60,
+    "players": 10,
+    "order": 50
+  },
+  {
+    "type": "mapSize",
+    "id": "huge",
+    "name": "Huge",
+    "width": 106,
+    "height": 66,
+    "players": 12,
+    "order": 60
+  }
+]

@@ -1,5 +1,10 @@
 import { z } from 'zod';
 import { Elevation, Id, ResourceClass, Text, YieldMap } from './common';
+
+/** An inclusive range on a 0-100 scale (temperature, moisture, latitude). */
+const Range100 = z
+  .tuple([z.int().min(0).max(100), z.int().min(0).max(100)])
+  .refine(([lo, hi]) => lo <= hi, 'the first number must not be bigger than the second');
 import { Effect } from './effects';
 
 /**
@@ -34,6 +39,17 @@ export const TerrainDef = z.strictObject({
   elevations: z.array(Elevation).min(1).default(['flat']),
   /** Placeholder map color until art exists. */
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #6b8f3a'),
+  /**
+   * Where map generation puts this land terrain: a box of temperature and moisture (0-100).
+   * When boxes overlap, the higher priority wins. Water terrains are placed by `rules.mapgen`.
+   */
+  generation: z
+    .strictObject({
+      temperature: Range100,
+      moisture: Range100,
+      priority: z.int().default(0),
+    })
+    .optional(),
 });
 
 export const FeatureDef = z.strictObject({
@@ -52,6 +68,17 @@ export const FeatureDef = z.strictObject({
   requiresRiver: z.boolean().default(false),
   validTerrains: z.array(Id).min(1),
   validElevations: z.array(Elevation).min(1).default(['flat']),
+  /** Map generation: `chance` percent of eligible tiles get it, within the climate ranges given. */
+  generation: z
+    .strictObject({
+      chance: z.int().min(0).max(100),
+      temperature: Range100.optional(),
+      moisture: Range100.optional(),
+      latitude: Range100.optional(),
+      /** Features are tried in this order (lower first); the first that passes is placed. */
+      order: z.int().default(100),
+    })
+    .optional(),
 });
 
 export const ResourceDef = z.strictObject({
@@ -110,6 +137,69 @@ export const RulesDef = z.strictObject({
     canAlwaysMoveOneTile: z.boolean(),
   }),
   luxuryHappinessRadius: z.int().min(0),
+  mapgen: z.strictObject({
+    coastTerrain: Id,
+    oceanTerrain: Id,
+    lakeTerrain: Id,
+    /** Used when no terrain's climate box matches a land tile. */
+    fallbackLandTerrain: Id,
+    /** Enclosed water bodies up to this many tiles become lakes. */
+    maxLakeSize: z.int().min(0),
+    /** One inland lake per this many land tiles. */
+    landTilesPerLake: z.int().min(1),
+    /** Rows of ocean forced at the top and bottom of the map. */
+    polarRows: z.int().min(0),
+    /** One resource per this many eligible tiles. */
+    resourceDensity: z.strictObject({
+      sparse: z.int().min(1),
+      standard: z.int().min(1),
+      abundant: z.int().min(1),
+    }),
+    start: z.strictObject({
+      /** Minimum total food / production on the tiles within 2 of a start; topped up with bonus resources. */
+      minFood: z.int().min(0),
+      minProduction: z.int().min(0),
+      freshWaterBonus: z.int().min(0),
+      coastalBonus: z.int().min(0),
+      /** Balanced starts: every start's score is raised to at least this percent of the best one. */
+      balancedPercent: z.int().min(0).max(100),
+    }),
+  }),
+});
+
+/** A map type the host can pick in the lobby: a generator algorithm plus its parameters. */
+export const MapScriptDef = z.strictObject({
+  type: z.literal('mapScript'),
+  id: Id,
+  name: Text,
+  description: Text.optional(),
+  algorithm: z.enum(['continents', 'pangaea', 'archipelago', 'fractal']),
+  /** Percent of the map that's land. */
+  landPercent: z.int().min(5).max(90),
+  /** Percent of land that's mountains / hills. */
+  mountainPercent: z.int().min(0).max(50),
+  hillPercent: z.int().min(0).max(60),
+  /** For `continents`: how many. */
+  continents: z.int().min(1).max(8).default(2),
+  /** Starts are only placed on landmasses with at least this many tiles. */
+  minStartLandmass: z.int().min(1).default(20),
+  /** One river per this many land tiles. */
+  landTilesPerRiver: z.int().min(5).default(35),
+  /** Noise detail: higher = smaller, more scattered landmasses. */
+  detail: z.int().min(2).max(32).default(6),
+});
+
+/** A map size the host can pick in the lobby. */
+export const MapSizeDef = z.strictObject({
+  type: z.literal('mapSize'),
+  id: Id,
+  name: Text,
+  width: z.int().min(16).max(256),
+  height: z.int().min(12).max(160),
+  /** Recommended number of players. */
+  players: z.int().min(1).max(16),
+  /** Display order in the lobby. */
+  order: z.int().default(100),
 });
 
 /** Display text for one locale. Strings have no ID; keys are global across packages. */
@@ -155,6 +245,8 @@ export const ENTITY_SCHEMAS = {
   feature: FeatureDef,
   resource: ResourceDef,
   ability: AbilityDef,
+  mapScript: MapScriptDef,
+  mapSize: MapSizeDef,
   rules: RulesDef,
 } as const;
 
@@ -171,6 +263,8 @@ export type FeatureDef = z.infer<typeof FeatureDef>;
 export type ResourceDef = z.infer<typeof ResourceDef>;
 export type AbilityDef = z.infer<typeof AbilityDef>;
 export type RulesDef = z.infer<typeof RulesDef>;
+export type MapScriptDef = z.infer<typeof MapScriptDef>;
+export type MapSizeDef = z.infer<typeof MapSizeDef>;
 export type StringsDef = z.infer<typeof StringsDef>;
 export type PatchDef = z.infer<typeof PatchDef>;
 
@@ -180,6 +274,8 @@ export interface EntityByType {
   feature: FeatureDef;
   resource: ResourceDef;
   ability: AbilityDef;
+  mapScript: MapScriptDef;
+  mapSize: MapSizeDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

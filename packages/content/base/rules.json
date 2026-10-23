@@ -5,17 +5,66 @@
     "minDistance": 3,
     "workRadius": 3,
     "ownRadius": 5,
-    "centerMinimumYields": { "food": 2, "production": 1 },
+    "centerMinimumYields": {
+      "food": 2,
+      "production": 1
+    },
     "foodPerCitizen": 2,
-    "growth": { "base": 15, "perPop": 8, "exponent": 1.5 },
-    "borderGrowth": { "base": 10, "perTile": 6, "exponent": 1.3 },
+    "growth": {
+      "base": 15,
+      "perPop": 8,
+      "exponent": 1.5
+    },
+    "borderGrowth": {
+      "base": 10,
+      "perTile": 6,
+      "exponent": 1.3
+    },
     "startingLimit": 4
   },
   "elevation": {
-    "hills": { "yields": { "production": 1 }, "moveCostExtra": 1, "defense": 3, "sightBonus": 1 },
-    "mountain": { "yields": {}, "passable": false, "blocksSight": true, "appeal": 1 }
+    "hills": {
+      "yields": {
+        "production": 1
+      },
+      "moveCostExtra": 1,
+      "defense": 3,
+      "sightBonus": 1
+    },
+    "mountain": {
+      "yields": {},
+      "passable": false,
+      "blocksSight": true,
+      "appeal": 1
+    }
   },
-  "rivers": { "crossingEndsMove": true, "attackAcrossPenalty": 5 },
-  "movement": { "canAlwaysMoveOneTile": true },
-  "luxuryHappinessRadius": 3
+  "rivers": {
+    "crossingEndsMove": true,
+    "attackAcrossPenalty": 5
+  },
+  "movement": {
+    "canAlwaysMoveOneTile": true
+  },
+  "luxuryHappinessRadius": 3,
+  "mapgen": {
+    "coastTerrain": "coast",
+    "oceanTerrain": "ocean",
+    "lakeTerrain": "lake",
+    "fallbackLandTerrain": "plains",
+    "maxLakeSize": 6,
+    "polarRows": 1,
+    "resourceDensity": {
+      "sparse": 12,
+      "standard": 8,
+      "abundant": 5
+    },
+    "start": {
+      "minFood": 14,
+      "minProduction": 8,
+      "freshWaterBonus": 15,
+      "coastalBonus": 5,
+      "balancedPercent": 90
+    },
+    "landTilesPerLake": 70
+  }
 }
