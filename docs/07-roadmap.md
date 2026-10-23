@@ -100,7 +100,7 @@ features on top.
 ### M13 · Online play
 - The host runs the engine in a Web Worker. The transport interface, with Supabase Realtime as the
   first implementation. Per-player redaction, simultaneous turns with End Turn / un-end,
-  the war-fairness options, turn timers and time banks, disconnect grace and AI takeover,
+  the Dynamic turns option, turn timers and time banks, disconnect grace and AI takeover,
   cloud saves each turn, resume, and host handoff.
 - Chat, pings, the Discord webhook (via edge function), and browser notifications.
 - **Done when:** a test proves no hidden information reaches a client, and a 4-player online game

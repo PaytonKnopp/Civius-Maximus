@@ -24,7 +24,7 @@ Gathering Storm), **7** = Civ VII.
 
 | System | Pick | Why |
 |---|---|---|
-| **Leaders separate from civs** (any leader can lead any civ) | **7** | Perfect for "add any famous leader we want": a leader is one file, and they can lead any civ. Default pairings are historical. The lobby can also allow mix-and-match ("Napoleon leading the Mongols"). |
+| **Leaders separate from civs** (any leader can lead any civ) | **7** | Perfect for "add any famous leader we want": a leader is one file, and they can lead any civ ("Napoleon leading the Mongols"). The civ picker starts on the leader's historical civ. |
 | Changing civs at each age (Civ 7's age transitions) | **7, optional** | Divisive among players, so it's an *optional* "Ages mode" module, off by default. |
 | AI agendas (visible likes/dislikes) | **6** | AI behavior becomes readable and moddable. |
 
@@ -90,6 +90,7 @@ Gathering Storm), **7** = Civ VII.
 | Classic victories: domination, science, culture, religious, score | **5 / 6** | Clear end goals everyone understands. Civ 7's age-based legacy victories are available through the optional Ages mode. |
 | Culture victory with domestic vs foreign tourists | **6** | Clearer than Civ 5's influence levels, though both are similar. |
 | Simultaneous turns with an End Turn button | all | Everyone plays at once. The turn ends when everyone has clicked done (or the timer runs out). |
+| Dynamic / hybrid turns as an option | **5 / 6** | Players at war alternate turns so battles aren't a click race. Off by default. |
 
 ### Interface
 

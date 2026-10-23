@@ -44,7 +44,7 @@ one click.
 | Turn timer | None / Fixed per turn / Time bank (see below) |
 | Victories | Toggle each type, plus turn limit and score victory |
 | Rule modules | Toggle religion, independent powers, great people, governors, loyalty, Ages mode, crises... |
-| Leaders | Historical pairs only / Any leader with any civ |
+| Leaders | Any leader with any civ (default) / Historical pairs only |
 | Mods | Choose from the mod library. Load order is shown. |
 | AI | AI seats and difficulty. "AI takes over a disconnected player" (on/off) |
 | Teams | Free-for-all, or assign teams (shared vision, shared victory) |
@@ -55,7 +55,8 @@ one click.
 - The **join code** is shown big at the top with a copy button. The host can regenerate it or lock
   the lobby.
 - **Seats (up to 8):** open, claimed (human), AI (with difficulty), or closed.
-- **Leader selection:** pick a leader (and a civ, if mix-and-match is on), or random. The host
+- **Leader selection:** pick a leader, then a civ. The civ defaults to the leader's historical
+  civ, but you can pick any civ (unless the host chose "historical pairs only"). Or pick random. The host
   can allow or forbid duplicates. An optional **draft mode** lets each player ban one leader, then
   pick in snake order.
 - **Ready check:** the host clicks start once everyone is ready.
@@ -73,14 +74,11 @@ one click.
 - **Order of actions:** actions are applied in the order the host receives them. If two settlers
   try to found a settlement on the same tile, the first one wins, and the other gets a clear
   message.
-- **Fairness in wars:** in fully simultaneous turns, two players at war can end up racing to
-  click first. Two built-in rules soften this:
-  1. **Defender's first strike:** a unit that hasn't moved this turn and is attacked by a unit
-     that started the turn adjacent to it can be set to *alert* (like Civ's overwatch). Alert units
-     make a free counter-attack. This rewards planning over click speed.
-  2. **Move-then-attack delay (optional):** units that moved more than 1 tile this turn can't
-     attack until both sides have had at least 10 seconds in the turn.
-  Both are lobby options, so playtests can show whether they're needed.
+- **Wars work the way Civ handles them:** by default, turns stay fully simultaneous even
+  during wars, as in Civ 6 and 7's simultaneous mode. For groups that dislike racing each other
+  in battles, the lobby has Civ's **Dynamic turns** option (Civ 5 called it *hybrid*): players at
+  peace keep playing at the same time, while two players at war with each other alternate turns.
+  It's off by default. We'll tune after playtests.
 
 ## Turn timers and absent players
 

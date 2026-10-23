@@ -22,6 +22,8 @@ To change one, tell Claude in a session (or edit this file). The relevant docs g
 | D14 | Hosting | **$0/month**: Supabase free tier + free static hosting, and the host's game client runs the game | 01 |
 | D17 | Game modes | Single player (vs AI), hotseat, host multiplayer with a **join code** | 02 |
 | D18 | Design source | Best of Civ 5, 6 and 7, with each pick explained | 08 |
+| D19 | War fairness in simultaneous turns | **As in Civ**: fully simultaneous by default, with Civ's Dynamic turns (alternate turns between players at war) as a lobby option. Tune after playtests | 02 |
+| D20 | Leader / civ mixing | **Any leader with any civ.** The civ defaults to the leader's historical one. The host can restrict to historical pairs | 02, 09 |
 
 ## Open
 
@@ -34,6 +36,4 @@ To change one, tell Claude in a session (or edit this file). The relevant docs g
 | D11 | **Art style** | Decide later. Placeholder shapes until then | Painterly tabletop / clean flat / pixel art / AI-generated | M28 | Deferred |
 | D15 | **Nukes** | Included in the late game, toggle per game | Not in base | M21 | Open |
 | D16 | **Default victory set** | All on, with a turn limit (score victory) | Per-group preset | M10 | Open |
-| D19 | **War fairness in simultaneous turns** | Lobby options: "alert" counter-attacks (on) and move-then-attack delay (off). Revisit after playtests | No mitigation / Civ 6-style dynamic turns as an option | M13 | Open |
-| D20 | **Leader / civ mixing** | Lobby option, default "any leader with any civ" | Historical pairs only by default | M12 | Open |
 | D21 | **Map wrap** | Wraps east–west by default | No wrap | M3 | Open (default assumed) |
