@@ -7,6 +7,9 @@ const artifact = process.env.ARTIFACT === '1';
 
 export default defineConfig({
   plugins: [react()],
+  // Relative asset paths, so the build works at a sub-path (GitHub Pages serves the game at
+  // /<repo>/) as well as at the root.
+  base: './',
   build: artifact
     ? {
         outDir: 'dist-artifact',
