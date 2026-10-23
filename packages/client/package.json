@@ -7,10 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "build:artifact": "node scripts/build-artifact.mjs",
+    "screenshot": "node scripts/screenshot.mjs"
   },
   "dependencies": {
+    "@cx/content": "workspace:*",
     "@cx/engine": "workspace:*",
+    "pixi.js": "^8.22.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

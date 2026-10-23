@@ -26,6 +26,11 @@
 | `pnpm cx map [script] [size] [seed]` | Print a generated map as text |
 | `pnpm cx mapcheck [count] [sizes]` | Generate + validate many maps (run after map generator changes) |
 
+Client checks: `pnpm build`, then `pnpm --filter @cx/client exec vite preview --port 4173` and
+`pnpm --filter @cx/client screenshot <out-dir>` (Playwright screenshots at desktop and phone
+size, plus console errors). `pnpm --filter @cx/client build:artifact <file.html>` builds the
+client as one self-contained HTML page for sharing.
+
 The golden replay test uses `packages/engine/test-fixtures/frozen-content`; only re-copy it from
 base and update the hash when the engine's rules change on purpose.
 

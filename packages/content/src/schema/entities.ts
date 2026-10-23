@@ -68,6 +68,11 @@ export const FeatureDef = z.strictObject({
   requiresRiver: z.boolean().default(false),
   validTerrains: z.array(Id).min(1),
   validElevations: z.array(Elevation).min(1).default(['flat']),
+  /** Placeholder map color until art exists. */
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #2f5d34')
+    .optional(),
   /** Map generation: `chance` percent of eligible tiles get it, within the climate ranges given. */
   generation: z
     .strictObject({

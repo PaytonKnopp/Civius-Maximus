@@ -262,6 +262,10 @@
                 ]
               }
             },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
             "generation": {
               "type": "object",
               "properties": {
@@ -1572,6 +1576,10 @@
                     "mountain"
                   ]
                 }
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
               },
               "generation": {
                 "type": "object",

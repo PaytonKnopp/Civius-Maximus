@@ -595,7 +595,8 @@ function addBonusResource(
         }
       }
     }
-    if (tile.feature === null && tile.resource === null && !terrain.water) {
+    // Water counts too: a reef can rescue a start hemmed in by the sea.
+    if (tile.feature === null && tile.resource === null) {
       for (const id of content.ids.feature) {
         const f = content.entities.feature[id]!;
         if (

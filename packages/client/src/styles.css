@@ -1,60 +1,415 @@
+/* Layout: the map fills the screen; controls and the tile inspector float over it like
+   instruments laid on a chart table. One deliberate dark look (night chart room). */
 :root {
-  --bg: #f4efe4;
-  --fg: #2b2418;
-  --muted: #6f6450;
-  --accent: #8a5a12;
-  color-scheme: light dark;
-  font-family: system-ui, sans-serif;
+  --ink: #0b1620; /* deep sea: page and map background */
+  --panel: #13222e; /* instrument panel */
+  --panel-edge: #24394a;
+  --text: #e6ddc8; /* chart paper, as text */
+  --muted: #9aa8a6;
+  --brass: #d4a94e; /* accent: brass fittings */
+  --brass-ink: #1a1306;
+  --danger: #f08c78;
+  --font-display: 'Marcellus SC', 'Trajan Pro', Georgia, serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #17140f;
-    --fg: #ece4d2;
-    --muted: #a89c84;
-    --accent: #e0a94a;
-  }
+html,
+body,
+#root {
+  height: 100%;
 }
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  overflow: hidden;
 }
 
-.menu {
-  min-height: 100vh;
+.lab {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.lab-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.lab-canvas canvas {
+  display: block;
+}
+
+/* Top bar */
+.lab-bar {
+  position: absolute;
+  inset: 0 0 auto;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 0 16px;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-block: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: linear-gradient(var(--ink), color-mix(in srgb, var(--ink) 0%, transparent));
+  pointer-events: none;
 }
 
-.menu h1 {
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  margin: 0;
-  color: var(--accent);
+.lab-bar > * {
+  pointer-events: auto;
 }
 
-.tagline,
-footer {
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  color: var(--brass);
+}
+
+.brand-sub {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
   color: var(--muted);
 }
 
-.menu nav {
+.bar-stats {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: min(320px, 100%);
+  gap: 14px;
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 
-.menu button {
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  border: 1px solid var(--muted);
+.fps {
+  min-width: 5ch;
+  text-align: right;
+}
+
+/* Controls panel */
+.lab-panel {
+  position: absolute;
+  top: 56px;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  width: min(300px, calc(100% - 32px));
+  max-height: calc(100% - 72px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  border: 1px solid var(--panel-edge);
   border-radius: 6px;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 70%, transparent);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+}
+
+.group + .group {
+  border-top: 1px solid var(--panel-edge);
+}
+
+.group h2 {
+  margin: 0 0 2px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--brass);
+}
+
+label {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+select,
+input {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  color: var(--text);
+  background: var(--ink);
+  border: 1px solid var(--panel-edge);
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+input[type='checkbox'] {
+  width: auto;
+  accent-color: var(--brass);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.seed {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.seed input {
+  font-family: var(--font-mono);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 1px;
+}
+
+.primary {
+  margin-top: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--brass);
+  background: var(--brass);
+  color: var(--brass-ink);
+  font-weight: 600;
+}
+
+.primary:hover {
+  background: color-mix(in srgb, var(--brass) 85%, var(--text));
+}
+
+.ghost,
+.panel-toggle {
+  padding: 6px 10px;
+  border: 1px solid var(--panel-edge);
+  background: var(--panel);
+  color: var(--text);
+}
+
+.ghost:hover,
+.panel-toggle:hover {
+  border-color: var(--brass);
+}
+
+.small {
+  padding: 3px 8px;
+  font-size: 12px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.error {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.starts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.start {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 1px solid transparent;
   background: transparent;
-  color: var(--fg);
+  color: var(--text);
+  text-align: left;
+}
+
+.start:hover {
+  border-color: var(--panel-edge);
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.score {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tile inspector */
+.tile-card {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  width: min(340px, calc(100% - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  border: 1px solid var(--panel-edge);
+  border-top: 2px solid var(--brass);
+  border-radius: 6px;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 70%, transparent);
+}
+
+.tile-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tile-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  text-wrap: balance;
+}
+
+.tile-head button {
+  margin-left: auto;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 14px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.facts dd {
+  margin: 0;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.chip {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 1px solid currentColor;
+}
+
+.chip.bonus {
+  color: #e8dcb0;
+}
+
+.chip.luxury {
+  color: #d18cf0;
+}
+
+.chip.strategic {
+  color: #f07a5a;
+}
+
+.yields {
+  list-style: none;
+  margin: 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--panel-edge);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.total {
+  font-family: var(--font-mono);
+}
+
+@media (max-width: 640px) {
+  .bar-stats {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .lab-panel {
+    top: auto;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    max-height: 55%;
+  }
+
+  .tile-card {
+    top: 90px;
+    bottom: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto;
+  }
+}
+
+.lab-panel[hidden] {
+  display: none;
 }

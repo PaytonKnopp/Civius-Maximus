@@ -18,7 +18,7 @@ const restrictedMath = [...FLOAT_FUNCTIONS, ...TRIG_FUNCTIONS, 'tanh', 'hypot'].
 }));
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/coverage/**', '**/node_modules/**'] },
+  { ignores: ['**/dist/**', '**/dist-artifact/**', '**/coverage/**', '**/node_modules/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

@@ -39,7 +39,7 @@ features on top.
 - **Done when:** 1,000 seeded maps per script generate with valid starts (minimum yields, no
   overlapping starts, every start reachable) in under 1 s each.
 
-### M4 · Map renderer (first visible thing)
+### M4 · Map renderer (first visible thing) ✅
 - PixiJS map: terrain, features, rivers, resources, a wrapping camera, zoom and pan, culling,
   fog states, and a debug "god view".
 - Placeholder art (shapes and colors), with an asset pipeline ready for real art.
