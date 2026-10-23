@@ -28,7 +28,8 @@
 
 Client checks: `pnpm build`, then `pnpm --filter @cx/client exec vite preview --port 4173` and
 `pnpm --filter @cx/client screenshot <out-dir>` (Playwright screenshots at desktop and phone
-size, plus console errors). `pnpm --filter @cx/client build:artifact <file.html>` builds the
+size, plus console errors); `node packages/client/scripts/screenshot-3d.mjs <out-dir>` captures
+the 3D view at Medium, in fog view, and at High. `pnpm --filter @cx/client build:artifact <file.html>` builds the
 client as one self-contained HTML page for sharing.
 
 The golden replay test uses `packages/engine/test-fixtures/frozen-content`; only re-copy it from

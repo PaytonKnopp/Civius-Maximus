@@ -47,7 +47,7 @@ features on top.
   around generated worlds.
 - 🎮 **Checkpoint:** look at the maps. Do they feel like good Civ maps? Tune the generator.
 
-### M4b · 3D painterly renderer (look prototype)
+### M4b · 3D painterly renderer (look prototype) ✅ (first version; tuning continues with your feedback)
 - Three.js renderer per [10-art-direction.md](10-art-direction.md): sculpted terrain from the hex
   map, painted water with foam, instanced stylized trees and mountains, rivers, Civ VII-style
   cloud fog, tilted camera with zoom, quality presets. The 2D renderer stays as the strategic view.

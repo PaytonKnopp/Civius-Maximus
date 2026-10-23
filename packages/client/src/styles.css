@@ -413,3 +413,25 @@ input:focus-visible {
 .lab-panel[hidden] {
   display: none;
 }
+
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--panel-edge);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.segmented button {
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 0;
+  background: var(--ink);
+  color: var(--muted);
+}
+
+.segmented button.on {
+  background: var(--brass);
+  color: var(--brass-ink);
+  font-weight: 600;
+}

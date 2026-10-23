@@ -12,7 +12,7 @@ page.on('console', (m) => {
   if (m.type() === 'error' || m.type() === 'warning') errors.push(`${m.type()}: ${m.text()}`);
 });
 page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
-await page.goto('http://localhost:4173/', { waitUntil: 'networkidle' });
+await page.goto(process.env.BASE_URL ?? 'http://localhost:4173/', { waitUntil: 'networkidle' });
 await page.waitForSelector('canvas', { timeout: 15000 });
 await page.waitForFunction(
   () => /\d+ ms/.test(document.querySelector('.bar-stats')?.textContent ?? ''),
@@ -41,7 +41,7 @@ const phone = await browser.newPage({
   hasTouch: true,
 });
 phone.on('pageerror', (e) => errors.push(`phone pageerror: ${e.message}`));
-await phone.goto('http://localhost:4173/', { waitUntil: 'networkidle' });
+await phone.goto(process.env.BASE_URL ?? 'http://localhost:4173/', { waitUntil: 'networkidle' });
 await phone.waitForSelector('canvas');
 await phone.waitForTimeout(1500);
 await phone.screenshot({ path: `${out}/lab-phone.png` });

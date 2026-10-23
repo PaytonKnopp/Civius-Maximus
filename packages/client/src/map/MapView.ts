@@ -1,5 +1,5 @@
-import { type CompiledContent, resolveText } from '@cx/content';
-import { computeTileYields, isOnRiver, type MapState, tilesWithin } from '@cx/engine';
+import { resolveText } from '@cx/content';
+import { computeTileYields, isOnRiver, tilesWithin } from '@cx/engine';
 import { Application, Container, Graphics, Text } from 'pixi.js';
 import {
   corner,
@@ -16,24 +16,9 @@ import {
 /** Tiles per chunk side. Each chunk is drawn once into its own Graphics and culled as a unit. */
 const CHUNK = 8;
 
-export const PLAYER_COLORS = [
-  0xe0b040, 0x4aa3df, 0xd9534f, 0x5cb85c, 0xb07cd8, 0xf08a3c, 0x41c7b9, 0xe46fae, 0x8d9db6,
-  0xc9d65a, 0x7f6fd6, 0xd98f8f, 0x6ea86e, 0xc4a484, 0x5b8fb0, 0xbfbfbf,
-];
+import { type MapRenderer, type MapViewData, type MapViewOptions, PLAYER_COLORS } from './renderer';
 
-export interface MapViewOptions {
-  grid: boolean;
-  yields: boolean;
-  /** `null` = see everything; otherwise only what this player's start can see. */
-  viewer: string | null;
-}
-
-export interface MapViewData {
-  map: MapState;
-  content: CompiledContent;
-  starts: Record<string, number>;
-  playerOrder: string[];
-}
+export type { MapViewData, MapViewOptions };
 
 interface Chunk {
   container: Container;
@@ -73,12 +58,12 @@ const RIVER = 0x3d8fdb;
  * Renders a map with PixiJS: chunked static geometry, an east-west wrapping camera with pan and
  * zoom, culling, overlays and fog. Input is plain pointer/wheel events on the canvas.
  */
-export class MapView {
+export class MapView implements MapRenderer {
   private app = new Application();
   private world = new Container();
   private chunks: Chunk[] = [];
   private data: MapViewData | undefined;
-  private options: MapViewOptions = { grid: true, yields: false, viewer: null };
+  private options: MapViewOptions = { grid: true, yields: false, viewer: null, quality: 'medium' };
   private worldW = 1;
   private worldH = 1;
   private cam = { x: 0, y: 0, zoom: 0.6 };

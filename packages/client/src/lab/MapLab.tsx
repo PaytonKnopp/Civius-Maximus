@@ -14,7 +14,24 @@ import {
   scoreStarts,
 } from '@cx/engine';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MapView, type MapViewOptions, PLAYER_COLORS } from '../map/MapView';
+import { MapView } from '../map/MapView';
+import {
+  type MapRenderer,
+  type MapViewOptions,
+  PLAYER_COLORS,
+  type Quality,
+} from '../map/renderer';
+import { World3D } from '../map3d/World3D';
+
+type Mode = '3d' | '2d';
+
+function hasWebGL2() {
+  try {
+    return !!document.createElement('canvas').getContext('webgl2');
+  } catch {
+    return false;
+  }
+}
 
 interface Generated {
   map: MapState;
@@ -46,10 +63,12 @@ export function MapLab({ content }: { content: CompiledContent }) {
   const [resources, setResources] = useState<MapSettings['resources']>('standard');
   const [startBalance, setStartBalance] = useState<MapSettings['startBalance']>('normal');
   const [options, setOptions] = useState<MapViewOptions>({
-    grid: true,
+    grid: false,
     yields: false,
     viewer: null,
+    quality: 'medium',
   });
+  const [mode, setMode] = useState<Mode>(() => (hasWebGL2() ? '3d' : '2d'));
   const [generated, setGenerated] = useState<Generated>();
   const [error, setError] = useState<string>();
   const [hover, setHover] = useState<number>();
@@ -58,7 +77,7 @@ export function MapLab({ content }: { content: CompiledContent }) {
   // Phones open on the map; the controls are one tap away.
   const [panelOpen, setPanelOpen] = useState(() => window.innerWidth > 640);
   const hostRef = useRef<HTMLDivElement>(null);
-  const viewRef = useRef<MapView>(undefined);
+  const viewRef = useRef<MapRenderer>(undefined);
 
   const generate = (nextSeed = seed) => {
     const ids = Array.from({ length: players }, (_, i) => `p${i + 1}`);
@@ -85,13 +104,14 @@ export function MapLab({ content }: { content: CompiledContent }) {
   };
 
   useEffect(() => {
-    const view = new MapView(hostRef.current!);
+    const view: MapRenderer =
+      mode === '3d' ? new World3D(hostRef.current!) : new MapView(hostRef.current!);
     view.onHover = setHover;
     view.onSelect = setSelected;
     view.onFps = setFps;
     viewRef.current = view;
     return () => view.destroy();
-  }, []);
+  }, [mode]);
 
   // Generate once on open, so the lab starts with a map instead of an empty canvas.
   useEffect(() => generate(), []);
@@ -103,7 +123,7 @@ export function MapLab({ content }: { content: CompiledContent }) {
         options,
       );
     }
-  }, [generated]);
+  }, [generated, mode]);
 
   useEffect(() => {
     void viewRef.current?.setOptions(options);
@@ -255,6 +275,33 @@ export function MapLab({ content }: { content: CompiledContent }) {
 
         <section className="group">
           <h2>View</h2>
+          <div className="segmented" role="group" aria-label="Renderer">
+            {(['3d', '2d'] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                aria-pressed={mode === m}
+                className={mode === m ? 'on' : ''}
+                onClick={() => setMode(m)}
+              >
+                {m === '3d' ? '3D world' : '2D strategic'}
+              </button>
+            ))}
+          </div>
+          {mode === '3d' && (
+            <>
+              <label htmlFor="quality">Graphics quality</label>
+              <select
+                id="quality"
+                value={options.quality}
+                onChange={(e) => setOptions({ ...options, quality: e.target.value as Quality })}
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High (painterly filter)</option>
+              </select>
+            </>
+          )}
           <label className="check" htmlFor="grid">
             <input
               id="grid"
@@ -271,7 +318,7 @@ export function MapLab({ content }: { content: CompiledContent }) {
               checked={options.yields}
               onChange={(e) => setOptions({ ...options, yields: e.target.checked })}
             />
-            Yield lens
+            Yield lens{mode === '3d' ? ' (2D view for now)' : ''}
           </label>
           <label htmlFor="viewer">See the map as</label>
           <select
