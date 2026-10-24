@@ -46,6 +46,12 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
 30. **D59 What uniques replace** while the planned base items don't exist (War Chariot →
     Horseman, Samurai → Swordsman, Thermae → Baths, Ordu/Royal Pages School → Barracks,
     Royal Dockyard → Lighthouse).
+31. **D60 Surprise wars:** declaring without denouncing first (10 turns) is a surprise war:
+    war-support head start for the target, and every AI remembers it.
+32. **D61 Pacts:** friendship 30 turns (20 influence each), alliance 30 turns (50 each, shares
+    vision), 10-turn peace treaty after every war, +2 influence a turn.
+33. **D62 AI rivals answer deals at once**, and the deal screen shows their answer beforehand.
+34. **D63 Opinion weights** (`rules.json` → `diplomacy.opinion`).
 28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
     expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 
@@ -74,6 +80,16 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
 - Click any civ in the top bar (your own too) and open **Abilities and uniques**.
 - Mali can buy buildings with faith (a ✨ button next to the gold one).
 - The AI builds its civ's uniques automatically (they're stronger versions of what it wants).
+
+### Part 3: diplomacy
+- Click a civ in the top bar: their **opinion of you** with every reason, your relation
+  (friends, allies, treaty, war), offers waiting, **Propose a deal…** (gold, payments, maps,
+  friendship, alliance, peace, with a live "would they accept?"), and **Denounce…**.
+- 🤝 **Influence** in the top bar pays for friendships, alliances and denouncing.
+- Friends and allies can't declare war on each other; allies share vision; every war ends in a
+  10-turn peace treaty; a surprise war is remembered by everyone.
+- AIs make friends and alliances among themselves, denounce rivals, and denounce before they
+  attack (diplomatic leaders). The top bar marks friends 🙂, allies 🤝 and offers ✉.
 
 ## Known issues
 

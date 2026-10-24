@@ -202,6 +202,41 @@
       "maxUnhappiness": 5
     }
   },
+  "diplomacy": {
+    "baseInfluence": 2,
+    "friendshipTurns": 30,
+    "allianceTurns": 30,
+    "peaceTreatyTurns": 10,
+    "friendshipCost": 20,
+    "allianceCost": 50,
+    "denounceCost": 20,
+    "denounceWarning": 10,
+    "maxDealTurns": 30,
+    "proposalTurns": 10,
+    "memoryTurns": 50,
+    "opinion": {
+      "teammate": 30,
+      "friends": 8,
+      "allies": 12,
+      "atWar": -15,
+      "sharedEnemy": 5,
+      "sameGovernment": 3,
+      "longPeacePer": 15,
+      "longPeaceMax": 4,
+      "denouncedUs": -10,
+      "weDenounced": -5,
+      "surpriseWarOnUs": -20,
+      "surpriseWarOnOthers": -4,
+      "brokeDeal": -10,
+      "razed": -3,
+      "settledNear": -2,
+      "nearDistance": 6,
+      "nearMax": 3,
+      "perDeal": 3
+    },
+    "friendshipOpinion": 6,
+    "allianceOpinion": 14
+  },
   "camps": {
     "landTilesPerCamp": 120,
     "minDistance": 6,

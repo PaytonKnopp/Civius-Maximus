@@ -1,5 +1,12 @@
 import { resolveText, type StrengthBonus } from '@cx/content';
-import { atWar, type EngineContext, type RuleError, unitClassOf, unitDef } from '../context';
+import {
+  atWar,
+  type EngineContext,
+  type RuleError,
+  unitClassOf,
+  unitDef,
+  unitIds,
+} from '../context';
 import { directionTo, distance, hasRiverEdge, neighbors, tilesWithin } from '../map/hex';
 import { isUnlocked } from '../settlements/rules';
 import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
@@ -550,4 +557,25 @@ export function previewStrike(
     captures: false,
     split: null,
   };
+}
+
+/** A soldier's fighting weight: its best strength, scaled by health. */
+export function unitPower(ctx: EngineContext, unit: UnitState): number {
+  const def = unitDef(ctx, unit);
+  if (!unitClassOf(ctx, unit).combat) return 0;
+  const best = Math.max(def.strength, def.rangedStrength);
+  return Math.floor((best * unit.health) / ctx.content.rules.combat.maxHealth);
+}
+
+/**
+ * A player's military strength: the sum of their soldiers' fighting weight. Public, like the army
+ * size on a score screen, so the AI may use it and the player panel shows it.
+ */
+export function militaryStrength(ctx: EngineContext, state: GameState, player: PlayerId): number {
+  let total = 0;
+  for (const id of unitIds(state)) {
+    const u = state.units[id]!;
+    if (u.owner === player) total += unitPower(ctx, u);
+  }
+  return total;
 }

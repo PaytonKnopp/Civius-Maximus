@@ -31,7 +31,21 @@
     },
     "agenda": {
       "name": "Imperator",
-      "description": "Respects big armies. Dislikes smaller empires that turn down his deals."
+      "description": "Respects big armies. Dislikes smaller empires that turn down his deals.",
+      "rules": [
+        {
+          "metric": "army",
+          "when": "more",
+          "amount": 4,
+          "label": "Respects your big army"
+        },
+        {
+          "metric": "army",
+          "when": "less",
+          "amount": -3,
+          "label": "Your army is weak"
+        }
+      ]
     },
     "personality": {
       "aggression": 8,
@@ -58,7 +72,21 @@
     },
     "agenda": {
       "name": "Allure",
-      "description": "Likes strong militaries. Dislikes weak ones."
+      "description": "Likes strong militaries. Dislikes weak ones.",
+      "rules": [
+        {
+          "metric": "army",
+          "when": "more",
+          "amount": 5,
+          "label": "Admires your strong army"
+        },
+        {
+          "metric": "army",
+          "when": "less",
+          "amount": -5,
+          "label": "Scorns your weak army"
+        }
+      ]
     },
     "personality": {
       "aggression": 3,
@@ -95,7 +123,21 @@
     },
     "agenda": {
       "name": "Conqueror",
-      "description": "Dislikes players who are at peace with everyone."
+      "description": "Dislikes players who are at peace with everyone.",
+      "rules": [
+        {
+          "metric": "atPeace",
+          "when": "any",
+          "amount": -6,
+          "label": "You're at peace with everyone"
+        },
+        {
+          "metric": "atPeace",
+          "when": "none",
+          "amount": 3,
+          "label": "A fellow warrior"
+        }
+      ]
     },
     "personality": {
       "aggression": 10,
@@ -143,7 +185,23 @@
     },
     "agenda": {
       "name": "Horde",
-      "description": "Respects mounted armies. Dislikes players with few cavalry."
+      "description": "Respects mounted armies. Dislikes players with few cavalry.",
+      "rules": [
+        {
+          "metric": "units",
+          "unitClass": ["class_light_cavalry", "class_heavy_cavalry"],
+          "when": "more",
+          "amount": 4,
+          "label": "Rides with many horsemen"
+        },
+        {
+          "metric": "units",
+          "unitClass": ["class_light_cavalry", "class_heavy_cavalry"],
+          "when": "less",
+          "amount": -4,
+          "label": "Has few horsemen"
+        }
+      ]
     },
     "personality": {
       "aggression": 10,
@@ -181,7 +239,23 @@
     },
     "agenda": {
       "name": "Queen of the Seas",
-      "description": "Likes players with big navies who stay off her continent."
+      "description": "Likes players with big navies who stay off her continent.",
+      "rules": [
+        {
+          "metric": "units",
+          "domain": "sea",
+          "when": "more",
+          "amount": 4,
+          "label": "Has a fine navy"
+        },
+        {
+          "metric": "units",
+          "domain": "sea",
+          "when": "none",
+          "amount": -2,
+          "label": "Has no navy"
+        }
+      ]
     },
     "personality": {
       "aggression": 6,
@@ -208,7 +282,21 @@
     },
     "agenda": {
       "name": "Grand Strategist",
-      "description": "Respects players with commanders and big armies. Dislikes players who beat him in war."
+      "description": "Respects players with commanders and big armies. Dislikes players who beat him in war.",
+      "rules": [
+        {
+          "metric": "army",
+          "when": "more",
+          "amount": 4,
+          "label": "Respects your big army"
+        },
+        {
+          "metric": "captures",
+          "when": "any",
+          "amount": -2,
+          "label": "Takes cities from others"
+        }
+      ]
     },
     "personality": {
       "aggression": 8,
@@ -246,7 +334,21 @@
     },
     "agenda": {
       "name": "Union",
-      "description": "Dislikes players who start surprise wars. Likes players who keep their promises."
+      "description": "Dislikes players who start surprise wars. Likes players who keep their promises.",
+      "rules": [
+        {
+          "metric": "surpriseWars",
+          "when": "any",
+          "amount": -8,
+          "label": "Starts surprise wars"
+        },
+        {
+          "metric": "surpriseWars",
+          "when": "none",
+          "amount": 3,
+          "label": "Keeps the peace"
+        }
+      ]
     },
     "personality": {
       "aggression": 3,
@@ -313,7 +415,21 @@
     },
     "agenda": {
       "name": "Wonder of the World",
-      "description": "Likes players who build wonders. Envies anyone who beats him to one."
+      "description": "Likes players who build wonders. Envies anyone who beats him to one.",
+      "rules": [
+        {
+          "metric": "wonders",
+          "when": "any",
+          "amount": 3,
+          "label": "Builds wonders"
+        },
+        {
+          "metric": "wonders",
+          "when": "more",
+          "amount": -5,
+          "label": "Beat him to wonders"
+        }
+      ]
     },
     "personality": {
       "aggression": 4,
@@ -340,7 +456,21 @@
     },
     "agenda": {
       "name": "Richest Man in History",
-      "description": "Likes players with large trade networks. Dislikes poor ones."
+      "description": "Likes players with large trade networks. Dislikes poor ones.",
+      "rules": [
+        {
+          "metric": "gold",
+          "when": "more",
+          "amount": 4,
+          "label": "A wealthy partner"
+        },
+        {
+          "metric": "gold",
+          "when": "less",
+          "amount": -4,
+          "label": "Too poor to bother with"
+        }
+      ]
     },
     "personality": {
       "aggression": 2,
@@ -382,7 +512,21 @@
     },
     "agenda": {
       "name": "Unifier",
-      "description": "Respects players who take settlements. Dislikes players with weak armies."
+      "description": "Respects players who take settlements. Dislikes players with weak armies.",
+      "rules": [
+        {
+          "metric": "captures",
+          "when": "any",
+          "amount": 4,
+          "label": "Takes cities"
+        },
+        {
+          "metric": "army",
+          "when": "less",
+          "amount": -5,
+          "label": "Your army is weak"
+        }
+      ]
     },
     "personality": {
       "aggression": 8,

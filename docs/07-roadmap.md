@@ -169,7 +169,7 @@ The order inside this phase can change based on playtest feedback.
 
 | Milestone | Contents |
 |---|---|
-| M15 · Diplomacy & deals | States, friendship, alliances, influence, endeavors and sanctions, enforced deals, promises, reputation, deal inbox |
+| M15 · Diplomacy & deals | States, friendship, alliances, influence, endeavors and sanctions, enforced deals, promises, reputation, deal inbox (first part built in the V1 build: see 04, "Built so far") |
 | M16 · Trade routes | Traders, routes, auto-roads, plunder |
 | M17 · Great people | Points race, named individuals, patronage, great works |
 | M18 · Religion | Pantheons, founding, beliefs, pressure, missionaries/apostles, religious victory |

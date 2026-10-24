@@ -1,6 +1,7 @@
 import {
   type Action,
   type ActionResult,
+  answerProposals,
   applyAction,
   createGame,
   type EngineContext,
@@ -62,9 +63,30 @@ export class LocalGame {
     if (!result.ok) return result;
     this.state = result.state;
     const events = [...result.events];
+    this.answerAiDeals(events);
     this.endAiTurns(events);
     for (const fn of this.listeners) fn(this.state, events);
     return { ok: true, state: this.state, events };
+  }
+
+  /** AI seats answer deals offered to them right away (the same verdict the deal screen shows). */
+  private answerAiDeals(events: GameEvent[]) {
+    const waiting = [
+      ...new Set(
+        this.state.diplomacy.proposals
+          .map((p) => p.to)
+          .filter((to) => this.state.players[to]?.kind === 'ai'),
+      ),
+    ].sort();
+    for (const ai of waiting) {
+      this.state = answerProposals(this.ctx, this.state, ai, (action) => {
+        const r = applyAction(this.state, action, this.ctx);
+        if (!r.ok) return undefined;
+        this.state = r.state;
+        events.push(...r.events);
+        return r.state;
+      });
+    }
   }
 
   private endAiTurns(events: GameEvent[]) {

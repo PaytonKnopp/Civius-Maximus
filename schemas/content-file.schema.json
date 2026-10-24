@@ -11592,6 +11592,76 @@
                 "description": {
                   "type": "string",
                   "minLength": 1
+                },
+                "rules": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "metric": {
+                        "type": "string",
+                        "enum": [
+                          "army",
+                          "units",
+                          "wonders",
+                          "gold",
+                          "captures",
+                          "surpriseWars",
+                          "atPeace"
+                        ]
+                      },
+                      "unitClass": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          {
+                            "minItems": 1,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            }
+                          }
+                        ]
+                      },
+                      "domain": {
+                        "type": "string",
+                        "enum": [
+                          "land",
+                          "sea",
+                          "air"
+                        ]
+                      },
+                      "when": {
+                        "type": "string",
+                        "enum": [
+                          "more",
+                          "less",
+                          "any",
+                          "none"
+                        ]
+                      },
+                      "amount": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "metric",
+                      "when",
+                      "amount",
+                      "label"
+                    ],
+                    "additionalProperties": false
+                  }
                 }
               },
               "required": [
@@ -37807,6 +37877,209 @@
               ],
               "additionalProperties": false
             },
+            "diplomacy": {
+              "type": "object",
+              "properties": {
+                "baseInfluence": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "friendshipTurns": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "allianceTurns": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "peaceTreatyTurns": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "friendshipCost": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "allianceCost": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "denounceCost": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "denounceWarning": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "maxDealTurns": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "proposalTurns": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "memoryTurns": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "opinion": {
+                  "type": "object",
+                  "properties": {
+                    "teammate": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "friends": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "allies": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "atWar": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "sharedEnemy": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "sameGovernment": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "longPeacePer": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "longPeaceMax": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "denouncedUs": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "weDenounced": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "surpriseWarOnUs": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "surpriseWarOnOthers": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "brokeDeal": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "razed": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "settledNear": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "nearDistance": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "nearMax": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "perDeal": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "teammate",
+                    "friends",
+                    "allies",
+                    "atWar",
+                    "sharedEnemy",
+                    "sameGovernment",
+                    "longPeacePer",
+                    "longPeaceMax",
+                    "denouncedUs",
+                    "weDenounced",
+                    "surpriseWarOnUs",
+                    "surpriseWarOnOthers",
+                    "brokeDeal",
+                    "razed",
+                    "settledNear",
+                    "nearDistance",
+                    "nearMax",
+                    "perDeal"
+                  ],
+                  "additionalProperties": false
+                },
+                "friendshipOpinion": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "allianceOpinion": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "baseInfluence",
+                "friendshipTurns",
+                "allianceTurns",
+                "peaceTreatyTurns",
+                "friendshipCost",
+                "allianceCost",
+                "denounceCost",
+                "denounceWarning",
+                "maxDealTurns",
+                "proposalTurns",
+                "memoryTurns",
+                "opinion",
+                "friendshipOpinion",
+                "allianceOpinion"
+              ],
+              "additionalProperties": false
+            },
             "camps": {
               "type": "object",
               "properties": {
@@ -38009,6 +38282,7 @@
             "units",
             "combat",
             "score",
+            "diplomacy",
             "camps",
             "mapgen"
           ],
@@ -49738,6 +50012,76 @@
                   "description": {
                     "type": "string",
                     "minLength": 1
+                  },
+                  "rules": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "metric": {
+                          "type": "string",
+                          "enum": [
+                            "army",
+                            "units",
+                            "wonders",
+                            "gold",
+                            "captures",
+                            "surpriseWars",
+                            "atPeace"
+                          ]
+                        },
+                        "unitClass": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            {
+                              "minItems": 1,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              }
+                            }
+                          ]
+                        },
+                        "domain": {
+                          "type": "string",
+                          "enum": [
+                            "land",
+                            "sea",
+                            "air"
+                          ]
+                        },
+                        "when": {
+                          "type": "string",
+                          "enum": [
+                            "more",
+                            "less",
+                            "any",
+                            "none"
+                          ]
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "metric",
+                        "when",
+                        "amount",
+                        "label"
+                      ],
+                      "additionalProperties": false
+                    }
                   }
                 },
                 "required": [
@@ -75953,6 +76297,209 @@
                 ],
                 "additionalProperties": false
               },
+              "diplomacy": {
+                "type": "object",
+                "properties": {
+                  "baseInfluence": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "friendshipTurns": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "allianceTurns": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "peaceTreatyTurns": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "friendshipCost": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "allianceCost": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "denounceCost": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "denounceWarning": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "maxDealTurns": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "proposalTurns": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "memoryTurns": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "opinion": {
+                    "type": "object",
+                    "properties": {
+                      "teammate": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "friends": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "allies": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "atWar": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "sharedEnemy": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "sameGovernment": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "longPeacePer": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "longPeaceMax": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "denouncedUs": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "weDenounced": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "surpriseWarOnUs": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "surpriseWarOnOthers": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "brokeDeal": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "razed": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "settledNear": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "nearDistance": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "nearMax": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "perDeal": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "teammate",
+                      "friends",
+                      "allies",
+                      "atWar",
+                      "sharedEnemy",
+                      "sameGovernment",
+                      "longPeacePer",
+                      "longPeaceMax",
+                      "denouncedUs",
+                      "weDenounced",
+                      "surpriseWarOnUs",
+                      "surpriseWarOnOthers",
+                      "brokeDeal",
+                      "razed",
+                      "settledNear",
+                      "nearDistance",
+                      "nearMax",
+                      "perDeal"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "friendshipOpinion": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "allianceOpinion": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "baseInfluence",
+                  "friendshipTurns",
+                  "allianceTurns",
+                  "peaceTreatyTurns",
+                  "friendshipCost",
+                  "allianceCost",
+                  "denounceCost",
+                  "denounceWarning",
+                  "maxDealTurns",
+                  "proposalTurns",
+                  "memoryTurns",
+                  "opinion",
+                  "friendshipOpinion",
+                  "allianceOpinion"
+                ],
+                "additionalProperties": false
+              },
               "camps": {
                 "type": "object",
                 "properties": {
@@ -76155,6 +76702,7 @@
               "units",
               "combat",
               "score",
+              "diplomacy",
               "camps",
               "mapgen"
             ],

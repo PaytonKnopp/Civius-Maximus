@@ -45,6 +45,7 @@ export function hostilePlayer(ctx: EngineContext, state: GameState): PlayerState
     civ: '',
     leader: '',
     gold: 0,
+    influence: 0,
     faith: 0,
     capital: null,
     settlementsFounded: 0,

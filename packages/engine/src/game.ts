@@ -7,6 +7,8 @@ import type { GameEvent } from './events';
 import { generateMap } from './map/generate';
 import { makeRandom } from './map/random';
 import type { StartBias } from './map/types';
+import { diplomacyHandlers, diplomacyTurn } from './diplomacy/handlers';
+import { emptyDiplomacy } from './diplomacy/rules';
 import { createRng } from './rng';
 import { scoreVictory } from './victory';
 import { checkBoosts, progressHandlers } from './progress/handlers';
@@ -108,6 +110,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       civ,
       leader,
       gold: 0,
+      influence: 0,
       faith: 0,
       capital: null,
       settlementsFounded: 0,
@@ -136,6 +139,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     warSupport: {},
     camps: {},
     settlements: {},
+    diplomacy: emptyDiplomacy(),
   };
   spawnStartingUnits(state, ctx);
   placeStartingCamps(state, ctx, random);
@@ -150,6 +154,7 @@ const handlers: Handlers = {
   ...settlementHandlers,
   ...progressHandlers,
   ...combatHandlers,
+  ...diplomacyHandlers,
   end_turn: {
     validate(state, action) {
       const p = state.players[action.player];
@@ -185,6 +190,7 @@ const handlers: Handlers = {
 const turnSteps: TurnStep[] = [
   { id: 'combat', order: 90, run: combatTurn },
   { id: 'settlements', order: 100, run: settlementsTurn },
+  { id: 'diplomacy', order: 110, run: diplomacyTurn },
 ];
 
 function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {

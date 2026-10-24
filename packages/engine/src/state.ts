@@ -38,6 +38,71 @@ export interface GameState {
   camps: Record<string, CampState>;
   /** Every settlement, by id (`s3`...). Iterate with `settlementIds()` for a stable order. */
   settlements: Record<SettlementId, SettlementState>;
+  /** Friendships, alliances, treaties, deals and what AIs remember (docs/04, "Diplomacy"). */
+  diplomacy: DiplomacyState;
+}
+
+/** Pairs of players are keyed like wars: sorted `"a|b"` (see `warKey`). */
+export interface DiplomacyState {
+  /** Declared friendships: the turn each ends. */
+  friends: Record<string, number>;
+  /** Alliances: the turn each ends. */
+  alliances: Record<string, number>;
+  /** Peace treaties: no war between the pair before this turn. */
+  peaceUntil: Record<string, number>;
+  /** The turn each pair's last war started or ended. */
+  lastWar: Record<string, number>;
+  /** Denouncements, as `"by>target"`: the turn it happened. */
+  denounced: Record<string, number>;
+  /** Gold one player pays another every turn, until a turn. */
+  payments: Payment[];
+  /** Deals waiting for an answer. */
+  proposals: Proposal[];
+  /** What every AI remembers for a while: surprise wars, broken deals, razed settlements. */
+  incidents: Incident[];
+}
+
+export interface Payment {
+  from: PlayerId;
+  to: PlayerId;
+  /** Whole gold each turn. */
+  gold: number;
+  /** The last turn it's paid. */
+  until: number;
+}
+
+/** What one side of a deal puts on the table. */
+export interface DealTerms {
+  /** Whole gold, paid once. */
+  gold: number;
+  /** Whole gold paid every turn, for the deal's `turns`. */
+  goldPerTurn: number;
+  /** Share the map: the other side learns every tile this side has explored. */
+  maps: boolean;
+}
+
+export interface Proposal {
+  id: string;
+  from: PlayerId;
+  to: PlayerId;
+  /** The turn it was made. */
+  turn: number;
+  /** What `from` gives and what `from` asks for. */
+  give: DealTerms;
+  get: DealTerms;
+  /** How long per-turn payments run. */
+  turns: number;
+  /** Mutual parts: declare friendship, form an alliance, make peace. */
+  friendship: boolean;
+  alliance: boolean;
+  peace: boolean;
+}
+
+export interface Incident {
+  kind: 'surprise_war' | 'broke_deal' | 'razed';
+  by: PlayerId;
+  against: PlayerId;
+  turn: number;
 }
 
 export type SettlementId = string;
@@ -185,6 +250,8 @@ export interface PlayerState {
   leader: string;
   /** Treasury, in hundredths. */
   gold: number;
+  /** Influence for diplomacy, in hundredths. */
+  influence: number;
   /** Faith stored, in hundredths (spent from M13). */
   faith: number;
   capital: SettlementId | null;

@@ -11,6 +11,15 @@ const BuildItem = z.strictObject({
   /** Districts, wonders and projects go on a tile. */
   tile: TileRef.optional(),
 });
+const DealRef = z.string().regex(/^d\d+$/);
+/** One side of a deal. */
+const Terms = z
+  .strictObject({
+    gold: z.int().min(0).max(1_000_000).default(0),
+    goldPerTurn: z.int().min(0).max(10_000).default(0),
+    maps: z.boolean().default(false),
+  })
+  .default({ gold: 0, goldPerTurn: 0, maps: false });
 const Focus = z.enum(['balanced', 'food', 'production', 'gold', 'science', 'culture', 'faith']);
 
 /**
@@ -136,6 +145,32 @@ export const Action = z.discriminatedUnion('type', [
     settlement: SettlementRef,
     choice: z.enum(['keep', 'raze', 'liberate']),
   }),
+
+  // Diplomacy (M15)
+  /** Offer a deal; it waits for the other player's answer. */
+  z.strictObject({
+    type: z.literal('propose_deal'),
+    player: PlayerRef,
+    to: PlayerRef,
+    give: Terms,
+    get: Terms,
+    /** How long per-turn payments run. */
+    turns: z.int().min(1).max(100).default(20),
+    friendship: z.boolean().default(false),
+    alliance: z.boolean().default(false),
+    peace: z.boolean().default(false),
+  }),
+  /** Accept or decline a deal offered to you. */
+  z.strictObject({
+    type: z.literal('answer_deal'),
+    player: PlayerRef,
+    deal: DealRef,
+    accept: z.boolean(),
+  }),
+  /** Take back a deal you offered. */
+  z.strictObject({ type: z.literal('withdraw_deal'), player: PlayerRef, deal: DealRef }),
+  /** Publicly denounce a player (costs influence; a war soon after isn't a surprise). */
+  z.strictObject({ type: z.literal('denounce'), player: PlayerRef, target: PlayerRef }),
 ]);
 export type Action = z.infer<typeof Action>;
 export type ActionType = Action['type'];

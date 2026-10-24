@@ -2,6 +2,7 @@ import { type CompiledContent, resolveText } from '@cx/content';
 import {
   type Action,
   atWar,
+  relation,
   attackProblem,
   attackTargets,
   type CombatPreview as Preview,
@@ -149,6 +150,41 @@ function noticeFor(
       return e.to === ME
         ? `${civName(content, state, e.from)} offers peace (open their name above to accept)`
         : `You offered peace to ${civName(content, state, e.to)}`;
+    case 'deal_proposed':
+      return e.to === ME
+        ? `${civName(content, state, e.from)} offers you a deal (open their name above)`
+        : undefined;
+    case 'deal_accepted': {
+      const pact = e.alliance ? 'an alliance' : e.friendship ? 'a friendship' : undefined;
+      if (e.from === ME || e.to === ME) {
+        const them = civName(content, state, e.from === ME ? e.to : e.from);
+        return e.from === ME ? `${them} accepted your deal` : `Deal signed with ${them}`;
+      }
+      return pact
+        ? `${civName(content, state, e.from)} and ${civName(content, state, e.to)} signed ${pact}`
+        : undefined;
+    }
+    case 'deal_declined':
+      return e.from === ME ? `${civName(content, state, e.to)} declined your deal` : undefined;
+    case 'deal_expired':
+      return e.from === ME ? `Your offer to ${civName(content, state, e.to)} expired` : undefined;
+    case 'deal_broken':
+      return e.by === ME
+        ? `You couldn't pay ${civName(content, state, e.to)}: the deal is broken`
+        : e.to === ME
+          ? `${civName(content, state, e.by)} stopped paying you: the deal is broken`
+          : `${civName(content, state, e.by)} broke a deal with ${civName(content, state, e.to)}`;
+    case 'pact_ended': {
+      const [a, b] = e.players;
+      const them = civName(content, state, a === ME ? b : a);
+      return `Your ${e.kind} with ${them} has ended`;
+    }
+    case 'denounced':
+      return e.target === ME
+        ? `${civName(content, state, e.by)} denounced you!`
+        : e.by === ME
+          ? `You denounced ${civName(content, state, e.target)}`
+          : `${civName(content, state, e.by)} denounced ${civName(content, state, e.target)}`;
     case 'peace_made': {
       const [a, b] = e.players;
       return a === ME || b === ME
@@ -920,6 +956,10 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
           {icon('faith')} <span className="mono">{whole(empire.faith)}</span>
           <span className="delta mono">({perTurn(empire.faithPerTurn)})</span>
         </li>
+        <li title="Influence (per turn): spent on friendships, alliances and denouncing">
+          {icon('influence')} <span className="mono">{whole(empire.influence)}</span>
+          <span className="delta mono">({perTurn(empire.influencePerTurn)})</span>
+        </li>
       </ul>
 
       <div className="turn-pill" aria-live="polite">
@@ -933,13 +973,16 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
         {state.playerOrder.map((p) => {
           const pl = state.players[p]!;
           const war = atWar(state, viewer, p);
-          const offer = state.peaceOffers.includes(`${p}>${viewer}`);
+          const rel = p === viewer ? null : relation(state, viewer, p);
+          const offer =
+            state.peaceOffers.includes(`${p}>${viewer}`) ||
+            state.diplomacy.proposals.some((x) => x.from === p && x.to === viewer);
           return (
             <button
               type="button"
               key={p}
               className={`player-chip ${pl.turnEnded ? 'done' : ''} ${war ? 'war' : ''} ${pl.alive ? '' : 'dead'} ${offer ? 'offer' : ''}`}
-              title={`${pl.name} · score ${scoreOf(ctx, state, p).total}${war ? ' · at war' : ''}${offer ? ' · offers peace' : ''}${pl.turnEnded ? ' (turn ended)' : ''}`}
+              title={`${pl.name} · score ${scoreOf(ctx, state, p).total}${war ? ' · at war' : ''}${rel === 'allies' ? ' · allies' : rel === 'friends' ? ' · friends' : ''}${offer ? ' · has an offer for you' : ''}${pl.turnEnded ? ' (turn ended)' : ''}`}
               onClick={() => setPlayerPanel(playerPanel === p ? null : p)}
             >
               <span className="swatch" style={{ background: cssColor(colors[p]!.main) }} />
@@ -951,6 +994,16 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
               {war && (
                 <span className="war-mark" aria-label="at war">
                   ⚔
+                </span>
+              )}
+              {(rel === 'allies' || rel === 'friends') && (
+                <span className="pact-mark" aria-label={rel}>
+                  {rel === 'allies' ? '🤝' : '🙂'}
+                </span>
+              )}
+              {offer && (
+                <span className="offer-mark" aria-label="has an offer for you">
+                  ✉
                 </span>
               )}
             </button>

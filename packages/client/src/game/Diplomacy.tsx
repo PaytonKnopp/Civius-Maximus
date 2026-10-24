@@ -1,7 +1,12 @@
 import {
   type Action,
   atWar,
+  denounceProblem,
   dominationProgress,
+  isSurpriseWar,
+  opinionOf,
+  relation,
+  warBlock,
   type EngineContext,
   type GameState,
   liberateProblem,
@@ -16,6 +21,7 @@ import {
 } from '@cx/engine';
 import { resolveText } from '@cx/content';
 import { useEffect, useState } from 'react';
+import { DealDialog, describeDeal } from './DealDialog';
 import { civName, type Colors, cssColor } from './model';
 
 interface PlayerProps {
@@ -28,7 +34,7 @@ interface PlayerProps {
   onClose: () => void;
 }
 
-/** War and peace with one rival (the full diplomacy screen arrives later). */
+/** One player's panel: who they are, how they feel about you, deals, war and peace. */
 export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }: PlayerProps) {
   const [confirm, setConfirm] = useState(false);
   const p = state.players[other]!;
@@ -46,6 +52,29 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
   const leader = ctx.content.entities.leader[p.leader];
   const army = militaryStrength(ctx, state, other);
   const ours = militaryStrength(ctx, state, viewer);
+  const [dealOpen, setDealOpen] = useState(false);
+  const [denouncing, setDenouncing] = useState(false);
+  const d = state.diplomacy;
+  const rel = relation(state, viewer, other);
+  const key = warKey(viewer, other);
+  const opinion = p.kind === 'ai' && other !== viewer ? opinionOf(ctx, state, other, viewer) : null;
+  const incoming = d.proposals.filter((x) => x.from === other && x.to === viewer);
+  const outgoing = d.proposals.filter((x) => x.from === viewer && x.to === other);
+  const denounce = denounceProblem(ctx, state, viewer, other);
+  const block = warBlock(state, viewer, other);
+  const theyDenounced = d.denounced[`${other}>${viewer}`];
+  const relationText =
+    rel === 'team'
+      ? 'Teammates'
+      : rel === 'allies'
+        ? `🤝 Allies until turn ${d.alliances[key]}`
+        : rel === 'friends'
+          ? `🙂 Friends until turn ${d.friends[key]}`
+          : rel === 'war'
+            ? `⚔ At war since turn ${since ?? '?'}`
+            : (d.peaceUntil[key] ?? 0) > state.turn
+              ? `☮ Peace treaty until turn ${d.peaceUntil[key]}`
+              : '☮ At peace';
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
@@ -81,11 +110,110 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
         </p>
       )}
       <Kit ctx={ctx} civ={p.civ} leader={p.leader} />
+      {opinion && (
+        <details className="opinion">
+          <summary>
+            Opinion of you:{' '}
+            <strong className={opinion.total > 0 ? 'good' : opinion.total < 0 ? 'bad' : ''}>
+              {opinion.total > 0 ? `+${opinion.total}` : opinion.total}
+            </strong>
+          </summary>
+          <ul>
+            {opinion.lines.map((l) => (
+              <li key={l.label}>
+                <span className={l.amount > 0 ? 'good' : 'bad'}>
+                  {l.amount > 0 ? `+${l.amount}` : l.amount}
+                </span>{' '}
+                {l.label}
+              </li>
+            ))}
+            {opinion.lines.length === 0 && <li className="muted">No strong feelings yet</li>}
+          </ul>
+        </details>
+      )}
       {p.alive && other !== viewer && (
         <>
-          <p className={`relation ${war ? 'war' : 'peace'}`}>
-            {war ? `⚔ At war since turn ${since ?? '?'}` : '☮ At peace'}
-          </p>
+          <p className={`relation ${war ? 'war' : 'peace'}`}>{relationText}</p>
+          {theyDenounced !== undefined && (
+            <p className="hint bad">They denounced you on turn {theyDenounced}.</p>
+          )}
+          {incoming.map((x) => (
+            <div className="callout" key={x.id}>
+              <p>
+                <strong>{name} offers:</strong> {describeDeal(ctx, state, x, viewer)}
+              </p>
+              <div className="row-inline">
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={() =>
+                    act({ type: 'answer_deal', player: viewer, deal: x.id, accept: true })
+                  }
+                >
+                  Accept
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    act({ type: 'answer_deal', player: viewer, deal: x.id, accept: false })
+                  }
+                >
+                  Decline
+                </button>
+              </div>
+            </div>
+          ))}
+          {outgoing.map((x) => (
+            <div className="callout" key={x.id}>
+              <p>
+                <strong>You offered:</strong> {describeDeal(ctx, state, x, viewer)}
+              </p>
+              <button
+                type="button"
+                onClick={() => act({ type: 'withdraw_deal', player: viewer, deal: x.id })}
+              >
+                Withdraw
+              </button>
+            </div>
+          ))}
+          {rel !== 'team' && (
+            <button type="button" className="wide" onClick={() => setDealOpen(true)}>
+              Propose a deal…
+            </button>
+          )}
+          {!war &&
+            rel !== 'team' &&
+            (denouncing ? (
+              <div className="confirm-row">
+                <span>Denounce {name}?</span>
+                <button
+                  type="button"
+                  className="danger"
+                  onClick={() => {
+                    act({ type: 'denounce', player: viewer, target: other });
+                    setDenouncing(false);
+                  }}
+                >
+                  Denounce
+                </button>
+                <button type="button" onClick={() => setDenouncing(false)}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="wide"
+                disabled={!!denounce}
+                title={
+                  denounce?.message ??
+                  `Costs ${ctx.content.rules.diplomacy.denounceCost} influence. Everyone hears it, and a war within ${ctx.content.rules.diplomacy.denounceWarning} turns isn't a surprise war.`
+                }
+                onClick={() => setDenouncing(true)}
+              >
+                Denounce…
+              </button>
+            ))}
           {theyOffer && (
             <div className="callout">
               {name} offers peace.{' '}
@@ -110,7 +238,11 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
             </button>
           ) : confirm ? (
             <div className="confirm-row">
-              <span>Declare war on {name}?</span>
+              <span>
+                Declare war on {name}?
+                {isSurpriseWar(ctx, state, viewer, other) &&
+                  ' It would be a surprise war: everyone will remember it.'}
+              </span>
               <button
                 type="button"
                 className="danger"
@@ -126,7 +258,13 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
               </button>
             </div>
           ) : (
-            <button type="button" className="wide" onClick={() => setConfirm(true)}>
+            <button
+              type="button"
+              className="wide"
+              disabled={!!block || rel === 'team'}
+              title={block?.message}
+              onClick={() => setConfirm(true)}
+            >
               Declare war…
             </button>
           )}
@@ -138,6 +276,16 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
           )}
           {war && peace && !weOffered && <p className="hint">{peace.message}.</p>}
         </>
+      )}
+      {dealOpen && (
+        <DealDialog
+          ctx={ctx}
+          state={state}
+          viewer={viewer}
+          other={other}
+          act={act}
+          onClose={() => setDealOpen(false)}
+        />
       )}
     </aside>
   );

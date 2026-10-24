@@ -13,7 +13,7 @@ Milestone numbers refer to [07-roadmap.md](07-roadmap.md). Each part ends with a
 | 0 | Core game through the hotseat alpha | M0–M10 | ✅ |
 | 1 | **AI v1**: leader personalities, expansion, building, research, districts and wonders, armies, war and peace | M11 | ✅ |
 | 2 | **Leaders and civs**: the 10 civs get leaders with unique abilities, units, buildings or improvements; AI personalities come from leaders | M25 (first 10) | ✅ (parts that need trade, commanders or later eras land with those) |
-| 3 | **Diplomacy**: opinions with reasons, agendas, friendship, denouncing, alliances, open borders, deals (gold, per-turn gold, luxuries, peace terms), AI proposals, the diplomacy screen | M15 | |
+| 3 | **Diplomacy**: opinions with reasons, agendas, friendship, denouncing, alliances, open borders, deals (gold, per-turn gold, luxuries, peace terms), AI proposals, the diplomacy screen | M15 | ✅ (open borders and luxury trades wait for trade routes) |
 | 4 | **Commanders**: pack and unpack, command radius bonuses, retreat instead of death | M9 (moved) | |
 | 5 | **Trade routes**: traders, routes and their yields, roads | M16 | |
 | 6 | **Great people**: points race, named individuals with one-off actions | M17 | |

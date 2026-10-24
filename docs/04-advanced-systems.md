@@ -84,6 +84,28 @@ AI that witnesses them, which makes their deals and agendas less favorable. In t
 same actions shift **war support** toward your enemy (see
 [03-core-mechanics.md](03-core-mechanics.md#war)). One number per war, and it's easy to read.
 
+### Built so far (V1 part 3)
+
+- **States:** war, peace (with a treaty after every war: no new war for 10 turns), declared
+  friendship (30 turns; no war while it lasts), alliance (30 turns, needs a friendship; allies
+  share vision). Both can be renewed. Teams also share vision.
+- **Influence** 🤝: +2 a turn plus influence yields (Government Plaza, Trade Outpost towns).
+  Friendship costs 20 and an alliance 50 from each side; denouncing costs 20.
+- **Deals:** gold now, gold per turn (up to 30 turns, enforced: a missed payment breaks the deal
+  and everyone remembers), shared maps, friendship, alliance, peace. Offers wait in the other
+  player's panel for 10 turns; AI rivals answer at once, and the deal screen shows beforehand
+  whether they'd accept and why not.
+- **Surprise wars:** a war declared without denouncing the target in the last 10 turns. It gives
+  the target the war-support head start and is remembered by every AI. A formal war (denounce
+  first, then declare) does neither.
+- **AI opinions** with reasons (shown in the rival panel): agenda likes and dislikes, long
+  peace, same government, friendship or alliance, common enemies, denouncements, surprise
+  wars, broken deals, razed settlements, settling nearby, running deals. AIs offer friendships
+  and alliances to players they like, denounce ones they don't, and denounce before declaring
+  war when they're diplomatic.
+- Not yet: open borders, endeavors and sanctions, promises, joint wars, research agreements,
+  resource trades (they need trade routes and strategic resources first).
+
 ---
 
 ## Trade routes

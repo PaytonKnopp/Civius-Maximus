@@ -13,6 +13,8 @@ import {
   warKey,
 } from '../context';
 import { view } from '../draft';
+import { forgetPlayer } from '../diplomacy/handlers';
+import { isSurpriseWar, warBlock } from '../diplomacy/rules';
 import { toFixed } from '../fixed';
 import { grantBoost } from '../progress/handlers';
 import { playerEffects } from '../progress/sources';
@@ -246,6 +248,7 @@ function checkDefeat(draft: Draft<GameState>, player: PlayerId, by: PlayerId | n
   for (const k of Object.keys(draft.warSupport)) {
     if (k.split('|').includes(player)) delete draft.warSupport[k];
   }
+  forgetPlayer(draft, player);
   emit({ type: 'player_defeated', player, by, visibleTo: 'all' });
 }
 
@@ -330,6 +333,13 @@ function captureRewards(
 
 function raze(draft: Draft<GameState>, id: string, emit: Emit) {
   const s = draft.settlements[id]!;
+  if (s.capturedFrom && s.capturedFrom !== HOSTILE)
+    draft.diplomacy.incidents.push({
+      kind: 'razed',
+      by: s.owner,
+      against: s.capturedFrom,
+      turn: draft.turn,
+    });
   for (const t of draft.map.tiles) {
     if (t.settlement !== id) continue;
     t.settlement = null;
@@ -410,8 +420,11 @@ export function peaceProblem(
   return undefined;
 }
 
-function endWar(draft: Draft<GameState>, a: PlayerId, b: PlayerId) {
+/** Ends a war, with a peace treaty that blocks a new one for a while. */
+export function endWar(draft: Draft<GameState>, ctx: EngineContext, a: PlayerId, b: PlayerId) {
   const key = warKey(a, b);
+  draft.diplomacy.peaceUntil[key] = draft.turn + ctx.content.rules.diplomacy.peaceTreatyTurns;
+  draft.diplomacy.lastWar[key] = draft.turn;
   draft.wars = draft.wars.filter((k) => k !== key);
   delete draft.warStarted[key];
   delete draft.warSupport[key];
@@ -627,18 +640,35 @@ export const combatHandlers = {
       if (err) return err;
       if (atWar(state, action.player, action.target))
         return { code: 'already_at_war', message: 'Already at war' };
-      return undefined;
+      return warBlock(state, action.player, action.target);
     },
     apply(draft, action, ctx, emit) {
       const key = warKey(action.player, action.target);
+      const surprise = isSurpriseWar(ctx, view(draft), action.player, action.target);
       draft.wars = [...draft.wars, key].sort();
       draft.warStarted[key] = draft.turn;
+      draft.diplomacy.lastWar[key] = draft.turn;
       draft.players[action.player]!.declaredWarTurn = draft.turn;
-      // A surprise war rallies the side that was declared on.
+      // A surprise war (no denouncement first) rallies the side that was declared on, and
+      // everyone remembers it.
       draft.warSupport[key] = {
         [action.player]: 0,
-        [action.target]: ctx.content.rules.combat.warSupport.surprise,
+        [action.target]: surprise ? ctx.content.rules.combat.warSupport.surprise : 0,
       };
+      if (surprise)
+        draft.diplomacy.incidents.push({
+          kind: 'surprise_war',
+          by: action.player,
+          against: action.target,
+          turn: draft.turn,
+        });
+      // Deals between them stop.
+      const d = draft.diplomacy;
+      const between = (a: string, b: string) =>
+        (a === action.player && b === action.target) ||
+        (a === action.target && b === action.player);
+      d.payments = d.payments.filter((p) => !between(p.from, p.to));
+      d.proposals = d.proposals.filter((p) => !between(p.from, p.to));
       emit({ type: 'war_declared', by: action.player, target: action.target, visibleTo: 'all' });
     },
   } satisfies ActionHandler<A<'declare_war'>>,
@@ -651,10 +681,10 @@ export const combatHandlers = {
         peaceProblem(ctx, state, action.player, action.target)
       );
     },
-    apply(draft, action, _ctx, emit) {
+    apply(draft, action, ctx, emit) {
       // If they already offered peace, offering back makes it.
       if (draft.peaceOffers.includes(`${action.target}>${action.player}`)) {
-        endWar(draft, action.player, action.target);
+        endWar(draft, ctx, action.player, action.target);
         emit({ type: 'peace_made', players: [action.player, action.target], visibleTo: 'all' });
         return;
       }
@@ -676,8 +706,8 @@ export const combatHandlers = {
         return { code: 'no_offer', message: 'They have not offered peace' };
       return undefined;
     },
-    apply(draft, action, _ctx, emit) {
-      endWar(draft, action.player, action.from);
+    apply(draft, action, ctx, emit) {
+      endWar(draft, ctx, action.player, action.from);
       emit({ type: 'peace_made', players: [action.from, action.player], visibleTo: 'all' });
     },
   } satisfies ActionHandler<A<'accept_peace'>>,

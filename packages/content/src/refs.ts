@@ -273,6 +273,9 @@ export function collectRefs(entity: AnyEntity): Ref[] {
     case 'leader':
       out.push({ path: ['civ'], kind: 'civ', id: entity.civ });
       effectList(out, entity.ability.effects, ['ability', 'effects']);
+      entity.agenda.rules.forEach((r, i) =>
+        ids(out, 'unitClass', r.unitClass, ['agenda', 'rules', i, 'unitClass']),
+      );
       break;
     case 'tech':
     case 'civic':
