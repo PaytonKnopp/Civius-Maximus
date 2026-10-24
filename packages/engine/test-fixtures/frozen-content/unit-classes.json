@@ -86,5 +86,13 @@
     "combat": true,
     "vsSettlement": 10,
     "wallsDamagePercent": 100
+  },
+  {
+    "type": "unitClass",
+    "id": "class_commander",
+    "name": "Commander",
+    "domain": "land",
+    "layer": "support",
+    "combat": false
   }
 ]

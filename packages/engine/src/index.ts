@@ -204,3 +204,10 @@ export {
   sameTeam,
   warBlock,
 } from './diplomacy/rules';
+export {
+  allUnitsOf,
+  type Command,
+  commandOf,
+  commandersAround,
+  packableUnits,
+} from './units/commanders';

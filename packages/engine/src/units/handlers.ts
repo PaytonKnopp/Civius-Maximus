@@ -130,6 +130,8 @@ export const unitHandlers = {
     validate(state, action, ctx) {
       const unit = ownedUnit(state, action.player, action.unit);
       if (isError(unit)) return unit;
+      if ((unit.recovering ?? 0) > state.turn)
+        return { code: 'recovering', message: `Recovering until turn ${unit.recovering}` };
       if (action.to >= state.map.tiles.length) return { code: 'bad_tile', message: 'No such tile' };
       if (action.to === unit.tile)
         return { code: 'already_there', message: 'The unit is already there' };
@@ -199,7 +201,8 @@ export function unitsNeedingOrders(state: GameState, player: PlayerId): string[]
 export function startTurnForUnits(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   for (const id of unitIds(draft)) {
     const u = draft.units[id]!;
-    u.moves = fullMoves(ctx, u);
+    // A commander recovering from a retreat stays put.
+    u.moves = (u.recovering ?? 0) > draft.turn ? 0 : fullMoves(ctx, u);
     u.skippedTurn = null;
   }
   const base = current(draft);

@@ -258,7 +258,12 @@ export const RulesDef = z.strictObject({
     amphibiousPenalty: z.int().min(0),
     /** Embarked units defend with at most this strength. */
     embarkedStrength: z.int().min(0),
-    xp: z.strictObject({ attack: z.int().min(0), defend: z.int().min(0) }),
+    /** XP per fight: for the attacker, the defender, and each commander with them in its radius. */
+    xp: z.strictObject({
+      attack: z.int().min(0),
+      defend: z.int().min(0),
+      commander: z.int().min(0),
+    }),
     /** HP a unit regains at the end of a turn it didn't act, by where it stands. */
     heal: z.strictObject({
       enemy: z.int().min(0),
@@ -484,6 +489,22 @@ export const UnitDef = z.strictObject({
   ignoresWounds: z.boolean().default(false),
   /** Yields its owner gets each time it destroys an enemy unit (e.g. gold). */
   killYields: YieldMap.default({}),
+  /**
+   * A commander (docs/03-core-mechanics.md, "Commanders"): packs nearby units to move them as
+   * one, gives units in its radius extra strength, and retreats instead of being captured.
+   */
+  commander: z
+    .strictObject({
+      /** Units it can carry packed. */
+      capacity: z.int().min(1),
+      /** Tiles around it where units get its bonuses. */
+      radius: z.int().min(0),
+      /** Strength for units in its radius. */
+      strength: z.int().min(0),
+      /** Turns out of action after a retreat. */
+      retreatTurns: z.int().min(1),
+    })
+    .optional(),
   ...unique,
   /** Short placeholder glyph until icons exist. */
   icon: z.string().min(1).max(3),
@@ -831,6 +852,18 @@ export const PromotionDef = z.strictObject({
   ignoresTerrainCost: z.boolean().default(false),
   /** Only ever given by an effect (a building, an ability), never chosen with XP. */
   granted: z.boolean().default(false),
+  /** Commanders: more capacity, radius, or bonuses for units in the radius. */
+  command: z
+    .strictObject({
+      capacity: z.int().min(0).default(0),
+      radius: z.int().min(0).default(0),
+      /** Strength for units in the radius when they attack / defend. */
+      attack: z.int().min(0).default(0),
+      defense: z.int().min(0).default(0),
+      /** Extra healing each turn for units in the radius. */
+      heal: z.int().min(0).default(0),
+    })
+    .optional(),
 });
 
 /** Something a player can do to earn a boost (a share of a tech's or civic's cost). */

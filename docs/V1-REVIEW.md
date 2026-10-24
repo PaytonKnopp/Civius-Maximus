@@ -52,6 +52,7 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
     vision), 10-turn peace treaty after every war, +2 influence a turn.
 33. **D62 AI rivals answer deals at once**, and the deal screen shows their answer beforehand.
 34. **D63 Opinion weights** (`rules.json` → `diplomacy.opinion`).
+35. **D64 Commanders:** carry 4, radius 1, +2 strength, 5 turns out after a retreat.
 28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
     expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 
@@ -90,6 +91,15 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
   10-turn peace treaty; a surprise war is remembered by everyone.
 - AIs make friends and alliances among themselves, denounce rivals, and denounce before they
   attack (diplomatic leaders). The top bar marks friends 🙂, allies 🤝 and offers ✉.
+
+### Part 4: commanders
+- **Army Commander** (after Military Tradition): select it and press **Pack** to load the
+  soldiers on and next to it (up to 4), move it, then **Unpack** to put them down around it,
+  ready to fight if the commander still has moves.
+- Soldiers within 1 tile get +2 strength; the commander earns XP from their fights and has its
+  own promotions (Assault, Bastion, Logistics, Field Medicine, Leadership).
+- Caught by an enemy, it falls back to your nearest settlement for 5 turns instead of dying.
+- The AI builds one once its army is big (or at war) and keeps it with its front line.
 
 ## Known issues
 

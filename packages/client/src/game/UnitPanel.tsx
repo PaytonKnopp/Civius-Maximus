@@ -2,16 +2,19 @@ import { resolveText } from '@cx/content';
 import {
   type Action,
   availablePromotions,
+  commandOf,
   type EngineContext,
   foundingProblem,
   type GameState,
   MP,
   nextPromotionXp,
+  packableUnits,
   type PlayerId,
   promotionsOf,
   type UnitState,
   unitClassOf,
   unitDef,
+  validateAction,
 } from '@cx/engine';
 import { useState } from 'react';
 import { type Colors, cssColor } from './model';
@@ -62,6 +65,19 @@ export function UnitPanel({
             ? 'Out of moves'
             : 'Ready';
   const found: Action = { type: 'found_settlement', player: viewer, unit: unit.id };
+  const command = commandOf(ctx, unit);
+  const recovering = (unit.recovering ?? 0) > state.turn;
+  const room = command ? command.capacity - (unit.cargo?.length ?? 0) : 0;
+  const packable = command ? packableUnits(ctx, state, unit).slice(0, Math.max(0, room)) : [];
+  const pack: Action | undefined =
+    packable.length > 0
+      ? { type: 'pack_units', player: viewer, commander: unit.id, units: packable }
+      : undefined;
+  const unpackAction: Action = { type: 'unpack_units', player: viewer, commander: unit.id };
+  const why = (a: Action | undefined) =>
+    a
+      ? validateAction(state, a, ctx)?.message
+      : 'No soldiers on or next to the commander can be packed';
   const foundBlocked =
     unit.moves <= 0
       ? 'No moves left this turn'
@@ -179,8 +195,55 @@ export function UnitPanel({
           </ul>
         </section>
       )}
+      {command && (
+        <section className="command" aria-label="Command">
+          <p className="hint">
+            Command radius {command.radius} · +{command.strength + command.attack} attacking, +
+            {command.strength + command.defense} defending
+            {command.heal > 0 ? ` · heals +${command.heal}` : ''} · carries{' '}
+            {unit.cargo?.length ?? 0}/{command.capacity}
+          </p>
+          {recovering && (
+            <p className="hint bad">Recovering from a retreat until turn {unit.recovering}.</p>
+          )}
+          {(unit.cargo?.length ?? 0) > 0 && (
+            <p className="hint">
+              Packed:{' '}
+              {unit.cargo!.map((u) => resolveText(ctx.content, unitDef(ctx, u).name)).join(', ')}
+            </p>
+          )}
+        </section>
+      )}
       {mine && (
         <div className="unit-actions">
+          {command && (
+            <>
+              <button
+                type="button"
+                disabled={!!why(pack)}
+                title={
+                  why(pack) ??
+                  'Pack the soldiers on and next to the commander: they travel inside it'
+                }
+                onClick={() => pack && act(pack)}
+              >
+                Pack {packable.length > 0 ? `(${packable.length})` : ''}
+              </button>
+              <button
+                type="button"
+                disabled={!!why(unpackAction)}
+                title={
+                  why(unpackAction) ??
+                  (unit.moves > 0
+                    ? 'Put the packed units around the commander, ready to act'
+                    : 'Put the packed units around the commander (they act next turn)')
+                }
+                onClick={() => act(unpackAction)}
+              >
+                Unpack
+              </button>
+            </>
+          )}
           {def.actions.includes('found_settlement') && (
             <button
               type="button"

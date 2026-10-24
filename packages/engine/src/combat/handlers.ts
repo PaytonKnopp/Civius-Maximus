@@ -25,6 +25,7 @@ import { nextRange } from '../rng';
 import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
 import { ownedUnit, watchers } from '../units/handlers';
 import { availablePromotions, nextPromotionXp } from '../units/promotions';
+import { commanderXp, commandersAround, commandOf, retreatCommander } from '../units/commanders';
 import { canTraverse, fullMoves, hasRoom, MP, unitsOn } from '../units/movement';
 import { checkVictory } from '../victory';
 import { clearCampsOn } from './camps';
@@ -172,6 +173,11 @@ function captureCivilians(
 ) {
   for (const u of unitsOn(current(draft), tile)) {
     if (u.owner === by || unitClassOf(ctx, u).combat) continue;
+    // Commanders fall back instead of being taken.
+    if (commandOf(ctx, u)) {
+      retreatCommander(draft, ctx, u.id, by, emit);
+      continue;
+    }
     // Raiders carry civilians off.
     if (by === HOSTILE) {
       killUnit(draft, ctx, u.id, by, emit);
@@ -467,6 +473,8 @@ export function performAttack(
     a.health = Math.max(0, a.health - taken);
     a.xp += combat.xp.attack;
     d.xp += combat.xp.defend;
+    commanderXp(draft, ctx, unit.owner, unit.tile);
+    commanderXp(draft, ctx, target.unit.owner, target.unit.tile);
     emit({
       type: 'combat',
       mode,
@@ -734,6 +742,10 @@ export function healUnits(draft: Draft<GameState>, ctx: EngineContext) {
     const u = draft.units[id]!;
     if (u.orders?.kind === 'fortify') u.orders.turns = Math.min(u.orders.turns + 1, 99);
     if (u.health >= maxHealth || u.moves < fullMoves(ctx, u)) continue;
+    const medic = commandersAround(ctx, view(draft), u.owner, u.tile).reduce(
+      (best, c) => Math.max(best, c.command.heal),
+      0,
+    );
     const t = draft.map.tiles[u.tile]!;
     const home = t.settlement ? draft.settlements[t.settlement] : undefined;
     const amount =
@@ -744,7 +756,7 @@ export function healUnits(draft: Draft<GameState>, ctx: EngineContext) {
           : t.owner !== null && atWar(draft, u.owner, t.owner)
             ? heal.enemy
             : heal.neutral;
-    u.health = Math.min(maxHealth, u.health + amount);
+    u.health = Math.min(maxHealth, u.health + amount + medic);
   }
 }
 

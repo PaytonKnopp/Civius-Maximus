@@ -292,6 +292,12 @@ last player standing wins. Puppets wait for the loyalty and settlement-limit wor
   (Assault, Logistics, Maneuver, Leadership, Bastion).
 - If a commander is defeated, it retreats to your nearest settlement and is out of action for a
   few turns rather than dying. Units packed inside are unpacked first.
+- **Built (V1 part 4):** the Army Commander (Military Tradition, 90 production): packs up to 4
+  soldiers on or next to it, radius 1, +2 strength in the radius, 2 XP per fight in its radius,
+  retreats for 5 turns when caught (packed units it can't put down are lost). Its tree: Assault /
+  Bastion (+2 attacking / defending), then Logistics (+2 capacity, +1 movement) / Field Medicine
+  (+10 healing), then Leadership (+1 radius). Unpacked units can act at once if the commander
+  still has moves. Fleet Commanders wait for a naval AI.
 
 ### Movement
 

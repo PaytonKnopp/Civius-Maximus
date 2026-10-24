@@ -200,7 +200,12 @@ function urgentBuild(t: Turn, s: SettlementState): BuildItem | undefined {
     const unit = bestUnit(t, units, nextRoles(t));
     if (unit) return unit;
   }
-  // 4. One explorer early on (and later, while we haven't met anyone).
+  // 4. A commander once there's an army worth leading.
+  const commander = units.find((i) => role(i) === 'commander');
+  const commanders = t.myUnits().filter((u) => unitRole(t.ctx, u) === 'commander').length;
+  const leads = army.have >= 5 && (t.civWars().length > 0 || t.me.aggression >= 6);
+  if (commander && commanders === 0 && leads && !queued(t, commander.id)) return commander;
+  // 5. One explorer early on (and later, while we haven't met anyone).
   const explorers = t.myUnits().filter((u) => unitRole(t.ctx, u) === 'explorer').length;
   const scout = units.find((i) => role(i) === 'explorer');
   const curious = t.state.turn <= 40 || (t.state.turn <= 150 && t.metRivals().length === 0);

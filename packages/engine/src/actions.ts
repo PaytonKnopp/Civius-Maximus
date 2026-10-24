@@ -138,6 +138,15 @@ export const Action = z.discriminatedUnion('type', [
     unit: UnitRef,
     promotion: ContentRef,
   }),
+  /** A commander packs soldiers on or next to it (they travel inside it). */
+  z.strictObject({
+    type: z.literal('pack_units'),
+    player: PlayerRef,
+    commander: UnitRef,
+    units: z.array(UnitRef).min(1).max(8),
+  }),
+  /** A commander puts its packed units back on the map around it. */
+  z.strictObject({ type: z.literal('unpack_units'), player: PlayerRef, commander: UnitRef }),
   /** After taking a settlement: keep it, raze it, or give it back to its founder. */
   z.strictObject({
     type: z.literal('capture_choice'),

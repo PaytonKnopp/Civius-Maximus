@@ -1,4 +1,4 @@
-import { unitDef } from '../context';
+import { unitClassOf, unitDef } from '../context';
 import { getBit } from '../bitset';
 import { attackTargets, previewAttack } from '../combat/strength';
 import { distance, tilesWithin } from '../map/hex';
@@ -37,6 +37,7 @@ export function manageUnits(t: Turn) {
     else if (role === 'explorer') explore(t, unit);
     else if (isSoldier(role)) soldier(t, unit, plan);
     else if (role === 'naval') hold(t, unit);
+    else if (role === 'commander') lead(t, unit, plan);
   }
   // Units that moved next to something worth hitting.
   attackPass(t, ['ranged', 'siege', 'naval', 'melee']);
@@ -250,6 +251,29 @@ function soldier(t: Turn, u: UnitState, plan: Plan) {
   hold(t, u);
 }
 
+/**
+ * Commanders ride with the army: onto the tile of the field soldier nearest the target (their
+ * radius then covers the front), or with a guard at home when there's no target.
+ */
+function lead(t: Turn, u: UnitState, plan: Plan) {
+  if ((u.recovering ?? 0) > t.state.turn) return;
+  const map = t.state.map;
+  const target = plan.target;
+  const soldiers = [...(target ? plan.field : plan.guard.keys())]
+    .map((id) => t.state.units[id])
+    .filter((x): x is UnitState => !!x && x.id !== u.id);
+  const goal = target?.tile ?? nearestOwnSettlement(t, u)?.tile;
+  if (goal === undefined || soldiers.length === 0) return hold(t, u);
+  const front = soldiers.sort(
+    (a, b) =>
+      distance(map, a.tile, goal) - distance(map, b.tile, goal) ||
+      Number(a.id.slice(1)) - Number(b.id.slice(1)),
+  )[0]!;
+  if (front.tile === u.tile) return hold(t, u);
+  if (goNear(t, u, front.tile, 0) || goNear(t, u, front.tile, 1)) return;
+  hold(t, u);
+}
+
 function campIsEmpty(t: Turn, tile: number): boolean {
   return !Object.values(t.state.units).some((x) => x.tile === tile);
 }
@@ -268,8 +292,9 @@ function idle(t: Turn, u: UnitState) {
 /** Stay put this turn: fortify if it can (it heals by not moving either way). */
 function hold(t: Turn, u: UnitState) {
   if (u.orders?.kind === 'fortify' || u.orders?.kind === 'sleep') return;
-  if (!t.act({ type: 'fortify_unit', player: t.player, unit: u.id }))
-    t.act({ type: 'skip_unit', player: t.player, unit: u.id });
+  if (unitClassOf(t.ctx, u).combat && t.act({ type: 'fortify_unit', player: t.player, unit: u.id }))
+    return;
+  t.act({ type: 'skip_unit', player: t.player, unit: u.id });
 }
 
 function nearestOwnSettlement(t: Turn, u: UnitState): SettlementState | undefined {

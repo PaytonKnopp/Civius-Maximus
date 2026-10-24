@@ -848,7 +848,9 @@ export function townUpgradeCost(ctx: EngineContext, state: GameState, player: Pl
 export function unitUpkeep(ctx: EngineContext, state: GameState, player: PlayerId): Fixed {
   let total = 0;
   for (const u of Object.values(state.units)) {
-    if (u.owner === player) total += toFixed(unitDef(ctx, u).upkeep);
+    if (u.owner !== player) continue;
+    total += toFixed(unitDef(ctx, u).upkeep);
+    for (const packed of u.cargo ?? []) total += toFixed(unitDef(ctx, packed).upkeep);
   }
   total = Math.max(0, total - toFixed(ctx.content.rules.units.freeUpkeep));
   const percent = playerPercent(ctx, state, player, 'modify_unit_upkeep');
