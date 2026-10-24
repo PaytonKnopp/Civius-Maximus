@@ -7,8 +7,10 @@ import {
   type GameEvent,
   type GameSetup,
   type GameState,
+  followersOf,
   militaryStrength,
   playAiTurn,
+  religionsOf,
   scoreOf,
   settlementsOf,
 } from '@cx/engine';
@@ -127,4 +129,13 @@ export function statusLine(ctx: EngineContext, state: GameState): string {
     return `${id} ${s.length}(${cities}c) pop${pop} t${p.techs.done.length} c${p.civics.done.length} army${militaryStrength(ctx, state, id)} score${scoreOf(ctx, state, id).total}`;
   });
   return `turn ${state.turn} wars ${state.wars.length} | ${parts.join(' | ')}`;
+}
+
+/** "Roman Faith (p1): 6 following" for each religion founded. */
+export function religionLine(state: GameState): string {
+  const parts = religionsOf(state).map(
+    (r) =>
+      `${r.name} (${r.founder}, turn ${r.founded}): ${followersOf(state, r.id).length} following`,
+  );
+  return `religions: ${parts.length ? parts.join(' | ') : 'none'}`;
 }

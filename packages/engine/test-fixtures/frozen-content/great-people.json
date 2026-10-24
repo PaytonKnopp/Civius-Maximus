@@ -29,7 +29,9 @@
     "name": "Great Prophet",
     "icon": "🙏",
     "baseCost": 50,
-    "costStep": 50
+    "costStep": 50,
+    "foundsReligion": true,
+    "faithRecruit": false
   },
   {
     "type": "greatPersonClass",
@@ -266,7 +268,23 @@
     "name": "Zoroaster",
     "class": "gp_prophet",
     "era": "era_ancient",
-    "description": "+150 faith. (Founding religions arrives with religion.)",
+    "description": "Founds a religion on a Holy Site, or +150 faith.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "faith": 150
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_laozi",
+    "name": "Laozi",
+    "class": "gp_prophet",
+    "era": "era_ancient",
+    "description": "Founds a religion on a Holy Site, or +150 faith.",
     "activate": [
       {
         "kind": "yields",
@@ -282,7 +300,7 @@
     "name": "Siddhartha",
     "class": "gp_prophet",
     "era": "era_classical",
-    "description": "+200 faith and +1 happiness in every settlement, for good.",
+    "description": "Founds a religion on a Holy Site, or +200 faith and +1 happiness in every settlement, for good.",
     "activate": [
       {
         "kind": "yields",
@@ -309,12 +327,75 @@
     "name": "Simon Peter",
     "class": "gp_prophet",
     "era": "era_classical",
-    "description": "+300 faith.",
+    "description": "Founds a religion on a Holy Site, or +300 faith.",
     "activate": [
       {
         "kind": "yields",
         "yields": {
           "faith": 300
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_mahavira",
+    "name": "Mahavira",
+    "class": "gp_prophet",
+    "era": "era_classical",
+    "description": "Founds a religion on a Holy Site, or +250 faith.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "faith": 250
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_bodhidharma",
+    "name": "Bodhidharma",
+    "class": "gp_prophet",
+    "era": "era_medieval",
+    "description": "Founds a religion on a Holy Site, or +300 faith.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "faith": 300
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_hildegard",
+    "name": "Hildegard of Bingen",
+    "class": "gp_prophet",
+    "era": "era_medieval",
+    "description": "Founds a religion on a Holy Site, or +250 faith and +2 science in every settlement with a Shrine or Temple, for good.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "faith": 250
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": ["building_shrine", "building_temple"]
         }
       }
     ]

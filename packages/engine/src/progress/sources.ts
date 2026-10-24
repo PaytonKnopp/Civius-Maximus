@@ -108,6 +108,12 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
     if (gp && gp.effects.length > 0)
       out.push({ id, label: resolveText(content, gp.name), effects: gp.effects });
   }
+  // Their pantheon and the founder belief of the religion they founded.
+  for (const id of p.beliefs ?? []) {
+    const b = content.entities.belief[id];
+    if (b && b.effects.length > 0)
+      out.push({ id, label: resolveText(content, b.name), effects: b.effects });
+  }
   const gov = content.entities.government[p.government];
   if (gov && gov.effects.length > 0)
     out.push({ id: gov.id, label: resolveText(content, gov.name), effects: gov.effects });
@@ -198,7 +204,27 @@ export function builtSources(
   return out;
 }
 
-/** Every source that applies to a player's tiles and settlements (plus one settlement's own). */
+/** Follower beliefs of the religion a settlement follows (whoever founded it). */
+export function religionSources(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+): EffectSource[] {
+  const r = s.religion === null ? undefined : state.religions[s.religion];
+  if (!r) return [];
+  const out: EffectSource[] = [];
+  for (const id of r.beliefs) {
+    const b = ctx.content.entities.belief[id];
+    if (b?.kind === 'follower' && b.effects.length > 0)
+      out.push({ id, label: resolveText(ctx.content, b.name), effects: b.effects });
+  }
+  return out;
+}
+
+/**
+ * Every source that applies to a player's tiles and settlements (plus one settlement's own,
+ * and its religion's follower beliefs).
+ */
 export function sourcesFor(
   ctx: EngineContext,
   state: GameState,
@@ -206,7 +232,9 @@ export function sourcesFor(
   settlement?: SettlementState,
 ): EffectSource[] {
   const base = [...activeSources(ctx, state.players[player]!), ...builtSources(ctx, state, player)];
-  return settlement ? [...base, ...localSources(ctx, settlement)] : base;
+  return settlement
+    ? [...base, ...localSources(ctx, settlement), ...religionSources(ctx, state, settlement)]
+    : base;
 }
 
 /** Effects of one type from a player's sources whose conditions hold (player-level context). */

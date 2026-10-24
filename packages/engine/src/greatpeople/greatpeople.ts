@@ -13,6 +13,7 @@ import { type Fixed, toFixed } from '../fixed';
 import { distance } from '../map/hex';
 import { advance, grantBoost } from '../progress/handlers';
 import { playerEffects } from '../progress/sources';
+import { maxReligions } from '../religion/rules';
 import { settlementAt } from '../combat/strength';
 import { itemKey } from '../settlements/rules';
 import { spawnUnit } from '../settlements/handlers';
@@ -37,13 +38,29 @@ function lineup(ctx: EngineContext, cls: string): GreatPersonDef[] {
     .map((x) => x.p);
 }
 
-/** The great person of a class anyone can earn next, if any are left. */
+/**
+ * The great person of a class anyone can earn next, if any are left. Prophets stop coming once
+ * every religion the game can have has been founded.
+ */
 export function nextGreatPerson(
   ctx: EngineContext,
   state: GameState,
   cls: string,
 ): GreatPersonDef | undefined {
+  if (
+    ctx.content.entities.greatPersonClass[cls]?.foundsReligion &&
+    Object.keys(state.religions).length >= maxReligions(ctx, state)
+  )
+    return undefined;
   return lineup(ctx, cls).find((p) => !state.greatPeople.claimed[p.id]);
+}
+
+/** Whether a player is still racing for a class: whoever founded a religion is out of the prophets'. */
+export function inRace(ctx: EngineContext, state: GameState, player: PlayerId, cls: string) {
+  return !(
+    ctx.content.entities.greatPersonClass[cls]?.foundsReligion &&
+    state.players[player]!.religion !== null
+  );
 }
 
 /** Points the next great person of a class costs. */
@@ -72,15 +89,26 @@ export function greatPersonRates(
 export const pointsOf = (state: GameState, player: PlayerId, cls: string) =>
   state.greatPeople.points[player]?.[cls] ?? 0;
 
-/** Gold to buy the next great person of a class now (for the points still missing). */
+export type Currency = 'gold' | 'faith';
+
+/** Whether a class can be recruited with this currency. */
+export function canRecruitWith(ctx: EngineContext, cls: string, currency: Currency): boolean {
+  if (currency === 'gold') return true;
+  const def = ctx.content.entities.greatPersonClass[cls];
+  return !!def?.faithRecruit && ctx.content.rules.greatPeople.faithPerPoint > 0;
+}
+
+/** Gold (or faith) to buy the next great person of a class now (for the points still missing). */
 export function recruitCost(
   ctx: EngineContext,
   state: GameState,
   player: PlayerId,
   cls: string,
+  currency: Currency = 'gold',
 ): Fixed {
   const missing = Math.max(0, greatPersonCost(ctx, state, cls) - pointsOf(state, player, cls));
-  return toFixed(missing * ctx.content.rules.greatPeople.goldPerPoint);
+  const rules = ctx.content.rules.greatPeople;
+  return toFixed(missing * (currency === 'faith' ? rules.faithPerPoint : rules.goldPerPoint));
 }
 
 /** Gives the next great person of a class to a player: spent points, and a unit at the capital. */
@@ -136,14 +164,21 @@ export const greatPeopleHandlers = {
         return { code: 'unknown', message: 'No such kind of great person' };
       if (!nextGreatPerson(ctx, state, action.class))
         return { code: 'none_left', message: 'None of those are left' };
-      const cost = recruitCost(ctx, state, action.player, action.class);
-      if (state.players[action.player]!.gold < cost)
-        return { code: 'no_gold', message: `Needs ${Math.ceil(cost / 100)} gold` };
+      if (!inRace(ctx, state, action.player, action.class))
+        return { code: 'out_of_race', message: 'You already founded a religion' };
+      if (!canRecruitWith(ctx, action.class, action.currency))
+        return { code: 'no_faith_recruit', message: "Those can't be recruited with faith" };
+      const cost = recruitCost(ctx, state, action.player, action.class, action.currency);
+      if (state.players[action.player]![action.currency] < cost)
+        return {
+          code: action.currency === 'gold' ? 'no_gold' : 'no_faith',
+          message: `Needs ${Math.ceil(cost / 100)} ${action.currency}`,
+        };
       return undefined;
     },
     apply(draft, action, ctx, emit) {
-      const cost = recruitCost(ctx, view(draft), action.player, action.class);
-      draft.players[action.player]!.gold -= cost;
+      const cost = recruitCost(ctx, view(draft), action.player, action.class, action.currency);
+      draft.players[action.player]![action.currency] -= cost;
       const points = (draft.greatPeople.points[action.player] ??= {});
       points[action.class] = greatPersonCost(ctx, view(draft), action.class);
       claim(draft, ctx, action.player, action.class, emit);
@@ -208,9 +243,12 @@ export const greatPeopleHandlers = {
 export function greatPeopleTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   for (const id of draft.playerOrder) {
     if (!draft.players[id]!.alive) continue;
-    const rates = greatPersonRates(ctx, view(draft), id);
+    const snap = view(draft);
+    const rates = greatPersonRates(ctx, snap, id);
     const points = (draft.greatPeople.points[id] ??= {});
-    for (const cls of Object.keys(rates).sort()) points[cls] = (points[cls] ?? 0) + rates[cls]!;
+    for (const cls of Object.keys(rates).sort()) {
+      if (inRace(ctx, snap, id, cls)) points[cls] = (points[cls] ?? 0) + rates[cls]!;
+    }
   }
   for (const cls of ctx.content.ids.greatPersonClass) {
     const snap = view(draft);
@@ -218,7 +256,7 @@ export function greatPeopleTurn(draft: Draft<GameState>, ctx: EngineContext, emi
     const cost = greatPersonCost(ctx, snap, cls);
     let winner: { id: PlayerId; points: number } | undefined;
     for (const id of snap.playerOrder) {
-      if (!snap.players[id]!.alive) continue;
+      if (!snap.players[id]!.alive || !inRace(ctx, snap, id, cls)) continue;
       const pts = pointsOf(snap, id, cls);
       if (pts >= cost && (!winner || pts > winner.points)) winner = { id, points: pts };
     }

@@ -128,6 +128,9 @@ export function effectRefs(out: Refs, e: Effect, path: PathSegment[]) {
     case 'great_person_points_percent':
       ids(out, 'greatPersonClass', e.params.class, [...at, 'class']);
       break;
+    case 'yield_per_follower':
+      out.push({ path: [...at, 'yield'], kind: 'yield', id: e.params.yield });
+      break;
     case 'free_building':
       ids(out, 'building', e.params.building, [...at, 'building']);
       break;
@@ -311,6 +314,9 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'greatPersonClass':
       break;
+    case 'belief':
+      effectList(out, entity.effects, ['effects']);
+      break;
     case 'greatPerson':
       ids(out, 'greatPersonClass', entity.class, ['class']);
       ids(out, 'era', entity.era, ['era']);
@@ -337,6 +343,11 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       }
       ids(out, 'unit', entity.units.startingUnits, ['units', 'startingUnits']);
       out.push({ path: ['greatPeople', 'unit'], kind: 'unit', id: entity.greatPeople.unit });
+      out.push({
+        path: ['religion', 'holyDistrict'],
+        kind: 'district',
+        id: entity.religion.holyDistrict,
+      });
       out.push({
         path: ['settlements', 'capitalBuilding'],
         kind: 'building',

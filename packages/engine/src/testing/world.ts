@@ -77,6 +77,8 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     gold: 0,
     influence: 0,
     greatPeople: [],
+    beliefs: [],
+    religion: null,
     faith: 0,
     capital: null,
     settlementsFounded: 0,
@@ -118,6 +120,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     roads: encodeBits(emptyBits(tiles.length)),
     routes: [],
     greatPeople: { points: {}, claimed: {} },
+    religions: {},
   };
 }
 

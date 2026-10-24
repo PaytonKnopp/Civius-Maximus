@@ -159,19 +159,21 @@ because each one is unique.
 
 ### Built so far (V1 part 6)
 
-- Seven classes (Scientist, Engineer, Merchant, Prophet, General, Writer, Admiral), 22 named
+- Seven classes (Scientist, Engineer, Merchant, Prophet, General, Writer, Admiral), 26 named
   people from the Ancient to the Medieval era, in `great-people.json`. Points come from
   districts (+1) and their buildings (+1 or +2); each class's next person costs 50–60 points,
   rising by the same each time one is earned. The first player to the cost earns them (most
   points wins ties) and they appear at the capital.
-- **Recruit:** buy the next one now for 3 gold per missing point (the Great People screen,
-  P).
+- **Recruit** (patronage): buy the next one now for 3 gold, or 3 faith, per missing point (the
+  Great People screen, P). Prophets can't be bought with faith (a class's `faithRecruit`), so
+  faith can't be turned into more faith.
 - **Activate** in one of your settlements: yields at once (science and culture toward your
   current tech and civic, production toward the settlement's build), boosts, or inspiring
   nearby soldiers; some also give a lasting effect (Hypatia: +1 science in Library
   settlements; Marco Polo: +1 trade route...).
-- Elizabeth's +100% great admiral points works. Not yet: great works and tourism, patronage
-  with faith, founding religions with prophets (part 7).
+- Great Prophets found religions (see "Religion"). Whoever has founded one is out of the
+  prophet race, and prophets stop coming once every religion the game can have exists.
+- Elizabeth's +100% great admiral points works. Not yet: great works and tourism.
 
 ---
 
@@ -193,6 +195,34 @@ because each one is unique.
   units can still **condemn** each other with an Inquisitor (D9).
 - **Religious victory:** your religion is the majority in more than half the cities of every
   other civ.
+
+### Built so far (V1 part 7)
+
+- **Pantheons:** 11 pantheon beliefs (`beliefs.json`); 25 faith takes one, each only once in a
+  game. Its effects apply to the player like a policy's.
+- **Founding:** a Great Prophet in your settlement with a Holy Site founds a religion: you name
+  it and pick a **founder belief** (yields in the holy city for each settlement following it,
+  e.g. Tithe: +2 gold per follower) and a **follower belief** (applies in every settlement
+  that follows it, whoever owns it, e.g. Almsgiving). At most players ÷ 2 + 1 religions; one
+  per player; each belief once. The settlement becomes the holy city and follows it at once.
+  Worship and enhancer beliefs come later.
+- **Spread by pressure:** a settlement follows one religion (or none), not a mix of citizens.
+  Every turn each settlement gets pressure from each settlement within 8 tiles following a
+  religion (+2, itself included), from a holy city (+4, even after the holy city loses it) and
+  from both ends of its trade routes (+3); built-up pressure falls by 10% a turn, so it settles
+  where its sources keep it. A settlement follows the religion with the most pressure once that
+  reaches 40.
+- **Missionaries:** bought for 100 faith in a settlement following a religion (or in your own
+  holy city), they spread that religion: on or next to a settlement, **Preach** adds 60
+  pressure (3 times, once a turn). Apostles, inquisitors and theological combat aren't built
+  (D9's toggle stays off).
+- **Religious victory** (a new-game option, on by default): checked every turn.
+- The AI takes the pantheon that suits its land, builds a Holy Site while a religion can still
+  be founded, founds one with its prophet, and buys a few missionaries to preach where they'd
+  convert.
+- The Religion screen (R, or the 🙏 chip): pantheon choice, your religion, the founding form,
+  every religion with its followers and victory progress. Settlements show what they follow
+  and the pressure on them (hover).
 
 ---
 

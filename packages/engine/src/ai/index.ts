@@ -4,6 +4,7 @@ import { manageCaptures, manageProduction, manageTowns, strikeFromSettlements } 
 import { manageDiplomacy } from './diplomacy';
 import { manageProgress, recruitGreatPeople } from './economy';
 import { manageUnits } from './military';
+import { manageReligion } from './religion';
 import { type Act, Turn } from './turn';
 import { manageWar } from './war';
 
@@ -31,6 +32,7 @@ export function playAiTurn(
   manageDiplomacy(t);
   manageWar(t);
   manageProgress(t);
+  manageReligion(t);
   strikeFromSettlements(t);
   manageUnits(t);
   manageTowns(t);

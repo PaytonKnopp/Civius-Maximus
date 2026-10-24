@@ -49,6 +49,24 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
       }
     | { type: 'great_person_born'; person: string; player: PlayerId }
     | { type: 'great_person_activated'; person: string; player: PlayerId; settlement: SettlementId }
+    | { type: 'pantheon_founded'; player: PlayerId; belief: string }
+    | { type: 'religion_founded'; religion: string; player: PlayerId; settlement: SettlementId }
+    /** A missionary preached in a settlement (it may convert too: `settlement_converted`). */
+    | {
+        type: 'religion_preached';
+        unit: UnitId;
+        owner: PlayerId;
+        settlement: SettlementId;
+        religion: string;
+      }
+    /** A settlement now follows `religion` (null: none). */
+    | {
+        type: 'settlement_converted';
+        settlement: SettlementId;
+        owner: PlayerId;
+        religion: string | null;
+        from: string | null;
+      }
     /** A commander caught by enemies fell back to a settlement until turn `until`. */
     | {
         type: 'commander_retreated';
@@ -63,7 +81,7 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
     | { type: 'turn_started'; turn: number }
     | {
         type: 'game_ended';
-        reason: 'score' | 'conquest' | 'domination';
+        reason: 'score' | 'conquest' | 'domination' | 'religion';
         winner: PlayerId | null;
       }
     /** `path` starts at the tile the unit left. */

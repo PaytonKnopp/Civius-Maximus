@@ -14,7 +14,10 @@ export interface GameState {
   settings: GameSettings;
   status: 'playing' | 'ended';
   /** How the game ended, once it has. */
-  result: { reason: 'score' | 'conquest' | 'domination'; winner: PlayerId | null } | null;
+  result: {
+    reason: 'score' | 'conquest' | 'domination' | 'religion';
+    winner: PlayerId | null;
+  } | null;
   /** Starts at 1. */
   turn: number;
   rng: RngState;
@@ -44,6 +47,8 @@ export interface GameState {
   roads: string;
   /** Trade routes running now. */
   routes: TradeRoute[];
+  /** Religions founded so far, by id. */
+  religions: Record<string, Religion>;
   /** The great people race (docs/04-advanced-systems.md, "Great people"). */
   greatPeople: {
     /** Points per player, per great person class. */
@@ -51,6 +56,17 @@ export interface GameState {
     /** Great people already earned (or bought), and by whom. */
     claimed: Record<string, PlayerId>;
   };
+}
+
+/** A religion (docs/04-advanced-systems.md, "Religion"). */
+export interface Religion {
+  id: string;
+  name: string;
+  founder: PlayerId;
+  holyCity: SettlementId;
+  /** Its founder and follower `belief` ids. */
+  beliefs: string[];
+  founded: number;
 }
 
 /** A trader on its route: it's off the map until the route ends and it comes home. */
@@ -213,6 +229,10 @@ export interface SettlementState {
   captureChoice: boolean;
   /** Soldiers trained here (some abilities count them). */
   unitsTrained: number;
+  /** The religion most of its people follow, if any. */
+  religion: string | null;
+  /** Religious pressure built up toward each religion (it converts at `convertAt`). */
+  pressure: Record<string, number>;
 }
 
 export type UnitId = string;
@@ -242,6 +262,9 @@ export interface UnitState {
   promotions: string[];
   /** A great person: which one (a `greatPerson` content id). */
   person?: string;
+  /** Missionaries: the religion they spread, and how many more times they can. */
+  religion?: string;
+  charges?: number;
   /** Commanders: the units packed inside (off the map until unpacked). */
   cargo?: UnitState[];
   /** Commanders: out of action after a retreat until this turn. */
@@ -257,6 +280,8 @@ export interface GameSettings {
   camps?: boolean | undefined;
   /** Domination victory (on unless false). */
   domination?: boolean | undefined;
+  /** Religious victory (on unless false). */
+  religion?: boolean | undefined;
 }
 
 export interface PlayerState {
@@ -285,6 +310,10 @@ export interface PlayerState {
   influence: number;
   /** Great people this player has activated (their lasting effects apply). */
   greatPeople: string[];
+  /** Their pantheon and founder `belief` ids (their effects apply to this player). */
+  beliefs: string[];
+  /** The religion they founded, if any. */
+  religion: string | null;
   /** Faith stored, in hundredths (spent from M13). */
   faith: number;
   capital: SettlementId | null;

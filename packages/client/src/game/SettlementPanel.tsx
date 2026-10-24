@@ -11,7 +11,9 @@ import {
   formatFixed,
   type GameState,
   happinessOf,
+  holyCityOf,
   improvementsFor,
+  incomingPressure,
   itemCost,
   itemKey,
   canBuyWithFaith,
@@ -111,6 +113,20 @@ export function SettlementPanel({
   const mine = s.owner === viewer;
   const sum = settlementSummary(ctx, state, s);
   const happiness = happinessOf(ctx, state, s);
+  const holyOf = holyCityOf(state, s.id);
+  const incoming = incomingPressure(ctx, state, s);
+  const religionTip = [
+    `Religious pressure (a settlement follows the strongest once it reaches ${content.rules.religion.convertAt})`,
+    ...[...new Set([...Object.keys(s.pressure), ...Object.keys(incoming)])]
+      .sort()
+      .map(
+        (r) =>
+          `${state.religions[r]?.name ?? r}: ${s.pressure[r] ?? 0} (+${incoming[r] ?? 0} a turn, less ${content.rules.religion.pressureDecayPercent}%)`,
+      ),
+  ].join('\n');
+  const faithUnits = content.ids.unit
+    .map((u) => content.entities.unit[u]!)
+    .filter((u) => u.faithCost > 0);
   const icon = (y: string) => content.entities.yield[y]?.icon ?? '';
   const name = (y: string) => resolveText(content, content.entities.yield[y]?.name ?? y);
   const production = sum.yields.total.production ?? 0;
@@ -219,6 +235,13 @@ export function SettlementPanel({
             🧱 {s.walls}/{fullWalls}
           </span>
         )}
+      </p>
+      <p className="religion-line" title={religionTip}>
+        <span aria-hidden="true">{icon('faith')}</span>{' '}
+        {s.religion
+          ? `Follows ${state.religions[s.religion]?.name ?? 'a religion'}`
+          : 'No religion'}
+        {holyOf && ` · holy city of ${state.religions[holyOf]!.name}`}
       </p>
       {mine && (strikeCount > 0 || striking) && (
         <button
@@ -504,6 +527,34 @@ export function SettlementPanel({
               </div>
             );
           })}
+          {faithUnits.length > 0 && (
+            <div className="item-group">
+              <h5>With faith</h5>
+              <ul className="items">
+                {faithUnits.map((u) => {
+                  const buy: Action = {
+                    type: 'buy_faith_unit',
+                    player: viewer,
+                    settlement: id,
+                    unit: u.id,
+                  };
+                  return (
+                    <li key={u.id}>
+                      <span className="item-name">{resolveText(content, u.name)}</span>
+                      <button
+                        type="button"
+                        disabled={!can(buy)}
+                        title={why(buy) ?? `Buy now for ${u.faithCost} faith`}
+                        onClick={() => act(buy)}
+                      >
+                        🙏 {u.faithCost}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </section>
       )}
 

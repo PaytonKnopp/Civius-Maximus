@@ -94,6 +94,7 @@ export type {
   Payment,
   Proposal,
   TradeRoute,
+  Religion,
   CitizenFocus,
   GameSettings,
   GameState,
@@ -227,9 +228,28 @@ export {
 } from './trade/rules';
 export {
   activateProblem,
+  canRecruitWith,
+  type Currency,
   greatPersonCost,
   greatPersonRates,
+  inRace,
   nextGreatPerson,
   pointsOf,
   recruitCost,
 } from './greatpeople/greatpeople';
+export {
+  faithUnitProblem,
+  faithUnitReligion,
+  followerBeliefs,
+  followersOf,
+  freeBeliefs,
+  holyCityOf,
+  incomingPressure,
+  maxReligions,
+  pantheonOf,
+  pantheonProblem,
+  religionFoundingProblem,
+  religionsOf,
+  religiousProgress,
+  spreadProblem,
+} from './religion/rules';

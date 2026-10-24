@@ -4,6 +4,7 @@ import {
   activateProblem,
   availablePromotions,
   commandOf,
+  distance,
   type EngineContext,
   foundingProblem,
   type GameState,
@@ -11,6 +12,7 @@ import {
   nextPromotionXp,
   packableUnits,
   type PlayerId,
+  religionFoundingProblem,
   routesOf,
   tradeCapacity,
   tradeDestinations,
@@ -38,6 +40,8 @@ interface Props {
   targets: number;
   act: (action: Action) => boolean;
   onSkip: () => void;
+  /** Opens the religion screen to found a religion with this great prophet. */
+  onFoundReligion: () => void;
 }
 
 export function UnitPanel({
@@ -50,6 +54,7 @@ export function UnitPanel({
   targets,
   act,
   onSkip,
+  onFoundReligion,
 }: Props) {
   const [confirmDisband, setConfirmDisband] = useState(false);
   const def = unitDef(ctx, unit);
@@ -73,6 +78,16 @@ export function UnitPanel({
   const command = commandOf(ctx, unit);
   const person = unit.person ? ctx.content.entities.greatPerson[unit.person] : undefined;
   const activateBlocked = person ? activateProblem(state, unit.id, viewer) : undefined;
+  const prophet = !!person && !!ctx.content.entities.greatPersonClass[person.class]?.foundsReligion;
+  const religionBlocked = prophet
+    ? religionFoundingProblem(ctx, state, viewer, unit.id)
+    : undefined;
+  const religion = unit.religion ? state.religions[unit.religion] : undefined;
+  const preachIn = religion
+    ? Object.values(state.settlements)
+        .filter((s) => distance(state.map, unit.tile, s.tile) <= 1)
+        .sort((a, b) => (a.id < b.id ? -1 : 1))
+    : [];
   const recovering = (unit.recovering ?? 0) > state.turn;
   const room = command ? command.capacity - (unit.cargo?.length ?? 0) : 0;
   const packable = command ? packableUnits(ctx, state, unit).slice(0, Math.max(0, room)) : [];
@@ -237,6 +252,48 @@ export function UnitPanel({
             >
               Activate
             </button>
+          )}
+          {mine && prophet && (
+            <button
+              type="button"
+              disabled={!!religionBlocked}
+              title={religionBlocked?.message ?? 'Name a religion and pick its beliefs'}
+              onClick={onFoundReligion}
+            >
+              Found a religion
+            </button>
+          )}
+        </section>
+      )}
+      {religion && (
+        <section className="great-person" aria-label="Missionary">
+          <p>
+            Spreads <strong>{religion.name}</strong>: {unit.charges ?? 0} more times. Preach on or
+            next to a settlement to win it over.
+          </p>
+          {mine &&
+            preachIn.map((s) => {
+              const action: Action = {
+                type: 'spread_religion',
+                player: viewer,
+                unit: unit.id,
+                settlement: s.id,
+              };
+              const blocked = validateAction(state, action, ctx);
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  disabled={!!blocked}
+                  title={blocked?.message}
+                  onClick={() => act(action)}
+                >
+                  Preach in {s.name}
+                </button>
+              );
+            })}
+          {mine && preachIn.length === 0 && (
+            <p className="hint">Walk next to a settlement that doesn&apos;t follow it yet.</p>
           )}
         </section>
       )}

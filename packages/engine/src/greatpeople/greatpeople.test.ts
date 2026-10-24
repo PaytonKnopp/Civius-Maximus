@@ -54,7 +54,12 @@ describe('great people', () => {
     });
     const cost = recruitCost(ctx, s, 'p1', 'gp_scientist');
     expect(cost).toBe((greatPersonCost(ctx, s, 'gp_scientist') - 20) * 300);
-    s = act(s, { type: 'recruit_great_person', player: 'p1', class: 'gp_scientist' }).state;
+    s = act(s, {
+      type: 'recruit_great_person',
+      player: 'p1',
+      class: 'gp_scientist',
+      currency: 'gold',
+    }).state;
     expect(s.players.p1!.gold).toBe(100_000 - cost);
     expect(person(s)!.person).toBe('gp_euclid');
   });
@@ -70,7 +75,12 @@ describe('great people', () => {
       d.greatPeople.claimed.gp_aryabhata = 'p2';
       d.settlements[capital]!.buildings.push('building_library');
     });
-    s = act(s, { type: 'recruit_great_person', player: 'p1', class: 'gp_scientist' }).state;
+    s = act(s, {
+      type: 'recruit_great_person',
+      player: 'p1',
+      class: 'gp_scientist',
+      currency: 'gold',
+    }).state;
     const hypatia = person(s)!;
     expect(hypatia.person).toBe('gp_hypatia');
     // Not outside a settlement.
@@ -98,7 +108,12 @@ describe('great people', () => {
     );
     const near = addUnit(s, 'p1', 'unit_warrior', at(s, 3, 3));
     const far = addUnit(s, 'p1', 'unit_warrior', at(s, 8, 0));
-    s = act(s, { type: 'recruit_great_person', player: 'p1', class: 'gp_general' }).state;
+    s = act(s, {
+      type: 'recruit_great_person',
+      player: 'p1',
+      class: 'gp_general',
+      currency: 'gold',
+    }).state;
     const sunTzu = person(s)!;
     s = act(s, { type: 'activate_great_person', player: 'p1', unit: sunTzu.id }).state;
     expect(s.units[near.id]!.promotions).toContain('promo_inspired');

@@ -22,6 +22,7 @@ import {
   nodeCost,
   playerEra,
   type PlayerId,
+  pantheonOf,
   policySlots,
   previewAttack,
   previewStrike,
@@ -60,6 +61,7 @@ import {
   perTurn,
   placementChoices,
   playerColors,
+  religionNameOf,
   settlementViews,
   showTurns,
   territoryView,
@@ -69,6 +71,7 @@ import {
 } from './model';
 import { GovernmentScreen } from './GovernmentScreen';
 import { GreatPeopleScreen } from './GreatPeopleScreen';
+import { ReligionScreen } from './ReligionScreen';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -199,6 +202,27 @@ function noticeFor(
     }
     case 'great_person_activated':
       return undefined;
+    case 'pantheon_founded': {
+      const b = resolveText(content, content.entities.belief[e.belief]?.name ?? e.belief);
+      return e.player === ME
+        ? `Your people now follow the pantheon ${b}`
+        : `${civName(content, state, e.player)} took the pantheon ${b}`;
+    }
+    case 'religion_founded': {
+      const r = state.religions[e.religion]?.name ?? 'A religion';
+      return e.player === ME
+        ? `You founded ${r}! ${name(e.settlement)} is its holy city`
+        : `${civName(content, state, e.player)} founded ${r}`;
+    }
+    case 'settlement_converted': {
+      const r = e.religion ? (state.religions[e.religion]?.name ?? 'a religion') : 'no religion';
+      if (e.owner === ME) return `${name(e.settlement)} now follows ${r}`;
+      return e.religion && state.religions[e.religion]?.founder === ME
+        ? `${name(e.settlement)} (${civName(content, state, e.owner)}) converted to ${r}`
+        : undefined;
+    }
+    case 'religion_preached':
+      return undefined;
     case 'commander_retreated':
       return e.owner === ME
         ? `Your commander fell back to a settlement (back in action on turn ${e.until})`
@@ -327,7 +351,11 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
   const [notices, setNotices] = useState<{ id: number; text: string }[]>([]);
   const [fps, setFps] = useState(0);
   const [overlay, setOverlay] = useState<
-    { kind: 'tree'; tree: TreeKind } | { kind: 'government' } | { kind: 'greatPeople' } | null
+    | { kind: 'tree'; tree: TreeKind }
+    | { kind: 'government' }
+    | { kind: 'greatPeople' }
+    | { kind: 'religion'; prophet?: string }
+    | null
   >(null);
   const [policiesSeenBy, setPoliciesSeenBy] = useState<Record<PlayerId, number>>({});
   const policiesSeen = policiesSeenBy[viewer] ?? 0;
@@ -926,6 +954,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
       else if (e.key === 'c') setOverlay({ kind: 'tree', tree: 'civic' });
       else if (e.key === 'g') openGovernment();
       else if (e.key === 'p') setOverlay({ kind: 'greatPeople' });
+      else if (e.key === 'r') setOverlay({ kind: 'religion' });
       else if (e.key === 'Escape') {
         if (placing) setPlacing(null);
         else if (striking) setStriking(false);
@@ -1099,6 +1128,22 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
         </button>
         <button
           type="button"
+          className="progress-chip"
+          onClick={() => setOverlay({ kind: 'religion' })}
+          title="Religion (R)"
+        >
+          <span aria-hidden="true">{icon('faith')}</span>
+          <span className="chip-name">
+            {me.religion
+              ? (state.religions[me.religion]?.name ?? 'Religion')
+              : pantheonOf(ctx, state, viewer)
+                ? 'Religion'
+                : 'Pantheon'}
+          </span>
+          <span className="chip-turns mono">{whole(me.faith)}</span>
+        </button>
+        <button
+          type="button"
           className="progress-chip government"
           onClick={openGovernment}
           title="Government and policies (G)"
@@ -1149,6 +1194,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
             return true;
           }}
           onSkip={() => skip(unit.id)}
+          onFoundReligion={() => setOverlay({ kind: 'religion', prophet: unit.id })}
         />
       )}
 
@@ -1234,6 +1280,20 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
           onClose={() => setOverlay(null)}
         />
       )}
+      {overlay?.kind === 'religion' && (
+        <ReligionScreen
+          ctx={ctx}
+          state={state}
+          viewer={viewer}
+          act={(a) => {
+            const ok = act(a);
+            if (ok && a.type === 'found_religion') setOverlay({ kind: 'religion' });
+            return ok;
+          }}
+          prophet={overlay.prophet}
+          onClose={() => setOverlay(null)}
+        />
+      )}
       {overlay?.kind === 'government' && (
         <GovernmentScreen
           ctx={ctx}
@@ -1298,9 +1358,11 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
               ? 'Your last settlement has fallen. Your civilization is no more.'
               : state.result?.reason === 'domination'
                 ? 'A domination victory: every rival original capital is held.'
-                : state.result?.reason === 'conquest'
-                  ? 'A conquest victory: the last civilization standing.'
-                  : 'A score victory: the highest score at the turn limit.'
+                : state.result?.reason === 'religion'
+                  ? `A religious victory: ${religionNameOf(state, state.result.winner ?? null)} is followed in most settlements of every other civilization.`
+                  : state.result?.reason === 'conquest'
+                    ? 'A conquest victory: the last civilization standing.'
+                    : 'A score victory: the highest score at the turn limit.'
           }
           scores={state.playerOrder
             .map((p) => ({

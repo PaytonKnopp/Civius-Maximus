@@ -72,6 +72,19 @@
   },
   {
     "type": "unit",
+    "id": "unit_missionary",
+    "name": "Missionary",
+    "class": "class_civilian",
+    "movement": 3,
+    "sight": 2,
+    "cost": 0,
+    "faithCost": 100,
+    "upkeep": 0,
+    "icon": "Mi",
+    "model": "settler"
+  },
+  {
+    "type": "unit",
     "id": "unit_warrior",
     "name": "Warrior",
     "class": "class_melee",

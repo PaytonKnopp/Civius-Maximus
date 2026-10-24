@@ -1,10 +1,13 @@
 import { resolveText } from '@cx/content';
 import {
   type Action,
+  canRecruitWith,
+  type Currency,
   type EngineContext,
   type GameState,
   greatPersonCost,
   greatPersonRates,
+  inRace,
   nextGreatPerson,
   type PlayerId,
   pointsOf,
@@ -40,7 +43,7 @@ export function GreatPeopleScreen({ ctx, state, viewer, act, onClose }: Props) {
         <h2>Great People</h2>
         <p className="screen-sub">
           Districts and buildings earn points toward each kind. The first to reach the next one's
-          cost earns them; or buy them now for the points you're missing.
+          cost earns them; or buy them now, with gold or faith, for the points you're missing.
         </p>
         <button type="button" className="close" onClick={onClose} aria-label="Close">
           ✕
@@ -57,8 +60,14 @@ export function GreatPeopleScreen({ ctx, state, viewer, act, onClose }: Props) {
             .map((p) => ({ p, points: pointsOf(state, p, cls) }))
             .sort((a, b) => b.points - a.points);
           const leader = rivals[0];
-          const recruit: Action = { type: 'recruit_great_person', player: viewer, class: cls };
-          const why = validateAction(state, recruit, ctx)?.message;
+          const recruit = (currency: Currency): Action => ({
+            type: 'recruit_great_person',
+            player: viewer,
+            class: cls,
+            currency,
+          });
+          const why = (currency: Currency) =>
+            validateAction(state, recruit(currency), ctx)?.message;
           return (
             <section className="gp-card" key={cls}>
               <h3>
@@ -80,9 +89,29 @@ export function GreatPeopleScreen({ ctx, state, viewer, act, onClose }: Props) {
                       ? ` · ${civName(content, state, leader.p)} ${leader.points}`
                       : ''}
                   </p>
-                  <button type="button" disabled={!!why} title={why} onClick={() => act(recruit)}>
-                    Recruit for 💰 {whole(recruitCost(ctx, state, viewer, cls))}
-                  </button>
+                  <div className="row-inline">
+                    <button
+                      type="button"
+                      disabled={!!why('gold')}
+                      title={why('gold')}
+                      onClick={() => act(recruit('gold'))}
+                    >
+                      Recruit for 💰 {whole(recruitCost(ctx, state, viewer, cls))}
+                    </button>
+                    {canRecruitWith(ctx, cls, 'faith') && (
+                      <button
+                        type="button"
+                        disabled={!!why('faith')}
+                        title={why('faith')}
+                        onClick={() => act(recruit('faith'))}
+                      >
+                        🙏 {whole(recruitCost(ctx, state, viewer, cls, 'faith'))}
+                      </button>
+                    )}
+                  </div>
+                  {!inRace(ctx, state, viewer, cls) && (
+                    <p className="hint">You founded a religion: you&apos;re out of this race.</p>
+                  )}
                 </>
               ) : (
                 <p className="hint">All of them have been earned.</p>
