@@ -179,6 +179,16 @@ function noticeFor(
       const them = civName(content, state, a === ME ? b : a);
       return `Your ${e.kind} with ${them} has ended`;
     }
+    case 'trade_route_started':
+      return e.owner === ME
+        ? `Trade route from ${name(e.from)} to ${name(e.to)} started`
+        : state.settlements[e.to]?.owner === ME
+          ? `${civName(content, state, e.owner)} opened a trade route to ${name(e.to)}`
+          : undefined;
+    case 'trade_route_ended':
+      return e.owner === ME
+        ? `Your trader from ${name(e.from)} is home: send it out again`
+        : undefined;
     case 'commander_retreated':
       return e.owner === ME
         ? `Your commander fell back to a settlement (back in action on turn ${e.until})`

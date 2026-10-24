@@ -7,6 +7,7 @@ import {
   districtYields,
   type EngineContext,
   goldPerTurn,
+  hasRoad,
   influencePerTurn,
   HOSTILE,
   growthPerTurn,
@@ -128,6 +129,7 @@ export function territoryView(
       for (const c of Object.values(state.camps)) if (fog[c.tile] !== 0) out[c.tile] = true;
       return out;
     })(),
+    roads: state.map.tiles.map((_, i) => fog[i] !== 0 && hasRoad(state, i)),
   };
 }
 

@@ -93,6 +93,7 @@ export type {
   Incident,
   Payment,
   Proposal,
+  TradeRoute,
   CitizenFocus,
   GameSettings,
   GameState,
@@ -211,3 +212,16 @@ export {
   commandersAround,
   packableUnits,
 } from './units/commanders';
+export {
+  hasRoad,
+  roadBits,
+  routeProblem,
+  routesOf,
+  type RouteYields,
+  routeYields,
+  tradeCapacity,
+  tradeDestinations,
+  tradePartners,
+  tradePath,
+  traderOrigin,
+} from './trade/rules';

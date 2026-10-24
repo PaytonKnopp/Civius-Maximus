@@ -10,6 +10,7 @@ import {
 } from '../context';
 import { type Fixed, toFixed } from '../fixed';
 import { distance } from '../map/hex';
+import { playerEffects } from '../progress/sources';
 import { goldPerTurn, settlementYields } from '../settlements/rules';
 import type { DealTerms, DiplomacyState, GameState, PlayerId, Proposal } from '../state';
 
@@ -105,6 +106,10 @@ export function influencePerTurn(ctx: EngineContext, state: GameState, player: P
   for (const s of Object.values(state.settlements)) {
     if (s.owner === player) total += settlementYields(ctx, state, s).total.influence ?? 0;
   }
+  // Abilities that pay influence for every running deal.
+  const deals = state.diplomacy.payments.filter((p) => p.from === player || p.to === player).length;
+  for (const { effect } of playerEffects(ctx, state, player, 'influence_per_deal'))
+    total += toFixed(effect.params.amount * deals);
   return total;
 }
 
@@ -259,6 +264,11 @@ export function opinionOf(
     (p) => (p.from === of && p.to === toward) || (p.from === toward && p.to === of),
   ).length;
   add('Deals with us', Math.min(deals, 2) * o.perDeal);
+  const routes = (state.routes ?? []).filter((r) => {
+    const dest = state.settlements[r.to]?.owner;
+    return (r.owner === of && dest === toward) || (r.owner === toward && dest === of);
+  }).length;
+  add('Trade routes between us', Math.min(routes, 2) * o.tradeRoute);
   const leader = ctx.content.entities.leader[state.players[of]?.leader ?? ''];
   for (const rule of leader?.agenda.rules ?? []) {
     const theirs = metric(ctx, state, toward, rule);

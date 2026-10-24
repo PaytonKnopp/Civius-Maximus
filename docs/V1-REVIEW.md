@@ -53,6 +53,8 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
 33. **D62 AI rivals answer deals at once**, and the deal screen shows their answer beforehand.
 34. **D63 Opinion weights** (`rules.json` → `diplomacy.opinion`).
 35. **D64 Commanders:** carry 4, radius 1, +2 strength, 5 turns out after a retreat.
+36. **D65 Trade routes:** 20 turns, 15 tiles; domestic +2🍞 +2⚙, international +4💰
+    (+1 per destination district), roads halve movement.
 28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
     expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 
@@ -100,6 +102,15 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
   own promotions (Assault, Bastion, Logistics, Field Medicine, Leadership).
 - Caught by an enemy, it falls back to your nearest settlement for 5 turns instead of dying.
 - The AI builds one once its army is big (or at war) and keeps it with its front line.
+
+### Part 5: trade routes and roads
+- **Trader** (after Foreign Trade): in one of your settlements, select it and pick a
+  destination from its panel (each shows what the route gives). Routes run 20 turns, show in
+  the settlement's yields, build a **road** (half-cost movement), then the trader comes home.
+- Route slots: Foreign Trade, each Commercial Hub and Harbor. Wars end routes between the two
+  sides. Roads draw in 2D and 3D.
+- The AI builds traders for its free slots and picks the best routes (abroad to players it
+  likes). The trade parts of the Mongol, Egyptian, Malian and Roman kits now work.
 
 ## Known issues
 

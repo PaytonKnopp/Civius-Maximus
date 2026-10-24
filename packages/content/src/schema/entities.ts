@@ -200,6 +200,23 @@ export const RulesDef = z.strictObject({
   movement: z.strictObject({
     /** Civ 5 rule (D3): a unit with any MP left may always enter one tile. */
     canAlwaysMoveOneTile: z.boolean(),
+    /** Moving along a road (road to road, settlement centers count) costs this percent of 1 MP. */
+    roadCostPercent: z.int().min(1).max(100),
+  }),
+  /** Trade routes (docs/04-advanced-systems.md, "Trade routes"). */
+  trade: z.strictObject({
+    /** How many turns a route runs before its trader comes home. */
+    routeTurns: z.int().min(1),
+    /** The farthest a destination can be, in tiles along the route. */
+    range: z.int().min(1),
+    /** What a route to one of your own settlements gives the settlement it starts from. */
+    domestic: YieldMap,
+    /** What a route to another player's settlement gives the settlement it starts from... */
+    international: YieldMap,
+    /** ...plus this for each district at the destination... */
+    perDestinationDistrict: YieldMap,
+    /** ...and what the destination settlement gets. */
+    destination: YieldMap,
   }),
   luxuryHappinessRadius: z.int().min(0),
   progress: z.strictObject({
@@ -370,6 +387,8 @@ export const RulesDef = z.strictObject({
       nearMax: z.int().min(0),
       /** Per deal with us still running. */
       perDeal: z.int(),
+      /** Per trade route between us (up to 2). */
+      tradeRoute: z.int(),
     }),
     /** Opinion an AI needs before it agrees to a friendship or an alliance. */
     friendshipOpinion: z.int(),
@@ -477,7 +496,7 @@ export const UnitDef = z.strictObject({
   upkeep: z.int().min(0).default(1),
   ...requires,
   /** Special actions this unit can take. */
-  actions: z.array(z.enum(['found_settlement'])).default([]),
+  actions: z.array(z.enum(['found_settlement', 'trade_route'])).default([]),
   /** Sea units: can enter deep ocean. */
   deepWater: z.boolean().default(false),
   /** Every tile costs 1 movement (e.g. some scouts and cavalry). */

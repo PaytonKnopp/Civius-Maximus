@@ -1,5 +1,6 @@
 import { type EngineContext, atWar, unitClassOf, unitDef } from '../context';
 import { directionTo, hasRiverEdge, neighbors } from '../map/hex';
+import { hasRoad } from '../trade/rules';
 import type { GameState, UnitState } from '../state';
 import { extraMovement, ignoresTerrainCost } from './promotions';
 
@@ -130,6 +131,15 @@ export function stepMoves(
   let cost: number;
   if (ignoresTerrainCost(ctx, unit) || cls.domain !== 'land' || toWater) cost = MP;
   else cost = landCost(ctx, state, to)!;
+  // Along a road, every step is cheap.
+  if (
+    cls.domain === 'land' &&
+    !toWater &&
+    state.roads &&
+    hasRoad(state, from) &&
+    hasRoad(state, to)
+  )
+    cost = Math.floor((MP * ctx.content.rules.movement.roadCostPercent) / 100);
 
   const rules = ctx.content.rules;
   if (cost > moves && !rules.movement.canAlwaysMoveOneTile) return null;

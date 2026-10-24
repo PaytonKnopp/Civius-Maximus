@@ -91,7 +91,25 @@
     "attackAcrossPenalty": 5
   },
   "movement": {
-    "canAlwaysMoveOneTile": true
+    "canAlwaysMoveOneTile": true,
+    "roadCostPercent": 50
+  },
+  "trade": {
+    "routeTurns": 20,
+    "range": 15,
+    "domestic": {
+      "food": 2,
+      "production": 2
+    },
+    "international": {
+      "gold": 4
+    },
+    "perDestinationDistrict": {
+      "gold": 1
+    },
+    "destination": {
+      "gold": 1
+    }
   },
   "luxuryHappinessRadius": 3,
   "mapgen": {
@@ -233,7 +251,8 @@
       "settledNear": -2,
       "nearDistance": 6,
       "nearMax": 3,
-      "perDeal": 3
+      "perDeal": 3,
+      "tradeRoute": 3
     },
     "friendshipOpinion": 6,
     "allianceOpinion": 14

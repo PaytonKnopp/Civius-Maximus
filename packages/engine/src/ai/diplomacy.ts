@@ -2,6 +2,7 @@ import type { EngineContext } from '../context';
 import {
   areAllies,
   areFriends,
+  dealProblem,
   denounceProblem,
   opinionOf,
   relation,
@@ -131,7 +132,9 @@ export function manageDiplomacy(t: Turn) {
       affordable(rules.allianceCost) &&
       roll < 30
     ) {
-      t.act({ type: 'propose_deal', ...base, friendship: false, alliance: true, peace: false });
+      const deal = { ...base, from: t.player, friendship: false, alliance: true, peace: false };
+      if (!dealProblem(t.ctx, s, deal))
+        t.act({ type: 'propose_deal', ...base, friendship: false, alliance: true, peace: false });
       continue;
     }
     if (
@@ -140,7 +143,9 @@ export function manageDiplomacy(t: Turn) {
       affordable(rules.friendshipCost) &&
       roll < 30
     ) {
-      t.act({ type: 'propose_deal', ...base, friendship: true, alliance: false, peace: false });
+      const deal = { ...base, from: t.player, friendship: true, alliance: false, peace: false };
+      if (!dealProblem(t.ctx, s, deal))
+        t.act({ type: 'propose_deal', ...base, friendship: true, alliance: false, peace: false });
       continue;
     }
     if (

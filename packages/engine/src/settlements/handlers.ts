@@ -16,6 +16,7 @@ import type { BuildItem, GameState, PlayerId, SettlementState } from '../state';
 import { view } from '../draft';
 import { empireTurn } from '../progress/handlers';
 import { playerEffects } from '../progress/sources';
+import { roadToCapital } from '../trade/handlers';
 import { countsAs } from '../uniques';
 import { ownedUnit, watchers } from '../units/handlers';
 import { canTraverse, hasForeignUnit, hasRoom } from '../units/movement';
@@ -368,6 +369,7 @@ export function foundSettlement(
     captureChoice: false,
     unitsTrained: 0,
   };
+  roadToCapital(draft, ctx, player, tile);
   // Abilities that give every new settlement a building (if it can have it).
   const fresh = draft.settlements[id]!;
   for (const { effect } of playerEffects(ctx, view(draft), player, 'free_building')) {

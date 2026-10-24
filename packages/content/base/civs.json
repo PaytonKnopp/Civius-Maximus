@@ -28,13 +28,20 @@
     ],
     "ability": {
       "name": "Roads to the Forum",
-      "description": "Every new settlement starts with a free Forum (+1 culture, +1 happiness). (Its road to the capital arrives with roads.)",
+      "description": "Every new settlement starts with a free Forum (+1 culture, +1 happiness) and a road to your capital.",
       "effects": [
         {
           "effect": "free_building",
           "params": {
             "building": "building_forum"
           },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "road_to_capital",
+          "params": {},
           "target": {
             "scope": "player"
           }
@@ -185,8 +192,30 @@
     ],
     "ability": {
       "name": "Empire of Relays",
-      "description": "Trade routes reveal the settlements they reach, and your units are stronger against players you trade with. (Arrives with trade routes.)",
-      "effects": []
+      "description": "Sending a trade route reveals the land around its destination. Your units are +3 strength against players you have a trade route with.",
+      "effects": [
+        {
+          "effect": "trade_reveals",
+          "params": {
+            "radius": 3
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 3,
+            "vs": {
+              "tradePartner": true
+            }
+          },
+          "target": {
+            "scope": "units"
+          }
+        }
+      ]
     }
   },
   {

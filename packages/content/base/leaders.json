@@ -68,7 +68,32 @@
     "ability": {
       "name": "Serpent of the Nile",
       "description": "Each deal you sign gives +1 influence a turn while it lasts. Trade routes to other players give +2 gold to both sides.",
-      "effects": []
+      "effects": [
+        {
+          "effect": "influence_per_deal",
+          "params": {
+            "amount": 1
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "trade_route_bonus",
+          "params": {
+            "international": true,
+            "origin": {
+              "gold": 2
+            },
+            "destination": {
+              "gold": 2
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
     },
     "agenda": {
       "name": "Allure",
@@ -451,8 +476,24 @@
     "civ": "civ_mali",
     "ability": {
       "name": "Pilgrimage of Gold",
-      "description": "+1 gold for each desert tile near your settlements. Buildings can be bought with faith.",
-      "effects": []
+      "description": "International trade routes give +1 gold for each desert tile the origin settlement owns. (Golden ages arrive later.)",
+      "effects": [
+        {
+          "effect": "trade_route_bonus",
+          "params": {
+            "international": true,
+            "perOriginTerrain": {
+              "terrain": "desert",
+              "yields": {
+                "gold": 1
+              }
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
     },
     "agenda": {
       "name": "Richest Man in History",
