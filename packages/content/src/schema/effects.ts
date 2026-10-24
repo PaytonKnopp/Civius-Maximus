@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Elevation, Id, IdOrIds, ResourceClass } from './common';
+import { Elevation, Id, IdOrIds, ResourceClass, YieldMap } from './common';
 
 /**
  * The effects system: every ability, policy, belief, wonder and promotion is a list of effects.
@@ -269,6 +269,8 @@ export const StrengthBonus = z.strictObject({
       settlement: z.boolean().optional(),
       ranged: z.boolean().optional(),
       wounded: z.boolean().optional(),
+      /** Only against players this player has a trade route with. */
+      tradePartner: z.boolean().optional(),
     })
     .optional(),
   /** Only when the unit stands (defending) or fights from (attacking) such a tile. */
@@ -368,6 +370,54 @@ const FreeUnitOnDistrict = z.strictObject({
   condition: Condition.optional(),
 });
 
+/** More trade routes at once. */
+const ExtraTradeRoute = z.strictObject({
+  effect: z.literal('extra_trade_route'),
+  params: z.strictObject({ amount: z.int().min(1).default(1) }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** Extra yields on the player's trade routes (international ones only, if set). */
+const TradeRouteBonus = z.strictObject({
+  effect: z.literal('trade_route_bonus'),
+  params: z.strictObject({
+    international: z.boolean().default(false),
+    /** For the settlement the route starts from. */
+    origin: YieldMap.default({}),
+    /** For the destination settlement. */
+    destination: YieldMap.default({}),
+    /** For the origin, per tile of this terrain it owns. */
+    perOriginTerrain: z.strictObject({ terrain: Id, yields: YieldMap }).optional(),
+  }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** Starting a trade route reveals the land around the destination. */
+const TradeReveals = z.strictObject({
+  effect: z.literal('trade_reveals'),
+  params: z.strictObject({ radius: z.int().min(0).max(10) }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** Influence each turn for every deal with running payments the player is part of. */
+const InfluencePerDeal = z.strictObject({
+  effect: z.literal('influence_per_deal'),
+  params: z.strictObject({ amount: z.number().multipleOf(0.5) }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** Every new settlement gets a road to the capital. */
+const RoadToCapital = z.strictObject({
+  effect: z.literal('road_to_capital'),
+  params: z.strictObject({}).default({}),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
 /** Items of this kind can also be bought with faith (same price as in gold). */
 const PurchaseWithFaith = z.strictObject({
   effect: z.literal('purchase_with_faith'),
@@ -399,6 +449,11 @@ export const Effect = z.discriminatedUnion('effect', [
   ExtraAdjacency,
   PurchaseWithFaith,
   FreeUnitOnDistrict,
+  ExtraTradeRoute,
+  TradeRouteBonus,
+  TradeReveals,
+  InfluencePerDeal,
+  RoadToCapital,
 ]);
 export type Effect = z.infer<typeof Effect>;
 export const EFFECT_TYPES = Effect.options.map((o) => o.shape.effect.value);

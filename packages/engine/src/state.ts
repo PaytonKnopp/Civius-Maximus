@@ -40,6 +40,24 @@ export interface GameState {
   settlements: Record<SettlementId, SettlementState>;
   /** Friendships, alliances, treaties, deals and what AIs remember (docs/04, "Diplomacy"). */
   diplomacy: DiplomacyState;
+  /** Tiles with a road (base64 bitset, see bitset.ts). Trade routes build them. */
+  roads: string;
+  /** Trade routes running now. */
+  routes: TradeRoute[];
+}
+
+/** A trader on its route: it's off the map until the route ends and it comes home. */
+export interface TradeRoute {
+  id: string;
+  owner: PlayerId;
+  /** The trader's `unit` content id (it comes back as one). */
+  unit: string;
+  from: SettlementId;
+  to: SettlementId;
+  /** Turns left; the trader comes home when it reaches 0. */
+  turnsLeft: number;
+  /** Tiles the route runs along (for drawing it). */
+  path: number[];
 }
 
 /** Pairs of players are keyed like wars: sorted `"a|b"` (see `warKey`). */

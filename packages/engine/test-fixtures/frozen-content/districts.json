@@ -109,7 +109,7 @@
     "type": "district",
     "id": "district_commercial_hub",
     "name": "Commercial Hub",
-    "description": "Gold. Loves rivers and harbors.",
+    "description": "Gold, and +1 trade route. Loves rivers and harbors.",
     "icon": "CH",
     "cost": 54,
     "requiresTech": "tech_currency",
@@ -135,13 +135,24 @@
       "gold": 2
     },
     "model": "commercial",
-    "color": "#f2d24b"
+    "color": "#f2d24b",
+    "effects": [
+      {
+        "effect": "extra_trade_route",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "district",
     "id": "district_harbor",
     "name": "Harbor",
-    "description": "Gold and food from the sea. Built on the coast.",
+    "description": "Gold and food from the sea, and +1 trade route. Built on the coast.",
     "icon": "Hb",
     "cost": 54,
     "requiresTech": "tech_celestial_navigation",
@@ -182,7 +193,18 @@
       "food": 1
     },
     "model": "harbor",
-    "color": "#4a8fc0"
+    "color": "#4a8fc0",
+    "effects": [
+      {
+        "effect": "extra_trade_route",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "district",
@@ -326,7 +348,7 @@
     "type": "district",
     "id": "district_suguba",
     "name": "Suguba",
-    "description": "Gold, and purchases here cost 20% less. Loves rivers and harbors.",
+    "description": "Gold, +1 trade route, and purchases here cost 20% less. Loves rivers and harbors.",
     "icon": "Sg",
     "cost": 54,
     "requiresTech": "tech_currency",
@@ -365,6 +387,17 @@
     "model": "commercial",
     "color": "#e8b23a",
     "civ": "civ_mali",
-    "replaces": "district_commercial_hub"
+    "replaces": "district_commercial_hub",
+    "effects": [
+      {
+        "effect": "extra_trade_route",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   }
 ]

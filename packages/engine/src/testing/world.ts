@@ -114,6 +114,8 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     camps: {},
     settlements: {},
     diplomacy: emptyDiplomacy(),
+    roads: encodeBits(emptyBits(tiles.length)),
+    routes: [],
   };
 }
 

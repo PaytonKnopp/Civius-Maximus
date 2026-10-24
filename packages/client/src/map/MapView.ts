@@ -314,6 +314,7 @@ export class MapView implements MapRenderer {
       const model = d.territory.improvements[i];
       const district = d.territory.districts[i];
       const wonder = d.territory.wonders[i];
+      if (d.territory.roads[i]) this.drawRoad(g, i, cx, cy, fog === 1);
       if (d.territory.camps[i]) this.drawCamp(g, cx, cy);
       else if (district) this.drawDistrict(g, district.color, cx, cy);
       else if (wonder) this.drawWonder(g, cx, cy);
@@ -368,6 +369,22 @@ export class MapView implements MapRenderer {
       .fill(0xeadab0)
       .star(cx, cy - 11, 5, 4, 2)
       .fill(0xd4a94e);
+  }
+
+  /** Half a road from the tile's center toward each neighbor that has one too. */
+  private drawRoad(g: Graphics, i: number, cx: number, cy: number, dim: boolean) {
+    const d = this.settlementData!;
+    const { map } = this.data!;
+    for (let dir = 0; dir < 6; dir++) {
+      const n = neighbor(map, i, dir as 0 | 1 | 2 | 3 | 4 | 5);
+      if (n === NO_TILE || !d.territory.roads[n]) continue;
+      const [a, b] = EDGE_CORNERS[dir]!;
+      const [x1, y1] = corner(cx, cy, a, HEX);
+      const [x2, y2] = corner(cx, cy, b, HEX);
+      g.moveTo(cx, cy)
+        .lineTo((x1 + x2) / 2, (y1 + y2) / 2)
+        .stroke({ width: 3, color: dim ? 0x5a4a38 : 0x9a7a52, cap: 'round', alpha: 0.9 });
+    }
   }
 
   private drawImprovement(g: Graphics, model: string, cx: number, cy: number) {

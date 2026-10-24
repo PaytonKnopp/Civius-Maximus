@@ -14,6 +14,7 @@ import { canTraverse, isWater, riverBits, unitsOn } from '../units/movement';
 import { playerEffects } from '../progress/sources';
 import { uniqueProblem } from '../uniques';
 import { commandersAround } from '../units/commanders';
+import { tradePartners } from '../trade/rules';
 import { promotionsOf, unitRange } from '../units/promotions';
 import { lineOfSight, visibleTiles } from '../units/vision';
 import { damageRange } from './damage';
@@ -171,12 +172,15 @@ interface Against {
   unit: UnitState | null;
   settlement: boolean;
   ranged: boolean;
+  /** Who owns what's being fought (null for a settlement's strike). */
+  owner: PlayerId | null;
 }
 
 /** Whether a promotion's or ability's strength bonus applies in this fight, fought on `tile`. */
 function bonusApplies(
   ctx: EngineContext,
   state: GameState,
+  me: PlayerId,
   b: StrengthBonus,
   role: 'attack' | 'defend',
   against: Against,
@@ -189,6 +193,8 @@ function bonusApplies(
   if (b.vs?.settlement && !against.settlement) return false;
   if (b.vs?.ranged && !against.ranged) return false;
   if (b.vs?.wounded && !(against.unit && against.unit.health < ctx.content.rules.combat.maxHealth))
+    return false;
+  if (b.vs?.tradePartner && !(against.owner && tradePartners(state, me, against.owner)))
     return false;
   if (b.on?.features && !(t.feature && b.on.features.includes(t.feature))) return false;
   if (b.on?.elevations && !b.on.elevations.includes(t.elevation)) return false;
@@ -207,7 +213,7 @@ function bonusLines(
   const out: StrengthLine[] = [];
   for (const p of promotionsOf(ctx, unit)) {
     for (const b of p.strength) {
-      if (bonusApplies(ctx, state, b, role, against, tile))
+      if (bonusApplies(ctx, state, unit.owner, b, role, against, tile))
         out.push({ label: resolveText(ctx.content, p.name), amount: b.amount });
     }
   }
@@ -230,7 +236,7 @@ function bonusLines(
       (owner.declaredWarTurn === null || state.turn - owner.declaredWarTurn >= b.afterDeclaringWar)
     )
       continue;
-    if (bonusApplies(ctx, state, b, role, against, tile))
+    if (bonusApplies(ctx, state, unit.owner, b, role, against, tile))
       out.push({ label: source.label, amount: b.amount });
   }
   return out;
@@ -316,6 +322,7 @@ export function defenseStrength(
         unit: by,
         settlement: by === null,
         ranged: by === null || attackMode(ctx, by) === 'ranged',
+        owner: by?.owner ?? null,
       },
       unit.tile,
     ),
@@ -354,6 +361,7 @@ export function attackStrength(
         unit: target.kind === 'unit' ? target.unit : null,
         settlement: target.kind === 'settlement',
         ranged: false,
+        owner: targetOwner(target),
       },
       tile,
     ),

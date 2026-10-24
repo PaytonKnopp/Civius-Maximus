@@ -5,7 +5,10 @@ import { distance, tilesWithin } from '../map/hex';
 import type { SettlementState, UnitState } from '../state';
 import { canTraverse, hasForeignUnit, hasRoom } from '../units/movement';
 import { availablePromotions, unitRange } from '../units/promotions';
+import { opinionOf } from '../diplomacy/rules';
+import { tradeDestinations, traderOrigin } from '../trade/rules';
 import { isSoldier } from './cities';
+import { fixedYieldsValue } from './values';
 import { moveSettler, settleHere } from './settle';
 import { type Role, type Turn, unitPower, unitRole } from './turn';
 
@@ -38,6 +41,7 @@ export function manageUnits(t: Turn) {
     else if (isSoldier(role)) soldier(t, unit, plan);
     else if (role === 'naval') hold(t, unit);
     else if (role === 'commander') lead(t, unit, plan);
+    else if (role === 'trader') trade(t, unit);
   }
   // Units that moved next to something worth hitting.
   attackPass(t, ['ranged', 'siege', 'naval', 'melee']);
@@ -249,6 +253,26 @@ function soldier(t: Turn, u: UnitState, plan: Plan) {
   if (goNear(t, u, target.tile, reach)) return;
   if (goNear(t, u, target.tile, reach + 1)) return;
   hold(t, u);
+}
+
+/** Traders: start the best route from where they stand, or walk home to start one. */
+function trade(t: Turn, u: UnitState) {
+  if (!traderOrigin(t.state, u)) {
+    const home = nearestOwnSettlement(t, u);
+    if (home && (goNear(t, u, home.tile, 0) || goNear(t, u, home.tile, 1))) return;
+    return hold(t, u);
+  }
+  let best: { to: string; score: number } | undefined;
+  for (const d of tradeDestinations(t.ctx, t.state, u)) {
+    if (d.problem) continue;
+    let score = fixedYieldsValue(t.me, d.yields.origin);
+    // Routes to friends build goodwill; leaders who like gold go abroad.
+    if (d.settlement.owner !== t.player)
+      score += 5 + Math.max(0, opinionOf(t.ctx, t.state, t.player, d.settlement.owner).total);
+    if (!best || score > best.score) best = { to: d.settlement.id, score };
+  }
+  if (best) t.act({ type: 'start_trade_route', player: t.player, unit: u.id, to: best.to });
+  else hold(t, u);
 }
 
 /**

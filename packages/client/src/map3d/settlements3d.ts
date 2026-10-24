@@ -450,6 +450,37 @@ function ribbon(
   }
 }
 
+/** A flat road strip from `from` to `to`, draped over the ground. */
+function roadStrip(
+  pos: number[],
+  col: number[],
+  world: SettlementWorld,
+  from: [number, number],
+  to: [number, number],
+  color: Color,
+) {
+  const steps = 3;
+  const half = 0.055;
+  const dx = to[0] - from[0];
+  const dz = to[1] - from[1];
+  const len = Math.hypot(dx, dz) || 1;
+  const px = (-dz / len) * half;
+  const pz = (dx / len) * half;
+  const at = (t: number, side: number): [number, number, number] => {
+    const x = from[0] + dx * t + px * side;
+    const z = from[1] + dz * t + pz * side;
+    return [x, Math.max(0, world.height(x, z)) + 0.02, z];
+  };
+  for (let i = 0; i < steps; i++) {
+    const t0 = i / steps;
+    const t1 = (i + 1) / steps;
+    for (const p of [at(t0, -1), at(t0, 1), at(t1, -1), at(t1, -1), at(t0, 1), at(t1, 1)]) {
+      pos.push(...p);
+      col.push(color.r, color.g, color.b, 0.9);
+    }
+  }
+}
+
 function ribbonMesh(pos: number[], col: number[]): Mesh {
   const geo = new BufferGeometry();
   geo.setAttribute('position', new Float32BufferAttribute(pos, 3));
@@ -465,6 +496,8 @@ export class SettlementLayer {
   private drawn = new Map<string, Drawn>();
   /** Hostile camps, one small group each (by tile). */
   private camps = new Map<number, Drawn>();
+  /** Roads, one small group per road tile (so east-west wrap can move each). */
+  private roads = new Map<number, Drawn>();
   private highlights = new Group();
   private highlightKey = '';
   private highlightX: number[] = [];
@@ -538,6 +571,40 @@ export class SettlementLayer {
       this.drawn.delete(id);
     }
     this.setCamps(territory.camps);
+    this.setRoads(territory.roads);
+  }
+
+  private setRoads(roads: boolean[]) {
+    const want = new Map<number, string>();
+    roads.forEach((r, t) => {
+      if (!r || this.world.fog(t) === 0) return;
+      const mask = this.world
+        .neighbors(t)
+        .map((n) => (roads[n] ? 1 : 0))
+        .join('');
+      want.set(t, `${this.world.fog(t)}:${mask}`);
+    });
+    for (const [t, d] of this.roads) {
+      if (want.get(t) === d.key) continue;
+      this.dispose(d);
+      this.roads.delete(t);
+    }
+    for (const [t, key] of want) {
+      if (this.roads.has(t)) continue;
+      const pos: number[] = [];
+      const col: number[] = [];
+      const dim = this.world.fog(t) === 1 ? 0.5 : 1;
+      const color = new Color(0x9a7a52).multiplyScalar(dim);
+      for (const n of this.world.neighbors(t)) {
+        if (!roads[n]) continue;
+        const { c, a, b } = this.edge(t, n);
+        roadStrip(pos, col, this.world, c, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], color);
+      }
+      const group = new Group();
+      if (pos.length > 0) group.add(ribbonMesh(pos, col));
+      this.group.add(group);
+      this.roads.set(t, { key, group, x: this.world.center(t)[0] });
+    }
   }
 
   private setCamps(camps: boolean[]) {
@@ -706,6 +773,7 @@ export class SettlementLayer {
     const shift = (x: number) => Math.round((cameraX - x) / w) * w;
     for (const d of this.drawn.values()) d.group.position.x = shift(d.x);
     for (const d of this.camps.values()) d.group.position.x = shift(d.x);
+    for (const d of this.roads.values()) d.group.position.x = shift(d.x);
     this.highlights.children.forEach((c, i) => {
       c.position.x = shift(this.highlightX[i] ?? 0);
     });
@@ -716,5 +784,7 @@ export class SettlementLayer {
     this.drawn.clear();
     for (const d of this.camps.values()) this.dispose(d);
     this.camps.clear();
+    for (const d of this.roads.values()) this.dispose(d);
+    this.roads.clear();
   }
 }

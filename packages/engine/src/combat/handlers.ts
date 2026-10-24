@@ -14,6 +14,7 @@ import {
 } from '../context';
 import { view } from '../draft';
 import { forgetPlayer } from '../diplomacy/handlers';
+import { endRoutesBetween } from '../trade/handlers';
 import { isSurpriseWar, warBlock } from '../diplomacy/rules';
 import { toFixed } from '../fixed';
 import { grantBoost } from '../progress/handlers';
@@ -677,6 +678,7 @@ export const combatHandlers = {
         (a === action.target && b === action.player);
       d.payments = d.payments.filter((p) => !between(p.from, p.to));
       d.proposals = d.proposals.filter((p) => !between(p.from, p.to));
+      endRoutesBetween(draft, ctx, action.player, action.target, emit);
       emit({ type: 'war_declared', by: action.player, target: action.target, visibleTo: 'all' });
     },
   } satisfies ActionHandler<A<'declare_war'>>,

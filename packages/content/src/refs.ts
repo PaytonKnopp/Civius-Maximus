@@ -112,6 +112,18 @@ export function effectRefs(out: Refs, e: Effect, path: PathSegment[]) {
       ids(out, 'district', e.params.district, [...at, 'district']);
       ids(out, 'unitClass', e.params.unitClass, [...at, 'unitClass']);
       break;
+    case 'trade_route_bonus':
+      yieldKeys(out, e.params.origin, [...at, 'origin']);
+      yieldKeys(out, e.params.destination, [...at, 'destination']);
+      if (e.params.perOriginTerrain) {
+        ids(out, 'terrain', e.params.perOriginTerrain.terrain, [
+          ...at,
+          'perOriginTerrain',
+          'terrain',
+        ]);
+        yieldKeys(out, e.params.perOriginTerrain.yields, [...at, 'perOriginTerrain', 'yields']);
+      }
+      break;
     case 'free_building':
       ids(out, 'building', e.params.building, [...at, 'building']);
       break;

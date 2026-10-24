@@ -9,12 +9,14 @@ import { makeRandom } from './map/random';
 import type { StartBias } from './map/types';
 import { diplomacyHandlers, diplomacyTurn } from './diplomacy/handlers';
 import { emptyDiplomacy } from './diplomacy/rules';
+import { emptyBits, encodeBits } from './bitset';
 import { createRng } from './rng';
 import { scoreVictory } from './victory';
 import { checkBoosts, progressHandlers } from './progress/handlers';
 import { newProgress } from './progress/sources';
 import { settlementHandlers, settlementsTurn } from './settlements/handlers';
 import { commanderHandlers } from './units/commanders';
+import { tradeHandlers, tradeTurn } from './trade/handlers';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
 
@@ -141,6 +143,8 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     camps: {},
     settlements: {},
     diplomacy: emptyDiplomacy(),
+    roads: encodeBits(emptyBits(map.tiles.length)),
+    routes: [],
   };
   spawnStartingUnits(state, ctx);
   placeStartingCamps(state, ctx, random);
@@ -157,6 +161,7 @@ const handlers: Handlers = {
   ...combatHandlers,
   ...diplomacyHandlers,
   ...commanderHandlers,
+  ...tradeHandlers,
   end_turn: {
     validate(state, action) {
       const p = state.players[action.player];
@@ -193,6 +198,7 @@ const turnSteps: TurnStep[] = [
   { id: 'combat', order: 90, run: combatTurn },
   { id: 'settlements', order: 100, run: settlementsTurn },
   { id: 'diplomacy', order: 110, run: diplomacyTurn },
+  { id: 'trade', order: 120, run: tradeTurn },
 ];
 
 function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {

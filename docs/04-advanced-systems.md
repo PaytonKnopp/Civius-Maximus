@@ -118,6 +118,25 @@ same actions shift **war support** toward your enemy (see
 - The trade-route capacity per player comes from civics, commercial hubs and harbors.
 - Routes going into a war zone can be **plundered** for gold.
 
+### Built so far (V1 part 5)
+
+- **Traders** (after Foreign Trade, 60 production, no upkeep): from one of your settlements,
+  send one to any settlement you've found within 15 tiles over land (yours, or another
+  player's you're at peace with). The route runs 20 turns, then the trader comes home.
+- **Yields each turn:** a domestic route gives its origin +2 food and +2 production; an
+  international one gives its origin +4 gold plus +1 gold per district at the destination, and
+  the destination +1 gold.
+- **Capacity:** Foreign Trade +1, each Commercial Hub (or Suguba) and Harbor +1.
+- **Roads:** every route builds a road along its way. Moving road to road costs half a move
+  (settlement centers count as road).
+- A war between the two players ends their routes (the traders come home). AIs like players
+  they trade with (+3 per route, up to 2).
+- Kits that needed this now work: Mongol routes reveal the land around their destination and
+  Mongol units get +3 against trade partners; Cleopatra's routes give +2 gold to both ends and
+  each running deal gives her +1 influence; Mansa Musa's international routes give +1 gold per
+  desert tile of the origin; new Roman settlements get a road to the capital.
+- Not yet: plundering routes, sea routes, road building by other means.
+
 ---
 
 ## Great people

@@ -138,6 +138,13 @@ export const Action = z.discriminatedUnion('type', [
     unit: UnitRef,
     promotion: ContentRef,
   }),
+  /** A trader in one of your settlements starts a trade route to another settlement. */
+  z.strictObject({
+    type: z.literal('start_trade_route'),
+    player: PlayerRef,
+    unit: UnitRef,
+    to: SettlementRef,
+  }),
   /** A commander packs soldiers on or next to it (they travel inside it). */
   z.strictObject({
     type: z.literal('pack_units'),

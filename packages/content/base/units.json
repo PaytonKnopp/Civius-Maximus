@@ -46,6 +46,20 @@
   },
   {
     "type": "unit",
+    "id": "unit_trader",
+    "name": "Trader",
+    "class": "class_civilian",
+    "movement": 2,
+    "sight": 2,
+    "cost": 60,
+    "upkeep": 0,
+    "icon": "Tr",
+    "model": "settler",
+    "requiresCivic": "civic_foreign_trade",
+    "actions": ["trade_route"]
+  },
+  {
+    "type": "unit",
     "id": "unit_warrior",
     "name": "Warrior",
     "class": "class_melee",

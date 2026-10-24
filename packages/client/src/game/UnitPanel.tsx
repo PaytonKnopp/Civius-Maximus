@@ -10,6 +10,10 @@ import {
   nextPromotionXp,
   packableUnits,
   type PlayerId,
+  routesOf,
+  tradeCapacity,
+  tradeDestinations,
+  traderOrigin,
   promotionsOf,
   type UnitState,
   unitClassOf,
@@ -17,7 +21,7 @@ import {
   validateAction,
 } from '@cx/engine';
 import { useState } from 'react';
-import { type Colors, cssColor } from './model';
+import { civName, type Colors, cssColor } from './model';
 
 const coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
 
@@ -212,6 +216,56 @@ export function UnitPanel({
               {unit.cargo!.map((u) => resolveText(ctx.content, unitDef(ctx, u).name)).join(', ')}
             </p>
           )}
+        </section>
+      )}
+      {mine && def.actions.includes('trade_route') && (
+        <section className="trade" aria-label="Trade routes">
+          <h4>
+            Trade routes {routesOf(state, viewer).length}/{tradeCapacity(ctx, state, viewer)}
+          </h4>
+          {!traderOrigin(state, unit) ? (
+            <p className="hint">Move the trader into one of your settlements to send it.</p>
+          ) : (
+            <ul className="items">
+              {tradeDestinations(ctx, state, unit)
+                .sort((a, b) => Number(!!a.problem) - Number(!!b.problem))
+                .slice(0, 12)
+                .map((d) => (
+                  <li key={d.settlement.id} title={d.problem?.message}>
+                    <span className="item-name">
+                      {d.settlement.name}
+                      {d.settlement.owner !== viewer &&
+                        ` (${civName(ctx.content, state, d.settlement.owner)})`}
+                      <span className="muted mono">
+                        {' '}
+                        {Object.entries(d.yields.origin)
+                          .filter(([, v]) => v > 0)
+                          .map(([y, v]) => `+${v / 100}${ctx.content.entities.yield[y]?.icon ?? y}`)
+                          .join(' ')}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      disabled={!!d.problem}
+                      onClick={() =>
+                        act({
+                          type: 'start_trade_route',
+                          player: viewer,
+                          unit: unit.id,
+                          to: d.settlement.id,
+                        })
+                      }
+                    >
+                      Send
+                    </button>
+                  </li>
+                ))}
+            </ul>
+          )}
+          <p className="hint">
+            A route runs {ctx.content.rules.trade.routeTurns} turns, builds a road, then the trader
+            comes home.
+          </p>
         </section>
       )}
       {mine && (

@@ -73,6 +73,8 @@ export interface TerritoryView {
   features: (string | null)[];
   /** Hostile camps on explored tiles. */
   camps: boolean[];
+  /** Roads on explored tiles (settlement centers count). */
+  roads: boolean[];
 }
 
 /** A tile marked for a choice: developing it, buying it... `label` is drawn on the tile. */

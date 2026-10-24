@@ -22,6 +22,7 @@ import {
   settlementLimitOf,
   sourcesFor,
 } from '../progress/sources';
+import { routeLines } from '../trade/rules';
 import { baseOf, countsAs, uniqueProblem } from '../uniques';
 import { isWater } from '../units/movement';
 import {
@@ -429,6 +430,10 @@ export function settlementYields(
     if (!def || n <= 0) continue;
     for (const [y, v] of Object.entries(def.specialistYields).sort())
       add(y, `${resolveText(ctx.content, def.name)} specialists (${n})`, toFixed(v * n));
+  }
+
+  for (const route of routeLines(ctx, state, s)) {
+    for (const y of Object.keys(route.yields).sort()) add(y, route.label, route.yields[y]!);
   }
 
   // Settlement-wide effects (government, policies...): flat amounts now, percentages after.
