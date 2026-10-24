@@ -192,7 +192,7 @@ describe('replays', () => {
    * A scripted 8-player game: 25 turns. Everyone founds a capital on turn 1, builds, and develops
    * tiles as they grow, with players changing their minds about ending turns along the way.
    */
-  function scriptedReplay(): Replay {
+  function scriptedReplay(): { replay: Replay; state: GameState } {
     const s = setup(8, 25);
     let state = createGame(s, ctx);
     const actions: Action[] = [];
@@ -265,14 +265,19 @@ describe('replays', () => {
       state = apply(state, ...turnActions);
       actions.push(...turnActions);
     }
-    return { setup: s, actions };
+    return { replay: { setup: s, actions }, state };
   }
 
-  it('rebuild the exact same game every time', () => {
-    const replay = scriptedReplay();
-    const a = runReplay(replay, ctx);
-    const b = runReplay(structuredClone(replay), ctx);
-    expect(a.hash).toBe(b.hash);
+  // Playing the scripted game is the slow part (8 players, 25 turns): do it once for all three.
+  let scripted: ReturnType<typeof scriptedReplay> | undefined;
+  const played = () => (scripted ??= scriptedReplay());
+  // These play whole games, so they get more time than ordinary tests.
+  const LONG = 30_000;
+
+  it('rebuild the exact same game every time', { timeout: LONG }, () => {
+    const { replay, state } = played();
+    const a = runReplay(structuredClone(replay), ctx);
+    expect(a.hash).toBe(stateHash(state));
     expect(a.state.status).toBe('ended');
     expect(Object.keys(a.state.settlements)).toHaveLength(8);
     expect(Object.values(a.state.settlements).every((x) => x.population > 1)).toBe(true);
@@ -280,20 +285,26 @@ describe('replays', () => {
     expect(Object.values(a.state.players).every((p) => p.civics.done.length >= 2)).toBe(true);
   });
 
-  it('match a recorded golden hash (fails if a rules change would break old saves)', () => {
-    // Uses a frozen copy of the content so balance changes to base data don't trip it;
-    // only changes to the engine's rules or state shape do. If you change those on purpose,
-    // update this hash and note it in the changelog: older saves and replays will need migrating.
-    const frozen = compileContent([
-      readPackageDir(new URL('../test-fixtures/frozen-content', import.meta.url).pathname),
-    ]).content!;
-    expect(runReplay(scriptedReplay(), { content: frozen }).hash).toMatchInlineSnapshot(
-      `"a89130c33e820a2d48fed0275b"`,
-    );
-  });
+  it(
+    'match a recorded golden hash (fails if a rules change would break old saves)',
+    {
+      timeout: LONG,
+    },
+    () => {
+      // Uses a frozen copy of the content so balance changes to base data don't trip it;
+      // only changes to the engine's rules or state shape do. If you change those on purpose,
+      // update this hash and note it in the changelog: older saves and replays will need migrating.
+      const frozen = compileContent([
+        readPackageDir(new URL('../test-fixtures/frozen-content', import.meta.url).pathname),
+      ]).content!;
+      expect(runReplay(played().replay, { content: frozen }).hash).toMatchInlineSnapshot(
+        `"a89130c33e820a2d48fed0275b"`,
+      );
+    },
+  );
 
-  it('report where a replay diverges', () => {
-    const replay = scriptedReplay();
+  it('report where a replay diverges', { timeout: LONG }, () => {
+    const replay = structuredClone(played().replay);
     // Drop an unend_turn, so a later end_turn becomes illegal.
     replay.actions.splice(
       replay.actions.findIndex((a) => a.type === 'unend_turn'),
