@@ -35,7 +35,8 @@
     "maintenance": 1,
     "yields": {
       "food": 2
-    }
+    },
+    "requiresTech": "tech_pottery"
   },
   {
     "type": "building",
@@ -47,7 +48,9 @@
     "maintenance": 1,
     "yields": {
       "faith": 2
-    }
+    },
+    "requiresTech": "tech_astrology",
+    "district": "district_holy_site"
   },
   {
     "type": "building",
@@ -61,6 +64,170 @@
       "food": 1,
       "production": 1
     },
-    "requiresRiver": true
+    "requiresRiver": true,
+    "requiresTech": "tech_the_wheel"
+  },
+  {
+    "type": "building",
+    "id": "building_library",
+    "name": "Library",
+    "description": "Scrolls and scholars.",
+    "icon": "Li",
+    "cost": 90,
+    "maintenance": 1,
+    "yields": {
+      "science": 2
+    },
+    "requiresTech": "tech_writing",
+    "district": "district_campus"
+  },
+  {
+    "type": "building",
+    "id": "building_marketplace",
+    "name": "Marketplace",
+    "description": "A busy square of traders.",
+    "icon": "Ma",
+    "cost": 100,
+    "yields": {
+      "gold": 3
+    },
+    "requiresTech": "tech_currency",
+    "district": "district_commercial_hub"
+  },
+  {
+    "type": "building",
+    "id": "building_lighthouse",
+    "name": "Lighthouse",
+    "description": "Guides ships home.",
+    "icon": "Lh",
+    "cost": 110,
+    "maintenance": 1,
+    "yields": {
+      "food": 1,
+      "gold": 1
+    },
+    "requiresTech": "tech_celestial_navigation",
+    "district": "district_harbor"
+  },
+  {
+    "type": "building",
+    "id": "building_baths",
+    "name": "Baths",
+    "description": "Public bathhouses.",
+    "icon": "Ba",
+    "cost": 120,
+    "maintenance": 1,
+    "happiness": 2,
+    "requiresTech": "tech_construction"
+  },
+  {
+    "type": "building",
+    "id": "building_university",
+    "name": "University",
+    "description": "Advanced study.",
+    "icon": "Un",
+    "cost": 220,
+    "maintenance": 2,
+    "yields": {
+      "science": 4
+    },
+    "requiresBuilding": "building_library",
+    "requiresTech": "tech_education",
+    "cityOnly": true,
+    "district": "district_campus"
+  },
+  {
+    "type": "building",
+    "id": "building_temple",
+    "name": "Temple",
+    "description": "A great temple.",
+    "icon": "Te",
+    "cost": 120,
+    "maintenance": 1,
+    "yields": {
+      "faith": 3
+    },
+    "happiness": 1,
+    "district": "district_holy_site",
+    "requiresBuilding": "building_shrine",
+    "requiresCivic": "civic_theology"
+  },
+  {
+    "type": "building",
+    "id": "building_amphitheater",
+    "name": "Amphitheater",
+    "description": "Plays and poetry.",
+    "icon": "Am",
+    "cost": 150,
+    "maintenance": 1,
+    "yields": {
+      "culture": 3
+    },
+    "district": "district_theater",
+    "requiresCivic": "civic_drama_and_poetry"
+  },
+  {
+    "type": "building",
+    "id": "building_workshop",
+    "name": "Workshop",
+    "description": "Craftsmen at work.",
+    "icon": "Wo",
+    "cost": 160,
+    "maintenance": 1,
+    "yields": {
+      "production": 3
+    },
+    "district": "district_industrial_zone",
+    "requiresTech": "tech_apprenticeship"
+  },
+  {
+    "type": "building",
+    "id": "building_arena",
+    "name": "Arena",
+    "description": "Games for the people.",
+    "icon": "Ar",
+    "cost": 150,
+    "maintenance": 1,
+    "happiness": 2,
+    "yields": {
+      "culture": 1
+    },
+    "district": "district_entertainment",
+    "requiresCivic": "civic_games_and_recreation"
+  },
+  {
+    "type": "building",
+    "id": "building_barracks",
+    "name": "Barracks",
+    "description": "Drills and discipline.",
+    "icon": "Br",
+    "cost": 90,
+    "maintenance": 1,
+    "yields": {
+      "production": 1
+    },
+    "district": "district_encampment",
+    "requiresTech": "tech_bronze_working"
+  },
+  {
+    "type": "building",
+    "id": "building_walls",
+    "name": "Walls",
+    "description": "+100 outer defense: attacks must break the walls before they hurt the settlement much, and its strength rises while they stand.",
+    "icon": "Wa",
+    "cost": 60,
+    "walls": 100,
+    "requiresTech": "tech_masonry"
+  },
+  {
+    "type": "building",
+    "id": "building_castle",
+    "name": "Castle",
+    "description": "+100 more outer defense.",
+    "icon": "Cs",
+    "cost": 120,
+    "walls": 100,
+    "requiresBuilding": "building_walls",
+    "requiresTech": "tech_military_tactics"
   }
 ]

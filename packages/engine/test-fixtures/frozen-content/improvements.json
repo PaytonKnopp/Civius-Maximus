@@ -17,7 +17,18 @@
       }
     ],
     "color": "#c9a74a",
-    "model": "farm"
+    "model": "farm",
+    "adjacency": [
+      {
+        "yield": "food",
+        "amount": 1,
+        "per": {
+          "improvement": "improvement_farm"
+        },
+        "every": 2,
+        "label": "Neighboring farms"
+      }
+    ]
   },
   {
     "type": "improvement",
@@ -49,7 +60,8 @@
     "order": 5,
     "resources": ["stone"],
     "color": "#b9b2a4",
-    "model": "quarry"
+    "model": "quarry",
+    "requiresTech": "tech_mining"
   },
   {
     "type": "improvement",
@@ -62,7 +74,8 @@
     "order": 5,
     "resources": ["cattle", "sheep", "horses"],
     "color": "#9fbf5a",
-    "model": "pasture"
+    "model": "pasture",
+    "requiresTech": "tech_animal_husbandry"
   },
   {
     "type": "improvement",
@@ -75,7 +88,8 @@
     "order": 5,
     "resources": ["bananas", "silk", "spices", "wine", "incense"],
     "color": "#6f9a3c",
-    "model": "plantation"
+    "model": "plantation",
+    "requiresTech": "tech_irrigation"
   },
   {
     "type": "improvement",
@@ -88,7 +102,8 @@
     "order": 5,
     "resources": ["deer"],
     "color": "#7a5a3a",
-    "model": "camp"
+    "model": "camp",
+    "requiresTech": "tech_animal_husbandry"
   },
   {
     "type": "improvement",

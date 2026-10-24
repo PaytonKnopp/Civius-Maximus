@@ -253,3 +253,7 @@ score victory).
 | **Custom** | Defined by mods using the effects/conditions system (e.g., "Hold 5 natural wonders for 10 turns") |
 
 **Team victory:** if any member of a team meets a condition, the team wins.
+
+**Built so far (M10):** domination (a setup toggle, on by default), conquest (the last team
+standing always wins) and score (at the turn limit: none, 60, 100, 150, 200 or 250 turns).
+The end screen names the winner and how, with everyone's score.

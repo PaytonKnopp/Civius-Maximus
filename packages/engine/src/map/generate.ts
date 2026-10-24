@@ -122,6 +122,8 @@ export function generateMap(input: GenerateInput, random: Random): GenerateResul
       owner: null,
       settlement: null,
       improvement: null,
+      district: null,
+      wonder: null,
     };
   });
   // Elevations a terrain doesn't allow fall back to flat (e.g. a mod terrain without hills).

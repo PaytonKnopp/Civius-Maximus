@@ -1,0 +1,425 @@
+[
+  {
+    "type": "tech",
+    "id": "tech_pottery",
+    "name": "Pottery",
+    "era": "era_ancient",
+    "cost": 25,
+    "requires": [],
+    "row": 0,
+    "description": "Fired clay for storing grain."
+  },
+  {
+    "type": "tech",
+    "id": "tech_animal_husbandry",
+    "name": "Animal Husbandry",
+    "era": "era_ancient",
+    "cost": 25,
+    "requires": [],
+    "row": 3,
+    "description": "Herding and keeping animals."
+  },
+  {
+    "type": "tech",
+    "id": "tech_mining",
+    "name": "Mining",
+    "era": "era_ancient",
+    "cost": 25,
+    "requires": [],
+    "row": 5,
+    "description": "Digging stone and ore from the hills."
+  },
+  {
+    "type": "tech",
+    "id": "tech_sailing",
+    "name": "Sailing",
+    "era": "era_ancient",
+    "cost": 50,
+    "requires": [],
+    "row": 7,
+    "boost": {
+      "text": "Found a settlement on the coast",
+      "goal": {
+        "kind": "coastal_settlement"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_astrology",
+    "name": "Astrology",
+    "era": "era_ancient",
+    "cost": 50,
+    "requires": [],
+    "row": 8,
+    "boost": {
+      "text": "Have 4 citizens across your settlements",
+      "goal": {
+        "kind": "population",
+        "count": 4
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_irrigation",
+    "name": "Irrigation",
+    "era": "era_ancient",
+    "cost": 50,
+    "requires": ["tech_pottery"],
+    "row": 0,
+    "boost": {
+      "text": "Develop 2 Farms",
+      "goal": {
+        "kind": "improvements",
+        "count": 2,
+        "improvement": "improvement_farm"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_writing",
+    "name": "Writing",
+    "era": "era_ancient",
+    "cost": 50,
+    "requires": ["tech_pottery"],
+    "row": 1,
+    "boost": {
+      "text": "Found a second settlement",
+      "goal": {
+        "kind": "settlements",
+        "count": 2
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_archery",
+    "name": "Archery",
+    "era": "era_ancient",
+    "cost": 50,
+    "requires": ["tech_animal_husbandry"],
+    "row": 2,
+    "boost": {
+      "text": "Have 2 Slingers",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_slinger"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_the_wheel",
+    "name": "The Wheel",
+    "era": "era_ancient",
+    "cost": 80,
+    "requires": ["tech_mining"],
+    "row": 4,
+    "boost": {
+      "text": "Own 15 tiles",
+      "goal": {
+        "kind": "tiles_owned",
+        "count": 15
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_masonry",
+    "name": "Masonry",
+    "era": "era_ancient",
+    "cost": 80,
+    "requires": ["tech_mining"],
+    "row": 5,
+    "boost": {
+      "text": "Develop a Quarry",
+      "goal": {
+        "kind": "improvements",
+        "count": 1,
+        "improvement": "improvement_quarry"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_bronze_working",
+    "name": "Bronze Working",
+    "era": "era_ancient",
+    "cost": 80,
+    "requires": ["tech_mining"],
+    "row": 6,
+    "boost": {
+      "text": "Develop 2 Mines",
+      "goal": {
+        "kind": "improvements",
+        "count": 2,
+        "improvement": "improvement_mine"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_currency",
+    "name": "Currency",
+    "era": "era_classical",
+    "cost": 120,
+    "requires": ["tech_writing"],
+    "row": 1,
+    "boost": {
+      "text": "Hold 100 gold",
+      "goal": {
+        "kind": "gold",
+        "amount": 100
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_horseback_riding",
+    "name": "Horseback Riding",
+    "era": "era_classical",
+    "cost": 120,
+    "requires": ["tech_animal_husbandry"],
+    "row": 3,
+    "boost": {
+      "text": "Develop a Pasture",
+      "goal": {
+        "kind": "improvements",
+        "count": 1,
+        "improvement": "improvement_pasture"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_iron_working",
+    "name": "Iron Working",
+    "era": "era_classical",
+    "cost": 120,
+    "requires": ["tech_bronze_working"],
+    "row": 6,
+    "boost": {
+      "text": "Have 2 Spearmen",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_spearman"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_celestial_navigation",
+    "name": "Celestial Navigation",
+    "era": "era_classical",
+    "cost": 120,
+    "requires": ["tech_sailing", "tech_astrology"],
+    "row": 8,
+    "boost": {
+      "text": "Develop 2 Fishing Boats",
+      "goal": {
+        "kind": "improvements",
+        "count": 2,
+        "improvement": "improvement_fishing_boats"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_shipbuilding",
+    "name": "Shipbuilding",
+    "era": "era_classical",
+    "cost": 200,
+    "requires": ["tech_sailing"],
+    "row": 7,
+    "description": "Land units can embark onto coastal waters.",
+    "boost": {
+      "text": "Have 2 Galleys",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_galley"
+      }
+    },
+    "effects": [
+      {
+        "effect": "enable_embark",
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "tech",
+    "id": "tech_mathematics",
+    "name": "Mathematics",
+    "era": "era_classical",
+    "cost": 200,
+    "requires": ["tech_currency"],
+    "row": 1,
+    "boost": {
+      "text": "Have 3 buildings",
+      "goal": {
+        "kind": "buildings",
+        "count": 3
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_construction",
+    "name": "Construction",
+    "era": "era_classical",
+    "cost": 200,
+    "requires": ["tech_masonry", "tech_horseback_riding"],
+    "row": 4,
+    "boost": {
+      "text": "Build a Water Mill",
+      "goal": {
+        "kind": "buildings",
+        "count": 1,
+        "building": "building_water_mill"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_engineering",
+    "name": "Engineering",
+    "era": "era_classical",
+    "cost": 200,
+    "requires": ["tech_the_wheel"],
+    "row": 5,
+    "boost": {
+      "text": "Develop 3 Mines or Quarries",
+      "goal": {
+        "kind": "improvements",
+        "count": 3,
+        "improvement": ["improvement_mine", "improvement_quarry"]
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_apprenticeship",
+    "name": "Apprenticeship",
+    "era": "era_medieval",
+    "cost": 300,
+    "requires": ["tech_currency", "tech_mining"],
+    "row": 0,
+    "description": "Mines give +1 production.",
+    "boost": {
+      "text": "Develop 4 Mines",
+      "goal": {
+        "kind": "improvements",
+        "count": 4,
+        "improvement": "improvement_mine"
+      }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_mine"
+        }
+      }
+    ]
+  },
+  {
+    "type": "tech",
+    "id": "tech_military_tactics",
+    "name": "Military Tactics",
+    "era": "era_medieval",
+    "cost": 300,
+    "requires": ["tech_mathematics"],
+    "row": 2,
+    "boost": {
+      "text": "Have 2 Swordsmen",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_swordsman"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_machinery",
+    "name": "Machinery",
+    "era": "era_medieval",
+    "cost": 300,
+    "requires": ["tech_iron_working", "tech_engineering"],
+    "row": 6,
+    "description": "Woodcutters give +1 production.",
+    "boost": {
+      "text": "Have 3 Archers",
+      "goal": {
+        "kind": "units",
+        "count": 3,
+        "unit": "unit_archer"
+      }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_woodcutter"
+        }
+      }
+    ]
+  },
+  {
+    "type": "tech",
+    "id": "tech_education",
+    "name": "Education",
+    "era": "era_medieval",
+    "cost": 390,
+    "requires": ["tech_apprenticeship", "tech_mathematics"],
+    "row": 1,
+    "boost": {
+      "text": "Build 2 Libraries",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_library"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_stirrups",
+    "name": "Stirrups",
+    "era": "era_medieval",
+    "cost": 390,
+    "requires": ["tech_horseback_riding", "tech_military_tactics"],
+    "row": 3,
+    "boost": {
+      "text": "Have 2 Horsemen",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_horseman"
+      }
+    }
+  }
+]

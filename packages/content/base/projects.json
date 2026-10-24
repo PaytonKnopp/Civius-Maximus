@@ -1,0 +1,39 @@
+[
+  {
+    "type": "project",
+    "id": "project_clear_woods",
+    "name": "Clear Woods",
+    "description": "Cut down the woods on a tile: +25 production toward what this city builds next.",
+    "icon": "CW",
+    "cost": 15,
+    "clears": ["woods"],
+    "reward": {
+      "production": 25
+    }
+  },
+  {
+    "type": "project",
+    "id": "project_clear_rainforest",
+    "name": "Clear Rainforest",
+    "description": "Clear a rainforest tile: +15 food and +15 production.",
+    "icon": "CR",
+    "cost": 15,
+    "clears": ["rainforest"],
+    "reward": {
+      "food": 15,
+      "production": 15
+    }
+  },
+  {
+    "type": "project",
+    "id": "project_drain_marsh",
+    "name": "Drain Marsh",
+    "description": "Drain a marsh tile: +20 food.",
+    "icon": "DM",
+    "cost": 15,
+    "clears": ["marsh"],
+    "reward": {
+      "food": 20
+    }
+  }
+]

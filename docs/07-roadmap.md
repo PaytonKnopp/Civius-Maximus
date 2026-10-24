@@ -77,23 +77,50 @@ features on top.
 - Moved later: **town specializations** and **specialists** (M8, with districts),
   **celebrations** (M7, with policies), **clear land** (M8).
 
-### M7 · Progress trees and government
-- Tech and civics trees (Ancient → Medieval at first), boosts, governments, policy cards, gold
-  economy, and upkeep.
-- Tech/civics tree UI and the government screen.
+### M7 · Progress trees and government ✅
+- Tech and civics trees (Ancient → Medieval: 24 techs, 19 civics) with boosts and path queueing,
+  7 governments, 22 policy cards, celebrations, unit upkeep, the settlement limit growing with
+  civics, eras, and 8 new units and 5 buildings unlocked along the way.
+- The effects system now reaches settlements and the whole empire (11 effect types, 18
+  conditions); governments, policies, celebrations, techs and civics are effect sources.
+- Client: the tech and civics trees (boost progress, unlocks, path numbers), the government
+  screen (adopt, slot cards, cost preview), progress chips, and Next Action prompts for research,
+  civics and policies.
 
-### M8 · Improvements, districts, wonders
+### M8 · Improvements, districts, wonders ✅
 - Improvements and their adjacency, the clear-land project, district placement with adjacency
   previews, the district limit, buildings in districts, and the first wonders.
+- Built: 10 districts with adjacency and cost growth, specialists, 11 district buildings
+  (4 new: Amphitheater, Workshop, Arena, Barracks), 9 wonders with a world-wide race, 3 tile
+  projects, farm adjacency, tech-gated improvements, and the 6 town specializations with food
+  and production sending.
+- Client: the placement mode (valid tiles highlighted with their yields, plus a best-first list),
+  district and wonder models in 3D and glyphs in 2D, planned districts marked on the map, the
+  district limit, specialists, the specialization picker for towns, and wonder notices.
 
-### M9 · Combat and conflict
+### M9 · Combat and conflict ✅
 - The combat formula (lookup tables), modifiers, ranged attacks, city HP, walls, city strikes,
   capture/puppet/raze/liberate, promotions, healing, commanders (pack/unpack, radius), war
   support, and hostile camps (classic barbarians).
 - Combat preview UI.
+- Part 1 built: the formula and modifiers, melee and ranged attacks, capturing civilians,
+  settlement health, walls and strikes, capture with keep/raze/liberate, capital moves and
+  elimination (last one standing wins), healing, war and peace; the placeholder AI fights back
+  and makes peace. Client: red attack tiles with expected damage, the combat preview (every
+  modifier, damage ranges, verdict), the declare-war prompt, a panel per rival (war, peace),
+  the capture dialog, health bars on units and banners, floating damage, lunges and shots.
+- Part 2 built: promotions (32, by class), war support with war weariness, and hostile camps
+  with raiders; the placeholder AI fights raiders and takes promotions. Client: the promotion
+  picker, a star on units with a promotion ready, camps in 3D and 2D, war support in the rival
+  panel, a camps toggle in the new-game dialog.
+- Moved later: **commanders** (pack/unpack, command radius), after the M10 checkpoint, so how
+  armies move can be shaped by playing. Puppets wait for loyalty.
 
-### M10 · Hotseat alpha 🎮
+### M10 · Hotseat alpha 🎮 ✅
 - 2–8 player hotseat, a turn summary, domination and score victories, and save/load.
+- Built: the new-game dialog (players, AI rivals, turn limit, camps, domination), the pass
+  screen, per-player turn summaries, score, the three victories with an end screen, saves in
+  the browser with an autosave each turn, and save files. Next comes the 🎮 checkpoint: play.
 - **Done when:** you and a friend can play a full Ancient → Medieval hotseat game on one machine.
 - 🎮 **Big checkpoint: play 2–3 games.** Expect balance and UX notes. These decide the order of
   everything after this point.

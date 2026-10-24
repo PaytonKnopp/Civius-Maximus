@@ -1,11 +1,14 @@
 import { resolveText } from '@cx/content';
 import {
   type Action,
+  availablePromotions,
   type EngineContext,
   foundingProblem,
   type GameState,
   MP,
+  nextPromotionXp,
   type PlayerId,
+  promotionsOf,
   type UnitState,
   unitClassOf,
   unitDef,
@@ -23,13 +26,27 @@ interface Props {
   colors: Colors;
   /** A move is planned to a tile (first tap); whether it can be reached. */
   planned: { reachable: boolean } | null;
+  /** Tiles this unit can attack now. */
+  targets: number;
   act: (action: Action) => boolean;
   onSkip: () => void;
 }
 
-export function UnitPanel({ ctx, state, viewer, unit, colors, planned, act, onSkip }: Props) {
+export function UnitPanel({
+  ctx,
+  state,
+  viewer,
+  unit,
+  colors,
+  planned,
+  targets,
+  act,
+  onSkip,
+}: Props) {
   const [confirmDisband, setConfirmDisband] = useState(false);
   const def = unitDef(ctx, unit);
+  const { fortify, maxHealth } = ctx.content.rules.combat;
+  const promotable = availablePromotions(ctx, unit);
   const cls = unitClassOf(ctx, unit);
   const mine = unit.owner === viewer;
   const status =
@@ -38,7 +55,9 @@ export function UnitPanel({ ctx, state, viewer, unit, colors, planned, act, onSk
       : unit.orders?.kind === 'sleep'
         ? 'Asleep'
         : unit.orders?.kind === 'fortify'
-          ? 'Fortified'
+          ? unit.orders.turns > 0
+            ? `Fortified (+${fortify[Math.min(unit.orders.turns, fortify.length) - 1]})`
+            : 'Fortifying'
           : unit.moves === 0
             ? 'Out of moves'
             : 'Ready';
@@ -98,15 +117,68 @@ export function UnitPanel({ ctx, state, viewer, unit, colors, planned, act, onSk
           <dt>Strength</dt>
           <dd>{def.strength || '—'}</dd>
         </div>
+        {def.rangedStrength > 0 && (
+          <div>
+            <dt>Ranged</dt>
+            <dd title={`Range ${def.range}`}>
+              {def.rangedStrength} · {def.range}
+            </dd>
+          </div>
+        )}
         <div>
           <dt>Sight</dt>
           <dd>{def.sight}</dd>
         </div>
         <div>
           <dt>Health</dt>
-          <dd>{unit.health}</dd>
+          <dd className={unit.health < maxHealth ? 'hurt' : ''}>
+            {unit.health}/{maxHealth}
+          </dd>
         </div>
+        {cls.combat && (
+          <div>
+            <dt>XP</dt>
+            <dd title="Experience toward the next promotion">
+              {unit.xp}/{nextPromotionXp(ctx, unit)}
+            </dd>
+          </div>
+        )}
       </dl>
+      {unit.promotions.length > 0 && (
+        <ul className="promotions" aria-label="Promotions">
+          {promotionsOf(ctx, unit).map((p) => (
+            <li key={p.id} title={resolveText(ctx.content, p.description)}>
+              ★ {resolveText(ctx.content, p.name)}
+            </li>
+          ))}
+        </ul>
+      )}
+      {mine && promotable.length > 0 && (
+        <section className="promote" aria-label="Promote">
+          <h4>★ Promotion ready</h4>
+          <p className="hint">Promoting heals the unit fully and ends its turn.</p>
+          <ul className="choices">
+            {promotable.map((id) => {
+              const p = ctx.content.entities.promotion[id]!;
+              return (
+                <li key={id}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      act({ type: 'promote_unit', player: viewer, unit: unit.id, promotion: id })
+                    }
+                  >
+                    <span>{resolveText(ctx.content, p.name)}</span>
+                    <span className="muted small-text">
+                      {resolveText(ctx.content, p.description)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
       {mine && (
         <div className="unit-actions">
           {def.actions.includes('found_settlement') && (
@@ -143,15 +215,17 @@ export function UnitPanel({ ctx, state, viewer, unit, colors, planned, act, onSk
       )}
       {mine && (
         <p className="hint">
-          {planned
-            ? planned.reachable
-              ? 'Tap the marked tile again to move there.'
-              : "Can't get there."
-            : foundBlocked && def.actions.includes('found_settlement') && unit.moves > 0
-              ? foundBlocked
-              : coarsePointer
-                ? 'Tap a tile to plan a move, then tap it again to go.'
-                : 'Right-click a tile to move there, or click it twice.'}
+          {targets > 0 && !planned
+            ? `${targets} target${targets === 1 ? '' : 's'} in reach: click a red tile to attack.`
+            : planned
+              ? planned.reachable
+                ? 'Tap the marked tile again to move there.'
+                : "Can't get there."
+              : foundBlocked && def.actions.includes('found_settlement') && unit.moves > 0
+                ? foundBlocked
+                : coarsePointer
+                  ? 'Tap a tile to plan a move, then tap it again to go.'
+                  : 'Right-click a tile to move there, or click it twice.'}
         </p>
       )}
     </aside>

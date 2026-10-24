@@ -1,6 +1,7 @@
 import { decodeBits, emptyBits, encodeBits, getBit, setBit } from '../bitset';
 import { type EngineContext, unitClassOf, unitDef } from '../context';
 import { distance, hexLine, neighbors, tilesWithin } from '../map/hex';
+import { extraSight } from './promotions';
 import type { GameState, PlayerId, UnitState } from '../state';
 import { isWater } from './movement';
 
@@ -39,7 +40,9 @@ export function sightOf(ctx: EngineContext, state: GameState, unit: UnitState): 
     return ctx.content.rules.units.embarkedSight;
   }
   const hills = state.map.tiles[unit.tile]!.elevation === 'hills';
-  return def.sight + (hills ? ctx.content.rules.elevation.hills.sightBonus : 0);
+  return (
+    def.sight + extraSight(ctx, unit) + (hills ? ctx.content.rules.elevation.hills.sightBonus : 0)
+  );
 }
 
 /** Tiles a player can see right now (1 = visible): around their units, and their territory

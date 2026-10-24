@@ -1,0 +1,315 @@
+[
+  {
+    "type": "wonder",
+    "id": "wonder_pyramids",
+    "name": "Pyramids",
+    "description": "+2 production here. +15% production toward buildings in every settlement. Built on desert.",
+    "icon": "Py",
+    "cost": 220,
+    "era": "era_ancient",
+    "yields": {
+      "production": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 15,
+          "toward": {
+            "kind": "building"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "placement": {
+      "terrains": ["desert"],
+      "features": ["floodplains"]
+    },
+    "model": "pyramid",
+    "requiresTech": "tech_masonry"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_hanging_gardens",
+    "name": "Hanging Gardens",
+    "description": "+2 food here. +15% growth in every settlement. Built on a river.",
+    "icon": "Ha",
+    "cost": 180,
+    "era": "era_ancient",
+    "yields": {
+      "food": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_growth",
+        "params": {
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "placement": {
+      "self": {
+        "river": true
+      }
+    },
+    "model": "gardens",
+    "requiresTech": "tech_irrigation"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_stonehenge",
+    "name": "Stonehenge",
+    "description": "+2 faith here. +1 faith in every settlement. Built on flat grassland or plains.",
+    "icon": "St",
+    "cost": 180,
+    "era": "era_ancient",
+    "yields": {
+      "faith": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "placement": {
+      "terrains": ["grassland", "plains"],
+      "elevations": ["flat"]
+    },
+    "model": "stones",
+    "requiresTech": "tech_astrology"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_temple_of_artemis",
+    "name": "Temple of Artemis",
+    "description": "+2 food here. Camps and pastures give +1 food. Built next to woods or a camp.",
+    "icon": "Te",
+    "cost": 180,
+    "era": "era_ancient",
+    "yields": {
+      "food": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": ["improvement_camp", "improvement_pasture"]
+        }
+      }
+    ],
+    "placement": {
+      "nextToAny": [
+        {
+          "feature": "woods"
+        },
+        {
+          "improvement": "improvement_camp"
+        }
+      ]
+    },
+    "model": "temple",
+    "requiresTech": "tech_archery"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_oracle",
+    "name": "Oracle",
+    "description": "+2 culture and +2 faith here. +10% culture in every settlement. Built on hills.",
+    "icon": "Or",
+    "cost": 200,
+    "era": "era_ancient",
+    "yields": {
+      "culture": 2,
+      "faith": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["hills"]
+    },
+    "model": "temple",
+    "requiresCivic": "civic_mysticism"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_colossus",
+    "name": "Colossus",
+    "description": "+3 gold here. Coast tiles you own give +1 gold. Built on the coast.",
+    "icon": "Co",
+    "cost": 200,
+    "era": "era_classical",
+    "yields": {
+      "gold": 3
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_terrain": "coast"
+        }
+      }
+    ],
+    "placement": {
+      "water": true,
+      "terrains": ["coast"],
+      "elevations": ["flat"],
+      "nextToAny": [
+        {
+          "terrain": ["grassland", "plains", "desert", "tundra", "snow"]
+        }
+      ]
+    },
+    "model": "statue",
+    "requiresTech": "tech_shipbuilding"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_great_library",
+    "name": "Great Library",
+    "description": "+3 science here. +1 science in every settlement with a Library. Built next to a Campus.",
+    "icon": "Gr",
+    "cost": 250,
+    "era": "era_classical",
+    "yields": {
+      "science": 3
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_library"
+        }
+      }
+    ],
+    "placement": {
+      "nextTo": [
+        {
+          "district": "district_campus"
+        }
+      ]
+    },
+    "model": "library",
+    "requiresCivic": "civic_recorded_history"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_colosseum",
+    "name": "Colosseum",
+    "description": "+2 culture here. +1 happiness in every settlement. Built on flat land.",
+    "icon": "Co",
+    "cost": 220,
+    "era": "era_classical",
+    "yields": {
+      "culture": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["flat"]
+    },
+    "model": "arena",
+    "requiresCivic": "civic_games_and_recreation"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_petra",
+    "name": "Petra",
+    "description": "+2 gold here. Desert tiles you own give +1 food and +1 production. Built on desert.",
+    "icon": "Pe",
+    "cost": 240,
+    "era": "era_classical",
+    "yields": {
+      "gold": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_terrain": "desert"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_terrain": "desert"
+        }
+      }
+    ],
+    "placement": {
+      "terrains": ["desert"]
+    },
+    "model": "rock_city",
+    "requiresTech": "tech_mathematics"
+  }
+]

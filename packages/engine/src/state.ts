@@ -1,3 +1,4 @@
+import type { SlotKind } from '@cx/content';
 import type { MapSettings, MapState } from './map/types';
 import type { RngState } from './rng';
 
@@ -12,6 +13,8 @@ export interface GameState {
   contentHash: string;
   settings: GameSettings;
   status: 'playing' | 'ended';
+  /** How the game ended, once it has. */
+  result: { reason: 'score' | 'conquest' | 'domination'; winner: PlayerId | null } | null;
   /** Starts at 1. */
   turn: number;
   rng: RngState;
@@ -23,19 +26,39 @@ export interface GameState {
   map: MapState;
   /** Every unit on the map, by id (`u1`, `u2`...). Iterate with `unitIds()` for a stable order. */
   units: Record<UnitId, UnitState>;
-  /** Pairs of players at war, as sorted `"a|b"` keys. Declaring war arrives with diplomacy (M15). */
+  /** Pairs of players at war, as sorted `"a|b"` keys (see `warKey`). */
   wars: string[];
+  /** The turn each current war began, by war key. */
+  warStarted: Record<string, number>;
+  /** Peace offers waiting for an answer, as `"from>to"`. */
+  peaceOffers: string[];
+  /** War support per war (by war key), per side. The side behind loses happiness. */
+  warSupport: Record<string, Record<PlayerId, number>>;
+  /** Hostile camps, by id (`c4`...). Their raiders belong to `HOSTILE`. */
+  camps: Record<string, CampState>;
   /** Every settlement, by id (`s3`...). Iterate with `settlementIds()` for a stable order. */
   settlements: Record<SettlementId, SettlementState>;
 }
 
 export type SettlementId = string;
 
+/** A hostile camp: it trains raiders until a player's military unit moves onto it. */
+export interface CampState {
+  id: string;
+  tile: number;
+  /** Raiders it trained that are still alive. */
+  units: UnitId[];
+  /** The turn it trains its next raider. */
+  nextUnit: number;
+}
+
 /** Something a city can produce. */
 export interface BuildItem {
-  kind: 'unit' | 'building';
-  /** A `unit` or `building` content id. */
+  kind: 'unit' | 'building' | 'district' | 'wonder' | 'project';
+  /** A content id of that kind. */
   id: string;
+  /** Where it goes (districts, wonders and projects). */
+  tile?: number | undefined;
 }
 
 /** Which yield auto-assign favors when picking tiles for citizens. */
@@ -72,6 +95,32 @@ export interface SettlementState {
   focus: CitizenFocus;
   /** Growth choices waiting: each lets the player develop one tile with an improvement. */
   pendingDevelop: number;
+  /** Districts built, in the order they were finished. */
+  districts: { id: string; tile: number }[];
+  /** World wonders built here. */
+  wonders: string[];
+  /** Citizens working as specialists, per district id. */
+  specialists: Record<string, number>;
+  /** Towns: a `specialization` content id. */
+  specialization: string | null;
+  /** How many times the specialization was chosen (the first is free). */
+  specializationChanges: number;
+  /** Hit points (full: `rules.combat.settlement.cityHealth` or `townHealth`). */
+  health: number;
+  /** Outer defense left (full: the `walls` of its buildings). */
+  walls: number;
+  /** The last turn it was attacked (it doesn't heal that turn). */
+  attackedTurn: number | null;
+  /** The last turn it made its ranged strike (one a turn). */
+  struckTurn: number | null;
+  /** Who founded it (liberating returns it to them). */
+  founder: PlayerId;
+  /** It was founded as its founder's capital (can't be razed). */
+  originalCapital: boolean;
+  /** Who it was taken from, if it was captured. */
+  capturedFrom: PlayerId | null;
+  /** Just captured: the new owner chooses keep, raze or liberate (keep, if they end the turn). */
+  captureChoice: boolean;
 }
 
 export type UnitId = string;
@@ -81,8 +130,8 @@ export type UnitOrders =
   | { kind: 'move'; target: number }
   /** Asleep until woken (or an enemy comes into view, later). */
   | { kind: 'sleep' }
-  /** Dug in for a defense bonus (combat, M9). */
-  | { kind: 'fortify' };
+  /** Dug in for a defense bonus that grows over the first turns (`turns` fortified so far). */
+  | { kind: 'fortify'; turns: number };
 
 export interface UnitState {
   id: UnitId;
@@ -97,6 +146,8 @@ export interface UnitState {
   orders: UnitOrders | null;
   /** Turn on which the player chose "skip" for this unit, so it stops asking for orders. */
   skippedTurn: number | null;
+  /** `promotion` content ids, in the order they were taken. */
+  promotions: string[];
 }
 
 export interface GameSettings {
@@ -104,12 +155,17 @@ export interface GameSettings {
   /** The game ends after this turn (score victory). `null` = no limit. */
   turnLimit: number | null;
   map: MapSettings;
+  /** Hostile camps (on unless false). */
+  camps?: boolean | undefined;
+  /** Domination victory (on unless false). */
+  domination?: boolean | undefined;
 }
 
 export interface PlayerState {
   id: PlayerId;
   name: string;
-  kind: 'human' | 'ai';
+  /** `hostile`: the owner of camp raiders, outside the turn order (see `HOSTILE`). */
+  kind: 'human' | 'ai' | 'hostile';
   /** Team number; players on the same team share victory. `null` = no team. */
   team: number | null;
   alive: boolean;
@@ -130,4 +186,39 @@ export interface PlayerState {
   capital: SettlementId | null;
   /** How many settlements this player has founded (picks the next name). */
   settlementsFounded: number;
+  /** Enemy units destroyed (for score). */
+  kills: number;
+  /** The tech tree (paid with science) and the civics tree (paid with culture). */
+  techs: Track;
+  civics: Track;
+  /** A `government` content id. */
+  government: string;
+  /** Policy cards in each kind of slot. */
+  policies: Record<SlotKind, string[]>;
+  /** Changing policies and government is free this turn (right after finishing a civic). */
+  policyWindow: boolean;
+  celebration: {
+    /** Happiness surplus saved toward the next celebration. */
+    store: number;
+    /** Celebrations so far (each makes the next one cost more). */
+    count: number;
+    /** Turns left in the current celebration (0 = not celebrating). */
+    turnsLeft: number;
+  };
+}
+
+/** Progress through one tree. Amounts are in hundredths. */
+export interface Track {
+  /** Finished, in the order they were finished. */
+  done: string[];
+  /** Being worked on now. */
+  current: string | null;
+  /** What comes after `current` (a path chosen through the tree). */
+  queue: string[];
+  /** Progress on each started node. */
+  progress: Record<string, number>;
+  /** Nodes whose boost has been earned. */
+  boosted: string[];
+  /** Earned while nothing was chosen; goes to the next choice. */
+  stored: number;
 }

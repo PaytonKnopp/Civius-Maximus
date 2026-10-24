@@ -29,7 +29,7 @@
       "perCity": 60
     },
     "purchase": {
-      "goldPerProduction": 3,
+      "goldPerProduction": 4,
       "tileBase": 25,
       "tilePerAcquired": 5,
       "tilePerDistance": 10
@@ -54,6 +54,20 @@
       "culture": 15,
       "faith": 10,
       "happiness": 10
+    },
+    "citizenYields": {
+      "science": 0.5
+    },
+    "districts": {
+      "base": 1,
+      "populationPer": 3,
+      "neighborBonus": 0.5,
+      "costPerProgressPercent": 2
+    },
+    "specialization": {
+      "minPopulation": 5,
+      "changeCost": 50,
+      "sendRange": 10
     }
   },
   "elevation": {
@@ -109,6 +123,117 @@
     },
     "startingUnits": ["unit_settler", "unit_warrior", "unit_scout"],
     "embarkFromStart": false,
-    "embarkedSight": 1
+    "embarkedSight": 1,
+    "freeUpkeep": 3
+  },
+  "progress": {
+    "boostPercent": 40,
+    "startingGovernment": "government_chiefdom",
+    "policySwapCost": 25,
+    "governmentChangeCost": 100,
+    "celebration": {
+      "base": 40,
+      "perCelebration": 30,
+      "turns": 10,
+      "effects": [
+        {
+          "effect": "extra_policy_slot",
+          "params": {
+            "slot": "wildcard",
+            "amount": 1
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "percent": 10
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
+  },
+  "combat": {
+    "baseDamage": 30,
+    "strengthScale": 0.04,
+    "randomPercent": 20,
+    "maxHealth": 100,
+    "fortify": [3, 6],
+    "flanking": 2,
+    "support": 2,
+    "woundedPer10": 1,
+    "amphibiousPenalty": 10,
+    "embarkedStrength": 10,
+    "xp": {
+      "attack": 4,
+      "defend": 3
+    },
+    "heal": {
+      "enemy": 10,
+      "neutral": 10,
+      "own": 15,
+      "settlement": 20
+    },
+    "settlement": {
+      "cityHealth": 200,
+      "townHealth": 100,
+      "cityStrengthBonus": 3,
+      "townStrengthBonus": 0,
+      "wallsStrength": 5,
+      "strikeRange": 2,
+      "heal": 20,
+      "wallsRepair": 10,
+      "capturePopulationLoss": 25
+    },
+    "minWarTurns": 10,
+    "promotionXp": [15, 30, 50, 75, 105],
+    "warSupport": {
+      "surprise": 3,
+      "kill": 1,
+      "capture": 3,
+      "max": 10,
+      "unhappinessPerPoint": 1,
+      "maxUnhappiness": 5
+    }
+  },
+  "camps": {
+    "landTilesPerCamp": 120,
+    "minDistance": 6,
+    "spawnEvery": 12,
+    "unitEvery": 7,
+    "maxUnits": 3,
+    "aggroRange": 4,
+    "reward": 50,
+    "units": [
+      {
+        "era": "era_ancient",
+        "units": ["unit_warrior", "unit_warrior", "unit_slinger"]
+      },
+      {
+        "era": "era_classical",
+        "units": ["unit_spearman", "unit_archer", "unit_horseman"]
+      },
+      {
+        "era": "era_medieval",
+        "units": ["unit_swordsman", "unit_crossbowman", "unit_horseman"]
+      }
+    ]
+  },
+  "score": {
+    "perCitizen": 1,
+    "perTown": 2,
+    "perCity": 5,
+    "perTech": 2,
+    "perCivic": 2,
+    "perWonder": 10,
+    "perDistrict": 2,
+    "perEra": 10,
+    "perKill": 1
   }
 }

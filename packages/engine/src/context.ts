@@ -37,6 +37,11 @@ export function warKey(a: string, b: string): string {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
+/** The owner of hostile camps' raiders: at war with everyone, never in the turn order. */
+export const HOSTILE = 'hostile';
+
 export function atWar(state: Pick<GameState, 'wars'>, a: string, b: string): boolean {
-  return a !== b && state.wars.includes(warKey(a, b));
+  if (a === b) return false;
+  if (a === HOSTILE || b === HOSTILE) return true;
+  return state.wars.includes(warKey(a, b));
 }

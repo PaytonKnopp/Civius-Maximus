@@ -1,0 +1,325 @@
+[
+  {
+    "type": "district",
+    "id": "district_campus",
+    "name": "Campus",
+    "description": "Science. Loves mountains, rainforest and reefs.",
+    "icon": "Cp",
+    "cost": 54,
+    "requiresTech": "tech_writing",
+    "adjacency": [
+      {
+        "yield": "science",
+        "amount": 1,
+        "per": {
+          "elevation": "mountain"
+        },
+        "label": "Mountains"
+      },
+      {
+        "yield": "science",
+        "amount": 1,
+        "per": {
+          "feature": "rainforest"
+        },
+        "every": 2,
+        "label": "Rainforest"
+      },
+      {
+        "yield": "science",
+        "amount": 2,
+        "per": {
+          "feature": "reef"
+        },
+        "label": "Reef"
+      }
+    ],
+    "specialistYields": {
+      "science": 2
+    },
+    "model": "campus",
+    "color": "#5fb8f0"
+  },
+  {
+    "type": "district",
+    "id": "district_holy_site",
+    "name": "Holy Site",
+    "description": "Faith. Loves mountains and woods.",
+    "icon": "HS",
+    "cost": 54,
+    "requiresTech": "tech_astrology",
+    "adjacency": [
+      {
+        "yield": "faith",
+        "amount": 1,
+        "per": {
+          "elevation": "mountain"
+        },
+        "label": "Mountains"
+      },
+      {
+        "yield": "faith",
+        "amount": 1,
+        "per": {
+          "feature": "woods"
+        },
+        "every": 2,
+        "label": "Woods"
+      }
+    ],
+    "specialistYields": {
+      "faith": 2
+    },
+    "model": "holy_site",
+    "color": "#e8e2c8"
+  },
+  {
+    "type": "district",
+    "id": "district_theater",
+    "name": "Theater Square",
+    "description": "Culture. Loves wonders and entertainment.",
+    "icon": "Th",
+    "cost": 54,
+    "requiresCivic": "civic_drama_and_poetry",
+    "adjacency": [
+      {
+        "yield": "culture",
+        "amount": 1,
+        "per": {
+          "wonder": true
+        },
+        "label": "Wonders"
+      },
+      {
+        "yield": "culture",
+        "amount": 2,
+        "per": {
+          "district": "district_entertainment"
+        },
+        "label": "Entertainment Complex"
+      }
+    ],
+    "specialistYields": {
+      "culture": 2
+    },
+    "model": "theater",
+    "color": "#d47ae0"
+  },
+  {
+    "type": "district",
+    "id": "district_commercial_hub",
+    "name": "Commercial Hub",
+    "description": "Gold. Loves rivers and harbors.",
+    "icon": "CH",
+    "cost": 54,
+    "requiresTech": "tech_currency",
+    "adjacency": [
+      {
+        "yield": "gold",
+        "amount": 2,
+        "self": {
+          "river": true
+        },
+        "label": "River"
+      },
+      {
+        "yield": "gold",
+        "amount": 2,
+        "per": {
+          "district": "district_harbor"
+        },
+        "label": "Harbor"
+      }
+    ],
+    "specialistYields": {
+      "gold": 2
+    },
+    "model": "commercial",
+    "color": "#f2d24b"
+  },
+  {
+    "type": "district",
+    "id": "district_harbor",
+    "name": "Harbor",
+    "description": "Gold and food from the sea. Built on the coast.",
+    "icon": "Hb",
+    "cost": 54,
+    "requiresTech": "tech_celestial_navigation",
+    "placement": {
+      "water": true,
+      "terrains": ["coast", "lake"],
+      "elevations": ["flat"],
+      "nextToAny": [
+        {
+          "terrain": ["grassland", "plains", "desert", "tundra", "snow"]
+        }
+      ]
+    },
+    "adjacency": [
+      {
+        "yield": "gold",
+        "amount": 2,
+        "per": {
+          "cityCenter": true
+        },
+        "label": "City center"
+      },
+      {
+        "yield": "gold",
+        "amount": 1,
+        "per": {
+          "terrain": ["coast", "lake", "ocean"],
+          "resource": true
+        },
+        "label": "Sea resources"
+      }
+    ],
+    "yields": {
+      "food": 1
+    },
+    "specialistYields": {
+      "gold": 1,
+      "food": 1
+    },
+    "model": "harbor",
+    "color": "#4a8fc0"
+  },
+  {
+    "type": "district",
+    "id": "district_industrial_zone",
+    "name": "Industrial Zone",
+    "description": "Production. Loves mines, quarries and aqueducts.",
+    "icon": "IZ",
+    "cost": 54,
+    "requiresTech": "tech_apprenticeship",
+    "adjacency": [
+      {
+        "yield": "production",
+        "amount": 1,
+        "per": {
+          "improvement": ["improvement_mine", "improvement_quarry"]
+        },
+        "label": "Mines and quarries"
+      },
+      {
+        "yield": "production",
+        "amount": 2,
+        "per": {
+          "district": "district_aqueduct"
+        },
+        "label": "Aqueduct"
+      }
+    ],
+    "specialistYields": {
+      "production": 2
+    },
+    "model": "industrial",
+    "color": "#e8a04a"
+  },
+  {
+    "type": "district",
+    "id": "district_encampment",
+    "name": "Encampment",
+    "description": "Trains soldiers. Can't be next to the city center.",
+    "icon": "En",
+    "cost": 54,
+    "requiresTech": "tech_bronze_working",
+    "placement": {
+      "notNextTo": [
+        {
+          "cityCenter": true
+        }
+      ]
+    },
+    "specialistYields": {
+      "production": 1,
+      "gold": 1
+    },
+    "model": "encampment",
+    "color": "#c0503c"
+  },
+  {
+    "type": "district",
+    "id": "district_entertainment",
+    "name": "Entertainment Complex",
+    "description": "Happiness for the settlement.",
+    "icon": "EC",
+    "cost": 54,
+    "requiresCivic": "civic_games_and_recreation",
+    "happiness": 1,
+    "model": "entertainment",
+    "color": "#9fd36a"
+  },
+  {
+    "type": "district",
+    "id": "district_aqueduct",
+    "name": "Aqueduct",
+    "description": "Fresh water: +1 happiness and +15% growth. Must touch the city center and a river, lake, oasis or mountain. Doesn't count toward the district limit.",
+    "icon": "Aq",
+    "cost": 36,
+    "requiresTech": "tech_engineering",
+    "specialty": false,
+    "happiness": 1,
+    "placement": {
+      "nextTo": [
+        {
+          "cityCenter": true
+        }
+      ],
+      "nextToAny": [
+        {
+          "river": true
+        },
+        {
+          "terrain": "lake"
+        },
+        {
+          "feature": "oasis"
+        },
+        {
+          "elevation": "mountain"
+        }
+      ]
+    },
+    "localEffects": [
+      {
+        "effect": "modify_growth",
+        "params": {
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "model": "aqueduct",
+    "color": "#7fc4d8"
+  },
+  {
+    "type": "district",
+    "id": "district_government_plaza",
+    "name": "Government Plaza",
+    "description": "One per empire: +1 wildcard policy slot and +2 influence.",
+    "icon": "GP",
+    "cost": 54,
+    "requiresCivic": "civic_political_philosophy",
+    "onePerEmpire": true,
+    "yields": {
+      "influence": 2
+    },
+    "effects": [
+      {
+        "effect": "extra_policy_slot",
+        "params": {
+          "slot": "wildcard",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "model": "plaza",
+    "color": "#d4a94e"
+  }
+]

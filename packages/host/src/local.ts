@@ -7,6 +7,7 @@ import {
   type GameEvent,
   type GameSetup,
   type GameState,
+  type PlayerId,
 } from '@cx/engine';
 import { placeholderAiActions } from './placeholder-ai';
 
@@ -21,17 +22,38 @@ export class LocalGame {
   state: GameState;
   private listeners = new Set<GameListener>();
 
+  /** A new game from a setup, or a saved game from its state. */
   constructor(
-    setup: GameSetup,
+    start: GameSetup | GameState,
     readonly ctx: EngineContext,
   ) {
-    this.state = createGame(setup, ctx);
+    // A loaded save is frozen like every engine state, so Immer can share its untouched parts.
+    this.state = 'stateVersion' in start ? deepFreeze(start) : createGame(start, ctx);
     this.endAiTurns([]);
+  }
+
+  /** Human players still in the game, in turn order. */
+  humans(): PlayerId[] {
+    return this.state.playerOrder.filter((id) => {
+      const p = this.state.players[id]!;
+      return p.alive && p.kind === 'human';
+    });
+  }
+
+  /** The human who plays next this turn (hotseat): the first who hasn't ended their turn. */
+  nextHuman(): PlayerId | undefined {
+    return this.humans().find((id) => !this.state.players[id]!.turnEnded);
   }
 
   subscribe(listener: GameListener): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
+  }
+
+  /** Replaces the whole game (loading a save, or a test setting up a scene) and tells listeners. */
+  load(state: GameState) {
+    this.state = state;
+    for (const fn of this.listeners) fn(this.state, []);
   }
 
   /** Applies a player's action; on success, AI seats respond and listeners are told. */
@@ -67,4 +89,12 @@ export class LocalGame {
       }
     }
   }
+}
+
+function deepFreeze<T>(value: T): T {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const v of Object.values(value)) deepFreeze(v);
+  }
+  return value;
 }

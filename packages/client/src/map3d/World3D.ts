@@ -38,6 +38,7 @@ import {
   WebGLRenderTarget,
 } from 'three';
 import {
+  type FlashTone,
   type MapRenderer,
   type MapViewData,
   type MapViewOptions,
@@ -50,6 +51,7 @@ import {
   type TileHighlight,
   type UnitView,
 } from '../map/renderer';
+import { FloatLayer } from './floats';
 import { type PropKind, propGeometries, placeProps } from './props';
 import { center3, type Sample, TerrainSampler } from './sampler';
 import { SettlementLayer } from './settlements3d';
@@ -243,6 +245,7 @@ export class World3D implements MapRenderer {
   private chunkOfTile = new Int32Array(0);
   private chunkGrid = { nx: 0, nz: 0 };
   private units: UnitLayer;
+  private floats: FloatLayer;
   private settlements: SettlementLayer;
   private settlementData: { views: SettlementView[]; territory: TerritoryView } | undefined;
   /** Settlement centers: trees and rocks there are hidden under the buildings. */
@@ -295,6 +298,14 @@ export class World3D implements MapRenderer {
       fog: (tile) => (this.gameFog ? (this.visibility[tile] ?? 0) : 2),
     });
     this.scene.add(this.settlements.group);
+    this.floats = new FloatLayer({
+      center: (tile) =>
+        center3(tile % this.data!.map.width, Math.floor(tile / this.data!.map.width)),
+      height: (x, z) => this.heightAt(x, z),
+      worldWidth: () => this.worldW,
+      wrap: () => this.data?.map.wrapX ?? false,
+    });
+    this.scene.add(this.floats.group);
 
     const material = new ShaderMaterial({
       vertexShader: paintPassVertex,
@@ -395,7 +406,19 @@ export class World3D implements MapRenderer {
 
   setSettlements(views: SettlementView[], territory: TerritoryView) {
     this.settlementData = { views, territory };
+    // No trees or rocks under settlements, districts and wonders, or where woods were cleared.
     const centers = new Set(views.map((v) => v.tile));
+    if (this.data) {
+      this.data.map.tiles.forEach((t, i) => {
+        if (
+          territory.districts[i] ||
+          territory.wonders[i] ||
+          territory.camps[i] ||
+          (t.feature !== null && territory.features[i] === null)
+        )
+          centers.add(i);
+      });
+    }
     const changed = [...centers, ...this.cleared].filter(
       (t) => centers.has(t) !== this.cleared.has(t),
     );
@@ -405,6 +428,16 @@ export class World3D implements MapRenderer {
       for (const i of chunks) if (this.chunks[i]) this.applyVisibility(this.chunks[i]!);
     }
     this.refreshSettlements();
+  }
+
+  flash(tile: number, text: string, tone: FlashTone) {
+    if (this.data) this.floats.flash(tile, text, tone);
+  }
+
+  animateAttack(unit: string | null, from: number, tile: number, mode: 'melee' | 'ranged') {
+    if (!this.data) return;
+    if (mode === 'ranged') this.floats.shot(from, tile);
+    else if (unit) this.units.lunge(unit, tile);
   }
 
   setHighlights(highlights: TileHighlight[]) {
@@ -894,6 +927,7 @@ export class World3D implements MapRenderer {
       this.uniforms.uTime.value = frameStart / 1000;
       this.units.update(dt, this.target.x, frameStart / 1000);
       this.settlements.update(this.target.x);
+      this.floats.update(dt, this.target.x);
       if (QUALITY[this.options.quality].post) {
         this.renderer.setRenderTarget(this.post.target);
         this.renderer.render(this.scene, this.camera);
