@@ -33,6 +33,15 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
     | { type: 'deal_broken'; by: PlayerId; to: PlayerId }
     | { type: 'pact_ended'; kind: 'friendship' | 'alliance'; players: [PlayerId, PlayerId] }
     | { type: 'denounced'; by: PlayerId; target: PlayerId }
+    /** A commander caught by enemies fell back to a settlement until turn `until`. */
+    | {
+        type: 'commander_retreated';
+        unit: UnitId;
+        owner: PlayerId;
+        from: number;
+        to: number;
+        until: number;
+      }
     | { type: 'turn_ended_by_player'; player: PlayerId }
     | { type: 'turn_unended_by_player'; player: PlayerId }
     | { type: 'turn_started'; turn: number }

@@ -174,10 +174,12 @@ export function personalityOf(ctx: EngineContext, state: GameState, player: Play
 }
 
 /** What a unit is for, read from its stats (so modded units get used sensibly too). */
-export type Role = 'settler' | 'civilian' | 'explorer' | 'melee' | 'ranged' | 'siege' | 'naval';
+export type Role =
+  'settler' | 'commander' | 'civilian' | 'explorer' | 'melee' | 'ranged' | 'siege' | 'naval';
 
 export function roleOf(def: UnitDef, cls: UnitClassDef): Role {
   if (def.actions.includes('found_settlement')) return 'settler';
+  if (def.commander) return 'commander';
   if (!cls.combat) return 'civilian';
   if (cls.domain !== 'land') return 'naval';
   if (def.rangedStrength > 0 && def.range > 0) return cls.vsSettlement > 0 ? 'siege' : 'ranged';

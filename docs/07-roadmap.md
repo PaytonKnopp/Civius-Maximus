@@ -114,7 +114,7 @@ features on top.
   picker, a star on units with a promotion ready, camps in 3D and 2D, war support in the rival
   panel, a camps toggle in the new-game dialog.
 - Moved later: **commanders** (pack/unpack, command radius), after the M10 checkpoint, so how
-  armies move can be shaped by playing. Puppets wait for loyalty.
+  armies move can be shaped by playing (built in V1 part 4). Puppets wait for loyalty.
 
 ### M10 · Hotseat alpha 🎮 ✅
 - 2–8 player hotseat, a turn summary, domination and score victories, and save/load.

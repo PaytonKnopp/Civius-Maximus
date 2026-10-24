@@ -157,7 +157,7 @@ export function moveSettler(t: Turn, u: UnitState) {
     sites.some((s) => s.tile === (u.orders as { target: number }).target)
   )
     return;
-  for (const site of sites.slice(0, 4)) {
+  for (const site of sites.filter((x) => x.tile !== u.tile).slice(0, 4)) {
     if (t.act({ type: 'move_unit', player: t.player, unit: u.id, to: site.tile })) {
       const moved = t.state.units[u.id];
       if (moved && moved.tile === site.tile && moved.moves > 0)

@@ -2811,6 +2811,38 @@
                 "multipleOf": 0.5
               }
             },
+            "commander": {
+              "type": "object",
+              "properties": {
+                "capacity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "radius": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "strength": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "retreatTurns": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "capacity",
+                "radius",
+                "strength",
+                "retreatTurns"
+              ],
+              "additionalProperties": false
+            },
             "civ": {
               "type": "string",
               "pattern": "^[a-z][a-z0-9_]*$"
@@ -26086,6 +26118,42 @@
             "granted": {
               "default": false,
               "type": "boolean"
+            },
+            "command": {
+              "type": "object",
+              "properties": {
+                "capacity": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "radius": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "attack": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "defense": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "heal": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "additionalProperties": false
             }
           },
           "required": [
@@ -37634,11 +37702,17 @@
                       "type": "integer",
                       "minimum": 0,
                       "maximum": 9007199254740991
+                    },
+                    "commander": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
                   "required": [
                     "attack",
-                    "defend"
+                    "defend",
+                    "commander"
                   ],
                   "additionalProperties": false
                 },
@@ -41230,6 +41304,38 @@
                   "type": "number",
                   "multipleOf": 0.5
                 }
+              },
+              "commander": {
+                "type": "object",
+                "properties": {
+                  "capacity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "radius": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "strength": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "retreatTurns": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "capacity",
+                  "radius",
+                  "strength",
+                  "retreatTurns"
+                ],
+                "additionalProperties": false
               },
               "civ": {
                 "type": "string",
@@ -64506,6 +64612,42 @@
               "granted": {
                 "default": false,
                 "type": "boolean"
+              },
+              "command": {
+                "type": "object",
+                "properties": {
+                  "capacity": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "radius": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "attack": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "defense": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "heal": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "additionalProperties": false
               }
             },
             "required": [
@@ -76054,11 +76196,17 @@
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 9007199254740991
+                      },
+                      "commander": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
                       }
                     },
                     "required": [
                       "attack",
-                      "defend"
+                      "defend",
+                      "commander"
                     ],
                     "additionalProperties": false
                   },

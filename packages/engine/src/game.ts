@@ -14,6 +14,7 @@ import { scoreVictory } from './victory';
 import { checkBoosts, progressHandlers } from './progress/handlers';
 import { newProgress } from './progress/sources';
 import { settlementHandlers, settlementsTurn } from './settlements/handlers';
+import { commanderHandlers } from './units/commanders';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
 
@@ -155,6 +156,7 @@ const handlers: Handlers = {
   ...progressHandlers,
   ...combatHandlers,
   ...diplomacyHandlers,
+  ...commanderHandlers,
   end_turn: {
     validate(state, action) {
       const p = state.players[action.player];

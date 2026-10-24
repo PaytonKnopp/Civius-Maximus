@@ -13,6 +13,7 @@ import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
 import { canTraverse, isWater, riverBits, unitsOn } from '../units/movement';
 import { playerEffects } from '../progress/sources';
 import { uniqueProblem } from '../uniques';
+import { commandersAround } from '../units/commanders';
 import { promotionsOf, unitRange } from '../units/promotions';
 import { lineOfSight, visibleTiles } from '../units/vision';
 import { damageRange } from './damage';
@@ -210,6 +211,13 @@ function bonusLines(
         out.push({ label: resolveText(ctx.content, p.name), amount: b.amount });
     }
   }
+  // The best commander whose radius covers the unit.
+  let command = 0;
+  for (const c of commandersAround(ctx, state, unit.owner, unit.tile)) {
+    const extra = role === 'attack' ? c.command.attack : c.command.defense;
+    command = Math.max(command, c.command.strength + extra);
+  }
+  if (command > 0) out.push({ label: 'Commander', amount: command });
   const owner = state.players[unit.owner];
   if (!owner) return out;
   const cls = unitDef(ctx, unit).class;
@@ -575,7 +583,9 @@ export function militaryStrength(ctx: EngineContext, state: GameState, player: P
   let total = 0;
   for (const id of unitIds(state)) {
     const u = state.units[id]!;
-    if (u.owner === player) total += unitPower(ctx, u);
+    if (u.owner !== player) continue;
+    total += unitPower(ctx, u);
+    for (const packed of u.cargo ?? []) total += unitPower(ctx, packed);
   }
   return total;
 }

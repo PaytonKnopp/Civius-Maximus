@@ -492,5 +492,64 @@
     "tier": 1,
     "movement": 1,
     "granted": true
+  },
+  {
+    "type": "promotion",
+    "id": "promo_cmd_assault",
+    "name": "Assault",
+    "description": "Units in the radius +2 strength when attacking.",
+    "classes": ["class_commander"],
+    "tier": 1,
+    "command": {
+      "attack": 2
+    }
+  },
+  {
+    "type": "promotion",
+    "id": "promo_cmd_bastion",
+    "name": "Bastion",
+    "description": "Units in the radius +2 strength when defending.",
+    "classes": ["class_commander"],
+    "tier": 1,
+    "command": {
+      "defense": 2
+    }
+  },
+  {
+    "type": "promotion",
+    "id": "promo_cmd_logistics",
+    "name": "Logistics",
+    "description": "+2 units packed, +1 movement.",
+    "classes": ["class_commander"],
+    "tier": 2,
+    "requires": ["promo_cmd_assault", "promo_cmd_bastion"],
+    "movement": 1,
+    "command": {
+      "capacity": 2
+    }
+  },
+  {
+    "type": "promotion",
+    "id": "promo_cmd_field_medicine",
+    "name": "Field Medicine",
+    "description": "Units in the radius heal 10 more each turn.",
+    "classes": ["class_commander"],
+    "tier": 2,
+    "requires": ["promo_cmd_assault", "promo_cmd_bastion"],
+    "command": {
+      "heal": 10
+    }
+  },
+  {
+    "type": "promotion",
+    "id": "promo_cmd_leadership",
+    "name": "Leadership",
+    "description": "+1 command radius.",
+    "classes": ["class_commander"],
+    "tier": 3,
+    "requires": ["promo_cmd_logistics", "promo_cmd_field_medicine"],
+    "command": {
+      "radius": 1
+    }
   }
 ]

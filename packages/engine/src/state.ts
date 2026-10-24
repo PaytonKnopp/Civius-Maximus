@@ -215,6 +215,10 @@ export interface UnitState {
   skippedTurn: number | null;
   /** `promotion` content ids, in the order they were taken. */
   promotions: string[];
+  /** Commanders: the units packed inside (off the map until unpacked). */
+  cargo?: UnitState[];
+  /** Commanders: out of action after a retreat until this turn. */
+  recovering?: number;
 }
 
 export interface GameSettings {

@@ -27,6 +27,25 @@
   },
   {
     "type": "unit",
+    "id": "unit_army_commander",
+    "name": "Army Commander",
+    "class": "class_commander",
+    "movement": 2,
+    "sight": 2,
+    "cost": 90,
+    "upkeep": 1,
+    "icon": "AC",
+    "model": "generic",
+    "requiresCivic": "civic_military_tradition",
+    "commander": {
+      "capacity": 4,
+      "radius": 1,
+      "strength": 2,
+      "retreatTurns": 5
+    }
+  },
+  {
+    "type": "unit",
     "id": "unit_warrior",
     "name": "Warrior",
     "class": "class_melee",

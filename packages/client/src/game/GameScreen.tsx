@@ -179,6 +179,10 @@ function noticeFor(
       const them = civName(content, state, a === ME ? b : a);
       return `Your ${e.kind} with ${them} has ended`;
     }
+    case 'commander_retreated':
+      return e.owner === ME
+        ? `Your commander fell back to a settlement (back in action on turn ${e.until})`
+        : undefined;
     case 'denounced':
       return e.target === ME
         ? `${civName(content, state, e.by)} denounced you!`
