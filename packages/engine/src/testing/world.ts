@@ -6,6 +6,7 @@ import { tileIndex } from '../map/hex';
 import type { MapTile } from '../map/types';
 import { createRng } from '../rng';
 import type { GameState, UnitState } from '../state';
+import { newProgress } from '../progress/sources';
 import { MP } from '../units/movement';
 
 /** Test helpers: hand-drawn maps and shortcuts for driving the engine (tests only). */
@@ -32,6 +33,8 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
         owner: null,
         settlement: null,
         improvement: null,
+        district: null,
+        wonder: null,
       };
       if (ch === 'p') t.terrain = 'plains';
       if (ch === 'd') t.terrain = 'desert';
@@ -59,6 +62,8 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     faith: 0,
     capital: null,
     settlementsFounded: 0,
+    kills: 0,
+    ...newProgress(ctx),
   });
   return {
     stateVersion: 1,
@@ -76,6 +81,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
       },
     },
     status: 'playing',
+    result: null,
     turn: 1,
     rng: createRng('s'),
     players: { p1: player('p1'), p2: player('p2') },
@@ -84,6 +90,10 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     map: { width, height: rows.length, wrapX: false, tiles },
     units: {},
     wars: [],
+    warStarted: {},
+    peaceOffers: [],
+    warSupport: {},
+    camps: {},
     settlements: {},
   };
 }
@@ -109,6 +119,7 @@ export function addUnit(
     xp: 0,
     orders: null,
     skippedTurn: null,
+    promotions: [],
   };
   s.units = { ...s.units, [id]: unit };
   return unit;

@@ -1,11 +1,35 @@
-import { type BuildingDef, type ImprovementDef, resolveText, type UnitDef } from '@cx/content';
-import type { EngineContext, RuleError } from '../context';
+import {
+  type BuildingDef,
+  type DistrictDef,
+  type ImprovementDef,
+  type ProjectDef,
+  resolveText,
+  type UnitDef,
+  type WonderDef,
+} from '@cx/content';
+import { type EngineContext, type RuleError, unitDef } from '../context';
 import { computeTileYields, type YieldBreakdown } from '../effects/yields';
 import { type Fixed, percentOf, powFloor, toFixed } from '../fixed';
-import { distance, isOnRiver, neighbors, tilesWithin } from '../map/hex';
+import { distance, neighbors, tilesWithin, tileTouchesRiver } from '../map/hex';
 import type { MapState } from '../map/types';
 import type { BuildItem, CitizenFocus, GameState, PlayerId, SettlementState } from '../state';
+import type { TileFacts } from '../effects/tile';
+import {
+  playerEffects,
+  playerFacts,
+  playerPercent,
+  settlementLimitOf,
+  sourcesFor,
+} from '../progress/sources';
 import { isWater } from '../units/movement';
+import {
+  districtCost,
+  districtYields,
+  needsTile,
+  placementProblem,
+  placementTiles,
+  specialistSlots,
+} from './districts';
 
 /**
  * Settlement rules as pure functions of the game state (docs/03-core-mechanics.md, section 3).
@@ -25,17 +49,9 @@ export function settlementsOf(state: GameState, player: PlayerId): SettlementSta
 
 // --- Tiles -----------------------------------------------------------------------------------
 
-const riverCache = new WeakMap<object, Uint8Array>();
-/** Whether a tile has a river on any edge (cached per map). */
+/** Whether a tile has a river on any edge. */
 export function tileOnRiver(map: MapState, tile: number): boolean {
-  let flags = riverCache.get(map.tiles);
-  if (!flags) {
-    const rivers = map.tiles.map((t) => t.river);
-    flags = new Uint8Array(map.tiles.length);
-    for (let i = 0; i < flags.length; i++) flags[i] = isOnRiver(map, rivers, i) ? 1 : 0;
-    riverCache.set(map.tiles, flags);
-  }
-  return flags[tile] === 1;
+  return tileTouchesRiver(map, map.tiles, tile);
 }
 
 /** A tile's yields as its owner (or `viewer`, if unowned) gets them, with the "why?" lines. */
@@ -45,17 +61,65 @@ export function tileYields(
   tile: number,
   viewer: PlayerId | null = null,
 ): YieldBreakdown {
-  const facts = (i: number) => {
-    const t = state.map.tiles[i]!;
-    return { ...t, river: tileOnRiver(state.map, i), ownerId: t.owner };
-  };
   const t = state.map.tiles[tile]!;
-  return computeTileYields({
-    content: ctx.content,
-    tile: facts(tile),
-    neighbors: neighbors(state.map, tile).map(facts),
-    playerId: t.owner ?? viewer ?? '',
-  });
+  const pid = t.owner ?? viewer;
+  const p = pid === null ? undefined : state.players[pid];
+  const here = t.settlement === null ? undefined : state.settlements[t.settlement];
+  return computeTileYields(
+    {
+      content: ctx.content,
+      tile: tileFacts(state, tile),
+      neighbors: neighbors(state.map, tile).map((n) => tileFacts(state, n)),
+      playerId: pid ?? '',
+      ...(p ? { player: playerFacts(p) } : {}),
+    },
+    p && pid !== null ? sourcesFor(ctx, state, pid, here?.owner === pid ? here : undefined) : [],
+  );
+}
+
+/** What effects and adjacency rules see on a tile. */
+export function tileFacts(state: GameState, i: number): TileFacts {
+  const t = state.map.tiles[i]!;
+  return {
+    ...t,
+    river: tileOnRiver(state.map, i),
+    ownerId: t.owner,
+    center: t.settlement !== null && state.settlements[t.settlement]?.tile === i,
+  };
+}
+
+/** Whether a player has what something requires (its tech and civic). */
+export function isUnlocked(
+  state: GameState,
+  player: PlayerId,
+  thing: { requiresTech?: string | undefined; requiresCivic?: string | undefined },
+): boolean {
+  const p = state.players[player]!;
+  return (
+    (thing.requiresTech === undefined || p.techs.done.includes(thing.requiresTech)) &&
+    (thing.requiresCivic === undefined || p.civics.done.includes(thing.requiresCivic))
+  );
+}
+
+/** "Needs Pottery" for something locked behind a tech or civic, or undefined if unlocked. */
+export function lockedReason(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  thing: { requiresTech?: string | undefined; requiresCivic?: string | undefined },
+): string | undefined {
+  const p = state.players[player]!;
+  const missing = [
+    thing.requiresTech && !p.techs.done.includes(thing.requiresTech)
+      ? ctx.content.entities.tech[thing.requiresTech]?.name
+      : undefined,
+    thing.requiresCivic && !p.civics.done.includes(thing.requiresCivic)
+      ? ctx.content.entities.civic[thing.requiresCivic]?.name
+      : undefined,
+  ].filter((x): x is string => x !== undefined);
+  return missing.length > 0
+    ? `Needs ${missing.map((n) => resolveText(ctx.content, n)).join(' and ')}`
+    : undefined;
 }
 
 export function isCoastal(ctx: EngineContext, state: GameState, tile: number): boolean {
@@ -72,13 +136,32 @@ export function isCoastal(ctx: EngineContext, state: GameState, tile: number): b
 /** Tiles a settlement's citizens may work: its own, within the work radius, center excluded. */
 export function workableTiles(ctx: EngineContext, state: GameState, s: SettlementState): number[] {
   return tilesWithin(state.map, s.tile, ctx.content.rules.settlements.workRadius)
-    .filter((t) => t !== s.tile && state.map.tiles[t]!.settlement === s.id)
+    .filter((t) => {
+      const tile = state.map.tiles[t]!;
+      return (
+        t !== s.tile && tile.settlement === s.id && tile.district === null && tile.wonder === null
+      );
+    })
     .sort((a, b) => a - b);
 }
 
 // --- Founding --------------------------------------------------------------------------------
 
 /** Why `player` can't found a settlement on `tile`, or undefined if they can. */
+/** Unhappiness in each of a player's settlements from wars where the other side leads in support. */
+export function warWeariness(ctx: EngineContext, state: GameState, player: PlayerId): number {
+  const rules = ctx.content.rules.combat.warSupport;
+  let behind = 0;
+  for (const key of state.wars) {
+    const sides = key.split('|');
+    if (!sides.includes(player)) continue;
+    const other = sides[0] === player ? sides[1]! : sides[0]!;
+    const support = state.warSupport[key] ?? {};
+    behind += Math.max(0, (support[other] ?? 0) - (support[player] ?? 0));
+  }
+  return Math.min(rules.maxUnhappiness, behind * rules.unhappinessPerPoint);
+}
+
 export function foundingProblem(
   ctx: EngineContext,
   state: GameState,
@@ -96,6 +179,8 @@ export function foundingProblem(
       code: 'bad_site',
       message: `Settlements can't be founded on ${resolveText(ctx.content, feature.name)}`,
     };
+  if (Object.values(state.camps).some((c) => c.tile === tile))
+    return { code: 'camp', message: 'Clear the hostile camp first' };
   if (t.owner !== null && t.owner !== player)
     return {
       code: 'foreign_territory',
@@ -116,8 +201,16 @@ export function foundingProblem(
 
 // --- Improvements ----------------------------------------------------------------------------
 
-/** Improvements that could go on a tile (ignoring ownership), best match first. */
-export function improvementsFor(ctx: EngineContext, state: GameState, tile: number): string[] {
+/**
+ * Improvements that could go on a tile (ignoring ownership), best match first. With a player,
+ * only the ones they've unlocked.
+ */
+export function improvementsFor(
+  ctx: EngineContext,
+  state: GameState,
+  tile: number,
+  player?: PlayerId,
+): string[] {
   const t = state.map.tiles[tile]!;
   if (t.elevation === 'mountain') return [];
   const fits = (imp: ImprovementDef): 0 | 1 | 2 => {
@@ -131,6 +224,10 @@ export function improvementsFor(ctx: EngineContext, state: GameState, tile: numb
     return ok ? 1 : 0;
   };
   return ctx.content.ids.improvement
+    .filter(
+      (id) =>
+        player === undefined || isUnlocked(state, player, ctx.content.entities.improvement[id]!),
+    )
     .map((id) => ({ id, fit: fits(ctx.content.entities.improvement[id]!) }))
     .filter((x) => x.fit > 0)
     .sort(
@@ -158,10 +255,12 @@ export function developCandidates(
       return (
         t !== s.tile &&
         tile.improvement === null &&
+        tile.district === null &&
+        tile.wonder === null &&
         (tile.settlement === s.id ||
           (tile.owner === null &&
             neighbors(state.map, t).some((n) => state.map.tiles[n]!.settlement === s.id))) &&
-        improvementsFor(ctx, state, t).length > 0
+        improvementsFor(ctx, state, t, s.owner).length > 0
       );
     })
     .sort((a, b) => a - b);
@@ -184,8 +283,9 @@ export interface Happiness {
   yieldPercent: number;
 }
 
-export function settlementLimit(ctx: EngineContext): number {
-  return ctx.content.rules.settlements.startingLimit;
+/** How many settlements a player can have before every settlement loses happiness. */
+export function settlementLimit(ctx: EngineContext, state: GameState, player: PlayerId): number {
+  return settlementLimitOf(ctx, state, player);
 }
 
 function improvedLuxuries(ctx: EngineContext, state: GameState, s: SettlementState): Line[] {
@@ -211,15 +311,30 @@ export function happinessOf(ctx: EngineContext, state: GameState, s: SettlementS
     if (def.happiness !== 0)
       lines.push({ label: resolveText(ctx.content, def.name), amount: def.happiness });
   }
+  for (const d of s.districts) {
+    const def = ctx.content.entities.district[d.id];
+    if (def?.happiness)
+      lines.push({ label: resolveText(ctx.content, def.name), amount: def.happiness });
+  }
+  for (const w of s.wonders) {
+    const def = ctx.content.entities.wonder[w];
+    if (def?.happiness)
+      lines.push({ label: resolveText(ctx.content, def.name), amount: def.happiness });
+  }
   lines.push(...improvedLuxuries(ctx, state, s));
+  for (const { source, effect } of playerEffects(ctx, state, s.owner, 'modify_happiness', s)) {
+    lines.push({ label: source.label, amount: effect.params.amount });
+  }
   const citizens = Math.floor(s.population / h.citizensPerUnhappy);
   if (citizens > 0) lines.push({ label: 'Citizens', amount: -citizens });
+  const weariness = warWeariness(ctx, state, s.owner);
+  if (weariness > 0) lines.push({ label: 'War weariness', amount: -weariness });
   const maintained = s.buildings.filter(
     (b) => ctx.content.entities.building[b]!.maintenance > 0,
   ).length;
   if (maintained > 0 && h.perMaintainedBuilding > 0)
     lines.push({ label: 'Building upkeep', amount: -maintained * h.perMaintainedBuilding });
-  const over = settlementsOf(state, s.owner).length - settlementLimit(ctx);
+  const over = settlementsOf(state, s.owner).length - settlementLimit(ctx, state, s.owner);
   if (over > 0)
     lines.push({ label: 'Over the settlement limit', amount: -over * h.perSettlementOverLimit });
   const balance = lines.reduce((sum, l) => sum + l.amount, 0);
@@ -277,27 +392,63 @@ export function settlementYields(
   for (const y of Object.keys(worked).sort())
     add(y, `Worked tiles (${s.worked.length})`, worked[y]!);
 
+  for (const [y, v] of Object.entries(rules.citizenYields).sort())
+    add(y, `Citizens (${s.population})`, toFixed(v * s.population));
+
   for (const b of s.buildings) {
     const def = ctx.content.entities.building[b]!;
     for (const y of Object.keys(def.yields).sort())
       add(y, resolveText(ctx.content, def.name), toFixed(def.yields[y]!));
   }
 
+  for (const d of s.districts) {
+    const dy = districtYields(ctx, state, d.tile, d.id);
+    for (const y of Object.keys(dy.lines).sort())
+      for (const l of dy.lines[y]!) add(y, l.label, l.amount);
+  }
+  for (const w of s.wonders) {
+    const def = ctx.content.entities.wonder[w]!;
+    for (const y of Object.keys(def.yields).sort())
+      add(y, resolveText(ctx.content, def.name), toFixed(def.yields[y]!));
+  }
+  for (const [id, n] of Object.entries(s.specialists).sort()) {
+    const def = ctx.content.entities.district[id];
+    if (!def || n <= 0) continue;
+    for (const [y, v] of Object.entries(def.specialistYields).sort())
+      add(y, `${resolveText(ctx.content, def.name)} specialists (${n})`, toFixed(v * n));
+  }
+
+  // Settlement-wide effects (government, policies...): flat amounts now, percentages after.
+  const percents: { y: string; label: string; percent: number }[] = [];
+  for (const { source, effect } of playerEffects(ctx, state, s.owner, 'modify_yield', s)) {
+    if (effect.target.scope !== 'settlements') continue;
+    const params = effect.params;
+    if ('amount' in params) add(params.yield, source.label, toFixed(params.amount));
+    else percents.push({ y: params.yield, label: source.label, percent: params.percent });
+  }
+
   const happiness = happinessOf(ctx, state, s);
   const total: Record<string, Fixed> = {};
   for (const y of Object.keys(lines)) total[y] = lines[y]!.reduce((sum, l) => sum + l.amount, 0);
+  // Percentages apply to the subtotal before any percentage, so they add up instead of compounding.
+  const before = { ...total };
+  const applyPercent = (y: string, label: string, percent: number) => {
+    const delta = percentOf(before[y] ?? 0, percent);
+    add(y, `${label} (${percent > 0 ? '+' : ''}${percent}%)`, delta);
+    total[y] = (total[y] ?? 0) + delta;
+  };
   if (happiness.yieldPercent !== 0) {
     const label =
       happiness.mood === 'thriving'
-        ? `Thriving (+${happiness.yieldPercent}%)`
-        : `${happiness.mood === 'unrest' ? 'Unrest' : 'Unhappy'} (${happiness.yieldPercent}%)`;
-    for (const y of Object.keys(total).sort()) {
-      if (y === 'happiness') continue;
-      const delta = percentOf(total[y]!, happiness.yieldPercent);
-      add(y, label, delta);
-      total[y] = total[y]! + delta;
+        ? 'Thriving'
+        : happiness.mood === 'unrest'
+          ? 'Unrest'
+          : 'Unhappy';
+    for (const y of Object.keys(before).sort()) {
+      if (y !== 'happiness') applyPercent(y, label, happiness.yieldPercent);
     }
   }
+  for (const p of percents) applyPercent(p.y, p.label, p.percent);
   const eaten = toFixed(rules.foodPerCitizen * s.population);
   return { total, lines, happiness, surplus: (total.food ?? 0) - eaten };
 }
@@ -309,20 +460,34 @@ export function growthThreshold(ctx: EngineContext, population: number): Fixed {
   return toFixed(g.base + g.perPop * n) + toFixed(powFloor(n, g.exponent));
 }
 
-/** Food added to the store this turn: the surplus, adjusted by mood when growing. */
-export function growthPerTurn(ctx: EngineContext, y: SettlementYields): Fixed {
+/** Food added to the store this turn: the surplus, adjusted by mood and effects when growing. */
+export function growthPerTurn(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+  y: SettlementYields,
+): Fixed {
   if (y.surplus <= 0) return y.surplus;
   const h = ctx.content.rules.settlements.happiness;
-  switch (y.happiness.mood) {
-    case 'thriving':
-      return y.surplus + percentOf(y.surplus, h.thrivingGrowthPercent);
-    case 'unhappy':
-      return Math.trunc(y.surplus / 2);
-    case 'unrest':
-      return 0;
-    default:
-      return y.surplus;
-  }
+  if (y.happiness.mood === 'unrest') return 0;
+  if (y.happiness.mood === 'unhappy') return Math.trunc(y.surplus / 2);
+  let percent = y.happiness.mood === 'thriving' ? h.thrivingGrowthPercent : 0;
+  for (const { effect } of playerEffects(ctx, state, s.owner, 'modify_growth', s))
+    percent += effect.params.percent;
+  return y.surplus + percentOf(y.surplus, percent);
+}
+
+/** Culture that goes toward the next border tile this turn (border growth effects applied). */
+export function borderCulture(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+  culture: Fixed,
+): Fixed {
+  let percent = 0;
+  for (const { effect } of playerEffects(ctx, state, s.owner, 'modify_border_growth', s))
+    percent += effect.params.percent;
+  return Math.max(0, culture + percentOf(culture, percent));
 }
 
 /** Culture needed for the next border tile: `base + (perTile × acquired)^exponent`. */
@@ -349,23 +514,46 @@ export function tileScore(
 }
 
 /**
- * Picks the tiles a settlement's citizens work: locked tiles first, then the best by focus.
- * Deterministic: ties go to the lower tile index.
+ * Picks what a settlement's citizens do: locked tiles first, then the best tiles or specialist
+ * slots (in districts with buildings) by focus. Deterministic: ties go to tiles, then the lower
+ * tile index, then the district id.
  */
 export function assignCitizens(
   ctx: EngineContext,
   state: GameState,
   s: SettlementState,
-): { worked: number[]; locked: number[] } {
+): { worked: number[]; locked: number[]; specialists: Record<string, number> } {
   const workable = workableTiles(ctx, state, s);
   const locked = s.locked.filter((t) => workable.includes(t)).slice(0, s.population);
-  const rest = workable
+  type Choice = { tile: number; district: string; score: number };
+  const choices: Choice[] = workable
     .filter((t) => !locked.includes(t))
-    .map((t) => ({ t, score: tileScore(ctx, tileYields(ctx, state, t).total, s.focus) }))
-    .sort((a, b) => b.score - a.score || a.t - b.t)
-    .slice(0, Math.max(0, s.population - locked.length))
-    .map((x) => x.t);
-  return { worked: [...locked, ...rest].sort((a, b) => a - b), locked };
+    .map((t) => ({
+      tile: t,
+      district: '',
+      score: tileScore(ctx, tileYields(ctx, state, t).total, s.focus),
+    }));
+  for (const [id, n] of Object.entries(specialistSlots(ctx, s)).sort()) {
+    const yields: Record<string, Fixed> = {};
+    for (const [y, v] of Object.entries(ctx.content.entities.district[id]!.specialistYields))
+      yields[y] = toFixed(v);
+    const score = tileScore(ctx, yields, s.focus);
+    for (let i = 0; i < n; i++) choices.push({ tile: -1, district: id, score });
+  }
+  const picked = choices
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        Number(a.tile < 0) - Number(b.tile < 0) ||
+        a.tile - b.tile ||
+        (a.district < b.district ? -1 : a.district > b.district ? 1 : 0),
+    )
+    .slice(0, Math.max(0, s.population - locked.length));
+  const specialists: Record<string, number> = {};
+  for (const c of picked)
+    if (c.tile < 0) specialists[c.district] = (specialists[c.district] ?? 0) + 1;
+  const rest = picked.filter((c) => c.tile >= 0).map((c) => c.tile);
+  return { worked: [...locked, ...rest].sort((a, b) => a - b), locked, specialists };
 }
 
 /** The tile border growth claims next: the most valuable unclaimed tile touching the territory. */
@@ -421,20 +609,88 @@ export function purchasableTiles(
 
 // --- Production ------------------------------------------------------------------------------
 
-export const itemKey = (item: BuildItem) => `${item.kind}:${item.id}`;
+/** Progress key for an item (projects are per tile: two woods can be cleared at once). */
+export const itemKey = (item: BuildItem) =>
+  item.kind === 'project' ? `project:${item.id}@${item.tile ?? ''}` : `${item.kind}:${item.id}`;
 
-export function itemDef(ctx: EngineContext, item: BuildItem): UnitDef | BuildingDef | undefined {
-  return item.kind === 'unit'
-    ? ctx.content.entities.unit[item.id]
-    : ctx.content.entities.building[item.id];
+type ItemDef = UnitDef | BuildingDef | DistrictDef | WonderDef | ProjectDef;
+
+export function itemDef(ctx: EngineContext, item: BuildItem): ItemDef | undefined {
+  const e = ctx.content.entities;
+  switch (item.kind) {
+    case 'unit':
+      return e.unit[item.id];
+    case 'building':
+      return e.building[item.id];
+    case 'district':
+      return e.district[item.id];
+    case 'wonder':
+      return e.wonder[item.id];
+    case 'project':
+      return e.project[item.id];
+  }
 }
 
-export function itemCost(ctx: EngineContext, item: BuildItem): Fixed {
+/** Production to finish an item (districts cost more as you progress through the trees). */
+export function itemCost(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  item: BuildItem,
+): Fixed {
+  if (item.kind === 'district') return districtCost(ctx, state, player, item.id);
   return toFixed(itemDef(ctx, item)?.cost ?? 0);
 }
 
-export function purchaseCost(ctx: EngineContext, item: BuildItem): Fixed {
-  return itemCost(ctx, item) * ctx.content.rules.settlements.purchase.goldPerProduction;
+/** Units and buildings can be bought; districts, wonders and projects can't. */
+export const isBuyable = (item: BuildItem) => item.kind === 'unit' || item.kind === 'building';
+
+/** Gold to buy an item outright (policies can make it cheaper). */
+export function purchaseCost(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  item: BuildItem,
+): Fixed {
+  const base =
+    itemCost(ctx, state, player, item) * ctx.content.rules.settlements.purchase.goldPerProduction;
+  const percent = playerPercent(ctx, state, player, 'modify_purchase_cost');
+  return Math.max(0, base + percentOf(base, percent));
+}
+
+/** Production that goes toward an item this turn: the settlement's, plus bonuses for that item. */
+export function productionToward(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+  item: BuildItem,
+  production: Fixed,
+): Fixed {
+  const def = itemDef(ctx, item);
+  if (!def) return production;
+  const oneOf = (v: string, list: string | string[] | undefined) =>
+    list === undefined || (Array.isArray(list) ? list.includes(v) : list === v);
+  let percent = 0;
+  for (const { effect } of playerEffects(ctx, state, s.owner, 'modify_production', s)) {
+    const t = effect.params.toward;
+    if (t.kind !== undefined && t.kind !== item.kind) continue;
+    const named = {
+      unit: t.unit,
+      building: t.building,
+      district: t.district,
+      wonder: t.wonder,
+      project: undefined,
+    };
+    // A filter naming one kind of item never matches another kind.
+    const others = (Object.keys(named) as (keyof typeof named)[]).filter(
+      (k) => k !== item.kind && named[k] !== undefined,
+    );
+    if (others.length > 0 || (item.kind !== 'unit' && t.unitClass !== undefined)) continue;
+    if (!oneOf(item.id, named[item.kind])) continue;
+    if (item.kind === 'unit' && !oneOf((def as UnitDef).class, t.unitClass)) continue;
+    percent += effect.params.percent;
+  }
+  return Math.max(0, production + percentOf(production, percent));
 }
 
 /** Why a settlement can't have this item at all (queue or purchase), or undefined. */
@@ -443,6 +699,8 @@ export function itemProblem(
   state: GameState,
   s: SettlementState,
   item: BuildItem,
+  /** The queue the item would be in (defaults to the current one). */
+  queue: readonly BuildItem[] = s.queue,
 ): RuleError | undefined {
   const def = itemDef(ctx, item);
   if (!def) return { code: 'unknown_item', message: `Unknown ${item.kind} "${item.id}"` };
@@ -451,6 +709,24 @@ export function itemProblem(
       code: 'not_buildable',
       message: `${resolveText(ctx.content, def.name)} can't be built`,
     };
+  if (
+    item.kind === 'wonder' &&
+    Object.values(state.settlements).some((x) => x.wonders.includes(item.id))
+  )
+    return {
+      code: 'wonder_built',
+      message: `${resolveText(ctx.content, def.name)} has already been built`,
+    };
+  const locked = lockedReason(ctx, state, s.owner, def);
+  if (locked) return { code: 'locked', message: locked };
+  if (needsTile(item)) {
+    if (s.kind === 'town')
+      return { code: 'city_only', message: 'Only cities build districts, wonders and projects' };
+    if (item.tile !== undefined) return placementProblem(ctx, state, s, item, queue);
+    return placementTiles(ctx, state, s, item.kind as 'district', item.id).length > 0
+      ? undefined
+      : { code: 'no_site', message: `No tile in ${s.name} can take it` };
+  }
   if (item.kind === 'unit') {
     const u = def as UnitDef;
     const domain = ctx.content.entities.unitClass[u.class]!.domain;
@@ -470,6 +746,20 @@ export function itemProblem(
     return { code: 'needs_coast', message: 'Needs a settlement on the coast' };
   if (b.cityOnly && s.kind === 'town')
     return { code: 'city_only', message: 'Only cities can have this' };
+  if (b.district && !s.districts.some((d) => d.id === b.district)) {
+    const needed = ctx.content.entities.district[b.district];
+    return {
+      code: 'needs_district',
+      message: `Needs a ${needed ? resolveText(ctx.content, needed.name) : b.district} first`,
+    };
+  }
+  if (b.requiresBuilding && !s.buildings.includes(b.requiresBuilding)) {
+    const needed = ctx.content.entities.building[b.requiresBuilding];
+    return {
+      code: 'needs_building',
+      message: `Needs a ${needed ? resolveText(ctx.content, needed.name) : b.requiresBuilding} first`,
+    };
+  }
   return undefined;
 }
 
@@ -482,6 +772,9 @@ export function availableItems(
   const all: BuildItem[] = [
     ...ctx.content.ids.unit.map((id) => ({ kind: 'unit' as const, id })),
     ...ctx.content.ids.building.map((id) => ({ kind: 'building' as const, id })),
+    ...ctx.content.ids.district.map((id) => ({ kind: 'district' as const, id })),
+    ...ctx.content.ids.wonder.map((id) => ({ kind: 'wonder' as const, id })),
+    ...ctx.content.ids.project.map((id) => ({ kind: 'project' as const, id })),
   ];
   return all.filter((item) => !itemProblem(ctx, state, s, item));
 }
@@ -492,9 +785,20 @@ export function townUpgradeCost(ctx: EngineContext, state: GameState, player: Pl
   return toFixed(u.base + u.perCity * cities);
 }
 
-/** Gold a player makes per turn after building upkeep. */
+/** Gold per turn to keep a player's units, after the free allowance (policies can lower it). */
+export function unitUpkeep(ctx: EngineContext, state: GameState, player: PlayerId): Fixed {
+  let total = 0;
+  for (const u of Object.values(state.units)) {
+    if (u.owner === player) total += toFixed(unitDef(ctx, u).upkeep);
+  }
+  total = Math.max(0, total - toFixed(ctx.content.rules.units.freeUpkeep));
+  const percent = playerPercent(ctx, state, player, 'modify_unit_upkeep');
+  return Math.max(0, total + percentOf(total, percent));
+}
+
+/** Gold a player makes per turn after building and unit upkeep. */
 export function goldPerTurn(ctx: EngineContext, state: GameState, player: PlayerId): Fixed {
-  let gold = 0;
+  let gold = -unitUpkeep(ctx, state, player);
   for (const s of settlementsOf(state, player)) {
     const y = settlementYields(ctx, state, s);
     gold += y.total.gold ?? 0;

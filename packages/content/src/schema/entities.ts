@@ -5,7 +5,13 @@ import { Elevation, Id, ResourceClass, Text, YieldMap } from './common';
 const Range100 = z
   .tuple([z.int().min(0).max(100), z.int().min(0).max(100)])
   .refine(([lo, hi]) => lo <= hi, 'the first number must not be bigger than the second');
-import { Effect } from './effects';
+import { Adjacency, Effect, SlotKind, TileMatch } from './effects';
+
+/** Content that only becomes available with a tech or civic. */
+const requires = {
+  requiresTech: Id.optional(),
+  requiresCivic: Id.optional(),
+};
 
 /**
  * Every content file holds one entity or an array of entities, each tagged with `type`.
@@ -154,6 +160,24 @@ export const RulesDef = z.strictObject({
     }),
     /** How auto-assign values yields when picking tiles for citizens (focus triples one). */
     citizenWeights: YieldMap,
+    /** What every citizen adds on top of the tile it works (e.g. 0.5 science). */
+    citizenYields: YieldMap,
+    districts: z.strictObject({
+      /** Specialty districts allowed: `base + floor((population − 1) / populationPer)`. */
+      base: z.int().min(0),
+      populationPer: z.int().min(1),
+      /** Each specialty district gets this much of its main yield per neighboring district. */
+      neighborBonus: z.number().multipleOf(0.5),
+      /** District cost rises this many percent for each tech and civic finished. */
+      costPerProgressPercent: z.int().min(0),
+    }),
+    specialization: z.strictObject({
+      minPopulation: z.int().min(1),
+      /** Gold to change a town's specialization (choosing the first one is free). */
+      changeCost: z.int().min(0),
+      /** Food or production is sent to the nearest city within this many tiles. */
+      sendRange: z.int().min(1),
+    }),
   }),
   elevation: z.strictObject({
     hills: z.strictObject({
@@ -178,6 +202,24 @@ export const RulesDef = z.strictObject({
     canAlwaysMoveOneTile: z.boolean(),
   }),
   luxuryHappinessRadius: z.int().min(0),
+  progress: z.strictObject({
+    /** Percent of a tech's or civic's cost a boost pays. */
+    boostPercent: z.int().min(0).max(100),
+    /** Everyone starts with this government. */
+    startingGovernment: Id,
+    /** Gold per policy card changed outside the free window after finishing a civic. */
+    policySwapCost: z.int().min(0),
+    /** Gold to change government outside the free window. */
+    governmentChangeCost: z.int().min(0),
+    celebration: z.strictObject({
+      /** Happiness surplus needed: `base + perCelebration × celebrations so far`. */
+      base: z.int().min(1),
+      perCelebration: z.int().min(0),
+      turns: z.int().min(1),
+      /** What a celebration gives while it lasts (e.g. a bonus policy slot, +10% production). */
+      effects: z.array(Effect).default([]),
+    }),
+  }),
   units: z.strictObject({
     /** Units of one player allowed on a tile, per layer. Other players' units never share a tile. */
     stacking: z.strictObject({
@@ -191,6 +233,108 @@ export const RulesDef = z.strictObject({
     embarkFromStart: z.boolean(),
     /** Sight of embarked land units. */
     embarkedSight: z.int().min(0),
+    /** Gold of unit upkeep each player gets for free every turn. */
+    freeUpkeep: z.int().min(0),
+  }),
+  /** Combat (docs/03-core-mechanics.md, section 5). */
+  combat: z.strictObject({
+    /** Damage, in HP, between two units of equal strength. */
+    baseDamage: z.int().min(1),
+    /** Damage scales by e^(strengthScale × the strength difference). */
+    strengthScale: z.number().min(0).max(0.5),
+    /** Each hit varies by up to ± this percent. */
+    randomPercent: z.int().min(0).max(100),
+    /** Units' full health. */
+    maxHealth: z.int().min(1),
+    /** Strength for being fortified 1, 2... turns (the last value holds after that). */
+    fortify: z.array(z.int()).min(1),
+    /** Attacker: per other friendly military unit next to the target (melee only). */
+    flanking: z.int(),
+    /** Defender: per friendly military unit next to it. */
+    support: z.int(),
+    /** Strength lost for every 10 HP missing. */
+    woundedPer10: z.int().min(0),
+    /** Melee attacks from water onto land. */
+    amphibiousPenalty: z.int().min(0),
+    /** Embarked units defend with at most this strength. */
+    embarkedStrength: z.int().min(0),
+    xp: z.strictObject({ attack: z.int().min(0), defend: z.int().min(0) }),
+    /** HP a unit regains at the end of a turn it didn't act, by where it stands. */
+    heal: z.strictObject({
+      enemy: z.int().min(0),
+      neutral: z.int().min(0),
+      own: z.int().min(0),
+      settlement: z.int().min(0),
+    }),
+    settlement: z.strictObject({
+      cityHealth: z.int().min(1),
+      townHealth: z.int().min(1),
+      /** Strength = the best unit strength the owner has unlocked + this. */
+      cityStrengthBonus: z.int(),
+      townStrengthBonus: z.int(),
+      /** Extra strength while walls stand. */
+      wallsStrength: z.int(),
+      /** Range of the once-a-turn ranged strike. */
+      strikeRange: z.int().min(0),
+      /** HP and walls regained per turn when not attacked that turn. */
+      heal: z.int().min(0),
+      wallsRepair: z.int().min(0),
+      /** Percent of citizens lost when captured. */
+      capturePopulationLoss: z.int().min(0).max(100),
+    }),
+    /** Turns a war lasts before peace can be offered. */
+    minWarTurns: z.int().min(0),
+    /** XP needed for the 1st, 2nd... promotion (the last value repeats). */
+    promotionXp: z.array(z.int().min(1)).min(1),
+    /**
+     * War support (from Civ VII): each side of a war has a score. The side behind loses
+     * happiness in every settlement, so long, losing wars get harder to keep up.
+     */
+    warSupport: z.strictObject({
+      /** The side that's declared on starts this far ahead. */
+      surprise: z.int().min(0),
+      /** For each enemy unit destroyed. */
+      kill: z.int().min(0),
+      /** For each settlement taken. */
+      capture: z.int().min(0),
+      /** The most one side can lead by. */
+      max: z.int().min(1),
+      /** Unhappiness per point behind, in every settlement, up to `maxUnhappiness`. */
+      unhappinessPerPoint: z.int().min(0),
+      maxUnhappiness: z.int().min(0),
+    }),
+  }),
+  /** Score (docs/03-core-mechanics.md, section 11): decides the score victory at the turn limit. */
+  score: z.strictObject({
+    perCitizen: z.int().min(0),
+    perTown: z.int().min(0),
+    perCity: z.int().min(0),
+    perTech: z.int().min(0),
+    perCivic: z.int().min(0),
+    perWonder: z.int().min(0),
+    perDistrict: z.int().min(0),
+    /** Per era reached beyond the first. */
+    perEra: z.int().min(0),
+    /** Per enemy unit destroyed. */
+    perKill: z.int().min(0),
+  }),
+  /** Hostile camps: raiders that belong to no one and attack everyone. */
+  camps: z.strictObject({
+    /** One camp per this many land tiles, at the start and at most (0 = no camps). */
+    landTilesPerCamp: z.int().min(0),
+    /** No camp within this many tiles of a start, a settlement or another camp. */
+    minDistance: z.int().min(1),
+    /** Every this many turns a new camp may appear, in land no player can see. */
+    spawnEvery: z.int().min(1),
+    /** A camp trains a raider every this many turns, while it has fewer than `maxUnits`. */
+    unitEvery: z.int().min(1),
+    maxUnits: z.int().min(1),
+    /** Raiders go after anything of a player's within this many tiles. */
+    aggroRange: z.int().min(1),
+    /** Gold for clearing a camp (moving a military unit onto it). */
+    reward: z.int().min(0),
+    /** Raider units by era: the latest era any player has reached picks the list. */
+    units: z.array(z.strictObject({ era: Id, units: z.array(Id).min(1) })).min(1),
   }),
   mapgen: z.strictObject({
     coastTerrain: Id,
@@ -235,6 +379,16 @@ export const UnitClassDef = z.strictObject({
   /** Land units of this class can embark onto water (once the player can embark). */
   embarks: z.boolean().default(true),
   ignoresZoc: z.boolean().default(false),
+  /** Strength bonuses against other classes (e.g. anti-cavalry against cavalry). */
+  bonuses: z
+    .array(z.strictObject({ vs: z.array(Id).min(1), amount: z.int(), label: Text.optional() }))
+    .default([]),
+  /** Extra strength when attacking a settlement (siege). */
+  vsSettlement: z.int().default(0),
+  /** Percent of its damage that gets through standing walls. */
+  wallsDamagePercent: z.int().min(0).max(100).default(15),
+  /** Takes settlements and captures civilians by moving in (melee and cavalry). */
+  captures: z.boolean().default(false),
 });
 
 /** A unit type: stats, special actions, and how it looks. */
@@ -253,6 +407,9 @@ export const UnitDef = z.strictObject({
   cost: z.int().min(0).default(0),
   /** Citizens the settlement gives up when this unit is finished (settlers: 1). */
   populationCost: z.int().min(0).default(0),
+  /** Gold per turn to keep. */
+  upkeep: z.int().min(0).default(1),
+  ...requires,
   /** Special actions this unit can take. */
   actions: z.array(z.enum(['found_settlement'])).default([]),
   /** Sea units: can enter deep ocean. */
@@ -366,6 +523,7 @@ export const ImprovementDef = z.strictObject({
   sites: z.array(ImprovementSite).default([]),
   /** When several improvements fit a tile, the lower number is proposed first. */
   order: z.int().default(100),
+  ...requires,
   /** Placeholder map color until models exist. */
   color: z
     .string()
@@ -385,9 +543,11 @@ export const ImprovementDef = z.strictObject({
       'generic',
     ])
     .default('generic'),
+  /** Bonuses from neighbors (e.g. farms next to farms). */
+  adjacency: z.array(Adjacency).default([]),
 });
 
-/** A building in a settlement. Districts arrive in M8; these sit in the settlement center. */
+/** A building in a settlement: in its center, or inside one of its districts. */
 export const BuildingDef = z.strictObject({
   type: z.literal('building'),
   id: Id,
@@ -406,6 +566,288 @@ export const BuildingDef = z.strictObject({
   requiresCoast: z.boolean().default(false),
   /** Towns can buy buildings but not build them; some are city-only. */
   cityOnly: z.boolean().default(false),
+  /** Needs this building in the settlement first (e.g. a University needs a Library). */
+  requiresBuilding: Id.optional(),
+  /** Built inside this district (the settlement needs it first). */
+  district: Id.optional(),
+  /** Outer defenses: HP that attacks must break before they hurt the settlement much. */
+  walls: z.int().min(0).default(0),
+  /** Effects on the settlement it's in. */
+  localEffects: z.array(Effect).default([]),
+  /** Effects on the whole empire. */
+  effects: z.array(Effect).default([]),
+  ...requires,
+});
+
+/** Where a district, wonder or project can go. A tile must pass every rule given. */
+const Placement = z.strictObject({
+  terrains: z.array(Id).min(1).optional(),
+  elevations: z.array(Elevation).min(1).default(['flat', 'hills']),
+  /** On water (e.g. a harbor) instead of land. */
+  water: z.boolean().default(false),
+  /** Features that may stay (others must be absent). Woods, rainforest and marsh are cleared. */
+  features: z.array(Id).optional(),
+  /** The tile itself must match this. */
+  self: TileMatch.optional(),
+  /** Each of these must match at least one neighbor. */
+  nextTo: z.array(TileMatch).default([]),
+  /** At least one neighbor must match one of these. */
+  nextToAny: z.array(TileMatch).default([]),
+  /** No neighbor may match any of these (e.g. an encampment can't touch the city center). */
+  notNextTo: z.array(TileMatch).default([]),
+});
+export type Placement = z.infer<typeof Placement>;
+const anyPlacement = {
+  elevations: ['flat', 'hills'] as ('flat' | 'hills' | 'mountain')[],
+  water: false,
+  nextTo: [],
+  nextToAny: [],
+  notNextTo: [],
+};
+
+/** A district: a tile of specialized buildings with adjacency bonuses (docs/03, section 9). */
+export const DistrictDef = z.strictObject({
+  type: z.literal('district'),
+  id: Id,
+  name: Text,
+  description: Text.optional(),
+  icon: z.string().min(1).max(3),
+  /** Base production cost (rises as you progress through the trees). */
+  cost: z.int().min(1),
+  /** Flat yields to the settlement. */
+  yields: YieldMap.default({}),
+  adjacency: z.array(Adjacency).default([]),
+  /** Counts toward the district limit and gets the bonus for neighboring districts. */
+  specialty: z.boolean().default(true),
+  /** Only one in the whole empire (e.g. a government plaza). */
+  onePerEmpire: z.boolean().default(false),
+  happiness: z.int().default(0),
+  placement: Placement.default(anyPlacement),
+  /** Each building in the district adds one specialist slot; a specialist yields this. */
+  specialistYields: YieldMap.default({}),
+  localEffects: z.array(Effect).default([]),
+  effects: z.array(Effect).default([]),
+  ...requires,
+  model: z
+    .enum([
+      'campus',
+      'holy_site',
+      'theater',
+      'commercial',
+      'harbor',
+      'industrial',
+      'encampment',
+      'entertainment',
+      'aqueduct',
+      'plaza',
+      'generic',
+    ])
+    .default('generic'),
+  /** Accent color for the map and UI. */
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #5fb8f0'),
+});
+
+/** A world wonder: one per world, a big bonus for its builder. */
+export const WonderDef = z.strictObject({
+  type: z.literal('wonder'),
+  id: Id,
+  name: Text,
+  description: Text,
+  icon: z.string().min(1).max(3),
+  cost: z.int().min(1),
+  era: Id,
+  /** Yields to the settlement that built it. */
+  yields: YieldMap.default({}),
+  happiness: z.int().default(0),
+  placement: Placement.default(anyPlacement),
+  localEffects: z.array(Effect).default([]),
+  effects: z.array(Effect).default([]),
+  ...requires,
+  model: z
+    .enum([
+      'pyramid',
+      'gardens',
+      'stones',
+      'temple',
+      'library',
+      'statue',
+      'arena',
+      'rock_city',
+      'generic',
+    ])
+    .default('generic'),
+});
+
+/** A one-off city project on a tile (e.g. clearing woods for a burst of production). */
+export const ProjectDef = z.strictObject({
+  type: z.literal('project'),
+  id: Id,
+  name: Text,
+  description: Text,
+  icon: z.string().min(1).max(3),
+  cost: z.int().min(1),
+  /** Removes any of these features from the chosen tile. */
+  clears: z.array(Id).min(1),
+  /** One-time reward: food to the settlement's store, production to its next item, gold... */
+  reward: YieldMap.default({}),
+  ...requires,
+});
+
+/** A town specialization (docs/03, "Towns vs Cities"): one at a time, from a minimum size. */
+export const SpecializationDef = z.strictObject({
+  type: z.literal('specialization'),
+  id: Id,
+  name: Text,
+  description: Text,
+  icon: z.string().min(1).max(3),
+  /** Effects on the town itself. */
+  localEffects: z.array(Effect).default([]),
+  /** Effects on the whole empire. */
+  effects: z.array(Effect).default([]),
+  /** Share of the town's food or production sent to its nearest city each turn. */
+  send: z
+    .strictObject({ yield: z.enum(['food', 'production']), percent: z.int().min(1).max(100) })
+    .optional(),
+  ...requires,
+});
+
+/** A unit promotion (docs/03-core-mechanics.md, "Experience and promotions"). */
+export const PromotionDef = z.strictObject({
+  type: z.literal('promotion'),
+  id: Id,
+  name: Text,
+  description: Text,
+  /** Unit classes that can take it. */
+  classes: z.array(Id).min(1),
+  /** Its row in the class's tree (shown in order). */
+  tier: z.int().min(1).max(5),
+  /** Needs any one of these first (empty = available from the start). */
+  requires: z.array(Id).default([]),
+  /** Strength bonuses, each in the situations it names. */
+  strength: z
+    .array(
+      z.strictObject({
+        amount: z.int(),
+        when: z.enum(['attack', 'defend', 'always']).default('always'),
+        /** Only against these classes, against settlements, or against ranged attacks. */
+        vs: z
+          .strictObject({
+            classes: z.array(Id).min(1).optional(),
+            settlement: z.boolean().optional(),
+            ranged: z.boolean().optional(),
+          })
+          .optional(),
+        /** Only when the unit stands (defending) or fights from (attacking) such a tile. */
+        on: z
+          .strictObject({
+            features: z.array(Id).min(1).optional(),
+            elevations: z.array(Elevation).min(1).optional(),
+          })
+          .optional(),
+      }),
+    )
+    .default([]),
+  movement: z.int().min(0).default(0),
+  sight: z.int().min(0).default(0),
+  range: z.int().min(0).default(0),
+  /** Every tile costs 1 movement. */
+  ignoresTerrainCost: z.boolean().default(false),
+});
+
+/** Something a player can do to earn a boost (a share of a tech's or civic's cost). */
+export const Goal = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('settlements'), count: z.int().min(1) }),
+  z.strictObject({ kind: z.literal('cities'), count: z.int().min(1) }),
+  z.strictObject({ kind: z.literal('coastal_settlement') }),
+  /** Citizens across all settlements. */
+  z.strictObject({ kind: z.literal('population'), count: z.int().min(1) }),
+  z.strictObject({
+    kind: z.literal('units'),
+    count: z.int().min(1),
+    unit: z.union([Id, z.array(Id).min(1)]).optional(),
+    unitClass: z.union([Id, z.array(Id).min(1)]).optional(),
+  }),
+  z.strictObject({
+    kind: z.literal('improvements'),
+    count: z.int().min(1),
+    improvement: z.union([Id, z.array(Id).min(1)]).optional(),
+  }),
+  z.strictObject({
+    kind: z.literal('buildings'),
+    count: z.int().min(1),
+    building: z.union([Id, z.array(Id).min(1)]).optional(),
+  }),
+  z.strictObject({ kind: z.literal('tiles_owned'), count: z.int().min(1) }),
+  z.strictObject({ kind: z.literal('techs'), count: z.int().min(1) }),
+  z.strictObject({ kind: z.literal('civics'), count: z.int().min(1) }),
+  /** Adopt a government (any but the starting one, or one of these). */
+  z.strictObject({
+    kind: z.literal('government'),
+    government: z.union([Id, z.array(Id).min(1)]).optional(),
+  }),
+  z.strictObject({ kind: z.literal('policies'), count: z.int().min(1) }),
+  z.strictObject({ kind: z.literal('gold'), amount: z.int().min(1) }),
+]);
+export type Goal = z.infer<typeof Goal>;
+
+/** An age of history. Techs and civics belong to one; the latest one you've reached is your era. */
+export const EraDef = z.strictObject({
+  type: z.literal('era'),
+  id: Id,
+  name: Text,
+  order: z.int(),
+});
+
+const progressShape = {
+  id: Id,
+  name: Text,
+  description: Text.optional(),
+  era: Id,
+  /** Science (techs) or culture (civics) to finish it. */
+  cost: z.int().min(1),
+  /** All of these must be finished first. */
+  requires: z.array(Id).default([]),
+  /** Vertical position in the tree (the column comes from the prerequisites). */
+  row: z.int().min(0).max(20).default(0),
+  boost: z.strictObject({ text: Text, goal: Goal }).optional(),
+  /** Permanent effects once finished (e.g. a higher settlement limit). */
+  effects: z.array(Effect).default([]),
+};
+
+/** A tech (science tree). Things it unlocks name it in their own `requiresTech`. */
+export const TechDef = z.strictObject({ type: z.literal('tech'), ...progressShape });
+/** A civic (culture tree). Things it unlocks name it in their own `requiresCivic`. */
+export const CivicDef = z.strictObject({ type: z.literal('civic'), ...progressShape });
+
+/** A government: policy slots and its own bonus. */
+export const GovernmentDef = z.strictObject({
+  type: z.literal('government'),
+  id: Id,
+  name: Text,
+  description: Text.optional(),
+  slots: z.strictObject({
+    military: z.int().min(0),
+    economic: z.int().min(0),
+    diplomatic: z.int().min(0),
+    wildcard: z.int().min(0),
+  }),
+  effects: z.array(Effect).default([]),
+  requiresCivic: Id.optional(),
+  /** Display order. */
+  order: z.int().default(100),
+});
+
+/** A policy card. Wildcard slots take any card; other slots take cards of their kind. */
+export const PolicyDef = z.strictObject({
+  type: z.literal('policy'),
+  id: Id,
+  name: Text,
+  description: Text,
+  slot: SlotKind,
+  effects: z.array(Effect).min(1),
+  requiresCivic: Id.optional(),
+  /** No longer available once this civic is finished. */
+  obsoletedBy: Id.optional(),
 });
 
 /** A civilization: its names and colors (abilities and uniques arrive with the leader kits). */
@@ -436,6 +878,16 @@ export const ENTITY_SCHEMAS = {
   improvement: ImprovementDef,
   building: BuildingDef,
   civ: CivDef,
+  district: DistrictDef,
+  wonder: WonderDef,
+  project: ProjectDef,
+  specialization: SpecializationDef,
+  promotion: PromotionDef,
+  era: EraDef,
+  tech: TechDef,
+  civic: CivicDef,
+  government: GovernmentDef,
+  policy: PolicyDef,
   rules: RulesDef,
 } as const;
 
@@ -459,6 +911,16 @@ export type UnitDef = z.infer<typeof UnitDef>;
 export type ImprovementDef = z.infer<typeof ImprovementDef>;
 export type BuildingDef = z.infer<typeof BuildingDef>;
 export type CivDef = z.infer<typeof CivDef>;
+export type EraDef = z.infer<typeof EraDef>;
+export type DistrictDef = z.infer<typeof DistrictDef>;
+export type WonderDef = z.infer<typeof WonderDef>;
+export type ProjectDef = z.infer<typeof ProjectDef>;
+export type SpecializationDef = z.infer<typeof SpecializationDef>;
+export type PromotionDef = z.infer<typeof PromotionDef>;
+export type TechDef = z.infer<typeof TechDef>;
+export type CivicDef = z.infer<typeof CivicDef>;
+export type GovernmentDef = z.infer<typeof GovernmentDef>;
+export type PolicyDef = z.infer<typeof PolicyDef>;
 export type StringsDef = z.infer<typeof StringsDef>;
 export type PatchDef = z.infer<typeof PatchDef>;
 
@@ -475,6 +937,16 @@ export interface EntityByType {
   improvement: ImprovementDef;
   building: BuildingDef;
   civ: CivDef;
+  district: DistrictDef;
+  wonder: WonderDef;
+  project: ProjectDef;
+  specialization: SpecializationDef;
+  promotion: PromotionDef;
+  era: EraDef;
+  tech: TechDef;
+  civic: CivicDef;
+  government: GovernmentDef;
+  policy: PolicyDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

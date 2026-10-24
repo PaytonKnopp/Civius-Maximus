@@ -1,0 +1,466 @@
+[
+  {
+    "type": "promotion",
+    "id": "promo_vanguard",
+    "name": "Vanguard",
+    "description": "+5 strength when attacking.",
+    "classes": ["class_melee"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 5,
+        "when": "attack"
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_shield_wall",
+    "name": "Shield Wall",
+    "description": "+7 strength against ranged attacks.",
+    "classes": ["class_melee"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 7,
+        "when": "defend",
+        "vs": {
+          "ranged": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_sapper",
+    "name": "Sapper",
+    "description": "+7 strength attacking settlements.",
+    "classes": ["class_melee"],
+    "tier": 2,
+    "requires": ["promo_vanguard", "promo_shield_wall"],
+    "strength": [
+      {
+        "amount": 7,
+        "when": "attack",
+        "vs": {
+          "settlement": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_woodsman",
+    "name": "Woodsman",
+    "description": "+5 strength fighting in woods or rainforest.",
+    "classes": ["class_melee"],
+    "tier": 2,
+    "requires": ["promo_vanguard", "promo_shield_wall"],
+    "strength": [
+      {
+        "amount": 5,
+        "on": {
+          "features": ["woods", "rainforest"]
+        }
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_veteran",
+    "name": "Veteran",
+    "description": "+7 strength.",
+    "classes": ["class_melee"],
+    "tier": 3,
+    "requires": ["promo_sapper", "promo_woodsman"],
+    "strength": [
+      {
+        "amount": 7
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_steady_aim",
+    "name": "Steady Aim",
+    "description": "+5 strength attacking units.",
+    "classes": ["class_ranged"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 5,
+        "when": "attack",
+        "vs": {
+          "classes": [
+            "class_melee",
+            "class_anti_cavalry",
+            "class_light_cavalry",
+            "class_heavy_cavalry",
+            "class_ranged",
+            "class_siege",
+            "class_recon",
+            "class_naval_melee"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_siegecraft",
+    "name": "Siegecraft",
+    "description": "+7 strength attacking settlements.",
+    "classes": ["class_ranged"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 7,
+        "when": "attack",
+        "vs": {
+          "settlement": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_entrenched",
+    "name": "Entrenched",
+    "description": "+7 strength when defending.",
+    "classes": ["class_ranged"],
+    "tier": 2,
+    "requires": ["promo_steady_aim", "promo_siegecraft"],
+    "strength": [
+      {
+        "amount": 7,
+        "when": "defend"
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_hawkeye",
+    "name": "Hawkeye",
+    "description": "+1 range.",
+    "classes": ["class_ranged"],
+    "tier": 2,
+    "requires": ["promo_steady_aim", "promo_siegecraft"],
+    "range": 1
+  },
+  {
+    "type": "promotion",
+    "id": "promo_marksman",
+    "name": "Marksman",
+    "description": "+7 strength when attacking.",
+    "classes": ["class_ranged"],
+    "tier": 3,
+    "requires": ["promo_entrenched", "promo_hawkeye"],
+    "strength": [
+      {
+        "amount": 7,
+        "when": "attack"
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_brace",
+    "name": "Brace",
+    "description": "+5 strength when defending.",
+    "classes": ["class_anti_cavalry"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 5,
+        "when": "defend"
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_spearhead",
+    "name": "Spearhead",
+    "description": "+5 strength when attacking.",
+    "classes": ["class_anti_cavalry"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 5,
+        "when": "attack"
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_hedge",
+    "name": "Hedge of Spears",
+    "description": "+7 strength defending against cavalry.",
+    "classes": ["class_anti_cavalry"],
+    "tier": 2,
+    "requires": ["promo_brace", "promo_spearhead"],
+    "strength": [
+      {
+        "amount": 7,
+        "when": "defend",
+        "vs": {
+          "classes": ["class_light_cavalry", "class_heavy_cavalry"]
+        }
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_bulwark",
+    "name": "Bulwark",
+    "description": "+7 strength.",
+    "classes": ["class_anti_cavalry"],
+    "tier": 3,
+    "requires": ["promo_hedge"],
+    "strength": [
+      {
+        "amount": 7
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_raider",
+    "name": "Raider",
+    "description": "+5 strength when attacking.",
+    "classes": ["class_light_cavalry"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 5,
+        "when": "attack"
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_swift",
+    "name": "Swift",
+    "description": "+1 movement.",
+    "classes": ["class_light_cavalry"],
+    "tier": 1,
+    "movement": 1
+  },
+  {
+    "type": "promotion",
+    "id": "promo_pursuit",
+    "name": "Pursuit",
+    "description": "+7 strength against ranged and siege units.",
+    "classes": ["class_light_cavalry"],
+    "tier": 2,
+    "requires": ["promo_raider", "promo_swift"],
+    "strength": [
+      {
+        "amount": 7,
+        "vs": {
+          "classes": ["class_ranged", "class_siege"]
+        }
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_outrider",
+    "name": "Outrider",
+    "description": "+1 sight and +5 strength.",
+    "classes": ["class_light_cavalry"],
+    "tier": 3,
+    "requires": ["promo_pursuit"],
+    "strength": [
+      {
+        "amount": 5
+      }
+    ],
+    "sight": 1
+  },
+  {
+    "type": "promotion",
+    "id": "promo_charge",
+    "name": "Charge",
+    "description": "+5 strength when attacking.",
+    "classes": ["class_heavy_cavalry"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 5,
+        "when": "attack"
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_barding",
+    "name": "Barding",
+    "description": "+5 strength when defending.",
+    "classes": ["class_heavy_cavalry"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 5,
+        "when": "defend"
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_breakthrough",
+    "name": "Breakthrough",
+    "description": "+7 strength against melee and ranged units.",
+    "classes": ["class_heavy_cavalry"],
+    "tier": 2,
+    "requires": ["promo_charge", "promo_barding"],
+    "strength": [
+      {
+        "amount": 7,
+        "vs": {
+          "classes": ["class_melee", "class_ranged"]
+        }
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_warlord",
+    "name": "Warlord",
+    "description": "+7 strength.",
+    "classes": ["class_heavy_cavalry"],
+    "tier": 3,
+    "requires": ["promo_breakthrough"],
+    "strength": [
+      {
+        "amount": 7
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_engineers",
+    "name": "Engineers",
+    "description": "+7 strength attacking settlements.",
+    "classes": ["class_siege"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 7,
+        "when": "attack",
+        "vs": {
+          "settlement": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_mobile",
+    "name": "Mobile",
+    "description": "+1 movement.",
+    "classes": ["class_siege"],
+    "tier": 1,
+    "movement": 1
+  },
+  {
+    "type": "promotion",
+    "id": "promo_long_shot",
+    "name": "Long Shot",
+    "description": "+1 range.",
+    "classes": ["class_siege"],
+    "tier": 2,
+    "requires": ["promo_engineers", "promo_mobile"],
+    "range": 1
+  },
+  {
+    "type": "promotion",
+    "id": "promo_bombard",
+    "name": "Bombard",
+    "description": "+10 strength attacking settlements.",
+    "classes": ["class_siege"],
+    "tier": 3,
+    "requires": ["promo_long_shot"],
+    "strength": [
+      {
+        "amount": 10,
+        "when": "attack",
+        "vs": {
+          "settlement": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_pathfinder",
+    "name": "Pathfinder",
+    "description": "Every tile costs 1 movement.",
+    "classes": ["class_recon"],
+    "tier": 1,
+    "ignoresTerrainCost": true
+  },
+  {
+    "type": "promotion",
+    "id": "promo_spotter",
+    "name": "Spotter",
+    "description": "+1 sight.",
+    "classes": ["class_recon"],
+    "tier": 1,
+    "sight": 1
+  },
+  {
+    "type": "promotion",
+    "id": "promo_ambush",
+    "name": "Ambush",
+    "description": "+10 strength fighting in woods or rainforest.",
+    "classes": ["class_recon"],
+    "tier": 2,
+    "requires": ["promo_pathfinder", "promo_spotter"],
+    "strength": [
+      {
+        "amount": 10,
+        "on": {
+          "features": ["woods", "rainforest"]
+        }
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_ram",
+    "name": "Ram",
+    "description": "+5 strength when attacking.",
+    "classes": ["class_naval_melee"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 5,
+        "when": "attack"
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_hull_plating",
+    "name": "Hull Plating",
+    "description": "+5 strength when defending.",
+    "classes": ["class_naval_melee"],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 5,
+        "when": "defend"
+      }
+    ]
+  },
+  {
+    "type": "promotion",
+    "id": "promo_helmsman",
+    "name": "Helmsman",
+    "description": "+1 movement.",
+    "classes": ["class_naval_melee"],
+    "tier": 2,
+    "requires": ["promo_ram", "promo_hull_plating"],
+    "movement": 1
+  }
+]

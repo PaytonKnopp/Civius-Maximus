@@ -1,0 +1,251 @@
+[
+  {
+    "type": "government",
+    "id": "government_chiefdom",
+    "name": "Chiefdom",
+    "description": "Rule by the strongest family. One military and one economic slot.",
+    "slots": {
+      "military": 1,
+      "economic": 1,
+      "diplomatic": 0,
+      "wildcard": 0
+    },
+    "order": 1
+  },
+  {
+    "type": "government",
+    "id": "government_autocracy",
+    "name": "Autocracy",
+    "description": "+1 to every yield in the capital.",
+    "slots": {
+      "military": 2,
+      "economic": 1,
+      "diplomatic": 0,
+      "wildcard": 1
+    },
+    "requiresCivic": "civic_political_philosophy",
+    "order": 2,
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "government",
+    "id": "government_oligarchy",
+    "name": "Oligarchy",
+    "description": "+20% production toward units.",
+    "slots": {
+      "military": 1,
+      "economic": 1,
+      "diplomatic": 1,
+      "wildcard": 1
+    },
+    "requiresCivic": "civic_political_philosophy",
+    "order": 3,
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 20,
+          "toward": {
+            "kind": "unit"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "government",
+    "id": "government_classical_republic",
+    "name": "Classical Republic",
+    "description": "+1 happiness in every settlement.",
+    "slots": {
+      "military": 0,
+      "economic": 2,
+      "diplomatic": 1,
+      "wildcard": 1
+    },
+    "requiresCivic": "civic_political_philosophy",
+    "order": 4,
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "government",
+    "id": "government_theocracy",
+    "name": "Theocracy",
+    "description": "+15% faith in every settlement.",
+    "slots": {
+      "military": 2,
+      "economic": 2,
+      "diplomatic": 1,
+      "wildcard": 0
+    },
+    "requiresCivic": "civic_theology",
+    "order": 5,
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "government",
+    "id": "government_monarchy",
+    "name": "Monarchy",
+    "description": "+1 settlement limit and +2 happiness in the capital.",
+    "slots": {
+      "military": 3,
+      "economic": 1,
+      "diplomatic": 1,
+      "wildcard": 1
+    },
+    "requiresCivic": "civic_divine_right",
+    "order": 6,
+    "effects": [
+      {
+        "effect": "modify_settlement_limit",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "government",
+    "id": "government_merchant_republic",
+    "name": "Merchant Republic",
+    "description": "+15% gold in every settlement.",
+    "slots": {
+      "military": 1,
+      "economic": 3,
+      "diplomatic": 1,
+      "wildcard": 2
+    },
+    "requiresCivic": "civic_guilds",
+    "order": 7,
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  }
+]

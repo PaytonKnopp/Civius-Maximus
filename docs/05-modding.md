@@ -109,6 +109,15 @@ lists of **effects**. An effect = *what changes* + *who it applies to* + *when*.
 - **Events:** `on_event` wrapper (e.g., on `city_founded`, `unit_killed`, `wonder_completed`,
   `tech_researched`) that triggers a one-time effect
 
+**Implemented so far** (the schema in `packages/content/src/schema/effects.ts` is the reference):
+`modify_yield` (tiles or settlements, flat or %), `yield_per_adjacent`, `modify_happiness`,
+`modify_production` (toward unit classes, units or buildings), `modify_growth`,
+`modify_border_growth`, `modify_settlement_limit`, `extra_policy_slot`, `modify_unit_upkeep`,
+`modify_purchase_cost`, `enable_embark`. Targets: `tiles`, `settlements`, `player`.
+
+Governments, policy cards, techs and civics (their permanent effects) and celebrations are all
+effect sources; civ and leader abilities, beliefs and wonders join them as they're built.
+
 ### Conditions
 
 These can be combined with `all`, `any` and `not`:
@@ -116,6 +125,21 @@ These can be combined with `all`, `any` and `not`:
 `unit_class`, `unit_in_territory` (own/foreign/neutral), `at_war_with`, `era_at_least`,
 `government_is`, `city_population_at_least`, `has_tech`, `has_civic`, `is_capital`,
 `within_tiles_of`, `turn_at_least`, `random_chance` (seeded).
+
+Implemented so far: `tile_terrain`, `tile_feature`, `tile_elevation`, `tile_has_resource`,
+`tile_resource_class`, `tile_has_improvement`, `tile_on_river`, `tile_coastal`,
+`tile_owned_by_self`, `tile_adjacent_to`, `settlement_is_capital`, `settlement_kind`,
+`settlement_population_at_least`, `settlement_has_building`, `has_tech`, `has_civic`,
+`government_is`, `celebrating`.
+
+### Techs and civics
+
+A `tech` or `civic` has an era, a cost, prerequisites (`requires`), a `row` in the tree (the
+column comes from the prerequisites), an optional **boost** (`{ text, goal }`, e.g.
+`{ "kind": "improvements", "improvement": "improvement_farm", "count": 2 }`) and permanent
+`effects`. Units, buildings, improvements, governments and policies say what unlocks them with
+`requiresTech` / `requiresCivic`; the tree shows those automatically. The validator rejects
+prerequisite loops.
 
 ### Example: a complete custom civ (a leader file looks similar)
 

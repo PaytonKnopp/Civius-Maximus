@@ -4,15 +4,17 @@ import {
   type ActionHandler,
   type EngineContext,
   type Emit,
+  HOSTILE,
   type RuleError,
   unitClassOf,
   unitIds,
 } from '../context';
-import { distance, tilesWithin } from '../map/hex';
+import { distance, neighbors, tilesWithin } from '../map/hex';
 import type { GameState, PlayerId, UnitState } from '../state';
+import { clearCampsOn } from '../combat/camps';
 import { canTraverse, fullMoves, hasRoom } from './movement';
 import { findPath, type PathStep } from './pathfind';
-import { exploreVisible, visibleTiles } from './vision';
+import { exploreVisible, lineOfSight, sightOf } from './vision';
 
 type UnitAction<T extends Action['type']> = Extract<Action, { type: T }>;
 
@@ -48,20 +50,42 @@ function simple<T extends Action['type']>(
   };
 }
 
-/** The owner, plus every other player who can see any of `tiles` right now. */
+/**
+ * The owner, plus every other player who can see any of `path` right now (by the same rules as
+ * `visibleTiles`, but checking only what's near those tiles: this runs for every move).
+ */
 export function watchers(
   ctx: EngineContext,
   state: GameState,
   owner: PlayerId,
   path: number[],
 ): PlayerId[] {
-  const out = [owner];
-  for (const p of state.playerOrder) {
-    if (p === owner || !state.players[p]!.alive) continue;
-    const vis = visibleTiles(ctx, state, p);
-    if (path.some((t) => vis[t])) out.push(p);
+  const seeing = new Set<PlayerId>();
+  const radius = ctx.content.rules.settlements.ownRadius;
+  // Territory, plus one tile beyond it.
+  for (const t of path) {
+    for (const n of [t, ...neighbors(state.map, t)]) {
+      const tile = state.map.tiles[n]!;
+      const s = tile.settlement ? state.settlements[tile.settlement] : undefined;
+      if (tile.owner && s && s.owner === tile.owner && distance(state.map, s.tile, n) <= radius)
+        seeing.add(tile.owner);
+    }
   }
-  return out;
+  // Units, within their sight and line of sight.
+  for (const u of Object.values(state.units)) {
+    if (u.owner === owner || seeing.has(u.owner)) continue;
+    const sight = sightOf(ctx, state, u);
+    if (
+      path.some(
+        (t) => distance(state.map, u.tile, t) <= sight && lineOfSight(ctx, state, u.tile, t),
+      )
+    )
+      seeing.add(u.owner);
+  }
+  return [
+    owner,
+    ...state.playerOrder.filter((p) => p !== owner && seeing.has(p) && state.players[p]!.alive),
+  ];
 }
 
 /** Moves a unit along the part of a path it can cover this turn; queues the rest as orders. */
@@ -84,7 +108,9 @@ export function advanceAlongPath(
   unit.orders = now.length < path.length ? { kind: 'move', target } : null;
   if (now.length === 0) return;
   const snapshot = current(draft);
-  draft.players[unit.owner]!.explored = exploreVisible(ctx, snapshot, unit.owner);
+  // Raiders already know the whole map.
+  if (unit.owner !== HOSTILE)
+    draft.players[unit.owner]!.explored = exploreVisible(ctx, snapshot, unit.owner);
   const tiles = [start, ...now.map((s) => s.tile)];
   emit({
     type: 'unit_moved',
@@ -93,6 +119,7 @@ export function advanceAlongPath(
     path: tiles,
     visibleTo: watchers(ctx, snapshot, unit.owner, tiles),
   });
+  if (unitClassOf(ctx, unit).combat) clearCampsOn(draft, ctx, unit.owner, tiles.slice(1), emit);
 }
 
 export const unitHandlers = {
@@ -133,7 +160,7 @@ export const unitHandlers = {
         ? undefined
         : { code: 'cannot_fortify', message: 'Only military units can fortify' },
     (unit) => {
-      unit.orders = { kind: 'fortify' };
+      unit.orders = { kind: 'fortify', turns: 0 };
     },
   ),
   wake_unit: simple<'wake_unit'>(
@@ -211,10 +238,11 @@ export function spawnStartingUnits(state: GameState, ctx: EngineContext) {
           ...probe,
           tile,
           moves: fullMoves(ctx, probe),
-          health: 100,
+          health: ctx.content.rules.combat.maxHealth,
           xp: 0,
           orders: null,
           skippedTurn: null,
+          promotions: [],
         },
       };
       state.nextEntityId++;

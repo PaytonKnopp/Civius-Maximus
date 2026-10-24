@@ -190,6 +190,19 @@ export function isOnRiver(grid: Grid, rivers: ArrayLike<number>, index: number):
   return DIRECTIONS.some((d) => hasRiverEdge(grid, rivers, index, d));
 }
 
+/** Like `isOnRiver`, reading each tile's own `river` bits (no separate rivers array needed). */
+export function tileTouchesRiver(
+  grid: Grid,
+  tiles: ArrayLike<{ river: number }>,
+  index: number,
+): boolean {
+  for (const d of DIRECTIONS) {
+    const slot = edgeSlot(grid, index, d);
+    if (slot && (tiles[slot.tile]!.river & slot.bit) !== 0) return true;
+  }
+  return false;
+}
+
 // --- Vertices (hex corners) ------------------------------------------------------------------
 //
 // Rivers flow from corner to corner. Every corner is either the top (N) corner of exactly one

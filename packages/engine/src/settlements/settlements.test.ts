@@ -295,7 +295,7 @@ describe('production', () => {
     const { s, id } = founded();
     const settler = { kind: 'unit' as const, id: 'unit_settler' };
     const rich = structuredClone(s);
-    rich.players.p1!.gold = purchaseCost(ctx, settler);
+    rich.players.p1!.gold = purchaseCost(ctx, rich, 'p1', settler);
     expect(err(rich, { type: 'buy_item', player: 'p1', settlement: id, item: settler })).toBe(
       'needs_population',
     );
@@ -325,7 +325,7 @@ describe('production', () => {
       item: monument,
     }).state;
     expect(after.settlements[id]!.buildings).toContain('building_monument');
-    expect(gold(after)).toBe(100_000 - purchaseCost(ctx, monument));
+    expect(gold(after)).toBe(100_000 - purchaseCost(ctx, rich, 'p1', monument));
   });
 
   it('turns a town’s production into gold, and towns can be upgraded', () => {

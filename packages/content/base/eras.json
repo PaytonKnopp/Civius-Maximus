@@ -1,0 +1,20 @@
+[
+  {
+    "type": "era",
+    "id": "era_ancient",
+    "name": "Ancient",
+    "order": 1
+  },
+  {
+    "type": "era",
+    "id": "era_classical",
+    "name": "Classical",
+    "order": 2
+  },
+  {
+    "type": "era",
+    "id": "era_medieval",
+    "name": "Medieval",
+    "order": 3
+  }
+]

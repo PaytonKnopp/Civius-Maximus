@@ -10,7 +10,8 @@
     "actions": ["found_settlement"],
     "icon": "S",
     "model": "settler",
-    "populationCost": 1
+    "populationCost": 1,
+    "upkeep": 0
   },
   {
     "type": "unit",
@@ -60,6 +61,117 @@
     "strength": 25,
     "cost": 65,
     "icon": "G",
-    "model": "ship"
+    "model": "ship",
+    "requiresTech": "tech_sailing"
+  },
+  {
+    "type": "unit",
+    "id": "unit_archer",
+    "name": "Archer",
+    "class": "class_ranged",
+    "movement": 2,
+    "sight": 2,
+    "strength": 15,
+    "cost": 60,
+    "icon": "Ar",
+    "model": "archer",
+    "requiresTech": "tech_archery",
+    "rangedStrength": 25,
+    "range": 2
+  },
+  {
+    "type": "unit",
+    "id": "unit_spearman",
+    "name": "Spearman",
+    "class": "class_anti_cavalry",
+    "movement": 2,
+    "sight": 2,
+    "strength": 25,
+    "cost": 65,
+    "icon": "Sp",
+    "model": "warrior",
+    "requiresTech": "tech_bronze_working"
+  },
+  {
+    "type": "unit",
+    "id": "unit_horseman",
+    "name": "Horseman",
+    "class": "class_light_cavalry",
+    "movement": 4,
+    "sight": 2,
+    "strength": 28,
+    "cost": 80,
+    "icon": "Ho",
+    "model": "cavalry",
+    "requiresTech": "tech_horseback_riding"
+  },
+  {
+    "type": "unit",
+    "id": "unit_swordsman",
+    "name": "Swordsman",
+    "class": "class_melee",
+    "movement": 2,
+    "sight": 2,
+    "strength": 35,
+    "cost": 90,
+    "icon": "Sw",
+    "model": "warrior",
+    "requiresTech": "tech_iron_working"
+  },
+  {
+    "type": "unit",
+    "id": "unit_catapult",
+    "name": "Catapult",
+    "class": "class_siege",
+    "movement": 2,
+    "sight": 2,
+    "strength": 23,
+    "cost": 120,
+    "icon": "Ca",
+    "model": "generic",
+    "requiresTech": "tech_engineering",
+    "rangedStrength": 35,
+    "range": 2
+  },
+  {
+    "type": "unit",
+    "id": "unit_pikeman",
+    "name": "Pikeman",
+    "class": "class_anti_cavalry",
+    "movement": 2,
+    "sight": 2,
+    "strength": 41,
+    "cost": 180,
+    "icon": "Pk",
+    "model": "warrior",
+    "requiresTech": "tech_military_tactics"
+  },
+  {
+    "type": "unit",
+    "id": "unit_crossbowman",
+    "name": "Crossbowman",
+    "class": "class_ranged",
+    "movement": 2,
+    "sight": 2,
+    "strength": 30,
+    "cost": 180,
+    "icon": "Cb",
+    "model": "archer",
+    "requiresTech": "tech_machinery",
+    "rangedStrength": 40,
+    "range": 2
+  },
+  {
+    "type": "unit",
+    "id": "unit_knight",
+    "name": "Knight",
+    "class": "class_heavy_cavalry",
+    "movement": 4,
+    "sight": 2,
+    "strength": 48,
+    "cost": 180,
+    "icon": "Kn",
+    "model": "cavalry",
+    "requiresTech": "tech_stirrups"
   }
 ]

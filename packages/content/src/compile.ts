@@ -230,6 +230,38 @@ export function compileContent(raw: readonly RawPackage[]): CompileResult {
     }
   }
 
+  // 5. Tech and civic trees must not loop (A needs B needs A), or nobody could ever finish them.
+  for (const kind of ['tech', 'civic'] as const) {
+    const nodes = [...store.values()].filter((s) => s.type === kind);
+    const requiresOf = (id: string) => {
+      const v = store.get(id)?.value;
+      return v && (v.type === 'tech' || v.type === 'civic') ? v.requires : [];
+    };
+    const state = new Map<string, 'visiting' | 'done'>();
+    const visit = (id: string, trail: string[]): string[] | undefined => {
+      if (state.get(id) === 'done') return undefined;
+      if (state.get(id) === 'visiting') return [...trail.slice(trail.indexOf(id)), id];
+      state.set(id, 'visiting');
+      for (const r of requiresOf(id)) {
+        const loop = visit(r, [...trail, id]);
+        if (loop) return loop;
+      }
+      state.set(id, 'done');
+      return undefined;
+    };
+    for (const node of nodes.sort((a, b) => (a.value.id < b.value.id ? -1 : 1))) {
+      const loop = visit(node.value.id, []);
+      if (loop) {
+        const at = store.get(loop[0]!)!.origin;
+        error(
+          { ...at, path: [...at.path, 'requires'] },
+          `the ${kind} tree loops: ${loop.join(' → ')}`,
+        );
+        break;
+      }
+    }
+  }
+
   const rules = store.get('rules');
   if (!rules)
     error(
@@ -239,7 +271,7 @@ export function compileContent(raw: readonly RawPackage[]): CompileResult {
 
   if (diagnostics.some((d) => d.severity === 'error') || !rules) return { diagnostics };
 
-  // 5. Compiled output.
+  // 6. Compiled output.
   const entities = Object.fromEntries(
     ENTITY_TYPES.map((t) => [t, {}]),
   ) as CompiledContent['entities'];

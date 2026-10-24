@@ -160,6 +160,12 @@ Every yield displayed anywhere can be clicked to see a **breakdown tree**, e.g.,
 radius), *Religious Site* (+faith, missionaries), *Resort Town* (+happiness and tourism by appeal).
 Mods can add more.
 
+- **Built so far (M8):** all six, at 5 citizens; the first choice is free, a change costs 50 gold
+  (D41). Farming and Mining towns send **half** their food or production to the owner's nearest
+  city within 10 tiles (production goes toward that city's current build). Trade, Fort,
+  Religious and Resort towns get local yields and happiness for now; their range, defense,
+  missionary and tourism parts arrive with the systems they belong to.
+
 Why: an empire can be wide without every settlement needing a build queue every turn. Only your
 important cities need constant attention, which keeps simultaneous turns fast with 8 players.
 
@@ -213,8 +219,9 @@ Each settlement has a 😊 **happiness** balance:
 | ≤ −5 | Unrest: no growth, −25% yields, rebels may appear at −10 |
 
 - **Celebrations:** your empire-wide happiness *surplus* each turn accumulates. When it reaches the
-  threshold (which rises with each celebration), you start a **Celebration**: for 10 turns you pick
-  one **bonus policy slot** from your government's list, and all settlements get +10% production.
+  threshold (which rises with each celebration), you start a **Celebration**: for 10 turns you get
+  one **bonus wildcard policy slot**, and all settlements get +10% production. The threshold is
+  40, then +30 for each celebration so far (D38); the bonus is content (`rules.progress.celebration`).
 - **Settlement limit:** starts at 4 and grows with techs, civics and some policies. It's the Civ 5
   "tall vs wide" balance, but softer.
 
@@ -238,6 +245,15 @@ When you capture a settlement, you choose one of:
 - **Liberate:** return it to its original owner, with a big diplomatic and war support boost.
 
 Captured settlements lose 25% of their population and some buildings (configurable).
+
+**Built so far (M9):** Keep, Raze and Liberate. A settlement falls when a melee unit (melee,
+anti-cavalry, cavalry, naval melee) attacks it at 0 health. It loses 25% of its citizens
+(rounded up, at least 1 stays), its queue and walls, and comes back at a quarter of its health;
+the defenders inside die and civilians are taken. Razing is immediate (D44) and impossible for
+original capitals and settlements with a wonder. Liberating returns it to its founder (not if
+you took it from them). Not answering by the end of the turn keeps it. Losing the capital moves
+it to the biggest remaining settlement; losing the last settlement knocks a player out, and the
+last player standing wins. Puppets wait for the loyalty and settlement-limit work.
 
 ---
 
@@ -305,10 +321,16 @@ Captured settlements lose 25% of their population and some buildings (configurab
 - Units gain XP from combat. Each class has a promotion tree with 2 branches.
 - Promoting **fully heals** the unit but uses up its turn (Civ 6 rule, which keeps promotion a real
   decision).
+- **Built so far (M9):** 32 promotions for the 8 combat classes, with original names (D47).
+  Each class has 2 starting choices, a middle tier that needs either of them, and a top tier.
+  They add strength in situations (when attacking or defending, against some classes, against
+  settlements or ranged attacks, fighting in woods), or movement, sight or range. XP: 4 per
+  attack and 3 per defense; promotions cost 15, 30, 50, 75, then 105 XP each.
 
 ### Upkeep and requirements
 
-- Gold upkeep per unit, scaling with era.
+- Gold upkeep per unit, scaling with era. Each player gets **3 gold of upkeep free** each turn
+  (D37), so a starting army doesn't drain an empty treasury.
 - Strategic units cost a stockpile amount to train (e.g., Swordsman: 10 Iron) and a small amount
   per turn to maintain. If the stockpile runs out, those units get −20 combat strength.
 
@@ -360,6 +382,29 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
 - Per turn, if the unit didn't act: +10 HP in enemy land, +10 neutral, +15 own land, +20 in a city.
   Medics give +20 to adjacent units.
 
+### Built so far (M9, part 1)
+
+- The damage formula with every number from `rules.combat`; e^x comes from a table built with
+  integer math (a Taylor series on BigInts), so all machines agree. Damage at equal strength is
+  30 (24–36 with the roll).
+- Modifiers: terrain (hills, woods, rainforest), fortified (+3 after a turn, +6 after two),
+  support and flanking (+2 per unit), wounded (−1 per 10 HP missing), across a river (−5), from
+  the water (−10), embarked defenders (at most 10), class bonuses (anti-cavalry +10 against
+  cavalry, siege +10 against settlements). Every line shows in the combat preview.
+- Melee attacks (both sides take damage; the winner moves into the tile it cleared), ranged
+  attacks (range and line of sight, no damage back), capturing lone civilians by moving onto
+  them (they join you, D42). Attacking uses the unit's turn.
+- Settlements: 200 HP for cities and 100 for towns; strength is the best unit you can train
+  that takes settlements (+3 in a city, +5 while walls stand, plus terrain). Walls (Masonry,
+  +100) and Castles (Military Tactics, +100) absorb hits first and let through 15% of melee,
+  50% of ranged and all of siege damage. Each settlement has a ranged strike (range 2, once a
+  turn, no walls needed, D43). Settlements heal 20 HP and repair 10 walls a turn when not
+  attacked.
+- War: declare it any time on a non-teammate; peace can be offered after 10 turns of war (D45)
+  and is made when the other side accepts (or offers back). Diplomacy proper arrives in M15.
+- Healing as above, at the start of each turn for units that didn't use their moves.
+- Coming in part 2: promotions, commanders, war support and hostile camps.
+
 ### War
 
 - Declaring war gives a diplomatic penalty unless you have a reason (a **casus belli**, e.g., they
@@ -368,6 +413,9 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   side. It starts in favor of the defender if the war was a surprise (no casus belli). Captured
   settlements, battles won, and allies joining shift it. Negative war support costs happiness in
   every settlement, so long unpopular wars get harder to sustain.
+- **Built so far (M9):** each side of a war has a score. The side that's declared on starts at +3;
+  each enemy unit destroyed adds 1 and each settlement taken adds 3, up to 10. The side behind
+  loses 1 happiness per point behind in every settlement, at most 5 (D48). Raiders don't count.
 
 ---
 
@@ -382,6 +430,9 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   Slinger*) that pays 40% of its cost when met. This keeps players' paths varied, and the
   conditions are moddable.
 - Cost formula: base by era × game-speed multiplier.
+- **Built so far (M7):** Ancient → Medieval, 24 techs. Choosing anything queues the path of
+  prerequisites to it. Each citizen adds **+0.5 🔬** on top of buildings and tiles (D36).
+  Boosts are paid the moment their goal is met (or at the end of the turn).
 
 ### Civics tree
 
@@ -394,7 +445,10 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   Merchant Republic → Democracy / Communism / Fascism) each have **slots**: Military,
   Economic, Diplomatic, Wildcard. Each government also has its own bonus.
 - **Policy cards** go into slots. They can be swapped for free when you finish a civic, otherwise
-  for gold.
+  for gold (25 per new card; a new government costs 100). Wildcard slots take any card.
+- **Built so far (M7):** 19 civics, 7 governments (Chiefdom → Merchant Republic) and 22 policy
+  cards, all original names. Early Empire, Political Philosophy and Civil Service each raise the
+  settlement limit by 1.
 - This is one of Civ 6's best systems. It's very moddable, and it creates lots of strategic
   choices, so we keep it as-is.
 
@@ -418,6 +472,10 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   ones from civs.
 - **Adjacency for improvements:** farms gain +1🍞 for every two adjacent farms (Feudalism makes it
   every one), mines gain from adjacent mines later, and so on.
+- **Built so far (M8):** farms get +1🍞 per two neighboring farms; the Open Fields policy
+  (Feudalism) makes it +1 per neighboring farm. Quarries need Mining, pastures and camps Animal
+  Husbandry, plantations Irrigation; farms, mines, fishing boats and woodcutters are available
+  from the start.
 - **Pillaged** improvements are repaired with a cheap city project or by a unit with the *Engineer*
   ability (Military Engineer).
 - **Roads** are built automatically by trade routes. Military engineers can build them manually.
@@ -458,6 +516,28 @@ Districts are Civ 6's signature system and the main source of city planning.
   bragging rights in chat. If someone completes a wonder first, the other players building it
   have their production converted to gold.
 
+**Built so far (M8):**
+- All 10 districts in the table except Neighborhood and Spaceport (later eras), with the listed
+  adjacencies. A district costs its base (54 production for specialty districts, 36 for the
+  Aqueduct) **+2% per tech and civic you've finished** (D39). Districts can't be bought.
+- Placement rules: the tile must be the city's own, within 3 tiles, not its center, without a
+  district or wonder, and fit the district (Harbor on coast or lake next to land, Encampment not
+  next to the center, Aqueduct next to the center and fresh water or a mountain). Building on a
+  tile removes woods, rainforest or marsh and any improvement there.
+- 9 Ancient and Classical wonders (Pyramids, Hanging Gardens, Stonehenge, Temple of Artemis,
+  Oracle, Colossus, Great Library, Colosseum, Petra), each with a placement rule, local yields and
+  an empire-wide effect (D40). The race is world-wide: when one finishes, every other settlement
+  building it gets its production back as gold and drops it from the queue.
+- 11 buildings now belong to districts (Library and University in the Campus, Shrine and Temple
+  in the Holy Site, and so on); a district building needs its district first.
+- **Specialists:** each building in a district opens one specialist slot. Specialists give the
+  district's specialist yields (e.g. +2🔬 in a Campus) instead of working a tile, and are assigned
+  by the citizen focus like tiles.
+- Clear Woods (+25⚙️ toward the next item), Clear Rainforest (+15🍞 +15⚙️) and Drain Marsh
+  (+20🍞) are 15-production city projects on a tile.
+- The settlement screen previews each possible tile's yield before you place a district, on the
+  map and in a list.
+
 ---
 
 ## 10. Independent powers (core)
@@ -467,9 +547,21 @@ Barbarians and city-states are one system (from Civ 7). See
 With the module off, they act as classic barbarians: camps spawn in fog, send scouts, then raid,
 and clearing one gives gold and XP. Settings: off / normal / raging.
 
+**Built so far (M9): hostile camps.** One camp per 120 land tiles at the start, at least 6
+tiles from any start, each with a raider; a new camp may appear every 12 turns in land no
+player can see, up to the same number. A camp trains a raider every 7 turns while it has fewer
+than 3, picked by the latest era any player has reached (warriors and slingers, then spearmen,
+archers and horsemen...). Raiders belong to no one and are at war with everyone: each turn they
+attack the best target in reach, close in on anything within 4 tiles, or wander near home.
+They carry civilians off rather than capture them and can't take settlements (D49). Moving a
+military unit onto a camp clears it for 50 gold. The new-game dialog can turn camps off.
+
 ---
 
 ## 11. Score
 
 - Score from population, wonders, techs, civics, great people, eras and military. It's shown in
   reports and decides a **score victory** at the turn limit.
+- **Built so far (M10):** 1 per citizen, 5 per city, 2 per town, 2 per tech, 2 per civic, 10 per
+  wonder, 2 per district, 10 per era past the first, 1 per enemy unit destroyed (D50). Shown on
+  each player's chip and panel and on the end-of-game screen.

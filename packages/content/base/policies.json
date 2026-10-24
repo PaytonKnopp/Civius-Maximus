@@ -1,0 +1,501 @@
+[
+  {
+    "type": "policy",
+    "id": "policy_militia_drills",
+    "name": "Militia Drills",
+    "description": "+50% production toward melee and anti-cavalry units.",
+    "slot": "military",
+    "requiresCivic": "civic_code_of_laws",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "kind": "unit",
+            "unitClass": ["class_melee", "class_anti_cavalry"]
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_frontier_patrols",
+    "name": "Frontier Patrols",
+    "description": "Unit upkeep costs 50% less.",
+    "slot": "military",
+    "requiresCivic": "civic_code_of_laws",
+    "effects": [
+      {
+        "effect": "modify_unit_upkeep",
+        "params": {
+          "percent": -50
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_bowyers_workshops",
+    "name": "Bowyers' Workshops",
+    "description": "+50% production toward ranged units.",
+    "slot": "military",
+    "requiresCivic": "civic_military_tradition",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "kind": "unit",
+            "unitClass": "class_ranged"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_remount_herds",
+    "name": "Remount Herds",
+    "description": "+50% production toward cavalry.",
+    "slot": "military",
+    "requiresCivic": "civic_military_training",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "kind": "unit",
+            "unitClass": ["class_light_cavalry", "class_heavy_cavalry"]
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_siege_engineers",
+    "name": "Siege Engineers",
+    "description": "+50% production toward siege units.",
+    "slot": "military",
+    "requiresCivic": "civic_military_training",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "kind": "unit",
+            "unitClass": "class_siege"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_paid_companies",
+    "name": "Paid Companies",
+    "description": "Buying costs 25% less.",
+    "slot": "military",
+    "requiresCivic": "civic_mercenaries",
+    "effects": [
+      {
+        "effect": "modify_purchase_cost",
+        "params": {
+          "percent": -25
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_civic_works",
+    "name": "Civic Works",
+    "description": "+1 production in every settlement.",
+    "slot": "economic",
+    "requiresCivic": "civic_code_of_laws",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_granary_ledgers",
+    "name": "Granary Ledgers",
+    "description": "+10% growth, and +1 food in the capital.",
+    "slot": "economic",
+    "requiresCivic": "civic_craftsmanship",
+    "effects": [
+      {
+        "effect": "modify_growth",
+        "params": {
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_market_rights",
+    "name": "Market Rights",
+    "description": "+2 gold in the capital and +1 gold in every town.",
+    "slot": "economic",
+    "requiresCivic": "civic_foreign_trade",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_kind": "town"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_settlers_charter",
+    "name": "Settlers' Charter",
+    "description": "+50% production toward settlers.",
+    "slot": "economic",
+    "requiresCivic": "civic_early_empire",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "kind": "unit",
+            "unit": "unit_settler"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_master_builders",
+    "name": "Master Builders",
+    "description": "+30% production toward buildings.",
+    "slot": "economic",
+    "requiresCivic": "civic_public_works",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 30,
+          "toward": {
+            "kind": "building"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_patrons_of_poetry",
+    "name": "Patrons of Poetry",
+    "description": "+1 culture in every settlement.",
+    "slot": "economic",
+    "requiresCivic": "civic_drama_and_poetry",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_festival_calendar",
+    "name": "Festival Calendar",
+    "description": "+1 happiness in every settlement.",
+    "slot": "economic",
+    "requiresCivic": "civic_games_and_recreation",
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_scribes_stipend",
+    "name": "Scribes' Stipend",
+    "description": "+10% science in every settlement.",
+    "slot": "economic",
+    "requiresCivic": "civic_recorded_history",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_temple_tithes",
+    "name": "Temple Tithes",
+    "description": "+1 faith in every settlement.",
+    "slot": "economic",
+    "requiresCivic": "civic_theology",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_open_fields",
+    "name": "Open Fields",
+    "description": "Farms get +1 food for every neighboring farm (instead of every two).",
+    "slot": "economic",
+    "requiresCivic": "civic_feudalism",
+    "effects": [
+      {
+        "effect": "yield_per_adjacent",
+        "params": {
+          "yield": "food",
+          "amount": 0.5,
+          "per": {
+            "improvement": "improvement_farm"
+          }
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_farm"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_royal_mint",
+    "name": "Royal Mint",
+    "description": "+15% gold in every settlement.",
+    "slot": "economic",
+    "requiresCivic": "civic_civil_service",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_guild_charters",
+    "name": "Guild Charters",
+    "description": "+15% production in cities.",
+    "slot": "economic",
+    "requiresCivic": "civic_guilds",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_kind": "city"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_court_emissaries",
+    "name": "Court Emissaries",
+    "description": "+2 influence in the capital.",
+    "slot": "diplomatic",
+    "requiresCivic": "civic_political_philosophy",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "influence",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_frontier_charters",
+    "name": "Frontier Charters",
+    "description": "+1 settlement limit.",
+    "slot": "diplomatic",
+    "requiresCivic": "civic_early_empire",
+    "effects": [
+      {
+        "effect": "modify_settlement_limit",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_civil_registry",
+    "name": "Civil Registry",
+    "description": "+1 happiness in towns.",
+    "slot": "diplomatic",
+    "requiresCivic": "civic_civil_service",
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_kind": "town"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_patron_of_learning",
+    "name": "Patron of Learning",
+    "description": "+2 science in the capital.",
+    "slot": "wildcard",
+    "requiresCivic": "civic_recorded_history",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      }
+    ]
+  }
+]

@@ -8,17 +8,51 @@ export interface TileFacts {
   resource: string | null;
   /** An `improvement` content id (missing = none). */
   improvement?: string | null;
+  /** A `district` content id (missing = none). */
+  district?: string | null;
+  /** A `wonder` content id (missing = none). */
+  wonder?: string | null;
+  /** The tile is a settlement's center. */
+  center?: boolean;
   /** True if a river runs along any edge of the tile. */
   river: boolean;
   ownerId: string | null;
 }
 
-/** A tile, its neighbors, and whose point of view the effects are evaluated from. */
-export interface TileContext {
+/** What settlement conditions look at. */
+export interface SettlementFacts {
+  kind: 'town' | 'city';
+  capital: boolean;
+  population: number;
+  buildings: readonly string[];
+}
+
+/** What player conditions look at (techs and civics finished, government...). */
+export interface PlayerFacts {
+  techs: readonly string[];
+  civics: readonly string[];
+  government: string;
+  celebrating: boolean;
+}
+
+/**
+ * Where a condition is evaluated: whose point of view, and the tile, settlement and player facts
+ * that are known there. A condition about something that isn't known (a tile condition on a
+ * settlement-wide effect) is false.
+ */
+export interface ConditionContext {
   content: CompiledContent;
-  tile: TileFacts;
-  /** The up-to-6 adjacent tiles (fewer at the map edge). */
-  neighbors: readonly TileFacts[];
   /** The player whose abilities, policies etc. are being applied. */
   playerId: string;
+  tile?: TileFacts;
+  /** The up-to-6 adjacent tiles (fewer at the map edge). */
+  neighbors?: readonly TileFacts[];
+  settlement?: SettlementFacts;
+  player?: PlayerFacts;
+}
+
+/** A tile, its neighbors, and whose point of view the effects are evaluated from. */
+export interface TileContext extends ConditionContext {
+  tile: TileFacts;
+  neighbors: readonly TileFacts[];
 }

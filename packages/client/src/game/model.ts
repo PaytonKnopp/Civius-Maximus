@@ -1,8 +1,13 @@
 import { type CompiledContent, resolveText } from '@cx/content';
 import {
+  availableNodes,
+  availablePolicies,
+  availablePromotions,
   type BuildItem,
+  districtYields,
   type EngineContext,
   goldPerTurn,
+  HOSTILE,
   growthPerTurn,
   growthThreshold,
   itemCost,
@@ -12,15 +17,22 @@ import {
   type MapTile,
   type PlayerId,
   percentOf,
+  placementTiles,
+  policySlots,
+  productionToward,
+  SLOT_KINDS,
   type SettlementState,
   type SettlementYields,
   settlementIds,
   settlementsOf,
+  settlementMaxHealth,
   settlementYields,
+  toFixed,
   unitClassOf,
   unitDef,
   unitIds,
   unitsNeedingOrders,
+  wallsMax,
 } from '@cx/engine';
 import type { SettlementView, TerritoryView, UnitView } from '../map/renderer';
 
@@ -44,6 +56,8 @@ export function playerColors(content: CompiledContent, state: GameState): Record
       ? { main: hex(civ.colors.primary), accent: hex(civ.colors.secondary) }
       : { main: 0x8d9db6, accent: 0x10161d };
   }
+  // Raiders: soot and ember.
+  out[HOSTILE] = { main: 0x2b2420, accent: 0xe0503c };
   return out;
 }
 
@@ -79,6 +93,8 @@ export function unitViews(
         tile: u.tile,
         mine: u.owner === viewer,
         needsOrders: needing.has(u.id),
+        health: Math.round((u.health * 100) / ctx.content.rules.combat.maxHealth),
+        promotable: u.owner === viewer && availablePromotions(ctx, u).length > 0,
       };
     });
 }
@@ -96,8 +112,25 @@ export function territoryView(
         ? null
         : (ctx.content.entities.improvement[t.improvement]?.model ?? 'generic'),
     ),
+    districts: state.map.tiles.map((t, i) => {
+      const def = fog[i] === 0 || t.district === null ? undefined : districtDef(ctx, t.district);
+      return def ? { model: def.model, color: hex(def.color), icon: def.icon } : null;
+    }),
+    wonders: state.map.tiles.map((t, i) => {
+      const def =
+        fog[i] === 0 || t.wonder === null ? undefined : ctx.content.entities.wonder[t.wonder];
+      return def ? { model: def.model, icon: def.icon } : null;
+    }),
+    features: state.map.tiles.map((t) => t.feature),
+    camps: (() => {
+      const out = state.map.tiles.map(() => false);
+      for (const c of Object.values(state.camps)) if (fog[c.tile] !== 0) out[c.tile] = true;
+      return out;
+    })(),
   };
 }
+
+const districtDef = (ctx: EngineContext, id: string) => ctx.content.entities.district[id];
 
 /** "Plains Hills · Woods", "Coast", "Mountain"... */
 export function tileName(content: CompiledContent, t: MapTile): string {
@@ -118,6 +151,58 @@ export function tileName(content: CompiledContent, t: MapTile): string {
 export function itemName(content: CompiledContent, item: BuildItem): string {
   const def = itemDef({ content }, item);
   return def ? resolveText(content, def.name) : item.id;
+}
+
+/** Yields as a short label: "+2🔬 +1💰" (fixed-point amounts, zeroes left out). */
+export function yieldLabel(content: CompiledContent, yields: Record<string, number>): string {
+  return Object.entries(yields)
+    .filter(([, v]) => v !== 0)
+    .map(
+      ([y, v]) => `${v > 0 ? '+' : ''}${formatAmount(v)}${content.entities.yield[y]?.icon ?? ''}`,
+    )
+    .join(' ');
+}
+
+const formatAmount = (n: number) => {
+  const v = n / 100;
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
+};
+
+/**
+ * Where a district, wonder or project could go, with what each tile would give: a district's
+ * yields from adjacency, a project's reward, a wonder's name.
+ */
+export function placementChoices(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+  item: BuildItem,
+): { tile: number; label: string; score: number }[] {
+  const kind = item.kind as 'district' | 'wonder' | 'project';
+  const { content } = ctx;
+  const sum = (y: Record<string, number>) => Object.values(y).reduce((a, b) => a + b, 0);
+  return placementTiles(ctx, state, s, kind, item.id)
+    .map((tile) => {
+      if (kind === 'district') {
+        const total = districtYields(ctx, state, tile, item.id).total;
+        const def = content.entities.district[item.id]!;
+        const main =
+          def.adjacency[0]?.yield ??
+          Object.keys(def.specialistYields)[0] ??
+          Object.keys(def.yields)[0];
+        const none = main
+          ? `+0${content.entities.yield[main]?.icon ?? ''}`
+          : itemName(content, item);
+        return { tile, label: yieldLabel(content, total) || none, score: sum(total) };
+      }
+      if (kind === 'project') {
+        const reward = content.entities.project[item.id]?.reward ?? {};
+        const fixed = Object.fromEntries(Object.entries(reward).map(([y, v]) => [y, toFixed(v)]));
+        return { tile, label: yieldLabel(content, fixed) || itemName(content, item), score: 0 };
+      }
+      return { tile, label: itemName(content, item), score: 0 };
+    })
+    .sort((a, b) => b.score - a.score || a.tile - b.tile);
 }
 
 /** Turns until an item is done at this production rate (Infinity if no production). */
@@ -146,16 +231,20 @@ export function settlementSummary(
   s: SettlementState,
 ): SettlementSummary {
   const yields = settlementYields(ctx, state, s);
-  const growth = growthPerTurn(ctx, yields);
+  const growth = growthPerTurn(ctx, state, s, yields);
   const foodNeeded = growthThreshold(ctx, s.population);
   const production = yields.total.production ?? 0;
   const headItem = s.kind === 'city' ? s.queue[0] : undefined;
   const head = headItem && {
     item: headItem,
     name: itemName(ctx.content, headItem),
-    cost: itemCost(ctx, headItem),
+    cost: itemCost(ctx, state, s.owner, headItem),
     progress: s.progress[itemKey(headItem)] ?? 0,
-    turns: turnsFor(itemCost(ctx, headItem), s.progress[itemKey(headItem)] ?? 0, production),
+    turns: turnsFor(
+      itemCost(ctx, state, s.owner, headItem),
+      s.progress[itemKey(headItem)] ?? 0,
+      productionToward(ctx, state, s, headItem, production),
+    ),
   };
   return {
     yields,
@@ -183,8 +272,9 @@ export function settlementViews(
       let status: string | undefined;
       if (s.owner === viewer) {
         const sum = settlementSummary(ctx, state, s);
-        status =
-          s.pendingDevelop > 0
+        status = s.captureChoice
+          ? 'Captured: decide its fate'
+          : s.pendingDevelop > 0
             ? 'Choose a tile to develop'
             : s.kind === 'town'
               ? 'Town'
@@ -204,6 +294,10 @@ export function settlementViews(
         capital: s.capital,
         mine: s.owner === viewer,
         ...(status ? { status } : {}),
+        health: s.health,
+        maxHealth: settlementMaxHealth(ctx, s.kind),
+        walls: s.walls,
+        wallsMax: wallsMax(ctx, s),
       };
     });
 }
@@ -242,14 +336,33 @@ export function empireSummary(
 
 export type NextAction =
   | { kind: 'unit'; id: string; label: string }
+  | { kind: 'capture'; id: string; label: string }
   | { kind: 'develop'; id: string; label: string }
   | { kind: 'production'; id: string; label: string }
+  | { kind: 'research'; label: string }
+  | { kind: 'civic'; label: string }
+  | { kind: 'policies'; label: string }
   | { kind: 'end'; label: string }
   | { kind: 'waiting'; label: string };
 
-/** What the Next Action button does now: units, then growth choices, then production, then End Turn. */
-export function nextAction(state: GameState, player: PlayerId, after: string | null): NextAction {
-  if (state.players[player]!.turnEnded) return { kind: 'waiting', label: 'Waiting for others' };
+/**
+ * What the Next Action button does now (docs/06-ui-ux.md, "End Turn"): units, growth choices,
+ * production, research, civics, then empty policy slots right after a civic, then End Turn.
+ * `policiesSeen` is the turn the player last opened the government screen (so empty slots they
+ * chose to leave don't block the turn).
+ */
+export function nextAction(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  after: string | null,
+  policiesSeen = 0,
+): NextAction {
+  const p = state.players[player]!;
+  if (p.turnEnded) return { kind: 'waiting', label: 'Waiting for others' };
+  const captured = settlementsOf(state, player).find((s) => s.captureChoice);
+  if (captured)
+    return { kind: 'capture', id: captured.id, label: `Decide ${captured.name}'s fate` };
   const units = unitsNeedingOrders(state, player);
   if (units.length > 0) {
     const id =
@@ -266,7 +379,28 @@ export function nextAction(state: GameState, player: PlayerId, after: string | n
   if (growing) return { kind: 'develop', id: growing.id, label: 'Choose a tile to develop' };
   const idle = mine.find((s) => s.kind === 'city' && s.queue.length === 0);
   if (idle) return { kind: 'production', id: idle.id, label: 'Choose production' };
+  if (mine.length > 0) {
+    if (!p.techs.current && availableNodes(ctx, p, 'tech').length > 0)
+      return { kind: 'research', label: 'Choose research' };
+    if (!p.civics.current && availableNodes(ctx, p, 'civic').length > 0)
+      return { kind: 'civic', label: 'Choose a civic' };
+    if (p.policyWindow && policiesSeen !== state.turn && hasEmptySlotToFill(ctx, state, player))
+      return { kind: 'policies', label: 'Choose policies' };
+  }
   return { kind: 'end', label: 'End turn' };
+}
+
+/** An empty slot that one of the unslotted cards could fill. */
+function hasEmptySlotToFill(ctx: EngineContext, state: GameState, player: PlayerId): boolean {
+  const p = state.players[player]!;
+  const slots = policySlots(ctx, state, player);
+  const slotted = new Set(SLOT_KINDS.flatMap((k) => p.policies[k]));
+  const free = availablePolicies(ctx, p).filter((id) => !slotted.has(id));
+  return SLOT_KINDS.some(
+    (k) =>
+      p.policies[k].length < slots[k] &&
+      free.some((id) => k === 'wildcard' || ctx.content.entities.policy[id]!.slot === k),
+  );
 }
 
 /** A fixed-point amount as whole units for display (rounded down), e.g. 1250 → "12". */

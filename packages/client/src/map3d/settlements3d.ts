@@ -1,22 +1,16 @@
 import {
-  BoxGeometry,
   BufferGeometry,
   CanvasTexture,
   Color,
-  ConeGeometry,
-  CylinderGeometry,
-  DodecahedronGeometry,
   DoubleSide,
   Euler,
   Float32BufferAttribute,
   Group,
-  IcosahedronGeometry,
   Matrix4,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
   Quaternion,
-  SphereGeometry,
   Sprite,
   SpriteMaterial,
   SRGBColorSpace,
@@ -24,6 +18,8 @@ import {
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { SettlementView, TerritoryView, TileHighlight } from '../map/renderer';
+import { campParts, districtParts, wonderParts } from './districts3d';
+import { G, house, part, scaled, seeded } from './parts';
 
 /**
  * Settlements in the 3D world: clusters of houses that grow with population (a keep for cities,
@@ -40,98 +36,6 @@ export interface SettlementWorld {
   wrap(): boolean;
   /** Fog level per tile: 2 visible, 1 remembered, 0 unexplored. */
   fog(tile: number): number;
-}
-
-// --- Geometry helpers ------------------------------------------------------------------------
-
-const tmp = new Matrix4();
-const q = new Quaternion();
-const yAxis = new Vector3(0, 1, 0);
-
-/** A geometry part, placed and colored, ready to merge (position + normal + color only). */
-function part(
-  g: BufferGeometry,
-  color: number | Color,
-  x = 0,
-  y = 0,
-  z = 0,
-  rotY = 0,
-  scale = 1,
-): BufferGeometry {
-  const out = g.index ? g.toNonIndexed() : g.clone();
-  out.deleteAttribute('uv');
-  q.setFromAxisAngle(yAxis, rotY);
-  out.applyMatrix4(tmp.compose(new Vector3(x, y, z), q, new Vector3(scale, scale, scale)));
-  const c = color instanceof Color ? color : new Color(color);
-  const n = out.getAttribute('position').count;
-  const colors = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) colors.set([c.r, c.g, c.b], i * 3);
-  out.setAttribute('color', new Float32BufferAttribute(colors, 3));
-  return out;
-}
-
-/** Deterministic pseudo-random numbers from a seed (so a town looks the same every frame). */
-function seeded(seed: number) {
-  let s = (seed * 2654435761) >>> 0 || 1;
-  return () => {
-    s ^= s << 13;
-    s ^= s >>> 17;
-    s ^= s << 5;
-    return ((s >>> 0) % 10000) / 10000;
-  };
-}
-
-const G = {
-  box: new BoxGeometry(1, 1, 1),
-  roof: new ConeGeometry(0.75, 1, 4).rotateY(Math.PI / 4),
-  cyl: new CylinderGeometry(1, 1, 1, 8),
-  cone: new ConeGeometry(1, 1, 8),
-  dome: new SphereGeometry(1, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2),
-  rock: new DodecahedronGeometry(1, 0),
-  bush: new IcosahedronGeometry(1, 0),
-};
-
-const WALLS = [0xa89679, 0x9c8a6e, 0xb3a385, 0x8f7f66];
-const ROOFS = [0x7a3f2c, 0x6b3a2a, 0x845034, 0x5e4a3c];
-
-function house(
-  parts: BufferGeometry[],
-  x: number,
-  y: number,
-  z: number,
-  rot: number,
-  r: () => number,
-  big = 1,
-) {
-  const w = (0.09 + r() * 0.05) * big;
-  const d = (0.08 + r() * 0.04) * big;
-  const h = (0.06 + r() * 0.04) * big;
-  const wall = WALLS[Math.floor(r() * WALLS.length)]!;
-  const roof = ROOFS[Math.floor(r() * ROOFS.length)]!;
-  parts.push(
-    scaled(G.box, wall, x, y + h / 2, z, w, h, d, rot),
-    scaled(G.roof, roof, x, y + h + h * 0.45, z, w * 0.95, h * 0.9, d * 0.95, rot),
-  );
-}
-
-function scaled(
-  g: BufferGeometry,
-  color: number,
-  x: number,
-  y: number,
-  z: number,
-  sx: number,
-  sy: number,
-  sz: number,
-  rot = 0,
-) {
-  return part(g, color).applyMatrix4(
-    new Matrix4().compose(
-      new Vector3(x, y, z),
-      new Quaternion().setFromAxisAngle(yAxis, rot),
-      new Vector3(sx, sy, sz),
-    ),
-  );
 }
 
 /** The buildings of one settlement, around its center tile at (cx, cz). */
@@ -383,7 +287,9 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   const nameW = ctx.measureText(name).width;
   ctx.font = '500 26px "IBM Plex Sans", sans-serif';
   const statusW = view.status ? ctx.measureText(view.status).width : 0;
-  const h = view.status ? 118 : 84;
+  const bars = view.health < view.maxHealth || view.wallsMax > 0;
+  const textH = view.status ? 118 : 84;
+  const h = textH + (bars ? 26 : 0);
   const w = Math.ceil(Math.max(nameW, statusW) + 130);
   canvas.width = w;
   canvas.height = h;
@@ -395,7 +301,7 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   ctx.stroke();
   // Population medallion in the owner's colors.
   ctx.beginPath();
-  ctx.arc(48, h / 2, 31, 0, Math.PI * 2);
+  ctx.arc(48, textH / 2, 31, 0, Math.PI * 2);
   ctx.fillStyle = css(view.color);
   ctx.fill();
   ctx.lineWidth = 4;
@@ -405,15 +311,30 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   ctx.font = '700 32px "IBM Plex Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(String(view.population), 48, h / 2 + 1);
+  ctx.fillText(String(view.population), 48, textH / 2 + 1);
   ctx.textAlign = 'left';
   ctx.fillStyle = view.kind === 'city' ? '#f0e6cc' : '#d9cfb6';
   ctx.font = nameFont;
-  ctx.fillText(name, 94, view.status ? 42 : h / 2 + 2);
+  ctx.fillText(name, 94, view.status ? 42 : textH / 2 + 2);
   if (view.status) {
     ctx.font = '500 26px "IBM Plex Sans", sans-serif';
     ctx.fillStyle = '#c9b98a';
     ctx.fillText(view.status, 96, 86);
+  }
+  if (bars) {
+    // Walls (grey-blue) over health (green to red), along the bottom.
+    const x = 18;
+    const width = w - 36;
+    const y = textH - 4;
+    ctx.fillStyle = '#05080b';
+    ctx.fillRect(x - 2, y - 2, width + 4, 22);
+    const hp = view.health / view.maxHealth;
+    ctx.fillStyle = hp > 0.6 ? '#7fc35a' : hp > 0.3 ? '#e0b040' : '#e0503c';
+    ctx.fillRect(x, y + (view.wallsMax > 0 ? 9 : 0), width * hp, view.wallsMax > 0 ? 9 : 18);
+    if (view.wallsMax > 0) {
+      ctx.fillStyle = '#8fa8c0';
+      ctx.fillRect(x, y, (width * view.walls) / view.wallsMax, 8);
+    }
   }
   const texture = new CanvasTexture(canvas);
   texture.colorSpace = SRGBColorSpace;
@@ -425,6 +346,9 @@ const TONES: Record<TileHighlight['tone'], number> = {
   buy: 0xd4a94e,
   worked: 0xe8dcc0,
   selected: 0xe6c070,
+  place: 0x7fc3e8,
+  planned: 0xb49ce0,
+  attack: 0xe0503c,
 };
 
 const labelCache = new Map<string, SpriteMaterial>();
@@ -539,6 +463,8 @@ function ribbonMesh(pos: number[], col: number[]): Mesh {
 export class SettlementLayer {
   readonly group = new Group();
   private drawn = new Map<string, Drawn>();
+  /** Hostile camps, one small group each (by tile). */
+  private camps = new Map<number, Drawn>();
   private highlights = new Group();
   private highlightKey = '';
   private highlightX: number[] = [];
@@ -592,7 +518,8 @@ export class SettlementLayer {
             .neighbors(t)
             .map((n) => (ownerOf(n) === view.owner ? 1 : 0))
             .join('');
-          return `${t}:${territory.improvements[t] ?? ''}:${this.world.fog(t)}:${ns}`;
+          const built = territory.districts[t]?.model ?? territory.wonders[t]?.model ?? '';
+          return `${t}:${territory.improvements[t] ?? ''}:${built}:${this.world.fog(t)}:${ns}`;
         })
         .join('|');
       const key = `${JSON.stringify(view)}#${this.world.fog(view.tile)}#${sig}`;
@@ -609,6 +536,38 @@ export class SettlementLayer {
       if (keep.has(id)) continue;
       this.dispose(d);
       this.drawn.delete(id);
+    }
+    this.setCamps(territory.camps);
+  }
+
+  private setCamps(camps: boolean[]) {
+    const want = new Set<number>();
+    camps.forEach((c, t) => c && want.add(t));
+    for (const [t, d] of this.camps) {
+      const key = `${this.world.fog(t)}`;
+      if (want.has(t) && d.key === key) continue;
+      this.dispose(d);
+      this.camps.delete(t);
+    }
+    for (const t of want) {
+      if (this.camps.has(t)) continue;
+      const [x, z] = this.world.center(t);
+      const parts = campParts(x, z, Math.max(0, this.world.height(x, z)) - 0.005, t);
+      const merged = mergeGeometries(parts);
+      for (const p of parts) p.dispose();
+      const group = new Group();
+      if (merged) {
+        if (this.world.fog(t) === 1) {
+          const c = merged.getAttribute('color');
+          for (let i = 0; i < c.count; i++) {
+            c.setXYZ(i, c.getX(i) * 0.35, c.getY(i) * 0.37, c.getZ(i) * 0.42);
+          }
+        }
+        merged.computeBoundingSphere();
+        group.add(new Mesh(merged, buildingMaterial));
+      }
+      this.group.add(group);
+      this.camps.set(t, { key: `${this.world.fog(t)}`, group, x });
     }
   }
 
@@ -627,10 +586,15 @@ export class SettlementLayer {
     // Buildings and improvements: one merged mesh.
     const parts: BufferGeometry[] = centerKnown ? settlementParts(view, cx, cz, height) : [];
     for (const t of tiles) {
-      const model = territory.improvements[t];
-      if (!model || t === view.tile) continue;
+      if (t === view.tile) continue;
       const [x, z] = this.world.center(t);
-      parts.push(...improvementParts(model, x, z, Math.max(0, height(x, z)) - 0.005, t));
+      const ground = Math.max(0, height(x, z)) - 0.005;
+      const district = territory.districts[t];
+      const wonder = territory.wonders[t];
+      const model = territory.improvements[t];
+      if (district) parts.push(...districtParts(district.model, district.color, x, z, ground, t));
+      else if (wonder) parts.push(...wonderParts(wonder.model, x, z, ground, t));
+      else if (model) parts.push(...improvementParts(model, x, z, ground, t));
     }
     if (parts.length > 0) {
       const merged = mergeGeometries(parts);
@@ -741,6 +705,7 @@ export class SettlementLayer {
     const w = this.world.worldWidth();
     const shift = (x: number) => Math.round((cameraX - x) / w) * w;
     for (const d of this.drawn.values()) d.group.position.x = shift(d.x);
+    for (const d of this.camps.values()) d.group.position.x = shift(d.x);
     this.highlights.children.forEach((c, i) => {
       c.position.x = shift(this.highlightX[i] ?? 0);
     });
@@ -749,5 +714,7 @@ export class SettlementLayer {
   clear() {
     for (const d of this.drawn.values()) this.dispose(d);
     this.drawn.clear();
+    for (const d of this.camps.values()) this.dispose(d);
+    this.camps.clear();
   }
 }

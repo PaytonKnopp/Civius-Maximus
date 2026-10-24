@@ -14,6 +14,10 @@ export interface MapTile {
   settlement: string | null;
   /** An `improvement` content id. */
   improvement: string | null;
+  /** A `district` content id, once the district is built. */
+  district: string | null;
+  /** A `wonder` content id, once the wonder is built. */
+  wonder: string | null;
 }
 
 export interface MapState {

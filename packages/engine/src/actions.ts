@@ -5,7 +5,12 @@ const UnitRef = z.string().regex(/^u\d+$/);
 const TileRef = z.int().min(0).max(1_000_000);
 const SettlementRef = z.string().regex(/^s\d+$/);
 const ContentRef = z.string().regex(/^[a-z][a-z0-9_]*$/);
-const BuildItem = z.strictObject({ kind: z.enum(['unit', 'building']), id: ContentRef });
+const BuildItem = z.strictObject({
+  kind: z.enum(['unit', 'building', 'district', 'wonder', 'project']),
+  id: ContentRef,
+  /** Districts, wonders and projects go on a tile. */
+  tile: TileRef.optional(),
+});
 const Focus = z.enum(['balanced', 'food', 'production', 'gold', 'science', 'culture', 'faith']);
 
 /**
@@ -72,11 +77,63 @@ export const Action = z.discriminatedUnion('type', [
   }),
   /** Pay gold to turn a town into a city. */
   z.strictObject({ type: z.literal('upgrade_town'), player: PlayerRef, settlement: SettlementRef }),
+  /** Research toward a tech (and the path of prerequisites to it). */
+  z.strictObject({ type: z.literal('set_research'), player: PlayerRef, tech: ContentRef }),
+  /** Work toward a civic (and the path of prerequisites to it). */
+  z.strictObject({ type: z.literal('set_civic'), player: PlayerRef, civic: ContentRef }),
+  z.strictObject({ type: z.literal('set_government'), player: PlayerRef, government: ContentRef }),
+  /** Replace the policy cards in every slot. */
+  z.strictObject({
+    type: z.literal('set_policies'),
+    player: PlayerRef,
+    policies: z.strictObject({
+      military: z.array(ContentRef).max(8),
+      economic: z.array(ContentRef).max(8),
+      diplomatic: z.array(ContentRef).max(8),
+      wildcard: z.array(ContentRef).max(8),
+    }),
+  }),
+  /** Pick (or change, for gold) a town's specialization; null clears it. */
+  z.strictObject({
+    type: z.literal('set_specialization'),
+    player: PlayerRef,
+    settlement: SettlementRef,
+    specialization: ContentRef.nullable(),
+  }),
   z.strictObject({
     type: z.literal('rename_settlement'),
     player: PlayerRef,
     settlement: SettlementRef,
     name: z.string().trim().min(1).max(40),
+  }),
+
+  // Combat and war (M9)
+  /** Melee or ranged attack on a tile (moving onto lone civilians captures them). */
+  z.strictObject({ type: z.literal('attack'), player: PlayerRef, unit: UnitRef, tile: TileRef }),
+  /** A settlement's once-a-turn ranged strike. */
+  z.strictObject({
+    type: z.literal('strike'),
+    player: PlayerRef,
+    settlement: SettlementRef,
+    tile: TileRef,
+  }),
+  z.strictObject({ type: z.literal('declare_war'), player: PlayerRef, target: PlayerRef }),
+  z.strictObject({ type: z.literal('offer_peace'), player: PlayerRef, target: PlayerRef }),
+  /** Accept a peace offer from `from`. */
+  z.strictObject({ type: z.literal('accept_peace'), player: PlayerRef, from: PlayerRef }),
+  /** Spend XP on a promotion (heals the unit fully and ends its turn). */
+  z.strictObject({
+    type: z.literal('promote_unit'),
+    player: PlayerRef,
+    unit: UnitRef,
+    promotion: ContentRef,
+  }),
+  /** After taking a settlement: keep it, raze it, or give it back to its founder. */
+  z.strictObject({
+    type: z.literal('capture_choice'),
+    player: PlayerRef,
+    settlement: SettlementRef,
+    choice: z.enum(['keep', 'raze', 'liberate']),
   }),
 ]);
 export type Action = z.infer<typeof Action>;
