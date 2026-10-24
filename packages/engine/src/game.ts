@@ -27,8 +27,11 @@ export interface GameSetup {
     name: string;
     kind: PlayerState['kind'];
     team?: number | null;
-    /** A `civ` content id. Players without one get a civ nobody else picked, at random. */
+    /** A `civ` content id. Players without one get their leader's civ, or a civ nobody else
+     * picked, at random. */
     civ?: string;
+    /** A `leader` content id. Players without one get their civ's leader. */
+    leader?: string;
     /** From the player's civ (later); influences where they start. */
     startBias?: StartBias[];
   }[];
@@ -74,8 +77,12 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
   for (const p of setup.players) {
     if (p.civ !== undefined && !ctx.content.entities.civ[p.civ])
       throw new Error(`Unknown civ "${p.civ}" for ${p.id}`);
+    if (p.leader !== undefined && !ctx.content.entities.leader[p.leader])
+      throw new Error(`Unknown leader "${p.leader}" for ${p.id}`);
   }
-  const chosen = new Set(setup.players.flatMap((p) => (p.civ ? [p.civ] : [])));
+  const civOf = (p: GameSetup['players'][number]) =>
+    p.civ ?? (p.leader ? ctx.content.entities.leader[p.leader]!.civ : undefined);
+  const chosen = new Set(setup.players.flatMap((p) => civOf(p) ?? []));
   const pool = random.shuffle(ctx.content.ids.civ.filter((c) => !chosen.has(c)));
   const civs = pool.length > 0 ? pool : [...ctx.content.ids.civ];
   let nextCiv = 0;
@@ -83,7 +90,11 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
   const players: Record<PlayerId, PlayerState> = {};
   for (const id of playerOrder) {
     const p = byId(id);
-    const civ = p.civ ?? civs[nextCiv++ % civs.length] ?? '';
+    const civ = civOf(p) ?? civs[nextCiv++ % civs.length] ?? '';
+    const leader =
+      p.leader ??
+      ctx.content.ids.leader.find((l) => ctx.content.entities.leader[l]!.civ === civ) ??
+      '';
     players[id] = {
       id,
       name: p.name,
@@ -95,6 +106,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       explored: '',
       canEmbark: ctx.content.rules.units.embarkFromStart,
       civ,
+      leader,
       gold: 0,
       faith: 0,
       capital: null,

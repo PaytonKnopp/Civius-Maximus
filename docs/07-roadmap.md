@@ -127,12 +127,19 @@ features on top.
 
 ## Phase C — Single player and online with friends
 
-### M11 · AI v1 (moved earlier, because single player needs it)
+### M11 · AI v1 (moved earlier, because single player needs it) ✅
 - Utility AI for expansion, building, research, and basic war and defense, using leader
   personalities and agendas. Uses the same redacted view as a human player. Runs in a Web Worker.
 - **Single Player** mode on the main menu.
 - **Done when:** an AI finishes full games without crashing in CI simulations, and beats an "AFK"
   player. (It doesn't need to beat you yet.)
+- Built: `packages/engine/src/ai/` (settling with escorts, city builds, research and civics,
+  governments and cards, town upgrades and specializations, buying, armies that guard, gather,
+  besiege and clear camps, scouting, war and peace), the 10 leaders with personalities, army
+  strength in the rival panel, and `pnpm cx simulate`. Tests: a 4-AI game for 80 turns
+  (expansion, research, determinism) and an AI conquering an AFK player. Agendas only show in
+  the rival panel until diplomacy (M15); the Web Worker and the main-menu Single Player button
+  come with the polish part of the V1 build (single player already works from New game).
 - 🎮 **Checkpoint:** play single player games against the AI.
 
 ### M12 · Accounts and lobby (Supabase)

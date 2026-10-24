@@ -864,6 +864,42 @@ export const CivDef = z.strictObject({
   cityNames: z.array(Text).min(1),
 });
 
+/** How an AI leader weighs its choices: 0 (ignores it) to 10 (obsessed). 5 is ordinary. */
+const Weight = z.int().min(0).max(10).default(5);
+export const Personality = z.strictObject({
+  /** Wars, armies, conquest. */
+  aggression: Weight,
+  /** Settling new land. */
+  expansion: Weight,
+  science: Weight,
+  culture: Weight,
+  wonders: Weight,
+  faith: Weight,
+  /** Gold and trade. */
+  gold: Weight,
+  /** Ships and the sea. */
+  naval: Weight,
+  /** Keeping friends, making deals, honoring them. */
+  diplomacy: Weight,
+  /** Planning districts by adjacency. */
+  districts: Weight,
+});
+export type Personality = z.infer<typeof Personality>;
+
+/** A leader (docs/09-base-roster.md): who leads a civ, with an ability, an agenda and an AI personality. */
+export const LeaderDef = z.strictObject({
+  type: z.literal('leader'),
+  id: Id,
+  name: Text,
+  /** The civ this leader leads unless the lobby says otherwise. */
+  civ: Id,
+  /** The leader's ability: its name and what it does (its effects arrive with the leader kits). */
+  ability: z.strictObject({ name: Text, description: Text }),
+  /** What the AI leader cares about in other players (shown in diplomacy). */
+  agenda: z.strictObject({ name: Text, description: Text }),
+  personality: Personality,
+});
+
 /** Schemas for entities that have an `id` and are stored in compiled content. */
 export const ENTITY_SCHEMAS = {
   yield: YieldDef,
@@ -878,6 +914,7 @@ export const ENTITY_SCHEMAS = {
   improvement: ImprovementDef,
   building: BuildingDef,
   civ: CivDef,
+  leader: LeaderDef,
   district: DistrictDef,
   wonder: WonderDef,
   project: ProjectDef,
@@ -911,6 +948,7 @@ export type UnitDef = z.infer<typeof UnitDef>;
 export type ImprovementDef = z.infer<typeof ImprovementDef>;
 export type BuildingDef = z.infer<typeof BuildingDef>;
 export type CivDef = z.infer<typeof CivDef>;
+export type LeaderDef = z.infer<typeof LeaderDef>;
 export type EraDef = z.infer<typeof EraDef>;
 export type DistrictDef = z.infer<typeof DistrictDef>;
 export type WonderDef = z.infer<typeof WonderDef>;
@@ -937,6 +975,7 @@ export interface EntityByType {
   improvement: ImprovementDef;
   building: BuildingDef;
   civ: CivDef;
+  leader: LeaderDef;
   district: DistrictDef;
   wonder: WonderDef;
   project: ProjectDef;

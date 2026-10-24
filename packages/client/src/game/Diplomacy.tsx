@@ -5,6 +5,7 @@ import {
   type EngineContext,
   type GameState,
   liberateProblem,
+  militaryStrength,
   peaceProblem,
   type PlayerId,
   razeProblem,
@@ -12,6 +13,7 @@ import {
   warKey,
   warWeariness,
 } from '@cx/engine';
+import { resolveText } from '@cx/content';
 import { useEffect, useState } from 'react';
 import { civName, type Colors, cssColor } from './model';
 
@@ -40,6 +42,9 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
   const support = state.warSupport[warKey(viewer, other)] ?? {};
   const weariness = warWeariness(ctx, state, viewer);
   const settlements = Object.values(state.settlements).filter((s) => s.owner === other).length;
+  const leader = ctx.content.entities.leader[p.leader];
+  const army = militaryStrength(ctx, state, other);
+  const ours = militaryStrength(ctx, state, viewer);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
@@ -54,7 +59,7 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
           <h3>{name}</h3>
           <p className="unit-sub">
             {p.alive
-              ? `${p.name} · ${settlements} settlement${settlements === 1 ? '' : 's'}`
+              ? `${leader ? resolveText(ctx.content, leader.name) : p.name} · ${settlements} settlement${settlements === 1 ? '' : 's'}`
               : 'Defeated'}
           </p>
         </div>
@@ -66,6 +71,14 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
         Score {score.total}
         {domination.needed > 0 && ` · holds ${domination.held}/${domination.needed} rival capitals`}
       </p>
+      <p className="hint" title="The total strength of their soldiers (yours in brackets)">
+        Army strength {army} (yours {ours})
+      </p>
+      {leader && p.kind === 'ai' && (
+        <p className="hint" title={resolveText(ctx.content, leader.agenda.description)}>
+          Agenda: {resolveText(ctx.content, leader.agenda.name)}
+        </p>
+      )}
       {p.alive && (
         <>
           <p className={`relation ${war ? 'war' : 'peace'}`}>

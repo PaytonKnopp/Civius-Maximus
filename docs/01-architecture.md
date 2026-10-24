@@ -188,7 +188,13 @@ Realtime messages per month, 5 GB egress, and 2 active projects.
   (`aggression`, `expansion`, `science`...), so modded leaders can have modded personalities.
 - It gets **the same redacted view** a human player would (no cheating), apart from optional
   difficulty bonuses that are declared openly in the lobby.
-- Runs in its own Web Worker, so AI thinking never freezes the UI.
+- Runs in its own Web Worker, so AI thinking never freezes the UI. (For now it runs on the
+  page between turns: about 40 ms per AI on a Standard map, a few hundred ms at most.)
+- It keeps **no memory between turns**: every turn is planned from the state, so saves, replays
+  and host handoff need nothing extra, and the same state always gets the same moves.
+- What it can know: tiles it sees now, tiles it has explored, settlements on explored tiles, and
+  every player's **army strength** (public, like a score screen; the rival panel shows it).
+- Code: `packages/engine/src/ai/` (`playAiTurn`). Try it with `pnpm cx simulate`.
 
 ## Testing strategy
 

@@ -25,6 +25,7 @@
 | `pnpm cx schema` | Regenerate `schemas/` (a test fails if they're stale) |
 | `pnpm cx map [script] [size] [seed]` | Print a generated map as text |
 | `pnpm cx mapcheck [count] [sizes]` | Generate + validate many maps (run after map generator changes) |
+| `pnpm cx simulate [players] [turns] [seed] [size] [script] [--afk]` | Play an all-AI game and report on it (run after AI or balance changes) |
 
 Client checks: `pnpm build`, then `pnpm --filter @cx/client exec vite preview --port 4173` and
 `pnpm --filter @cx/client screenshot <out-dir>` (Map Lab screenshots at desktop and phone

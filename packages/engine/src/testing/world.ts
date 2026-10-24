@@ -58,6 +58,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     explored: encodeBits(all),
     canEmbark: false,
     civ: id === 'p1' ? 'civ_rome' : 'civ_egypt',
+    leader: id === 'p1' ? 'leader_caesar' : 'leader_cleopatra',
     gold: 0,
     faith: 0,
     capital: null,
