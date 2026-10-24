@@ -6,7 +6,8 @@ import type { GameState, PlayerId } from './state';
 /**
  * Score and victories (docs/03-core-mechanics.md section 11, docs/04-advanced-systems.md
  * "Victory conditions"): domination (hold every rival's original capital), conquest (last one
- * standing) and score (highest at the turn limit). Teammates win together.
+ * standing) and score (highest at the turn limit). Teammates win together. The religious
+ * victory is checked in `religion/handlers.ts`.
  */
 
 export interface ScoreLine {
@@ -65,9 +66,10 @@ export function dominationProgress(
   return { held, needed };
 }
 
-function end(
+/** Ends the game (teammates of the winner win with them). */
+export function endGame(
   draft: Draft<GameState>,
-  reason: 'domination' | 'conquest' | 'score',
+  reason: 'domination' | 'conquest' | 'score' | 'religion',
   winner: PlayerId | null,
   emit: Emit,
 ) {
@@ -83,14 +85,14 @@ export function checkVictory(draft: Draft<GameState>, emit: Emit) {
   const alive = state.playerOrder.filter((id) => state.players[id]!.alive);
   const teams = new Set(alive.map((id) => teamOf(state, id).join('+')));
   if (teams.size === 1 && state.playerOrder.length > 1 && alive.length > 0) {
-    end(draft, 'conquest', alive[0]!, emit);
+    endGame(draft, 'conquest', alive[0]!, emit);
     return;
   }
   if (state.settings.domination === false) return;
   for (const id of alive) {
     const { held, needed } = dominationProgress(state, id);
     if (needed > 0 && held === needed) {
-      end(draft, 'domination', id, emit);
+      endGame(draft, 'domination', id, emit);
       return;
     }
   }
@@ -105,5 +107,5 @@ export function scoreVictory(draft: Draft<GameState>, ctx: EngineContext, emit: 
     const score = scoreOf(ctx, state, id).total;
     if (!best || score > best.score) best = { id, score };
   }
-  end(draft, 'score', best?.id ?? null, emit);
+  endGame(draft, 'score', best?.id ?? null, emit);
 }

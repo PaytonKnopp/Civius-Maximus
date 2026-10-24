@@ -257,8 +257,22 @@
     "friendshipOpinion": 6,
     "allianceOpinion": 14
   },
+  "religion": {
+    "pantheonFaith": 25,
+    "extraReligions": 1,
+    "holyDistrict": "district_holy_site",
+    "pressureRadius": 8,
+    "pressurePerFollower": 2,
+    "holyCityPressure": 4,
+    "tradeRoutePressure": 3,
+    "pressureDecayPercent": 10,
+    "convertAt": 40,
+    "missionaryPressure": 60,
+    "missionaryCharges": 3
+  },
   "greatPeople": {
     "goldPerPoint": 3,
+    "faithPerPoint": 3,
     "unit": "unit_great_person"
   },
   "camps": {

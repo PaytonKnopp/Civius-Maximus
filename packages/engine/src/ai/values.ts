@@ -2,7 +2,11 @@ import type { Effect, Personality } from '@cx/content';
 import type { Fixed } from '../fixed';
 import { happinessOf } from '../settlements/rules';
 import type { SettlementState } from '../state';
+import { maxReligions } from '../religion/rules';
 import type { Turn } from './turn';
+
+const religionRoom = (t: Turn) =>
+  Object.keys(t.state.religions).length < maxReligions(t.ctx, t.state);
 
 /**
  * How much the AI values things, in "points". A yield's weight comes from a base value scaled by
@@ -92,6 +96,18 @@ export function effectValue(t: Turn, effect: Effect): number {
       return effect.params.amount * 25;
     case 'modify_growth':
       return Math.floor((effect.params.percent * yieldWeight(me, 'food') * settlements) / 10);
+    case 'great_person_points': {
+      // The way to a religion, while one can still be founded.
+      const cls = t.ctx.content.entities.greatPersonClass[effect.params.class];
+      if (cls?.foundsReligion && t.p.religion === null && religionRoom(t))
+        return effect.params.amount * (20 + me.faith * 6);
+      return effect.params.amount * 10;
+    }
+    case 'yield_per_follower':
+      return Math.floor(
+        (effect.params.amount * yieldWeight(me, effect.params.yield) * settlements * 2) /
+          effect.params.per,
+      );
     default:
       return 10;
   }

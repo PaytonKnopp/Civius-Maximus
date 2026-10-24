@@ -22,6 +22,7 @@ import {
   settlementLimitOf,
   sourcesFor,
 } from '../progress/sources';
+import { followersOf, founderSeat } from '../religion/rules';
 import { routeLines } from '../trade/rules';
 import { baseOf, countsAs, uniqueProblem } from '../uniques';
 import { isWater } from '../units/movement';
@@ -434,6 +435,19 @@ export function settlementYields(
 
   for (const route of routeLines(ctx, state, s)) {
     for (const y of Object.keys(route.yields).sort()) add(y, route.label, route.yields[y]!);
+  }
+
+  // A religion's founder: yields for its followers, in the holy city (or the capital).
+  if (founderSeat(state, s.owner)?.id === s.id) {
+    const followers = followersOf(state, state.players[s.owner]!.religion!).length;
+    for (const { source, effect } of playerEffects(ctx, state, s.owner, 'yield_per_follower')) {
+      const n = Math.floor(followers / effect.params.per);
+      add(
+        effect.params.yield,
+        `${source.label} (${followers} following)`,
+        toFixed(effect.params.amount * n),
+      );
+    }
   }
 
   // Settlement-wide effects (government, policies...): flat amounts now, percentages after.

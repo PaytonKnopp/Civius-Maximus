@@ -394,10 +394,35 @@ export const RulesDef = z.strictObject({
     friendshipOpinion: z.int(),
     allianceOpinion: z.int(),
   }),
+  /** Religion (docs/04-advanced-systems.md, "Religion"). */
+  religion: z.strictObject({
+    /** Faith to found a pantheon. */
+    pantheonFaith: z.int().min(0),
+    /** At most (players ÷ 2) + this many religions in a game. */
+    extraReligions: z.int().min(0),
+    /** A religion is founded by a great prophet in a settlement with this district. */
+    holyDistrict: Id,
+    /** Settlements within this many tiles feel a religion's pressure... */
+    pressureRadius: z.int().min(1),
+    /** ...this much a turn from each settlement following it (the holy city: `holyCityPressure`). */
+    pressurePerFollower: z.int().min(1),
+    holyCityPressure: z.int().min(1),
+    /** Each trade route carries each end's religion to the other end with this much more. */
+    tradeRoutePressure: z.int().min(0),
+    /** Each turn, built-up pressure toward every religion falls by this share (so it settles). */
+    pressureDecayPercent: z.int().min(1).max(100),
+    /** A settlement converts to the religion with the most pressure once that reaches this. */
+    convertAt: z.int().min(1),
+    /** What a missionary adds where it preaches, and how many times it can. */
+    missionaryPressure: z.int().min(1),
+    missionaryCharges: z.int().min(1),
+  }),
   /** Great people: buying the one you're racing for. */
   greatPeople: z.strictObject({
     /** Gold per point still missing, to recruit a great person now. */
     goldPerPoint: z.int().min(1),
+    /** Faith per point still missing, for classes that can be recruited with faith (0 = none). */
+    faithPerPoint: z.int().min(0),
     /** The unit a great person walks the map as. */
     unit: Id,
   }),
@@ -501,6 +526,8 @@ export const UnitDef = z.strictObject({
   populationCost: z.int().min(0).default(0),
   /** Gold per turn to keep. */
   upkeep: z.int().min(0).default(1),
+  /** Can be bought with this much faith (missionaries); 0 = not with faith. */
+  faithCost: z.int().min(0).default(0),
   ...requires,
   /** Special actions this unit can take. */
   actions: z.array(z.enum(['found_settlement', 'trade_route'])).default([]),
@@ -1074,6 +1101,10 @@ export const GreatPersonClassDef = z.strictObject({
   id: Id,
   name: Text,
   icon: z.string().min(1).max(3),
+  /** Its great people can found a religion (on a holy district) instead of activating. */
+  foundsReligion: z.boolean().default(false),
+  /** Can be recruited with faith (`rules.greatPeople.faithPerPoint`) as well as gold. */
+  faithRecruit: z.boolean().default(true),
   /** Points for its first great person; each later one costs `costStep` more. */
   baseCost: z.int().min(1),
   costStep: z.int().min(0),
@@ -1108,6 +1139,20 @@ export const GreatPersonDef = z.strictObject({
   effects: z.array(Effect).default([]),
 });
 
+/** A belief (docs/04-advanced-systems.md, "Religion"): a pantheon's, or a religion's. */
+export const BeliefDef = z.strictObject({
+  type: z.literal('belief'),
+  id: Id,
+  name: Text,
+  description: Text,
+  /**
+   * `pantheon`: for the player who picks it. `founder`: for the religion's founder.
+   * `follower`: for every settlement that follows the religion, whoever owns it.
+   */
+  kind: z.enum(['pantheon', 'founder', 'follower']),
+  effects: z.array(Effect).default([]),
+});
+
 /** Schemas for entities that have an `id` and are stored in compiled content. */
 export const ENTITY_SCHEMAS = {
   yield: YieldDef,
@@ -1135,6 +1180,7 @@ export const ENTITY_SCHEMAS = {
   policy: PolicyDef,
   greatPersonClass: GreatPersonClassDef,
   greatPerson: GreatPersonDef,
+  belief: BeliefDef,
   rules: RulesDef,
 } as const;
 
@@ -1171,6 +1217,7 @@ export type GovernmentDef = z.infer<typeof GovernmentDef>;
 export type PolicyDef = z.infer<typeof PolicyDef>;
 export type GreatPersonClassDef = z.infer<typeof GreatPersonClassDef>;
 export type GreatPersonDef = z.infer<typeof GreatPersonDef>;
+export type BeliefDef = z.infer<typeof BeliefDef>;
 export type StringsDef = z.infer<typeof StringsDef>;
 export type PatchDef = z.infer<typeof PatchDef>;
 
@@ -1200,6 +1247,7 @@ export interface EntityByType {
   policy: PolicyDef;
   greatPersonClass: GreatPersonClassDef;
   greatPerson: GreatPersonDef;
+  belief: BeliefDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

@@ -368,6 +368,8 @@ export function foundSettlement(
     capturedFrom: null,
     captureChoice: false,
     unitsTrained: 0,
+    religion: null,
+    pressure: {},
   };
   roadToCapital(draft, ctx, player, tile);
   // Abilities that give every new settlement a building (if it can have it).

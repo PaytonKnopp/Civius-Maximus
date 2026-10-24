@@ -2,9 +2,10 @@ import type { Personality, UnitClassDef, UnitDef } from '@cx/content';
 import type { Action } from '../actions';
 import { getBit } from '../bitset';
 import { atWar, type EngineContext, HOSTILE, unitClassOf, unitDef, unitIds } from '../context';
-import { distance } from '../map/hex';
+import { distance, neighbors } from '../map/hex';
 import { settlementIds } from '../settlements/rules';
 import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
+import { canTraverse } from '../units/movement';
 import { exploredBits, visibleTiles } from '../units/vision';
 import { militaryStrength, unitPower } from '../combat/strength';
 
@@ -161,6 +162,38 @@ export class Turn {
     return this.state.playerOrder.filter(
       (id) => id !== this.player && id !== HOSTILE && atWar(this.state, this.player, id),
     );
+  }
+
+  /**
+   * Which connected area of the map each tile is in, for a unit of this type (tiles it can't
+   * enter are -1): two tiles in the same area can be walked between.
+   */
+  areas(unit: Pick<UnitState, 'type'>): Int32Array {
+    return this.turnMemo(`areas:${unit.type}`, () => {
+      const map = this.state.map;
+      const probe = { id: '', owner: this.player, type: unit.type };
+      const area = new Int32Array(map.tiles.length).fill(-2);
+      let next = 0;
+      for (let start = 0; start < map.tiles.length; start++) {
+        if (area[start] !== -2) continue;
+        if (!canTraverse(this.ctx, this.state, probe, start)) {
+          area[start] = -1;
+          continue;
+        }
+        const label = next++;
+        area[start] = label;
+        const stack = [start];
+        while (stack.length > 0) {
+          const at = stack.pop()!;
+          for (const n of neighbors(map, at)) {
+            if (area[n] !== -2) continue;
+            area[n] = canTraverse(this.ctx, this.state, probe, n) ? label : -1;
+            if (area[n] === label) stack.push(n);
+          }
+        }
+      }
+      return area;
+    });
   }
 
   power(player: PlayerId): number {

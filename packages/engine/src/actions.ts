@@ -138,11 +138,12 @@ export const Action = z.discriminatedUnion('type', [
     unit: UnitRef,
     promotion: ContentRef,
   }),
-  /** Buy the next great person of a class with gold (for the points you're missing). */
+  /** Buy the next great person of a class with gold or faith (for the points you're missing). */
   z.strictObject({
     type: z.literal('recruit_great_person'),
     player: PlayerRef,
     class: ContentRef,
+    currency: z.enum(['gold', 'faith']).default('gold'),
   }),
   /** Use a great person in one of your settlements (it's used up). */
   z.strictObject({ type: z.literal('activate_great_person'), player: PlayerRef, unit: UnitRef }),
@@ -195,6 +196,38 @@ export const Action = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('withdraw_deal'), player: PlayerRef, deal: DealRef }),
   /** Publicly denounce a player (costs influence; a war soon after isn't a surprise). */
   z.strictObject({ type: z.literal('denounce'), player: PlayerRef, target: PlayerRef }),
+
+  // Religion
+  /** Take a pantheon belief for some faith (each one can only be taken once). */
+  z.strictObject({ type: z.literal('found_pantheon'), player: PlayerRef, belief: ContentRef }),
+  /** A great prophet in your settlement with a holy site founds a religion. */
+  z.strictObject({
+    type: z.literal('found_religion'),
+    player: PlayerRef,
+    unit: UnitRef,
+    name: z
+      .string()
+      .trim()
+      .min(1)
+      .max(32)
+      .regex(/^[^\p{C}]+$/u, 'No control characters'),
+    founder: ContentRef,
+    follower: ContentRef,
+  }),
+  /** A missionary preaches its religion in a settlement it stands on or next to. */
+  z.strictObject({
+    type: z.literal('spread_religion'),
+    player: PlayerRef,
+    unit: UnitRef,
+    settlement: SettlementRef,
+  }),
+  /** Buy a unit with faith (missionaries) in a settlement that follows a religion. */
+  z.strictObject({
+    type: z.literal('buy_faith_unit'),
+    player: PlayerRef,
+    settlement: SettlementRef,
+    unit: ContentRef,
+  }),
 ]);
 export type Action = z.infer<typeof Action>;
 export type ActionType = Action['type'];

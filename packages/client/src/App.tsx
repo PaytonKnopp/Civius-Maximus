@@ -31,6 +31,7 @@ interface NewGameOptions {
   resources: MapSettings['resources'];
   camps: boolean;
   domination: boolean;
+  religion: boolean;
   turnLimit: number | null;
 }
 
@@ -41,6 +42,7 @@ function makeSetup(o: NewGameOptions): GameSetup {
       seed: o.seed,
       camps: o.camps,
       domination: o.domination,
+      religion: o.religion,
       turnLimit: o.turnLimit,
       map: {
         script: o.script,
@@ -94,6 +96,7 @@ export function App() {
     resources: 'standard',
     camps: true,
     domination: true,
+    religion: true,
     turnLimit: null,
   });
   const [start, setStart] = useState<GameStart>(() => ({
@@ -371,6 +374,15 @@ function NewGameDialog({
             onChange={(e) => setO({ ...o, domination: e.target.checked })}
           />
           Domination victory (hold every rival&apos;s original capital)
+        </label>
+        <label className="check" htmlFor="ng-religion">
+          <input
+            id="ng-religion"
+            type="checkbox"
+            checked={o.religion}
+            onChange={(e) => setO({ ...o, religion: e.target.checked })}
+          />
+          Religious victory (your religion followed in most of every rival&apos;s settlements)
         </label>
         <p className="hint">
           The last civilization standing always wins. With a turn limit, the highest score wins when

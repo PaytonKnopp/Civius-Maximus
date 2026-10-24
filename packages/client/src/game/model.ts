@@ -422,3 +422,9 @@ export function perTurn(n: number): string {
   const text = Number.isInteger(v) ? String(v) : v.toFixed(1);
   return n >= 0 ? `+${text}` : text;
 }
+
+/** The name of the religion a player founded ("their religion" if none). */
+export function religionNameOf(state: GameState, player: PlayerId | null): string {
+  const id = player === null ? null : (state.players[player]?.religion ?? null);
+  return (id !== null ? state.religions[id]?.name : undefined) ?? 'Their religion';
+}

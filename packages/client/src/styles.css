@@ -2539,3 +2539,101 @@ kbd {
   margin: 4px 0 8px;
   font-size: 13px;
 }
+
+.religion-line {
+  margin: 4px 0;
+  font-size: 13px;
+}
+.religion-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 16px 16px;
+  overflow-y: auto;
+}
+.religion-section h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+.religion-section p {
+  margin: 4px 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.belief-grid,
+.belief-pick {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px;
+}
+.belief-pick {
+  margin: 8px 0;
+  padding: 0;
+  border: 0;
+}
+.belief-pick legend {
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.belief-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+label.belief-card {
+  cursor: pointer;
+}
+.belief-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.belief-card.chosen {
+  border-color: var(--accent, #e3b25a);
+  box-shadow: 0 0 0 1px var(--accent, #e3b25a) inset;
+}
+.belief-card button {
+  margin-top: auto;
+}
+.belief-list {
+  margin: 6px 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+.found-religion {
+  padding: 10px 12px;
+  border: 1px solid var(--accent, #e3b25a);
+  border-radius: 8px;
+}
+.found-religion .field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 320px;
+  font-size: 13px;
+}
+.religion-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.religion-table th,
+.religion-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--panel-edge);
+  text-align: left;
+  vertical-align: top;
+}
+.religion-table tr.mine td {
+  background: color-mix(in srgb, var(--accent, #e3b25a) 10%, transparent);
+}
+.great-person button + button {
+  margin-left: 8px;
+}

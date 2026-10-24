@@ -10,6 +10,7 @@ import { tradeDestinations, traderOrigin } from '../trade/rules';
 import { activateProblem } from '../greatpeople/greatpeople';
 import { isSoldier } from './cities';
 import { fixedYieldsValue } from './values';
+import { missionary, prophet } from './religion';
 import { moveSettler, settleHere } from './settle';
 import { type Role, type Turn, unitPower, unitRole } from './turn';
 
@@ -38,6 +39,10 @@ export function manageUnits(t: Turn) {
     if (!unit || unit.moves <= 0) continue;
     if (unit.person) {
       useGreatPerson(t, unit);
+      continue;
+    }
+    if (unit.religion !== undefined) {
+      missionary(t, unit);
       continue;
     }
     const role = unitRole(t.ctx, unit);
@@ -262,6 +267,7 @@ function soldier(t: Turn, u: UnitState, plan: Plan) {
 
 /** Great people: activate in the settlement they stand in, or walk to the nearest one. */
 function useGreatPerson(t: Turn, u: UnitState) {
+  if (prophet(t, u)) return;
   if (!activateProblem(t.state, u.id, t.player)) {
     t.act({ type: 'activate_great_person', player: t.player, unit: u.id });
     return;
@@ -330,14 +336,14 @@ function idle(t: Turn, u: UnitState) {
 }
 
 /** Stay put this turn: fortify if it can (it heals by not moving either way). */
-function hold(t: Turn, u: UnitState) {
+export function hold(t: Turn, u: UnitState) {
   if (u.orders?.kind === 'fortify' || u.orders?.kind === 'sleep') return;
   if (unitClassOf(t.ctx, u).combat && t.act({ type: 'fortify_unit', player: t.player, unit: u.id }))
     return;
   t.act({ type: 'skip_unit', player: t.player, unit: u.id });
 }
 
-function nearestOwnSettlement(t: Turn, u: UnitState): SettlementState | undefined {
+export function nearestOwnSettlement(t: Turn, u: UnitState): SettlementState | undefined {
   const map = t.state.map;
   return [...t.mySettlements()].sort(
     (a, b) =>
@@ -349,12 +355,14 @@ function nearestOwnSettlement(t: Turn, u: UnitState): SettlementState | undefine
  * Moves toward a free tile exactly `ring` tiles from `center` (0 = onto it), trying the nearest few.
  * Returns true if the unit moved.
  */
-function goNear(t: Turn, u: UnitState, center: number, ring: number): boolean {
+export function goNear(t: Turn, u: UnitState, center: number, ring: number): boolean {
   const map = t.state.map;
+  const areas = t.areas(u);
   const tiles = (ring === 0 ? [center] : tilesWithin(map, center, ring))
     .filter(
       (tile) =>
         tile !== u.tile &&
+        areas[tile] === areas[u.tile] &&
         distance(map, tile, center) === ring &&
         t.isExplored(tile) &&
         canTraverse(t.ctx, t.state, u, tile) &&

@@ -434,6 +434,14 @@ const GreatPersonPointsPercent = z.strictObject({
   condition: Condition.optional(),
 });
 
+/** For a religion's founder: yields in the holy city for every `per` settlements following it. */
+const YieldPerFollower = z.strictObject({
+  effect: z.literal('yield_per_follower'),
+  params: z.strictObject({ yield: Id, amount: Amount, per: z.int().min(1).default(1) }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
 /** Items of this kind can also be bought with faith (same price as in gold). */
 const PurchaseWithFaith = z.strictObject({
   effect: z.literal('purchase_with_faith'),
@@ -472,6 +480,7 @@ export const Effect = z.discriminatedUnion('effect', [
   RoadToCapital,
   GreatPersonPoints,
   GreatPersonPointsPercent,
+  YieldPerFollower,
 ]);
 export type Effect = z.infer<typeof Effect>;
 export const EFFECT_TYPES = Effect.options.map((o) => o.shape.effect.value);

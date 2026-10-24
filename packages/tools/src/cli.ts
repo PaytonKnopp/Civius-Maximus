@@ -3,7 +3,7 @@ import { join, resolve } from 'node:path';
 import { contentFileJsonSchema, manifestJsonSchema } from '@cx/content';
 import { compileFromDirs } from '@cx/content/node';
 import { previewMap, runMapCheck } from './maps';
-import { runSimulation } from './simulate';
+import { religionLine, runSimulation } from './simulate';
 import { runValidate } from './validate';
 
 const HELP = `Civius Maximus tools
@@ -76,6 +76,7 @@ switch (command) {
       () => performance.now(),
     );
     console.log(r.lines.join('\n'));
+    console.log(religionLine(r.state));
     console.log(`result: ${JSON.stringify(r.state.result)}`);
     console.log(`AI turn: average ${r.average.toFixed(1)} ms, slowest ${r.slowest.toFixed(0)} ms`);
     console.log(`events: ${JSON.stringify(r.events)}`);

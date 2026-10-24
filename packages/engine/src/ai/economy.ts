@@ -11,11 +11,15 @@ import {
 } from '../progress/rules';
 import { policySlots, SLOT_KINDS } from '../progress/sources';
 import {
+  canRecruitWith,
+  type Currency,
   greatPersonCost,
   nextGreatPerson,
   pointsOf,
   recruitCost,
 } from '../greatpeople/greatpeople';
+import { maxReligions, pantheonOf } from '../religion/rules';
+import { countsAs } from '../uniques';
 import { isCoastal } from '../settlements/rules';
 import { roleOf, type Turn } from './turn';
 import { effectValue, happinessWeight, yieldsValue } from './values';
@@ -42,26 +46,64 @@ export function manageProgress(t: Turn) {
 }
 
 /**
- * Buys a great person when rich and already leading its race (closest to the cost): it's
- * whatever the empire was built for anyway.
+ * Buys great people: with gold when rich and already leading the race (it's whatever the empire
+ * was built for anyway), and with faith left over from religion (the nearest one in reach). A
+ * prophet comes first while a religion can still be founded.
  */
 export function recruitGreatPeople(t: Turn) {
-  const spare = t.p.gold - toFixed(250 + 20 * t.mySettlements().length);
+  recruitWith(t, 'gold', t.p.gold - toFixed(250 + 20 * t.mySettlements().length));
+  recruitWith(t, 'faith', t.p.faith - faithReserve(t));
+}
+
+/** Faith kept for a pantheon, or for missionaries once there's a religion. */
+function faithReserve(t: Turn): number {
+  const r = t.ctx.content.rules.religion;
+  if (!pantheonOf(t.ctx, t.state, t.player)) return toFixed(r.pantheonFaith);
+  if (t.p.religion === null) return 0;
+  const missionary = t.ctx.content.ids.unit
+    .map((id) => t.ctx.content.entities.unit[id]!.faithCost)
+    .find((c) => c > 0);
+  return toFixed((missionary ?? 0) * 2);
+}
+
+function recruitWith(t: Turn, currency: Currency, spare: number) {
   if (spare <= 0) return;
-  let best: { cls: string; cost: number } | undefined;
+  let best: { cls: string; cost: number; first: boolean } | undefined;
   for (const cls of t.ctx.content.ids.greatPersonClass) {
-    if (!nextGreatPerson(t.ctx, t.state, cls)) continue;
+    if (!nextGreatPerson(t.ctx, t.state, cls) || !canRecruitWith(t.ctx, cls, currency)) continue;
+    const first = wantsProphet(t, cls);
     const mine = pointsOf(t.state, t.player, cls);
     const need = greatPersonCost(t.ctx, t.state, cls);
-    if (mine * 2 < need) continue;
-    const ahead = t.state.playerOrder.some(
-      (o) => o !== t.player && pointsOf(t.state, o, cls) > mine,
-    );
-    if (ahead) continue;
-    const cost = recruitCost(t.ctx, t.state, t.player, cls);
-    if (cost <= spare && (!best || cost < best.cost)) best = { cls, cost };
+    if (!first) {
+      if (t.ctx.content.entities.greatPersonClass[cls]!.foundsReligion) continue;
+      if (currency === 'gold' && mine * 2 < need) continue;
+      const ahead = t.state.playerOrder.some(
+        (o) => o !== t.player && pointsOf(t.state, o, cls) > mine,
+      );
+      if (ahead && currency === 'gold') continue;
+    }
+    const cost = recruitCost(t.ctx, t.state, t.player, cls, currency);
+    if (cost > spare) continue;
+    if (!best || (first && !best.first) || (first === best.first && cost < best.cost))
+      best = { cls, cost, first };
   }
-  if (best) t.act({ type: 'recruit_great_person', player: t.player, class: best.cls });
+  if (best) t.act({ type: 'recruit_great_person', player: t.player, class: best.cls, currency });
+}
+
+/** A prophet would found our religion: there's room for one and we have a holy site. */
+function wantsProphet(t: Turn, cls: string): boolean {
+  if (!t.ctx.content.entities.greatPersonClass[cls]!.foundsReligion) return false;
+  if (t.p.religion !== null) return false;
+  if (Object.keys(t.state.religions).length >= maxReligions(t.ctx, t.state)) return false;
+  // One already on its way.
+  if (
+    t.myUnits().some((u) => u.person && t.ctx.content.entities.greatPerson[u.person]?.class === cls)
+  )
+    return false;
+  const holy = t.ctx.content.rules.religion.holyDistrict;
+  return t
+    .mySettlements()
+    .some((s) => s.districts.some((d) => countsAs(t.ctx, 'district', d.id, holy)));
 }
 
 /** The available node with the most value for its remaining cost. */

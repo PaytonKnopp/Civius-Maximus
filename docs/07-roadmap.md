@@ -171,8 +171,8 @@ The order inside this phase can change based on playtest feedback.
 |---|---|
 | M15 · Diplomacy & deals | States, friendship, alliances, influence, endeavors and sanctions, enforced deals, promises, reputation, deal inbox (first part built in the V1 build: see 04, "Built so far") |
 | M16 · Trade routes | Traders, routes, auto-roads, plunder (built in the V1 build except plunder) |
-| M17 · Great people | Points race, named individuals, patronage, great works (built in the V1 build except great works) |
-| M18 · Religion | Pantheons, founding, beliefs, pressure, missionaries/apostles, religious victory |
+| M17 · Great people | Points race, named individuals, patronage, great works (built in the V1 build except great works; faith patronage came with religion) |
+| M18 · Religion | Pantheons, founding, beliefs, pressure, missionaries/apostles, religious victory (built in the V1 build except apostles, inquisitors and worship/enhancer beliefs: see 04, "Built so far") |
 | M19 · Independent powers | Camps with dispositions, befriending, city-states, envoys, suzerains, quests, levies |
 | M20 · Eras, golden ages, governors | Historic moments, legacy goals, ages, dedications, governor trees |
 | M21a · Map breadth | 12+ map types (small continents, island plates, inland sea, lakes, highlands, seven seas, Terra old/new world, shuffle, duel arena, Earth with true starts...), world settings (world age, temperature, rainfall, sea level), natural wonders |

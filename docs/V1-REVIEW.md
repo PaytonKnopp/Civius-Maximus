@@ -57,6 +57,14 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
     (+1 per destination district), roads halve movement.
 37. **D66 Great people:** 50–60 points (rising), districts and buildings earn them, recruit
     for 3 gold per missing point. Also: who should be on the list? Ask for anyone.
+38. **D67 Religion numbers:** pantheon 25 faith; players ÷ 2 + 1 religions; pressure from
+    followers within 8 tiles (+2, holy city +4, trade routes +3, −10% a turn), converts at 40;
+    missionaries 100 faith, +60 pressure, 3 uses.
+39. **D68 Whole settlements follow a religion** (or none). (Or per-citizen followers.)
+40. **D69 Faith patronage:** great people for 3 faith per missing point, not prophets; a civ with
+    a religion leaves the prophet race.
+41. **D70 Religious units:** missionaries only (no apostles, inquisitors, theological combat).
+42. **D71 Religion names:** you type yours; AIs use "<Civ> Faith". (Or a list to pick from.)
 28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
     expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 
@@ -122,6 +130,21 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
   reward (science, production, gold, boosts, inspired soldiers...) and, for some, a lasting
   bonus.
 - The AI uses its great people at once and buys one when it's rich and leading the race.
+
+### Part 7: religion
+- 🙏 **Religion** (top bar, or R): take a **pantheon** for 25 faith (11 to choose from, each
+  only once in a game).
+- Build a **Holy Site** to earn Great Prophet points. Select the prophet in that settlement and
+  press **Found a religion**: name it, pick a founder belief (yields per follower) and a
+  follower belief (for every settlement that follows it).
+- Religions spread by themselves to settlements within 8 tiles of followers, faster near the
+  holy city and along trade routes. Hover a settlement's 🙏 line to see the pressure on it.
+- Buy **Missionaries** with faith (settlement panel, "With faith") and **Preach** next to other
+  settlements to convert them.
+- **Religious victory** (new-game option): your religion followed in more than half the
+  settlements of every other civ.
+- Great people can now also be bought with **faith** (not prophets).
+- The AI picks pantheons, races for prophets, founds religions and sends missionaries.
 
 ## Known issues
 
