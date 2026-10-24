@@ -462,5 +462,35 @@
     "tier": 2,
     "requires": ["promo_ram", "promo_hull_plating"],
     "movement": 1
+  },
+  {
+    "type": "promotion",
+    "id": "promo_ordu_trained",
+    "name": "Ordu-trained",
+    "description": "+1 movement (trained in an Ordu).",
+    "classes": ["class_light_cavalry", "class_heavy_cavalry"],
+    "tier": 1,
+    "movement": 1,
+    "granted": true
+  },
+  {
+    "type": "promotion",
+    "id": "promo_royal_dockyard",
+    "name": "Dockyard-built",
+    "description": "+1 movement (built at a Royal Dockyard).",
+    "classes": ["class_naval_melee"],
+    "tier": 1,
+    "movement": 1,
+    "granted": true
+  },
+  {
+    "type": "promotion",
+    "id": "promo_sea_dogs",
+    "name": "Sea Dogs",
+    "description": "+1 movement (Gloriana).",
+    "classes": ["class_naval_melee"],
+    "tier": 1,
+    "movement": 1,
+    "granted": true
   }
 ]

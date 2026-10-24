@@ -113,6 +113,7 @@ export {
   happinessOf,
   improvementsFor,
   isCoastal,
+  canBuyWithFaith,
   isBuyable,
   isUnlocked,
   itemCost,
@@ -181,3 +182,4 @@ export {
   sourcesFor,
 } from './progress/sources';
 export { type Act as AiAct, militaryStrength, personalityOf, playAiTurn } from './ai';
+export { baseOf, countsAs, replacementFor, uniqueProblem, uniquesOf } from './uniques';

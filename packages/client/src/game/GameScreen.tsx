@@ -940,7 +940,6 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
               key={p}
               className={`player-chip ${pl.turnEnded ? 'done' : ''} ${war ? 'war' : ''} ${pl.alive ? '' : 'dead'} ${offer ? 'offer' : ''}`}
               title={`${pl.name} · score ${scoreOf(ctx, state, p).total}${war ? ' · at war' : ''}${offer ? ' · offers peace' : ''}${pl.turnEnded ? ' (turn ended)' : ''}`}
-              disabled={p === viewer}
               onClick={() => setPlayerPanel(playerPanel === p ? null : p)}
             >
               <span className="swatch" style={{ background: cssColor(colors[p]!.main) }} />

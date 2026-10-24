@@ -25,6 +25,10 @@ export interface SettlementFacts {
   capital: boolean;
   population: number;
   buildings: readonly string[];
+  /** A river runs along its center tile. */
+  onRiver?: boolean;
+  /** Soldiers trained there so far. */
+  unitsTrained?: number;
 }
 
 /** What player conditions look at (techs and civics finished, government...). */
@@ -33,6 +37,8 @@ export interface PlayerFacts {
   civics: readonly string[];
   government: string;
   celebrating: boolean;
+  /** The `order` of the player's era (the latest era of a finished tech or civic). */
+  eraOrder?: number;
 }
 
 /**

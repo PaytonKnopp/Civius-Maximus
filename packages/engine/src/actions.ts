@@ -40,12 +40,13 @@ export const Action = z.discriminatedUnion('type', [
     settlement: SettlementRef,
     queue: z.array(BuildItem).max(8),
   }),
-  /** Buy a unit or building with gold; it's finished at once. */
+  /** Buy a unit or building with gold (or faith, where an ability allows); it's finished at once. */
   z.strictObject({
     type: z.literal('buy_item'),
     player: PlayerRef,
     settlement: SettlementRef,
     item: BuildItem,
+    currency: z.enum(['gold', 'faith']).optional(),
   }),
   /** Spend a growth choice: put an improvement on a tile (claiming it if unowned). */
   z.strictObject({

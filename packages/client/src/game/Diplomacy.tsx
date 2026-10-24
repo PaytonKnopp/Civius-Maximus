@@ -10,6 +10,7 @@ import {
   type PlayerId,
   razeProblem,
   scoreOf,
+  uniquesOf,
   warKey,
   warWeariness,
 } from '@cx/engine';
@@ -74,12 +75,13 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
       <p className="hint" title="The total strength of their soldiers (yours in brackets)">
         Army strength {army} (yours {ours})
       </p>
-      {leader && p.kind === 'ai' && (
+      {leader && p.kind === 'ai' && other !== viewer && (
         <p className="hint" title={resolveText(ctx.content, leader.agenda.description)}>
           Agenda: {resolveText(ctx.content, leader.agenda.name)}
         </p>
       )}
-      {p.alive && (
+      <Kit ctx={ctx} civ={p.civ} leader={p.leader} />
+      {p.alive && other !== viewer && (
         <>
           <p className={`relation ${war ? 'war' : 'peace'}`}>
             {war ? `⚔ At war since turn ${since ?? '?'}` : '☮ At peace'}
@@ -138,6 +140,42 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
         </>
       )}
     </aside>
+  );
+}
+
+/** A leader's and civ's abilities and unique items (docs/09-base-roster.md). */
+function Kit({ ctx, civ, leader }: { ctx: EngineContext; civ: string; leader: string }) {
+  const c = ctx.content;
+  const l = c.entities.leader[leader];
+  const cv = c.entities.civ[civ];
+  const t = (text: string) => resolveText(c, text);
+  const nameOf = (kind: 'unit' | 'building' | 'district' | 'improvement', id: string) =>
+    t((c.entities[kind] as Record<string, { name: string }>)[id]?.name ?? id);
+  const uniques = uniquesOf(ctx, civ);
+  return (
+    <details className="kit">
+      <summary>Abilities and uniques</summary>
+      {l && (
+        <p>
+          <strong>{t(l.ability.name)}</strong> ({t(l.name)}). {t(l.ability.description)}
+        </p>
+      )}
+      {cv?.ability && (
+        <p>
+          <strong>{t(cv.ability.name)}</strong> ({t(cv.name)}). {t(cv.ability.description)}
+        </p>
+      )}
+      {uniques.length > 0 && (
+        <ul>
+          {uniques.map((u) => (
+            <li key={u.id}>
+              <strong>{nameOf(u.kind, u.id)}</strong>
+              {u.replaces ? ` (replaces ${nameOf(u.kind, u.replaces)})` : ` (unique ${u.kind})`}
+            </li>
+          ))}
+        </ul>
+      )}
+    </details>
   );
 }
 

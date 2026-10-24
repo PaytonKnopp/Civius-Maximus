@@ -1,3 +1,4 @@
+import type { CompiledContent } from '@cx/content';
 import { compileFromDirs } from '@cx/content/node';
 import { emptyBits, encodeBits, setBit } from '../bitset';
 import type { EngineContext } from '../context';
@@ -11,7 +12,20 @@ import { MP } from '../units/movement';
 
 /** Test helpers: hand-drawn maps and shortcuts for driving the engine (tests only). */
 
-export const ctx: EngineContext = { content: compileFromDirs().content! };
+/** The base content with every civ's and leader's ability effects. */
+export const kitCtx: EngineContext = { content: compileFromDirs().content! };
+
+/**
+ * The base content without civ and leader ability effects, so rule tests aren't skewed by
+ * whichever civs the test players have (kit tests use `kitCtx`).
+ */
+export const ctx: EngineContext = { content: withoutAbilities(compileFromDirs().content!) };
+
+function withoutAbilities(content: CompiledContent): CompiledContent {
+  for (const civ of Object.values(content.entities.civ)) if (civ.ability) civ.ability.effects = [];
+  for (const leader of Object.values(content.entities.leader)) leader.ability.effects = [];
+  return content;
+}
 
 /**
  * A hand-drawn map, one character per tile (odd rows are shifted half a tile right):
@@ -64,6 +78,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     capital: null,
     settlementsFounded: 0,
     kills: 0,
+    declaredWarTurn: null,
     ...newProgress(ctx),
   });
   return {
@@ -126,11 +141,11 @@ export function addUnit(
   return unit;
 }
 
-export function act(s: GameState, action: Parameters<typeof applyAction>[1]) {
-  const r = applyAction(s, action, ctx);
+export function act(s: GameState, action: Parameters<typeof applyAction>[1], c = ctx) {
+  const r = applyAction(s, action, c);
   if (!r.ok) throw new Error(`${action.type}: ${r.error.message}`);
   return r;
 }
 
-export const endTurn = (s: GameState) =>
-  s.playerOrder.reduce((st, p) => act(st, { type: 'end_turn', player: p }).state, s);
+export const endTurn = (s: GameState, c = ctx) =>
+  s.playerOrder.reduce((st, p) => act(st, { type: 'end_turn', player: p }, c).state, s);

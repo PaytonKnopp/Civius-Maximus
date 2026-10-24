@@ -1,4 +1,5 @@
 import type { Condition, Elevation, TileMatch } from '@cx/content';
+import { baseOf } from '../uniques';
 import type { ConditionContext, TileFacts } from './tile';
 
 function oneOf<T>(value: T | null, wanted: T | readonly T[]): boolean {
@@ -29,8 +30,19 @@ export function tileMatches(ctx: ConditionContext, tile: TileFacts, match: TileM
     if (res?.class !== match.resourceClass) return false;
   }
   if (match.resource === true && tile.resource === null) return false;
-  if (!anyOrOneOf(tile.improvement ?? null, match.improvement)) return false;
-  if (!anyOrOneOf(tile.district ?? null, match.district)) return false;
+  // A civ's unique counts as the item it replaces (a unique district is still a Campus...).
+  const base = (kind: 'improvement' | 'district', id: string | null | undefined) =>
+    id ? baseOf({ content: ctx.content }, kind, id) : null;
+  if (
+    !anyOrOneOf(tile.improvement ?? null, match.improvement) &&
+    !anyOrOneOf(base('improvement', tile.improvement), match.improvement)
+  )
+    return false;
+  if (
+    !anyOrOneOf(tile.district ?? null, match.district) &&
+    !anyOrOneOf(base('district', tile.district), match.district)
+  )
+    return false;
   if (!anyOrOneOf(tile.wonder ?? null, match.wonder)) return false;
   if (match.cityCenter !== undefined && (tile.center ?? false) !== match.cityCenter) return false;
   if (match.river !== undefined && tile.river !== match.river) return false;
@@ -92,13 +104,24 @@ export function evaluateCondition(ctx: ConditionContext, c: Condition): boolean 
   if ('settlement_has_building' in c) {
     if (!settlement) return false;
     const wanted = c.settlement_has_building;
-    return settlement.buildings.some((b) => oneOf(b, wanted));
+    return settlement.buildings.some(
+      (b) => oneOf(b, wanted) || oneOf(baseOf({ content: ctx.content }, 'building', b), wanted),
+    );
   }
 
   if ('has_tech' in c) return !!player && player.techs.includes(c.has_tech);
   if ('has_civic' in c) return !!player && player.civics.includes(c.has_civic);
   if ('government_is' in c) return !!player && oneOf(player.government, c.government_is);
   if ('celebrating' in c) return !!player && player.celebrating === c.celebrating;
+  if ('era_at_least' in c) {
+    const era = ctx.content.entities.era[c.era_at_least];
+    return !!player && !!era && (player.eraOrder ?? 0) >= era.order;
+  }
+  if ('settlement_on_river' in c)
+    return !!settlement && (settlement.onRiver ?? false) === c.settlement_on_river;
+  if ('settlement_units_trained_below' in c)
+    return !!settlement && (settlement.unitsTrained ?? 0) < c.settlement_units_trained_below;
+  if ('tile_city_center' in c) return !!tile && (tile.center ?? false) === c.tile_city_center;
 
   const unhandled: never = c;
   throw new Error(`Unhandled condition: ${JSON.stringify(unhandled)}`);

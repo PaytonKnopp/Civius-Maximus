@@ -321,5 +321,50 @@
     ],
     "model": "plaza",
     "color": "#d4a94e"
+  },
+  {
+    "type": "district",
+    "id": "district_suguba",
+    "name": "Suguba",
+    "description": "Gold, and purchases here cost 20% less. Loves rivers and harbors.",
+    "icon": "Sg",
+    "cost": 54,
+    "requiresTech": "tech_currency",
+    "adjacency": [
+      {
+        "yield": "gold",
+        "amount": 2,
+        "self": {
+          "river": true
+        },
+        "label": "River"
+      },
+      {
+        "yield": "gold",
+        "amount": 2,
+        "per": {
+          "district": "district_harbor"
+        },
+        "label": "Harbor"
+      }
+    ],
+    "specialistYields": {
+      "gold": 2
+    },
+    "localEffects": [
+      {
+        "effect": "modify_purchase_cost",
+        "params": {
+          "percent": -20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "model": "commercial",
+    "color": "#e8b23a",
+    "civ": "civ_mali",
+    "replaces": "district_commercial_hub"
   }
 ]

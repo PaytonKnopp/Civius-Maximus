@@ -1,9 +1,11 @@
-import { resolveText } from '@cx/content';
+import { resolveText, type StrengthBonus } from '@cx/content';
 import { atWar, type EngineContext, type RuleError, unitClassOf, unitDef } from '../context';
 import { directionTo, distance, hasRiverEdge, neighbors, tilesWithin } from '../map/hex';
 import { isUnlocked } from '../settlements/rules';
 import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
 import { canTraverse, isWater, riverBits, unitsOn } from '../units/movement';
+import { playerEffects } from '../progress/sources';
+import { uniqueProblem } from '../uniques';
 import { promotionsOf, unitRange } from '../units/promotions';
 import { lineOfSight, visibleTiles } from '../units/vision';
 import { damageRange } from './damage';
@@ -99,9 +101,10 @@ export function attackMode(ctx: EngineContext, unit: Pick<UnitState, 'type'>): A
 const isEmbarked = (ctx: EngineContext, state: GameState, unit: UnitState) =>
   unitClassOf(ctx, unit).domain === 'land' && isWater(ctx, state, unit.tile);
 
-function wounded(ctx: EngineContext, health: number, max: number): StrengthLine {
-  const per = ctx.content.rules.combat.woundedPer10;
-  return { label: 'Wounded', amount: -Math.floor(Math.max(0, max - health) / 10) * per };
+function wounded(ctx: EngineContext, unit: UnitState): StrengthLine {
+  const { woundedPer10: per, maxHealth: max } = ctx.content.rules.combat;
+  if (unitDef(ctx, unit).ignoresWounds) return { label: 'Wounded', amount: 0 };
+  return { label: 'Wounded', amount: -Math.floor(Math.max(0, max - unit.health) / 10) * per };
 }
 
 /** Terrain defense on a tile: the terrain itself, hills, and a feature like woods. */
@@ -117,6 +120,10 @@ function terrainLines(ctx: EngineContext, state: GameState, tile: number): Stren
   const feature = t.feature === null ? undefined : content.entities.feature[t.feature];
   if (feature?.defense)
     out.push({ label: resolveText(content, feature.name), amount: feature.defense });
+  const improvement =
+    t.improvement === null ? undefined : content.entities.improvement[t.improvement];
+  if (improvement?.defense)
+    out.push({ label: resolveText(content, improvement.name), amount: improvement.defense });
   return out;
 }
 
@@ -152,28 +159,64 @@ function classBonuses(
     }));
 }
 
-/** Strength from promotions that apply in this fight, fought on `tile`. */
-function promotionLines(
+interface Against {
+  unit: UnitState | null;
+  settlement: boolean;
+  ranged: boolean;
+}
+
+/** Whether a promotion's or ability's strength bonus applies in this fight, fought on `tile`. */
+function bonusApplies(
+  ctx: EngineContext,
+  state: GameState,
+  b: StrengthBonus,
+  role: 'attack' | 'defend',
+  against: Against,
+  tile: number,
+): boolean {
+  const t = state.map.tiles[tile]!;
+  const vsClass = against.unit ? unitDef(ctx, against.unit).class : null;
+  if (b.when !== 'always' && b.when !== role) return false;
+  if (b.vs?.classes && !(vsClass && b.vs.classes.includes(vsClass))) return false;
+  if (b.vs?.settlement && !against.settlement) return false;
+  if (b.vs?.ranged && !against.ranged) return false;
+  if (b.vs?.wounded && !(against.unit && against.unit.health < ctx.content.rules.combat.maxHealth))
+    return false;
+  if (b.on?.features && !(t.feature && b.on.features.includes(t.feature))) return false;
+  if (b.on?.elevations && !b.on.elevations.includes(t.elevation)) return false;
+  return true;
+}
+
+/** Strength from promotions and from the owner's abilities that apply in this fight. */
+function bonusLines(
   ctx: EngineContext,
   state: GameState,
   unit: UnitState,
   role: 'attack' | 'defend',
-  against: { unit: UnitState | null; settlement: boolean; ranged: boolean },
+  against: Against,
   tile: number,
 ): StrengthLine[] {
   const out: StrengthLine[] = [];
-  const t = state.map.tiles[tile]!;
-  const vsClass = against.unit ? unitDef(ctx, against.unit).class : null;
   for (const p of promotionsOf(ctx, unit)) {
     for (const b of p.strength) {
-      if (b.when !== 'always' && b.when !== role) continue;
-      if (b.vs?.classes && !(vsClass && b.vs.classes.includes(vsClass))) continue;
-      if (b.vs?.settlement && !against.settlement) continue;
-      if (b.vs?.ranged && !against.ranged) continue;
-      if (b.on?.features && !(t.feature && b.on.features.includes(t.feature))) continue;
-      if (b.on?.elevations && !b.on.elevations.includes(t.elevation)) continue;
-      out.push({ label: resolveText(ctx.content, p.name), amount: b.amount });
+      if (bonusApplies(ctx, state, b, role, against, tile))
+        out.push({ label: resolveText(ctx.content, p.name), amount: b.amount });
     }
+  }
+  const owner = state.players[unit.owner];
+  if (!owner) return out;
+  const cls = unitDef(ctx, unit).class;
+  for (const { source, effect } of playerEffects(ctx, state, unit.owner, 'modify_strength')) {
+    const b = effect.params;
+    if (b.unitClass && !(Array.isArray(b.unitClass) ? b.unitClass : [b.unitClass]).includes(cls))
+      continue;
+    if (
+      b.afterDeclaringWar !== undefined &&
+      (owner.declaredWarTurn === null || state.turn - owner.declaredWarTurn >= b.afterDeclaringWar)
+    )
+      continue;
+    if (bonusApplies(ctx, state, b, role, against, tile))
+      out.push({ label: source.label, amount: b.amount });
   }
   return out;
 }
@@ -184,7 +227,8 @@ export function bestUnitStrength(ctx: EngineContext, state: GameState, player: P
   for (const id of ctx.content.ids.unit) {
     const def = ctx.content.entities.unit[id]!;
     if (def.cost <= 0 || !ctx.content.entities.unitClass[def.class]!.captures) continue;
-    if (isUnlocked(state, player, def)) best = Math.max(best, def.strength);
+    if (isUnlocked(state, player, def) && !uniqueProblem(ctx, state, player, 'unit', id))
+      best = Math.max(best, def.strength);
   }
   return best;
 }
@@ -245,10 +289,10 @@ export function defenseStrength(
   }
   const friends = friendsAround(ctx, state, unit.owner, unit.tile, unit.id);
   if (friends > 0) lines.push({ label: `Support (${friends})`, amount: friends * combat.support });
-  lines.push(wounded(ctx, unit.health, combat.maxHealth));
+  lines.push(wounded(ctx, unit));
   lines.push(...classBonuses(ctx, unit, by));
   lines.push(
-    ...promotionLines(
+    ...bonusLines(
       ctx,
       state,
       unit,
@@ -279,14 +323,14 @@ export function attackStrength(
   const lines: StrengthLine[] = [
     { label: unitName(ctx, unit), amount: mode === 'ranged' ? def.rangedStrength : def.strength },
   ];
-  lines.push(wounded(ctx, unit.health, combat.maxHealth));
+  lines.push(wounded(ctx, unit));
   if (target.kind === 'unit') lines.push(...classBonuses(ctx, unit, target.unit));
   if (target.kind === 'settlement') {
     const bonus = unitClassOf(ctx, unit).vsSettlement;
     if (bonus) lines.push({ label: 'Against settlements', amount: bonus });
   }
   lines.push(
-    ...promotionLines(
+    ...bonusLines(
       ctx,
       state,
       unit,

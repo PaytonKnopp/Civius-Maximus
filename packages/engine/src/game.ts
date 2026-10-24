@@ -112,6 +112,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       capital: null,
       settlementsFounded: 0,
       kills: 0,
+      declaredWarTurn: null,
       ...newProgress(ctx),
     };
   }

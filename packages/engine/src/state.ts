@@ -121,6 +121,8 @@ export interface SettlementState {
   capturedFrom: PlayerId | null;
   /** Just captured: the new owner chooses keep, raze or liberate (keep, if they end the turn). */
   captureChoice: boolean;
+  /** Soldiers trained here (some abilities count them). */
+  unitsTrained: number;
 }
 
 export type UnitId = string;
@@ -190,6 +192,8 @@ export interface PlayerState {
   settlementsFounded: number;
   /** Enemy units destroyed (for score). */
   kills: number;
+  /** The last turn this player declared a war (some abilities last a while after). */
+  declaredWarTurn: number | null;
   /** The tech tree (paid with science) and the civics tree (paid with culture). */
   techs: Track;
   civics: Track;

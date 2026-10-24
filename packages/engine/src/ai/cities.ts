@@ -6,6 +6,7 @@ import { distance } from '../map/hex';
 import { districtLimit, districtYields, placementTiles } from '../settlements/districts';
 import {
   availableItems,
+  canBuyWithFaith,
   goldPerTurn,
   isBuyable,
   itemCost,
@@ -162,7 +163,7 @@ function wallsItem(t: Turn, s: SettlementState): BuildItem | undefined {
 function turnsFor(t: Turn, s: SettlementState, item: BuildItem): number {
   const production = Math.max(100, settlementYields(t.ctx, t.state, s).total.production ?? 0);
   const left =
-    itemCost(t.ctx, t.state, t.player, item) - (s.progress[`${item.kind}:${item.id}`] ?? 0);
+    itemCost(t.ctx, t.state, t.player, item, s) - (s.progress[`${item.kind}:${item.id}`] ?? 0);
   return Math.max(1, Math.ceil(left / production));
 }
 
@@ -325,7 +326,7 @@ function bestImprovement(t: Turn, s: SettlementState): BuildItem | undefined {
       continue;
     const value = improvementValue(t, s, item);
     if (value <= 0) continue;
-    const cost = Math.max(1, Math.floor(itemCost(t.ctx, t.state, t.player, item) / 100));
+    const cost = Math.max(1, Math.floor(itemCost(t.ctx, t.state, t.player, item, s) / 100));
     const score = Math.floor((value * 1000) / cost);
     if (!best || score > best.score) best = { item, score };
   }
@@ -359,8 +360,24 @@ function buyThings(t: Turn) {
     const head = s.queue[0];
     if (!head || !isBuyable(head) || !inDanger(t, s)) continue;
     if (head.kind === 'unit' && !isSoldier(unitRole(t.ctx, { type: head.id }))) continue;
-    if (t.p.gold >= purchaseCost(t.ctx, t.state, t.player, head)) {
+    if (t.p.gold >= purchaseCost(t.ctx, t.state, t.player, head, s)) {
       t.act({ type: 'buy_item', player: t.player, settlement: s.id, item: head });
+      return;
+    }
+  }
+  // Faith has no other use yet: spend it where an ability allows.
+  for (const s of cities) {
+    const head = s.queue[0];
+    if (!head || !isBuyable(head) || !canBuyWithFaith(t.ctx, t.state, t.player, head)) continue;
+    if (turnsFor(t, s, head) <= 2) continue;
+    if (t.p.faith >= purchaseCost(t.ctx, t.state, t.player, head, s)) {
+      t.act({
+        type: 'buy_item',
+        player: t.player,
+        settlement: s.id,
+        item: head,
+        currency: 'faith',
+      });
       return;
     }
   }
@@ -369,7 +386,7 @@ function buyThings(t: Turn) {
     const head = s.queue[0];
     if (!head || !isBuyable(head) || !itemDef(t.ctx, head)) continue;
     if (turnsFor(t, s, head) <= 2) continue;
-    const cost = purchaseCost(t.ctx, t.state, t.player, head);
+    const cost = purchaseCost(t.ctx, t.state, t.player, head, s);
     if (t.p.gold >= cost + rich) {
       t.act({ type: 'buy_item', player: t.player, settlement: s.id, item: head });
       return;

@@ -7,6 +7,7 @@ import {
   type EngineContext,
   type Emit,
   type RuleError,
+  unitClassOf,
   unitDef,
 } from '../context';
 import { percentOf, toFixed } from '../fixed';
@@ -14,6 +15,8 @@ import { distance, tilesWithin } from '../map/hex';
 import type { BuildItem, GameState, PlayerId, SettlementState } from '../state';
 import { view } from '../draft';
 import { empireTurn } from '../progress/handlers';
+import { playerEffects } from '../progress/sources';
+import { countsAs } from '../uniques';
 import { ownedUnit, watchers } from '../units/handlers';
 import { canTraverse, hasForeignUnit, hasRoom } from '../units/movement';
 import { exploreVisible } from '../units/vision';
@@ -26,6 +29,7 @@ import {
   growthPerTurn,
   growthThreshold,
   improvementsFor,
+  canBuyWithFaith,
   isBuyable,
   itemCost,
   itemKey,
@@ -118,6 +122,56 @@ export function spawnUnit(
   };
   draft.nextEntityId++;
   return id;
+}
+
+/** Abilities that give a free unit when a district is finished (`free_unit_on_district`). */
+function districtRewards(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  id: string,
+  district: string,
+) {
+  const s = draft.settlements[id]!;
+  const snap = view(draft);
+  for (const { effect } of playerEffects(ctx, snap, s.owner, 'free_unit_on_district')) {
+    const wanted = effect.params.district;
+    const list = Array.isArray(wanted) ? wanted : [wanted];
+    if (!list.some((d) => countsAs(ctx, 'district', district, d))) continue;
+    const classes = effect.params.unitClass;
+    const best = ctx.content.ids.unit
+      .map((u) => ctx.content.entities.unit[u]!)
+      .filter(
+        (u) =>
+          (Array.isArray(classes) ? classes.includes(u.class) : u.class === classes) &&
+          !itemProblem(ctx, snap, snap.settlements[id]!, { kind: 'unit', id: u.id }),
+      )
+      .sort((a, b) => b.strength - a.strength || (a.id < b.id ? -1 : 1))[0];
+    if (!best) continue;
+    const unit = spawnUnit(draft, ctx, s.owner, best.id, s.tile);
+    if (unit) trainedHere(draft, ctx, id, unit);
+  }
+}
+
+/** A unit just trained in a settlement: count soldiers, and give promotions its effects grant. */
+function trainedHere(draft: Draft<GameState>, ctx: EngineContext, id: string, unitId: string) {
+  const s = draft.settlements[id]!;
+  const u = draft.units[unitId]!;
+  const cls = unitClassOf(ctx, u);
+  const snap = view(draft);
+  for (const { effect } of playerEffects(
+    ctx,
+    snap,
+    s.owner,
+    'grant_promotion',
+    snap.settlements[id],
+  )) {
+    const p = effect.params;
+    if (p.unitClass && !(Array.isArray(p.unitClass) ? p.unitClass : [p.unitClass]).includes(cls.id))
+      continue;
+    if (p.domain && cls.domain !== p.domain) continue;
+    if (!u.promotions.includes(p.promotion)) u.promotions.push(p.promotion);
+  }
+  if (cls.combat) s.unitsTrained++;
 }
 
 /** Whether finishing (or buying) this item now would work: room for the unit, citizens to spare. */
@@ -220,10 +274,12 @@ function complete(
   const s = draft.settlements[id]!;
   if (fromQueue) s.queue.shift();
   switch (item.kind) {
-    case 'unit':
-      spawnUnit(draft, ctx, s.owner, item.id, s.tile);
+    case 'unit': {
+      const unit = spawnUnit(draft, ctx, s.owner, item.id, s.tile);
       s.population -= ctx.content.entities.unit[item.id]!.populationCost;
+      if (unit) trainedHere(draft, ctx, id, unit);
       break;
+    }
     case 'building':
       s.buildings.push(item.id);
       s.walls += ctx.content.entities.building[item.id]?.walls ?? 0;
@@ -236,6 +292,7 @@ function complete(
       draft.map.tiles[item.tile!]!.district = item.id;
       s.districts.push({ id: item.id, tile: item.tile! });
       s.locked = s.locked.filter((t) => t !== item.tile);
+      districtRewards(draft, ctx, id, item.id);
       break;
     case 'wonder':
       clearForBuilding(draft, ctx, item.tile!);
@@ -309,7 +366,16 @@ export function foundSettlement(
     originalCapital: capital,
     capturedFrom: null,
     captureChoice: false,
+    unitsTrained: 0,
   };
+  // Abilities that give every new settlement a building (if it can have it).
+  const fresh = draft.settlements[id]!;
+  for (const { effect } of playerEffects(ctx, view(draft), player, 'free_building')) {
+    const b = effect.params.building;
+    const def = ctx.content.entities.building[b];
+    if (def && !fresh.buildings.includes(b) && (!def.cityOnly || fresh.kind === 'city'))
+      fresh.buildings.push(b);
+  }
   if (capital) p.capital = id;
   p.settlementsFounded++;
   const s = { id, owner: player };
@@ -368,12 +434,14 @@ export function bestDevelopChoice(
 ): { tile: number; improvement: string } | undefined {
   let best: { tile: number; improvement: string; score: number } | undefined;
   for (const tile of developCandidates(ctx, state, s)) {
-    const improvement = improvementsFor(ctx, state, tile, s.owner)[0]!;
-    const yields = { ...tileYields(ctx, state, tile, s.owner).total };
-    const extra = ctx.content.entities.improvement[improvement]!.yields;
-    for (const [y, v] of Object.entries(extra)) yields[y] = (yields[y] ?? 0) + toFixed(v);
-    const score = tileScore(ctx, yields, s.focus);
-    if (!best || score > best.score) best = { tile, improvement, score };
+    // Every improvement that fits, best match first (a resource's improvement wins ties).
+    for (const improvement of improvementsFor(ctx, state, tile, s.owner)) {
+      const yields = { ...tileYields(ctx, state, tile, s.owner).total };
+      const extra = ctx.content.entities.improvement[improvement]!.yields;
+      for (const [y, v] of Object.entries(extra)) yields[y] = (yields[y] ?? 0) + toFixed(v);
+      const score = tileScore(ctx, yields, s.focus);
+      if (!best || score > best.score) best = { tile, improvement, score };
+    }
   }
   return best && { tile: best.tile, improvement: best.improvement };
 }
@@ -450,16 +518,28 @@ export const settlementHandlers = {
       const problem =
         itemProblem(ctx, state, s, action.item) ?? completionProblem(ctx, state, s, action.item);
       if (problem) return problem;
-      const cost = purchaseCost(ctx, state, action.player, action.item);
-      return state.players[action.player]!.gold < cost ? noGold(cost) : undefined;
+      const cost = purchaseCost(ctx, state, action.player, action.item, s);
+      const p = state.players[action.player]!;
+      if (action.currency === 'faith') {
+        if (!canBuyWithFaith(ctx, state, action.player, action.item))
+          return { code: 'no_faith_purchase', message: "That can't be bought with faith" };
+        return p.faith < cost
+          ? { code: 'no_faith', message: `Needs ${Math.ceil(cost / 100)} faith` }
+          : undefined;
+      }
+      return p.gold < cost ? noGold(cost) : undefined;
     },
     (draft, action, ctx, emit) => {
-      draft.players[action.player]!.gold -= purchaseCost(
+      const snap = view(draft);
+      const cost = purchaseCost(
         ctx,
-        view(draft),
+        snap,
         action.player,
         action.item,
+        snap.settlements[action.settlement],
       );
+      if (action.currency === 'faith') draft.players[action.player]!.faith -= cost;
+      else draft.players[action.player]!.gold -= cost;
       complete(draft, ctx, action.settlement, action.item, false, emit);
       refreshCitizens(draft, ctx, action.settlement);
       emit({
@@ -698,7 +778,7 @@ function processSettlement(
       s.progress[key] =
         (s.progress[key] ?? 0) +
         productionToward(ctx, snap, snap.settlements[id]!, head, production);
-      const cost = itemCost(ctx, snap, owner, head);
+      const cost = itemCost(ctx, snap, owner, head, snap.settlements[id]!);
       if (s.progress[key]! >= cost && !completionProblem(ctx, current(draft), s, head)) {
         const overflow = s.progress[key]! - cost;
         delete s.progress[key];

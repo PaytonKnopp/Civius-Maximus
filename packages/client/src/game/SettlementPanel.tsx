@@ -14,6 +14,7 @@ import {
   improvementsFor,
   itemCost,
   itemKey,
+  canBuyWithFaith,
   isBuyable,
   type Line,
   needsTile,
@@ -414,9 +415,14 @@ export function SettlementPanel({
                 </h5>
                 <ul className="items">
                   {group.map((item) => {
-                    const cost = itemCost(ctx, state, viewer, item);
+                    const cost = itemCost(ctx, state, viewer, item, s);
                     const progress = s.progress[itemKey(item)] ?? 0;
                     const buy: Action = { type: 'buy_item', player: viewer, settlement: id, item };
+                    const price = whole(purchaseCost(ctx, state, viewer, item, s));
+                    const faithBuy: Action | undefined =
+                      isBuyable(item) && canBuyWithFaith(ctx, state, viewer, item)
+                        ? { ...buy, currency: 'faith' }
+                        : undefined;
                     const tiled = needsTile(item);
                     const def =
                       kind === 'district'
@@ -475,13 +481,20 @@ export function SettlementPanel({
                           <button
                             type="button"
                             disabled={!can(buy)}
-                            title={
-                              why(buy) ??
-                              `Buy now for ${whole(purchaseCost(ctx, state, viewer, item))} gold`
-                            }
+                            title={why(buy) ?? `Buy now for ${price} gold`}
                             onClick={() => act(buy)}
                           >
-                            {icon('gold')} {whole(purchaseCost(ctx, state, viewer, item))}
+                            {icon('gold')} {price}
+                          </button>
+                        )}
+                        {faithBuy && (
+                          <button
+                            type="button"
+                            disabled={!can(faithBuy)}
+                            title={why(faithBuy) ?? `Buy now for ${price} faith`}
+                            onClick={() => act(faithBuy)}
+                          >
+                            {icon('faith')} {price}
                           </button>
                         )}
                       </li>

@@ -4,6 +4,7 @@ import {
   type ImprovementDef,
   type ProjectDef,
   resolveText,
+  type Toward,
   type UnitDef,
   type WonderDef,
 } from '@cx/content';
@@ -21,6 +22,7 @@ import {
   settlementLimitOf,
   sourcesFor,
 } from '../progress/sources';
+import { baseOf, countsAs, uniqueProblem } from '../uniques';
 import { isWater } from '../units/movement';
 import {
   districtCost,
@@ -71,7 +73,7 @@ export function tileYields(
       tile: tileFacts(state, tile),
       neighbors: neighbors(state.map, tile).map((n) => tileFacts(state, n)),
       playerId: pid ?? '',
-      ...(p ? { player: playerFacts(p) } : {}),
+      ...(p ? { player: playerFacts(ctx, p) } : {}),
     },
     p && pid !== null ? sourcesFor(ctx, state, pid, here?.owner === pid ? here : undefined) : [],
   );
@@ -219,15 +221,20 @@ export function improvementsFor(
       (site) =>
         (site.terrains === undefined || site.terrains.includes(t.terrain)) &&
         site.elevations.includes(t.elevation) &&
-        (t.feature === null ? !site.needsFeature : site.features.includes(t.feature)),
+        (t.feature === null ? !site.needsFeature : site.features.includes(t.feature)) &&
+        (!site.river || tileOnRiver(state.map, tile)) &&
+        (!site.edge || onEdge(state, tile, player)),
     );
     return ok ? 1 : 0;
   };
   return ctx.content.ids.improvement
-    .filter(
-      (id) =>
-        player === undefined || isUnlocked(state, player, ctx.content.entities.improvement[id]!),
-    )
+    .filter((id) => {
+      const imp = ctx.content.entities.improvement[id]!;
+      if (player === undefined) return imp.civ === undefined;
+      return (
+        isUnlocked(state, player, imp) && !uniqueProblem(ctx, state, player, 'improvement', id)
+      );
+    })
     .map((id) => ({ id, fit: fits(ctx.content.entities.improvement[id]!) }))
     .filter((x) => x.fit > 0)
     .sort(
@@ -238,6 +245,12 @@ export function improvementsFor(
         (a.id < b.id ? -1 : 1),
     )
     .map((x) => x.id);
+}
+
+/** A tile on the edge of the player's land: next to a land tile that isn't theirs. */
+function onEdge(state: GameState, tile: number, player: PlayerId | undefined): boolean {
+  const owner = state.map.tiles[tile]!.owner ?? player;
+  return neighbors(state.map, tile).some((n) => state.map.tiles[n]!.owner !== owner);
 }
 
 /**
@@ -631,31 +644,89 @@ export function itemDef(ctx: EngineContext, item: BuildItem): ItemDef | undefine
   }
 }
 
-/** Production to finish an item (districts cost more as you progress through the trees). */
+/**
+ * Production to finish an item (districts cost more as you progress through the trees). In a
+ * settlement, its cost effects apply too (−100% makes it free).
+ */
 export function itemCost(
   ctx: EngineContext,
   state: GameState,
   player: PlayerId,
   item: BuildItem,
+  s?: SettlementState,
 ): Fixed {
-  if (item.kind === 'district') return districtCost(ctx, state, player, item.id);
-  return toFixed(itemDef(ctx, item)?.cost ?? 0);
+  const base =
+    item.kind === 'district'
+      ? districtCost(ctx, state, player, item.id)
+      : toFixed(itemDef(ctx, item)?.cost ?? 0);
+  if (!s) return base;
+  let percent = 0;
+  for (const { effect } of playerEffects(ctx, state, player, 'modify_item_cost', s)) {
+    if (towardMatches(ctx, effect.params.toward, item)) percent += effect.params.percent;
+  }
+  return Math.max(0, base + percentOf(base, Math.max(-100, percent)));
+}
+
+/** Whether an effect's `toward` filter covers an item. */
+export function towardMatches(ctx: EngineContext, t: Toward, item: BuildItem): boolean {
+  const def = itemDef(ctx, item);
+  if (!def) return false;
+  if (t.kind !== undefined && t.kind !== item.kind) return false;
+  const oneOf = (v: string, list: string | string[] | undefined) =>
+    list === undefined || (Array.isArray(list) ? list.includes(v) : list === v);
+  const named = {
+    unit: t.unit,
+    building: t.building,
+    district: t.district,
+    wonder: t.wonder,
+    project: undefined,
+  };
+  // A filter naming one kind of item never matches another kind.
+  const others = (Object.keys(named) as (keyof typeof named)[]).filter(
+    (k) => k !== item.kind && named[k] !== undefined,
+  );
+  if (others.length > 0) return false;
+  if (item.kind !== 'unit' && (t.unitClass !== undefined || t.military !== undefined)) return false;
+  if (!oneOf(item.id, named[item.kind])) return false;
+  if (item.kind === 'unit') {
+    const u = def as UnitDef;
+    if (!oneOf(u.class, t.unitClass)) return false;
+    if (t.military !== undefined && ctx.content.entities.unitClass[u.class]!.combat !== t.military)
+      return false;
+  }
+  return true;
+}
+
+/** Whether a player may buy this kind of item with faith (an ability's `purchase_with_faith`). */
+export function canBuyWithFaith(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  item: BuildItem,
+): boolean {
+  return playerEffects(ctx, state, player, 'purchase_with_faith').some(
+    (e) => e.effect.params.kind === item.kind,
+  );
 }
 
 /** Units and buildings can be bought; districts, wonders and projects can't. */
 export const isBuyable = (item: BuildItem) => item.kind === 'unit' || item.kind === 'building';
 
-/** Gold to buy an item outright (policies can make it cheaper). */
+/** Gold to buy an item outright (policies, and a settlement's own effects, can make it cheaper). */
 export function purchaseCost(
   ctx: EngineContext,
   state: GameState,
   player: PlayerId,
   item: BuildItem,
+  s?: SettlementState,
 ): Fixed {
   const base =
-    itemCost(ctx, state, player, item) * ctx.content.rules.settlements.purchase.goldPerProduction;
-  const percent = playerPercent(ctx, state, player, 'modify_purchase_cost');
-  return Math.max(0, base + percentOf(base, percent));
+    itemCost(ctx, state, player, item, s) *
+    ctx.content.rules.settlements.purchase.goldPerProduction;
+  let percent = 0;
+  for (const { effect } of playerEffects(ctx, state, player, 'modify_purchase_cost', s))
+    percent += effect.params.percent;
+  return Math.max(0, base + percentOf(base, Math.max(-100, percent)));
 }
 
 /** Production that goes toward an item this turn: the settlement's, plus bonuses for that item. */
@@ -666,29 +737,9 @@ export function productionToward(
   item: BuildItem,
   production: Fixed,
 ): Fixed {
-  const def = itemDef(ctx, item);
-  if (!def) return production;
-  const oneOf = (v: string, list: string | string[] | undefined) =>
-    list === undefined || (Array.isArray(list) ? list.includes(v) : list === v);
   let percent = 0;
   for (const { effect } of playerEffects(ctx, state, s.owner, 'modify_production', s)) {
-    const t = effect.params.toward;
-    if (t.kind !== undefined && t.kind !== item.kind) continue;
-    const named = {
-      unit: t.unit,
-      building: t.building,
-      district: t.district,
-      wonder: t.wonder,
-      project: undefined,
-    };
-    // A filter naming one kind of item never matches another kind.
-    const others = (Object.keys(named) as (keyof typeof named)[]).filter(
-      (k) => k !== item.kind && named[k] !== undefined,
-    );
-    if (others.length > 0 || (item.kind !== 'unit' && t.unitClass !== undefined)) continue;
-    if (!oneOf(item.id, named[item.kind])) continue;
-    if (item.kind === 'unit' && !oneOf((def as UnitDef).class, t.unitClass)) continue;
-    percent += effect.params.percent;
+    if (towardMatches(ctx, effect.params.toward, item)) percent += effect.params.percent;
   }
   return Math.max(0, production + percentOf(production, percent));
 }
@@ -719,6 +770,10 @@ export function itemProblem(
     };
   const locked = lockedReason(ctx, state, s.owner, def);
   if (locked) return { code: 'locked', message: locked };
+  if (item.kind === 'unit' || item.kind === 'building' || item.kind === 'district') {
+    const unique = uniqueProblem(ctx, state, s.owner, item.kind, item.id);
+    if (unique) return { code: 'unique', message: unique };
+  }
   if (needsTile(item)) {
     if (s.kind === 'town')
       return { code: 'city_only', message: 'Only cities build districts, wonders and projects' };
@@ -735,7 +790,8 @@ export function itemProblem(
     return undefined;
   }
   const b = def as BuildingDef;
-  if (s.buildings.includes(b.id))
+  const base = baseOf(ctx, 'building', b.id);
+  if (s.buildings.some((x) => baseOf(ctx, 'building', x) === base))
     return {
       code: 'already_built',
       message: `${resolveText(ctx.content, b.name)} is already built`,
@@ -746,14 +802,17 @@ export function itemProblem(
     return { code: 'needs_coast', message: 'Needs a settlement on the coast' };
   if (b.cityOnly && s.kind === 'town')
     return { code: 'city_only', message: 'Only cities can have this' };
-  if (b.district && !s.districts.some((d) => d.id === b.district)) {
+  if (b.district && !s.districts.some((d) => countsAs(ctx, 'district', d.id, b.district!))) {
     const needed = ctx.content.entities.district[b.district];
     return {
       code: 'needs_district',
       message: `Needs a ${needed ? resolveText(ctx.content, needed.name) : b.district} first`,
     };
   }
-  if (b.requiresBuilding && !s.buildings.includes(b.requiresBuilding)) {
+  if (
+    b.requiresBuilding &&
+    !s.buildings.some((x) => countsAs(ctx, 'building', x, b.requiresBuilding!))
+  ) {
     const needed = ctx.content.entities.building[b.requiresBuilding];
     return {
       code: 'needs_building',

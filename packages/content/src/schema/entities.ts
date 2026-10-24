@@ -391,6 +391,15 @@ export const UnitClassDef = z.strictObject({
   captures: z.boolean().default(false),
 });
 
+/**
+ * Civ uniques: only players of `civ` can have the item, and for them it takes the place of
+ * `replaces` (an item of the same kind), which they can't have.
+ */
+const unique = {
+  civ: Id.optional(),
+  replaces: Id.optional(),
+};
+
 /** A unit type: stats, special actions, and how it looks. */
 export const UnitDef = z.strictObject({
   type: z.literal('unit'),
@@ -417,6 +426,13 @@ export const UnitDef = z.strictObject({
   /** Every tile costs 1 movement (e.g. some scouts and cavalry). */
   ignoresTerrainCost: z.boolean().default(false),
   ignoresZoc: z.boolean().default(false),
+  /** Keeps its remaining moves (less one) after attacking. */
+  movesAfterAttack: z.boolean().default(false),
+  /** Fights at full strength when wounded. */
+  ignoresWounds: z.boolean().default(false),
+  /** Yields its owner gets each time it destroys an enemy unit (e.g. gold). */
+  killYields: YieldMap.default({}),
+  ...unique,
   /** Short placeholder glyph until icons exist. */
   icon: z.string().min(1).max(3),
   /** Which 3D model family the renderer uses. */
@@ -507,6 +523,10 @@ const ImprovementSite = z.strictObject({
   features: z.array(Id).default([]),
   /** The tile must have one of `features` (e.g. a woodcutter needs woods). */
   needsFeature: z.boolean().default(false),
+  /** The tile must be next to a river. */
+  river: z.boolean().default(false),
+  /** The tile must be on the edge of the player's territory. */
+  edge: z.boolean().default(false),
 });
 
 /** A tile improvement (farm, mine...). Settlements build them as they grow (docs/03, "Growth"). */
@@ -545,6 +565,9 @@ export const ImprovementDef = z.strictObject({
     .default('generic'),
   /** Bonuses from neighbors (e.g. farms next to farms). */
   adjacency: z.array(Adjacency).default([]),
+  /** Combat strength for a unit defending on it. */
+  defense: z.int().min(0).default(0),
+  ...unique,
 });
 
 /** A building in a settlement: in its center, or inside one of its districts. */
@@ -576,6 +599,7 @@ export const BuildingDef = z.strictObject({
   localEffects: z.array(Effect).default([]),
   /** Effects on the whole empire. */
   effects: z.array(Effect).default([]),
+  ...unique,
   ...requires,
 });
 
@@ -627,6 +651,7 @@ export const DistrictDef = z.strictObject({
   specialistYields: YieldMap.default({}),
   localEffects: z.array(Effect).default([]),
   effects: z.array(Effect).default([]),
+  ...unique,
   ...requires,
   model: z
     .enum([
@@ -752,6 +777,8 @@ export const PromotionDef = z.strictObject({
   range: z.int().min(0).default(0),
   /** Every tile costs 1 movement. */
   ignoresTerrainCost: z.boolean().default(false),
+  /** Only ever given by an effect (a building, an ability), never chosen with XP. */
+  granted: z.boolean().default(false),
 });
 
 /** Something a player can do to earn a boost (a share of a tech's or civic's cost). */
@@ -850,7 +877,7 @@ export const PolicyDef = z.strictObject({
   obsoletedBy: Id.optional(),
 });
 
-/** A civilization: its names and colors (abilities and uniques arrive with the leader kits). */
+/** A civilization: its names, colors and ability (its unique items name it with `civ`). */
 export const CivDef = z.strictObject({
   type: z.literal('civ'),
   id: Id,
@@ -862,6 +889,10 @@ export const CivDef = z.strictObject({
   }),
   /** Settlement names in founding order; the first is the capital. */
   cityNames: z.array(Text).min(1),
+  /** The civ's ability (docs/09-base-roster.md). */
+  ability: z
+    .strictObject({ name: Text, description: Text, effects: z.array(Effect).default([]) })
+    .optional(),
 });
 
 /** How an AI leader weighs its choices: 0 (ignores it) to 10 (obsessed). 5 is ordinary. */
@@ -893,8 +924,12 @@ export const LeaderDef = z.strictObject({
   name: Text,
   /** The civ this leader leads unless the lobby says otherwise. */
   civ: Id,
-  /** The leader's ability: its name and what it does (its effects arrive with the leader kits). */
-  ability: z.strictObject({ name: Text, description: Text }),
+  /** The leader's ability: its name, what it does, and its effects. */
+  ability: z.strictObject({
+    name: Text,
+    description: Text,
+    effects: z.array(Effect).default([]),
+  }),
   /** What the AI leader cares about in other players (shown in diplomacy). */
   agenda: z.strictObject({ name: Text, description: Text }),
   personality: Personality,

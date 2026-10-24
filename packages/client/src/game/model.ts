@@ -238,10 +238,10 @@ export function settlementSummary(
   const head = headItem && {
     item: headItem,
     name: itemName(ctx.content, headItem),
-    cost: itemCost(ctx, state, s.owner, headItem),
+    cost: itemCost(ctx, state, s.owner, headItem, s),
     progress: s.progress[itemKey(headItem)] ?? 0,
     turns: turnsFor(
-      itemCost(ctx, state, s.owner, headItem),
+      itemCost(ctx, state, s.owner, headItem, s),
       s.progress[itemKey(headItem)] ?? 0,
       productionToward(ctx, state, s, headItem, production),
     ),
