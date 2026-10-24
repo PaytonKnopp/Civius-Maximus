@@ -1,7 +1,9 @@
 import {
   type Action,
   availableItems,
+  type BuildItem,
   distance,
+  districtYields,
   type EngineContext,
   findPath,
   fogOfWar,
@@ -11,6 +13,7 @@ import {
   availableNodes,
   availablePolicies,
   nodeCost,
+  placementTiles,
   policySlots,
   SLOT_KINDS,
   settlementsOf,
@@ -49,14 +52,19 @@ export function placeholderAiActions(
   }
   for (const s of settlementsOf(state, player)) {
     if (s.kind !== 'city' || s.queue.length > 0) continue;
-    const can = new Set(availableItems(ctx, state, s).map((i) => i.id));
+    const items = availableItems(ctx, state, s);
+    const can = new Set(items.map((i) => i.id));
     const wanted = ['unit_warrior', 'building_monument', 'unit_settler', 'building_granary'];
-    const queue = wanted
+    const queue: BuildItem[] = wanted
       .filter((id) => can.has(id))
       .map((id) => ({
         kind: id.startsWith('unit_') ? ('unit' as const) : ('building' as const),
         id,
       }));
+    // Then a couple of other buildings, and the district with the best adjacency.
+    queue.push(...items.filter((i) => i.kind === 'building' && !wanted.includes(i.id)).slice(0, 2));
+    const district = bestDistrict(ctx, state, s.id, items);
+    if (district) queue.push(district);
     if (queue.length > 0) actions.push({ type: 'set_queue', player, settlement: s.id, queue });
   }
   // Research and civics: the cheapest available node whenever nothing is chosen.
@@ -90,4 +98,24 @@ export function placeholderAiActions(
     actions.push({ type: 'set_policies', player, policies: fill });
   }
   return actions;
+}
+
+/** The available district and tile with the largest total yield there (ties: content order). */
+function bestDistrict(
+  ctx: EngineContext,
+  state: GameState,
+  id: string,
+  items: BuildItem[],
+): BuildItem | undefined {
+  const s = state.settlements[id]!;
+  let best: { item: BuildItem; score: number } | undefined;
+  for (const item of items) {
+    if (item.kind !== 'district') continue;
+    for (const tile of placementTiles(ctx, state, s, 'district', item.id)) {
+      const total = districtYields(ctx, state, tile, item.id).total;
+      const score = Object.values(total).reduce((a, b) => a + b, 0);
+      if (!best || score > best.score) best = { item: { ...item, tile }, score };
+    }
+  }
+  return best?.item;
 }

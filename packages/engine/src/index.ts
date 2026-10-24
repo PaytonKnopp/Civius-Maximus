@@ -78,6 +78,7 @@ export {
   happinessOf,
   improvementsFor,
   isCoastal,
+  isBuyable,
   isUnlocked,
   itemCost,
   itemDef,
@@ -103,6 +104,16 @@ export {
 } from './settlements/rules';
 export { bestDevelopChoice } from './settlements/handlers';
 export {
+  districtCost,
+  districtLimit,
+  districtYields,
+  needsTile,
+  placementProblem,
+  placementTiles,
+  specialistSlots,
+  TILE_KINDS,
+} from './settlements/districts';
+export {
   availableGovernments,
   availableNodes,
   availablePolicies,
@@ -124,4 +135,12 @@ export {
   treeNode,
   unlocksOf,
 } from './progress/rules';
-export { activeSources, policySlots, SLOT_KINDS } from './progress/sources';
+export {
+  activeSources,
+  builtSources,
+  localSources,
+  playerEffects,
+  policySlots,
+  SLOT_KINDS,
+  sourcesFor,
+} from './progress/sources';

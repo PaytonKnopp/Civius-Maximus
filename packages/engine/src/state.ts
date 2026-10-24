@@ -34,9 +34,11 @@ export type SettlementId = string;
 
 /** Something a city can produce. */
 export interface BuildItem {
-  kind: 'unit' | 'building';
-  /** A `unit` or `building` content id. */
+  kind: 'unit' | 'building' | 'district' | 'wonder' | 'project';
+  /** A content id of that kind. */
   id: string;
+  /** Where it goes (districts, wonders and projects). */
+  tile?: number | undefined;
 }
 
 /** Which yield auto-assign favors when picking tiles for citizens. */
@@ -73,6 +75,16 @@ export interface SettlementState {
   focus: CitizenFocus;
   /** Growth choices waiting: each lets the player develop one tile with an improvement. */
   pendingDevelop: number;
+  /** Districts built, in the order they were finished. */
+  districts: { id: string; tile: number }[];
+  /** World wonders built here. */
+  wonders: string[];
+  /** Citizens working as specialists, per district id. */
+  specialists: Record<string, number>;
+  /** Towns: a `specialization` content id. */
+  specialization: string | null;
+  /** How many times the specialization was chosen (the first is free). */
+  specializationChanges: number;
 }
 
 export type UnitId = string;

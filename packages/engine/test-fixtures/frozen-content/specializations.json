@@ -1,0 +1,164 @@
+[
+  {
+    "type": "specialization",
+    "id": "spec_farming_town",
+    "name": "Farming Town",
+    "description": "+2 food here, and half the town's food goes to its nearest city.",
+    "icon": "Fa",
+    "localEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "send": {
+      "yield": "food",
+      "percent": 50
+    }
+  },
+  {
+    "type": "specialization",
+    "id": "spec_mining_town",
+    "name": "Mining Town",
+    "description": "+2 production here, and half the town's production goes to its nearest city's build.",
+    "icon": "Mi",
+    "localEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "send": {
+      "yield": "production",
+      "percent": 50
+    }
+  },
+  {
+    "type": "specialization",
+    "id": "spec_trade_outpost",
+    "name": "Trade Outpost",
+    "description": "+20% gold and +2 influence here.",
+    "icon": "Tr",
+    "localEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "influence",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "specialization",
+    "id": "spec_fort_town",
+    "name": "Fort Town",
+    "description": "+1 production and +1 happiness here. (Defense and healing arrive with combat.)",
+    "icon": "Fo",
+    "localEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "specialization",
+    "id": "spec_religious_site",
+    "name": "Religious Site",
+    "description": "+2 faith and +15% faith here.",
+    "icon": "Re",
+    "localEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "specialization",
+    "id": "spec_resort_town",
+    "name": "Resort Town",
+    "description": "+2 gold here, and +1 happiness in every settlement.",
+    "icon": "Rs",
+    "localEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  }
+]

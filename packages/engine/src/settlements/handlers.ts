@@ -9,7 +9,7 @@ import {
   unitDef,
 } from '../context';
 import { percentOf, toFixed } from '../fixed';
-import { tilesWithin } from '../map/hex';
+import { distance, tilesWithin } from '../map/hex';
 import type { BuildItem, GameState, PlayerId, SettlementState } from '../state';
 import { view } from '../draft';
 import { empireTurn } from '../progress/handlers';
@@ -25,9 +25,11 @@ import {
   growthPerTurn,
   growthThreshold,
   improvementsFor,
+  isBuyable,
   itemCost,
   itemKey,
   itemProblem,
+  lockedReason,
   nextBorderTile,
   productionToward,
   purchasableTiles,
@@ -74,10 +76,11 @@ function claim(draft: Draft<GameState>, tile: number, s: { id: string; owner: Pl
 /** Re-picks the tiles a settlement's citizens work. */
 export function refreshCitizens(draft: Draft<GameState>, ctx: EngineContext, id: string) {
   const snap = view(draft);
-  const { worked, locked } = assignCitizens(ctx, snap, snap.settlements[id]!);
+  const { worked, locked, specialists } = assignCitizens(ctx, snap, snap.settlements[id]!);
   const s = draft.settlements[id]!;
   s.worked = worked;
   s.locked = locked;
+  s.specialists = specialists;
 }
 
 function refreshExplored(draft: Draft<GameState>, ctx: EngineContext, player: PlayerId) {
@@ -140,6 +143,69 @@ function completionProblem(
   return room ? undefined : { code: 'no_room', message: `No room for the unit near ${s.name}` };
 }
 
+/** Clears a tile for a district or wonder: no improvement, and woods, rainforest, marsh go. */
+function clearForBuilding(draft: Draft<GameState>, ctx: EngineContext, tile: number) {
+  const t = draft.map.tiles[tile]!;
+  t.improvement = null;
+  if (t.feature !== null && ctx.content.entities.feature[t.feature]?.removable) t.feature = null;
+}
+
+/**
+ * Someone finished a wonder: everyone else building it stops, and what they'd put into it comes
+ * back as gold (docs/03, "World wonders").
+ */
+function wonderRace(draft: Draft<GameState>, winner: string, wonder: string, emit: Emit) {
+  for (const id of settlementIds(draft)) {
+    const s = draft.settlements[id]!;
+    if (id === winner || !s.queue.some((q) => q.kind === 'wonder' && q.id === wonder)) continue;
+    const key = itemKey({ kind: 'wonder', id: wonder });
+    const gold = s.progress[key] ?? 0;
+    delete s.progress[key];
+    s.queue = s.queue.filter((q) => !(q.kind === 'wonder' && q.id === wonder));
+    draft.players[s.owner]!.gold += gold;
+    emit({
+      type: 'wonder_lost',
+      settlement: id,
+      owner: s.owner,
+      wonder,
+      gold,
+      visibleTo: [s.owner],
+    });
+  }
+}
+
+/** A finished project: the feature goes, and its reward lands where each yield belongs. */
+function projectReward(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  id: string,
+  item: BuildItem,
+): void {
+  const s = draft.settlements[id]!;
+  const def = ctx.content.entities.project[item.id]!;
+  const t = draft.map.tiles[item.tile!]!;
+  if (t.feature === null || !def.clears.includes(t.feature)) return;
+  t.feature = null;
+  const p = draft.players[s.owner]!;
+  for (const [y, v] of Object.entries(def.reward).sort()) {
+    const amount = toFixed(v);
+    if (y === 'food') s.food += amount;
+    else if (y === 'gold') p.gold += amount;
+    else if (y === 'faith') p.faith += amount;
+    else if (y === 'production') {
+      // Toward whatever comes next; with nothing queued it's sold for gold.
+      const next = s.queue[0];
+      if (next) s.progress[itemKey(next)] = (s.progress[itemKey(next)] ?? 0) + amount;
+      else p.gold += amount;
+    } else if (y === 'science' || y === 'culture') {
+      const track = y === 'science' ? p.techs : p.civics;
+      if (track.current)
+        track.progress[track.current] = (track.progress[track.current] ?? 0) + amount;
+      else track.stored += amount;
+    }
+  }
+}
+
 /** Finishes an item: the head of the queue (`fromQueue`) or a purchase. */
 function complete(
   draft: Draft<GameState>,
@@ -147,17 +213,45 @@ function complete(
   id: string,
   item: BuildItem,
   fromQueue: boolean,
+  emit: Emit,
 ) {
   const s = draft.settlements[id]!;
   if (fromQueue) s.queue.shift();
-  if (item.kind === 'unit') {
-    spawnUnit(draft, ctx, s.owner, item.id, s.tile);
-    s.population -= ctx.content.entities.unit[item.id]!.populationCost;
-  } else {
-    s.buildings.push(item.id);
-    // A building can only be had once: drop it from the rest of the queue.
-    s.queue = s.queue.filter((q) => itemKey(q) !== itemKey(item));
-    delete s.progress[itemKey(item)];
+  switch (item.kind) {
+    case 'unit':
+      spawnUnit(draft, ctx, s.owner, item.id, s.tile);
+      s.population -= ctx.content.entities.unit[item.id]!.populationCost;
+      break;
+    case 'building':
+      s.buildings.push(item.id);
+      // A building can only be had once: drop it from the rest of the queue.
+      s.queue = s.queue.filter((q) => itemKey(q) !== itemKey(item));
+      delete s.progress[itemKey(item)];
+      break;
+    case 'district':
+      clearForBuilding(draft, ctx, item.tile!);
+      draft.map.tiles[item.tile!]!.district = item.id;
+      s.districts.push({ id: item.id, tile: item.tile! });
+      s.locked = s.locked.filter((t) => t !== item.tile);
+      break;
+    case 'wonder':
+      clearForBuilding(draft, ctx, item.tile!);
+      draft.map.tiles[item.tile!]!.wonder = item.id;
+      s.wonders.push(item.id);
+      s.locked = s.locked.filter((t) => t !== item.tile);
+      wonderRace(draft, id, item.id, emit);
+      emit({
+        type: 'wonder_completed',
+        settlement: id,
+        owner: s.owner,
+        wonder: item.id,
+        tile: item.tile!,
+        visibleTo: 'all',
+      });
+      break;
+    case 'project':
+      projectReward(draft, ctx, id, item);
+      break;
   }
 }
 
@@ -199,6 +293,11 @@ export function foundSettlement(
     locked: [],
     focus: 'balanced',
     pendingDevelop: 0,
+    districts: [],
+    wonders: [],
+    specialists: {},
+    specialization: null,
+    specializationChanges: 0,
   };
   if (capital) p.capital = id;
   p.settlementsFounded++;
@@ -317,11 +416,14 @@ export const settlementHandlers = {
         };
       const seen = new Set<string>();
       for (const item of action.queue) {
-        const problem = itemProblem(ctx, state, s, item);
+        const problem = itemProblem(ctx, state, s, item, action.queue);
         if (problem) return problem;
-        if (item.kind === 'building' && seen.has(item.id))
-          return { code: 'duplicate', message: 'That building is already in the queue' };
-        seen.add(item.id);
+        const key = item.kind === 'unit' ? '' : itemKey(item);
+        if (key && seen.has(key))
+          return { code: 'duplicate', message: 'That is already in the queue' };
+        seen.add(key);
+        if (item.kind !== 'unit' && item.kind !== 'building' && item.tile === undefined)
+          return { code: 'bad_placement', message: 'Pick a tile for it' };
       }
       return undefined;
     },
@@ -332,6 +434,8 @@ export const settlementHandlers = {
 
   buy_item: settlementAction<'buy_item'>(
     (s, state, action, ctx) => {
+      if (!isBuyable(action.item))
+        return { code: 'not_buyable', message: "Districts, wonders and projects can't be bought" };
       const problem =
         itemProblem(ctx, state, s, action.item) ?? completionProblem(ctx, state, s, action.item);
       if (problem) return problem;
@@ -345,7 +449,7 @@ export const settlementHandlers = {
         action.player,
         action.item,
       );
-      complete(draft, ctx, action.settlement, action.item, false);
+      complete(draft, ctx, action.settlement, action.item, false, emit);
       refreshCitizens(draft, ctx, action.settlement);
       emit({
         type: 'item_bought',
@@ -426,12 +530,46 @@ export const settlementHandlers = {
     (draft, action, ctx, emit) => {
       draft.players[action.player]!.gold -= townUpgradeCost(ctx, view(draft), action.player);
       draft.settlements[action.settlement]!.kind = 'city';
+      // Cities don't specialize: they build.
+      draft.settlements[action.settlement]!.specialization = null;
       emit({
         type: 'town_upgraded',
         settlement: action.settlement,
         owner: action.player,
         visibleTo: 'all',
       });
+    },
+  ),
+
+  set_specialization: settlementAction<'set_specialization'>(
+    (s, state, action, ctx) => {
+      const rules = ctx.content.rules.settlements.specialization;
+      if (s.kind !== 'town') return { code: 'not_town', message: 'Only towns specialize' };
+      if (action.specialization === s.specialization)
+        return { code: 'already', message: 'That is already its specialization' };
+      if (action.specialization !== null) {
+        const def = ctx.content.entities.specialization[action.specialization];
+        if (!def) return { code: 'unknown', message: 'Unknown specialization' };
+        const locked = lockedReason(ctx, state, s.owner, def);
+        if (locked) return { code: 'locked', message: locked };
+        if (s.population < rules.minPopulation)
+          return {
+            code: 'too_small',
+            message: `Towns specialize at ${rules.minPopulation} citizens`,
+          };
+      }
+      const cost = s.specializationChanges > 0 ? toFixed(rules.changeCost) : 0;
+      return state.players[action.player]!.gold < cost ? noGold(cost) : undefined;
+    },
+    (draft, action, ctx) => {
+      const s = draft.settlements[action.settlement]!;
+      if (s.specializationChanges > 0)
+        draft.players[action.player]!.gold -= toFixed(
+          ctx.content.rules.settlements.specialization.changeCost,
+        );
+      s.specialization = action.specialization;
+      if (action.specialization !== null) s.specializationChanges++;
+      refreshCitizens(draft, ctx, action.settlement);
     },
   ),
 
@@ -452,11 +590,25 @@ export const settlementHandlers = {
       | 'lock_tile'
       | 'buy_tile'
       | 'upgrade_town'
+      | 'set_specialization'
       | 'rename_settlement'
   ]: ActionHandler<A<T>>;
 };
 
 // --- Turn processing -------------------------------------------------------------------------
+
+/** The owner's nearest city within the send range of a specialized town (ties: oldest first). */
+function nearestCity(ctx: EngineContext, state: GameState, s: SettlementState): string | undefined {
+  const range = ctx.content.rules.settlements.specialization.sendRange;
+  let best: { id: string; d: number } | undefined;
+  for (const id of settlementIds(state)) {
+    const c = state.settlements[id]!;
+    if (c.owner !== s.owner || c.kind !== 'city' || c.id === s.id) continue;
+    const d = distance(state.map, s.tile, c.tile);
+    if (d <= range && (!best || d < best.d)) best = { id, d };
+  }
+  return best?.id;
+}
 
 /** What a settlement's turn adds to its owner's empire-wide totals. */
 interface SettlementTurn {
@@ -500,13 +652,31 @@ function processSettlement(
   for (const b of s.buildings)
     player.gold -= toFixed(ctx.content.entities.building[b]!.maintenance);
 
+  // A specialized town may send part of its food or production to its nearest city.
+  const spec = s.specialization ? ctx.content.entities.specialization[s.specialization] : undefined;
+  const city = spec?.send ? nearestCity(ctx, snap, snap.settlements[id]!) : undefined;
+  const sendShare = (amount: number) =>
+    spec?.send && city && amount > 0 ? percentOf(amount, spec.send.percent) : 0;
+
   // Production: cities build, towns sell it for gold.
   if (s.kind === 'town') {
-    player.gold += percentOf(production, rules.townGoldPercent);
+    const sent = spec?.send?.yield === 'production' ? sendShare(production) : 0;
+    if (sent > 0 && city) {
+      const target = draft.settlements[city]!;
+      const next = target.queue[0];
+      if (next) target.progress[itemKey(next)] = (target.progress[itemKey(next)] ?? 0) + sent;
+      else player.gold += sent;
+    }
+    player.gold += percentOf(production - sent, rules.townGoldPercent);
   } else {
     while (s.queue.length > 0 && itemProblem(ctx, snap, s, s.queue[0]!)) s.queue.shift();
     // A plain copy: events outlive the draft.
-    const head = s.queue[0] && { kind: s.queue[0].kind, id: s.queue[0].id };
+    const first = s.queue[0];
+    const head: BuildItem | undefined = first && {
+      kind: first.kind,
+      id: first.id,
+      ...(first.tile !== undefined ? { tile: first.tile } : {}),
+    };
     if (!head) {
       if (production > 0)
         emit({ type: 'production_idle', settlement: id, owner, visibleTo: [owner] });
@@ -515,11 +685,11 @@ function processSettlement(
       s.progress[key] =
         (s.progress[key] ?? 0) +
         productionToward(ctx, snap, snap.settlements[id]!, head, production);
-      const cost = itemCost(ctx, head);
+      const cost = itemCost(ctx, snap, owner, head);
       if (s.progress[key]! >= cost && !completionProblem(ctx, current(draft), s, head)) {
         const overflow = s.progress[key]! - cost;
         delete s.progress[key];
-        complete(draft, ctx, id, head, true);
+        complete(draft, ctx, id, head, true, emit);
         emit({ type: 'item_completed', settlement: id, owner, item: head, visibleTo: [owner] });
         const next = s.queue[0];
         if (next && overflow > 0) {
@@ -530,7 +700,10 @@ function processSettlement(
   }
 
   // Food: grow (and earn a develop choice) or starve.
-  s.food += growthPerTurn(ctx, snap, snap.settlements[id]!, y);
+  const growth = growthPerTurn(ctx, snap, snap.settlements[id]!, y);
+  const foodSent = spec?.send?.yield === 'food' ? sendShare(growth) : 0;
+  if (foodSent > 0 && city) draft.settlements[city]!.food += foodSent;
+  s.food += growth - foodSent;
   const needed = growthThreshold(ctx, s.population);
   if (s.food >= needed) {
     s.food -= needed;

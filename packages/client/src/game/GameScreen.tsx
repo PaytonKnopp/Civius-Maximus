@@ -2,6 +2,7 @@ import { type CompiledContent, resolveText } from '@cx/content';
 import {
   type Action,
   developCandidates,
+  distance,
   type EngineContext,
   findPath,
   fogOfWar,
@@ -17,6 +18,7 @@ import {
   purchasableTiles,
   SLOT_KINDS,
   tilePurchaseCost,
+  tilesWithin,
   type TreeKind,
   unitIds,
   workableTiles,
@@ -34,6 +36,7 @@ import {
   itemName,
   nextAction,
   perTurn,
+  placementChoices,
   playerColors,
   settlementViews,
   showTurns,
@@ -43,7 +46,7 @@ import {
   whole,
 } from './model';
 import { GovernmentScreen } from './GovernmentScreen';
-import { type PanelMode, SettlementPanel } from './SettlementPanel';
+import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
 
@@ -100,6 +103,18 @@ function noticeFor(content: CompiledContent, state: GameState, e: GameEvent): st
         : undefined;
     case 'unit_disbanded':
       return e.reason === 'no_gold' ? 'Out of gold: a unit was disbanded' : undefined;
+    case 'wonder_completed': {
+      const wonder = resolveText(content, content.entities.wonder[e.wonder]?.name ?? e.wonder);
+      return e.owner === ME
+        ? `${name(e.settlement)} built ${wonder}!`
+        : `${civName(content, state, e.owner)} built ${wonder}`;
+    }
+    case 'wonder_lost': {
+      const wonder = resolveText(content, content.entities.wonder[e.wonder]?.name ?? e.wonder);
+      return e.owner === ME
+        ? `${wonder} was built elsewhere: ${name(e.settlement)} got ${Math.floor(e.gold / 100)} gold back`
+        : undefined;
+    }
     default:
       return undefined;
   }
@@ -122,6 +137,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
   const [pinned, setPinned] = useState<number | null>(null);
   const [inspect, setInspect] = useState<number>();
   const [panelMode, setPanelMode] = useState<PanelMode>('citizens');
+  const [placing, setPlacing] = useState<Placing | null>(null);
   const [notices, setNotices] = useState<{ id: number; text: string }[]>([]);
   const [fps, setFps] = useState(0);
   const [overlay, setOverlay] = useState<
@@ -190,6 +206,21 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     void viewRef.current?.setOptions({ grid: false, yields: false, viewer: null, quality });
   }, [quality]);
 
+  // `?debug` exposes the game and the map view to the browser console (and the screenshot
+  // scripts): `cx.game.load(state)` swaps in any state, `cx.view.focusTile(tile, true)` zooms in.
+  useEffect(() => {
+    if (!new URLSearchParams(location.search).has('debug')) return;
+    (window as unknown as { cx: unknown }).cx = {
+      game,
+      ctx,
+      get view() {
+        return viewRef.current;
+      },
+      select: (id: string) => select({ kind: 'settlement', id }, true),
+      hex: { distance, tilesWithin },
+    };
+  });
+
   useEffect(
     () =>
       game.subscribe((s, events) => {
@@ -240,10 +271,24 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     viewRef.current?.setPath(path, unit?.tile ?? null);
   }, [path, unit?.tile]);
 
-  // Tiles to mark for the selected settlement: growth choices, tiles to buy, worked tiles.
+  // Placement choices for the selected settlement (district, wonder or project waiting for a tile).
+  const choices = useMemo(
+    () =>
+      placing && settlement && settlement.owner === ME
+        ? placementChoices(ctx, state, settlement, placing.item)
+        : [],
+    [ctx, state, settlement, placing],
+  );
+
+  // Tiles to mark for the selected settlement: placement or growth choices, tiles to buy, worked
+  // tiles and planned districts.
   const highlights = useMemo((): TileHighlight[] => {
     if (!settlement || settlement.owner !== ME) return [];
     const out: TileHighlight[] = [{ tile: settlement.tile, tone: 'selected' }];
+    if (placing) {
+      for (const c of choices) out.push({ tile: c.tile, tone: 'place', label: c.label });
+      return out;
+    }
     if (settlement.pendingDevelop > 0) {
       for (const tile of developCandidates(ctx, state, settlement)) {
         const imp = content.entities.improvement[improvementsFor(ctx, state, tile)[0]!]!;
@@ -264,8 +309,12 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     for (const tile of settlement.worked) {
       out.push({ tile, tone: 'worked', label: settlement.locked.includes(tile) ? '📌' : '●' });
     }
+    for (const q of settlement.queue) {
+      if (q.tile !== undefined)
+        out.push({ tile: q.tile, tone: 'planned', label: itemName(content, q) });
+    }
     return out;
-  }, [ctx, content, state, settlement, panelMode]);
+  }, [ctx, content, state, settlement, panelMode, placing, choices]);
   useEffect(() => {
     viewRef.current?.setHighlights(highlights);
   }, [highlights]);
@@ -279,11 +328,28 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     [game, notify],
   );
 
+  /** Queues the item being placed on a tile (first if it was "Place", last if "+"). */
+  const place = useCallback(
+    (tile: number) => {
+      if (!placing || !settlement) return;
+      const item = { ...placing.item, tile };
+      const queue = placing.front
+        ? [item, ...settlement.queue.slice(1)]
+        : [...settlement.queue, item];
+      if (
+        act({ type: 'set_queue', player: ME, settlement: settlement.id, queue: queue.slice(0, 8) })
+      )
+        setPlacing(null);
+    },
+    [placing, settlement, act],
+  );
+
   const select = useCallback(
     (next: Selection, focus = false) => {
       setSelection(next);
       setPinned(null);
       setPanelMode('citizens');
+      setPlacing(null);
       if (!next || !focus) return;
       const tile =
         next.kind === 'unit'
@@ -363,6 +429,10 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
       const s = game.state;
       // A choice the selected settlement is making takes the click first.
       if (settlement && settlement.owner === ME) {
+        if (placing) {
+          if (choices.some((c) => c.tile === tile)) place(tile);
+          return;
+        }
         if (settlement.pendingDevelop > 0 && developCandidates(ctx, s, settlement).includes(tile)) {
           const improvement = improvementsFor(ctx, s, tile)[0]!;
           act({ type: 'develop_tile', player: ME, settlement: settlement.id, tile, improvement });
@@ -426,8 +496,10 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
       else if (e.key === 't') setOverlay({ kind: 'tree', tree: 'tech' });
       else if (e.key === 'c') setOverlay({ kind: 'tree', tree: 'civic' });
       else if (e.key === 'g') openGovernment();
-      else if (e.key === 'Escape') select(null);
-      else if (!unit || unit.owner !== ME) return;
+      else if (e.key === 'Escape') {
+        if (placing) setPlacing(null);
+        else select(null);
+      } else if (!unit || unit.owner !== ME) return;
       else if (e.key === ' ') {
         e.preventDefault();
         skip(unit.id);
@@ -437,7 +509,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [unit, act, doNext, select, skip, found, overlay, openGovernment]);
+  }, [unit, act, doNext, select, skip, found, overlay, openGovernment, placing]);
 
   const icon = (y: string) => content.entities.yield[y]?.icon ?? '';
   const inspected = selection?.kind === 'settlement' ? undefined : (pathTarget ?? inspect);
@@ -589,10 +661,20 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
           viewer={ME}
           id={settlement.id}
           mode={panelMode}
-          onMode={setPanelMode}
+          onMode={(m) => {
+            setPanelMode(m);
+            setPlacing(null);
+          }}
           act={act}
           onClose={() => select(null)}
           onFocusTile={(t) => setHover(t)}
+          placing={placing}
+          choices={choices}
+          onChoose={place}
+          onPlace={(p) => {
+            setPlacing(p);
+            if (p) setPanelMode('citizens');
+          }}
         />
       )}
 

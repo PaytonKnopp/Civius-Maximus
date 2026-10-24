@@ -34,6 +34,12 @@ export class LocalGame {
     return () => this.listeners.delete(listener);
   }
 
+  /** Replaces the whole game (loading a save, or a test setting up a scene) and tells listeners. */
+  load(state: GameState) {
+    this.state = state;
+    for (const fn of this.listeners) fn(this.state, []);
+  }
+
   /** Applies a player's action; on success, AI seats respond and listeners are told. */
   act(action: Action): ActionResult {
     const result = applyAction(this.state, action, this.ctx);

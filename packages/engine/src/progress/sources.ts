@@ -90,6 +90,76 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
   return out;
 }
 
+type Built = { localEffects: Effect[]; effects: Effect[]; name: string };
+
+/** What a settlement has built or chosen that can carry effects, with labels. */
+function builtThings(ctx: EngineContext, s: SettlementState): { id: string; def: Built }[] {
+  const e = ctx.content.entities;
+  const out: { id: string; def: Built }[] = [];
+  const add = (id: string, def: Built | undefined) => {
+    if (def) out.push({ id, def });
+  };
+  for (const id of s.buildings) add(id, e.building[id]);
+  for (const d of s.districts) add(d.id, e.district[d.id]);
+  for (const id of s.wonders) add(id, e.wonder[id]);
+  if (s.specialization) add(s.specialization, e.specialization[s.specialization]);
+  return out;
+}
+
+/** Effects that apply only inside one settlement (its buildings', districts', wonders' local
+ * effects and its town specialization). */
+export function localSources(ctx: EngineContext, s: SettlementState): EffectSource[] {
+  return builtThings(ctx, s)
+    .filter((x) => x.def.localEffects.length > 0)
+    .map((x) => ({
+      id: x.id,
+      label: resolveText(ctx.content, x.def.name),
+      effects: x.def.localEffects,
+    }));
+}
+
+const builtCache = new WeakMap<object, Map<PlayerId, EffectSource[]>>();
+
+/** Empire-wide effects from everything a player has built (wonders, the government plaza...). */
+export function builtSources(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+): EffectSource[] {
+  const frozen = Object.isFrozen(state.settlements);
+  const cached = frozen ? builtCache.get(state.settlements)?.get(player) : undefined;
+  if (cached) return cached;
+  const out: EffectSource[] = [];
+  const ids = Object.keys(state.settlements).sort(
+    (a, b) => Number(a.slice(1)) - Number(b.slice(1)),
+  );
+  for (const id of ids) {
+    const s = state.settlements[id]!;
+    if (s.owner !== player) continue;
+    for (const x of builtThings(ctx, s)) {
+      if (x.def.effects.length > 0)
+        out.push({ id: x.id, label: resolveText(ctx.content, x.def.name), effects: x.def.effects });
+    }
+  }
+  if (frozen) {
+    const byPlayer = builtCache.get(state.settlements) ?? new Map<PlayerId, EffectSource[]>();
+    byPlayer.set(player, out);
+    builtCache.set(state.settlements, byPlayer);
+  }
+  return out;
+}
+
+/** Every source that applies to a player's tiles and settlements (plus one settlement's own). */
+export function sourcesFor(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  settlement?: SettlementState,
+): EffectSource[] {
+  const base = [...activeSources(ctx, state.players[player]!), ...builtSources(ctx, state, player)];
+  return settlement ? [...base, ...localSources(ctx, settlement)] : base;
+}
+
 /** Effects of one type from a player's sources whose conditions hold (player-level context). */
 export function playerEffects<T extends Effect['effect']>(
   ctx: EngineContext,
@@ -101,7 +171,7 @@ export function playerEffects<T extends Effect['effect']>(
   const p = state.players[player]!;
   const facts = playerFacts(p);
   const out: { source: EffectSource; effect: Extract<Effect, { effect: T }> }[] = [];
-  for (const source of activeSources(ctx, p)) {
+  for (const source of sourcesFor(ctx, state, player, settlement)) {
     for (const effect of source.effects) {
       if (effect.effect !== type) continue;
       const ok =

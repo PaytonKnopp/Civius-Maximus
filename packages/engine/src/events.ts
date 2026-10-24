@@ -40,6 +40,15 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } & (
       improvement: string;
     }
   | { type: 'town_upgraded'; settlement: SettlementId; owner: PlayerId }
+  | {
+      type: 'wonder_completed';
+      settlement: SettlementId;
+      owner: PlayerId;
+      wonder: string;
+      tile: number;
+    }
+  /** Someone else finished a wonder this player was building: its production became gold. */
+  | { type: 'wonder_lost'; settlement: SettlementId; owner: PlayerId; wonder: string; gold: number }
   /** Production is waiting for a choice (the queue ran out). */
   | { type: 'production_idle'; settlement: SettlementId; owner: PlayerId }
   | { type: 'tech_researched'; player: PlayerId; tech: string }

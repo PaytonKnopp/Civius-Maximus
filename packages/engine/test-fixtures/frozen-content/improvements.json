@@ -17,7 +17,18 @@
       }
     ],
     "color": "#c9a74a",
-    "model": "farm"
+    "model": "farm",
+    "adjacency": [
+      {
+        "yield": "food",
+        "amount": 1,
+        "per": {
+          "improvement": "improvement_farm"
+        },
+        "every": 2,
+        "label": "Neighboring farms"
+      }
+    ]
   },
   {
     "type": "improvement",

@@ -1,6 +1,6 @@
-import { type Effect, resolveText, type YieldMap } from '@cx/content';
+import { type Adjacency, type Effect, resolveText, type YieldMap } from '@cx/content';
 import { type Fixed, formatFixed, percentOf, toFixed } from '../fixed';
-import { countAdjacent, evaluateCondition } from './conditions';
+import { countAdjacent, evaluateCondition, tileMatches } from './conditions';
 import type { TileContext } from './tile';
 
 /** Something that carries effects: a leader ability, a policy, a wonder, a belief... */
@@ -22,6 +22,13 @@ export interface YieldLine {
 export interface YieldBreakdown {
   total: Record<string, Fixed>;
   lines: Record<string, YieldLine[]>;
+}
+
+/** What one adjacency rule is worth on the context's tile (hundredths). */
+export function adjacencyBonus(ctx: TileContext, a: Adjacency): Fixed {
+  if (a.self) return tileMatches(ctx, ctx.tile, a.self) ? toFixed(a.amount) : 0;
+  if (!a.per) return 0;
+  return Math.floor(countAdjacent(ctx, a.per) / a.every) * toFixed(a.amount);
 }
 
 /** Whether a tile-scope effect applies to the context's tile (other scopes never do here). */
@@ -72,7 +79,15 @@ export function computeTileYields(
   if (tile.improvement) {
     const improvement = content.entities.improvement[tile.improvement];
     if (!improvement) throw new Error(`Unknown improvement "${tile.improvement}"`);
-    addMap(improvement.yields, improvement.id, resolveText(content, improvement.name));
+    const name = resolveText(content, improvement.name);
+    addMap(improvement.yields, improvement.id, name);
+    for (const a of improvement.adjacency) {
+      add(a.yield, {
+        source: improvement.id,
+        label: a.label ? `${name}: ${a.label}` : `${name} adjacency`,
+        amount: adjacencyBonus(ctx, a),
+      });
+    }
   }
 
   const percents: { yieldId: string; percent: number; source: EffectSource }[] = [];

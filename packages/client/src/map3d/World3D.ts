@@ -395,7 +395,18 @@ export class World3D implements MapRenderer {
 
   setSettlements(views: SettlementView[], territory: TerritoryView) {
     this.settlementData = { views, territory };
+    // No trees or rocks under settlements, districts and wonders, or where woods were cleared.
     const centers = new Set(views.map((v) => v.tile));
+    if (this.data) {
+      this.data.map.tiles.forEach((t, i) => {
+        if (
+          territory.districts[i] ||
+          territory.wonders[i] ||
+          (t.feature !== null && territory.features[i] === null)
+        )
+          centers.add(i);
+      });
+    }
     const changed = [...centers, ...this.cleared].filter(
       (t) => centers.has(t) !== this.cleared.has(t),
     );

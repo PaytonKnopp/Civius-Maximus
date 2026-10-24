@@ -57,6 +57,17 @@
     },
     "citizenYields": {
       "science": 0.5
+    },
+    "districts": {
+      "base": 1,
+      "populationPer": 3,
+      "neighborBonus": 0.5,
+      "costPerProgressPercent": 2
+    },
+    "specialization": {
+      "minPopulation": 5,
+      "changeCost": 50,
+      "sendRange": 10
     }
   },
   "elevation": {

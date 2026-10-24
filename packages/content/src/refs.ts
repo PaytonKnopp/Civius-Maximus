@@ -1,6 +1,6 @@
 import type { PathSegment } from './diagnostics';
-import type { Condition, Effect, TileMatch } from './schema/effects';
-import type { AnyEntity, EntityType, Goal } from './schema/entities';
+import type { Adjacency, Condition, Effect, TileMatch } from './schema/effects';
+import type { AnyEntity, EntityType, Goal, Placement } from './schema/entities';
 
 /** A field that points at other content. Checked after all packages and patches are loaded. */
 export interface Ref {
@@ -27,11 +27,33 @@ function yieldKeys(out: Refs, map: Record<string, number> | undefined, path: Pat
     out.push({ path: [...path, key], kind: 'yield', id: key });
 }
 
+/** A list of ids, or `true` meaning "any" (no reference). */
+const listOrAny = (v: string | string[] | true | undefined) => (v === true ? undefined : v);
+
 function tileMatch(out: Refs, m: TileMatch, path: PathSegment[]) {
   ids(out, 'terrain', m.terrain, [...path, 'terrain']);
   ids(out, 'feature', m.feature, [...path, 'feature']);
-  ids(out, 'resource', m.resource, [...path, 'resource']);
-  ids(out, 'improvement', m.improvement, [...path, 'improvement']);
+  ids(out, 'resource', listOrAny(m.resource), [...path, 'resource']);
+  ids(out, 'improvement', listOrAny(m.improvement), [...path, 'improvement']);
+  ids(out, 'district', listOrAny(m.district), [...path, 'district']);
+  ids(out, 'wonder', listOrAny(m.wonder), [...path, 'wonder']);
+}
+
+function adjacencyRefs(out: Refs, list: readonly Adjacency[], path: PathSegment[]) {
+  list.forEach((a, i) => {
+    out.push({ path: [...path, i, 'yield'], kind: 'yield', id: a.yield });
+    if (a.per) tileMatch(out, a.per, [...path, i, 'per']);
+    if (a.self) tileMatch(out, a.self, [...path, i, 'self']);
+  });
+}
+
+function placementRefs(out: Refs, p: Placement, path: PathSegment[]) {
+  ids(out, 'terrain', p.terrains, [...path, 'terrains']);
+  ids(out, 'feature', p.features, [...path, 'features']);
+  if (p.self) tileMatch(out, p.self, [...path, 'self']);
+  for (const key of ['nextTo', 'nextToAny', 'notNextTo'] as const) {
+    p[key].forEach((m, i) => tileMatch(out, m, [...path, key, i]));
+  }
 }
 
 function condition(out: Refs, c: Condition, path: PathSegment[]) {
@@ -65,6 +87,8 @@ export function effectRefs(out: Refs, e: Effect, path: PathSegment[]) {
     ids(out, 'unitClass', t.unitClass, [...at, 'unitClass']);
     ids(out, 'unit', t.unit, [...at, 'unit']);
     ids(out, 'building', t.building, [...at, 'building']);
+    ids(out, 'district', t.district, [...at, 'district']);
+    ids(out, 'wonder', t.wonder, [...at, 'wonder']);
   }
   if (e.condition) condition(out, e.condition, [...path, 'condition']);
 }
@@ -142,6 +166,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'improvement':
       requirements(out, entity);
+      adjacencyRefs(out, entity.adjacency, ['adjacency']);
       yieldKeys(out, entity.yields, ['yields']);
       ids(out, 'resource', entity.resources, ['resources']);
       entity.sites.forEach((site, i) => {
@@ -153,6 +178,36 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       yieldKeys(out, entity.yields, ['yields']);
       requirements(out, entity);
       ids(out, 'building', entity.requiresBuilding, ['requiresBuilding']);
+      ids(out, 'district', entity.district, ['district']);
+      effectList(out, entity.localEffects, ['localEffects']);
+      effectList(out, entity.effects, ['effects']);
+      break;
+    case 'district':
+      yieldKeys(out, entity.yields, ['yields']);
+      yieldKeys(out, entity.specialistYields, ['specialistYields']);
+      adjacencyRefs(out, entity.adjacency, ['adjacency']);
+      placementRefs(out, entity.placement, ['placement']);
+      effectList(out, entity.localEffects, ['localEffects']);
+      effectList(out, entity.effects, ['effects']);
+      requirements(out, entity);
+      break;
+    case 'wonder':
+      yieldKeys(out, entity.yields, ['yields']);
+      ids(out, 'era', entity.era, ['era']);
+      placementRefs(out, entity.placement, ['placement']);
+      effectList(out, entity.localEffects, ['localEffects']);
+      effectList(out, entity.effects, ['effects']);
+      requirements(out, entity);
+      break;
+    case 'project':
+      ids(out, 'feature', entity.clears, ['clears']);
+      yieldKeys(out, entity.reward, ['reward']);
+      requirements(out, entity);
+      break;
+    case 'specialization':
+      effectList(out, entity.localEffects, ['localEffects']);
+      effectList(out, entity.effects, ['effects']);
+      requirements(out, entity);
       break;
     case 'civ':
     case 'era':

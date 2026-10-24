@@ -8,6 +8,12 @@ export interface TileFacts {
   resource: string | null;
   /** An `improvement` content id (missing = none). */
   improvement?: string | null;
+  /** A `district` content id (missing = none). */
+  district?: string | null;
+  /** A `wonder` content id (missing = none). */
+  wonder?: string | null;
+  /** The tile is a settlement's center. */
+  center?: boolean;
   /** True if a river runs along any edge of the tile. */
   river: boolean;
   ownerId: string | null;

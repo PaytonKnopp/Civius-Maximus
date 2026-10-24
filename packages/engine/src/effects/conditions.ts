@@ -5,19 +5,34 @@ function oneOf<T>(value: T | null, wanted: T | readonly T[]): boolean {
   return value !== null && (Array.isArray(wanted) ? wanted.includes(value) : value === wanted);
 }
 
+/** No requirement (undefined), any value (true), or one of the listed ids. */
+function anyOrOneOf(value: string | null, wanted: string | string[] | true | undefined): boolean {
+  if (wanted === undefined) return true;
+  if (wanted === true) return value !== null;
+  return oneOf(value, wanted);
+}
+
 /** True if a tile matches every field set on `match`. */
 export function tileMatches(ctx: ConditionContext, tile: TileFacts, match: TileMatch): boolean {
   if (match.terrain !== undefined && !oneOf(tile.terrain, match.terrain)) return false;
   if (match.feature !== undefined && !oneOf(tile.feature, match.feature)) return false;
   if (match.elevation !== undefined && !oneOf<Elevation>(tile.elevation, match.elevation))
     return false;
-  if (match.resource !== undefined && !oneOf(tile.resource, match.resource)) return false;
+  if (
+    match.resource !== undefined &&
+    match.resource !== true &&
+    !oneOf(tile.resource, match.resource)
+  )
+    return false;
   if (match.resourceClass !== undefined) {
     const res = tile.resource === null ? undefined : ctx.content.entities.resource[tile.resource];
     if (res?.class !== match.resourceClass) return false;
   }
-  if (match.improvement !== undefined && !oneOf(tile.improvement ?? null, match.improvement))
-    return false;
+  if (match.resource === true && tile.resource === null) return false;
+  if (!anyOrOneOf(tile.improvement ?? null, match.improvement)) return false;
+  if (!anyOrOneOf(tile.district ?? null, match.district)) return false;
+  if (!anyOrOneOf(tile.wonder ?? null, match.wonder)) return false;
+  if (match.cityCenter !== undefined && (tile.center ?? false) !== match.cityCenter) return false;
   if (match.river !== undefined && tile.river !== match.river) return false;
   return true;
 }

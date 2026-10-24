@@ -5,7 +5,7 @@ import { Elevation, Id, ResourceClass, Text, YieldMap } from './common';
 const Range100 = z
   .tuple([z.int().min(0).max(100), z.int().min(0).max(100)])
   .refine(([lo, hi]) => lo <= hi, 'the first number must not be bigger than the second');
-import { Effect, SlotKind } from './effects';
+import { Adjacency, Effect, SlotKind, TileMatch } from './effects';
 
 /** Content that only becomes available with a tech or civic. */
 const requires = {
@@ -162,6 +162,22 @@ export const RulesDef = z.strictObject({
     citizenWeights: YieldMap,
     /** What every citizen adds on top of the tile it works (e.g. 0.5 science). */
     citizenYields: YieldMap,
+    districts: z.strictObject({
+      /** Specialty districts allowed: `base + floor((population − 1) / populationPer)`. */
+      base: z.int().min(0),
+      populationPer: z.int().min(1),
+      /** Each specialty district gets this much of its main yield per neighboring district. */
+      neighborBonus: z.number().multipleOf(0.5),
+      /** District cost rises this many percent for each tech and civic finished. */
+      costPerProgressPercent: z.int().min(0),
+    }),
+    specialization: z.strictObject({
+      minPopulation: z.int().min(1),
+      /** Gold to change a town's specialization (choosing the first one is free). */
+      changeCost: z.int().min(0),
+      /** Food or production is sent to the nearest city within this many tiles. */
+      sendRange: z.int().min(1),
+    }),
   }),
   elevation: z.strictObject({
     hills: z.strictObject({
@@ -417,9 +433,11 @@ export const ImprovementDef = z.strictObject({
       'generic',
     ])
     .default('generic'),
+  /** Bonuses from neighbors (e.g. farms next to farms). */
+  adjacency: z.array(Adjacency).default([]),
 });
 
-/** A building in a settlement. Districts arrive in M8; these sit in the settlement center. */
+/** A building in a settlement: in its center, or inside one of its districts. */
 export const BuildingDef = z.strictObject({
   type: z.literal('building'),
   id: Id,
@@ -440,6 +458,144 @@ export const BuildingDef = z.strictObject({
   cityOnly: z.boolean().default(false),
   /** Needs this building in the settlement first (e.g. a University needs a Library). */
   requiresBuilding: Id.optional(),
+  /** Built inside this district (the settlement needs it first). */
+  district: Id.optional(),
+  /** Effects on the settlement it's in. */
+  localEffects: z.array(Effect).default([]),
+  /** Effects on the whole empire. */
+  effects: z.array(Effect).default([]),
+  ...requires,
+});
+
+/** Where a district, wonder or project can go. A tile must pass every rule given. */
+const Placement = z.strictObject({
+  terrains: z.array(Id).min(1).optional(),
+  elevations: z.array(Elevation).min(1).default(['flat', 'hills']),
+  /** On water (e.g. a harbor) instead of land. */
+  water: z.boolean().default(false),
+  /** Features that may stay (others must be absent). Woods, rainforest and marsh are cleared. */
+  features: z.array(Id).optional(),
+  /** The tile itself must match this. */
+  self: TileMatch.optional(),
+  /** Each of these must match at least one neighbor. */
+  nextTo: z.array(TileMatch).default([]),
+  /** At least one neighbor must match one of these. */
+  nextToAny: z.array(TileMatch).default([]),
+  /** No neighbor may match any of these (e.g. an encampment can't touch the city center). */
+  notNextTo: z.array(TileMatch).default([]),
+});
+export type Placement = z.infer<typeof Placement>;
+const anyPlacement = {
+  elevations: ['flat', 'hills'] as ('flat' | 'hills' | 'mountain')[],
+  water: false,
+  nextTo: [],
+  nextToAny: [],
+  notNextTo: [],
+};
+
+/** A district: a tile of specialized buildings with adjacency bonuses (docs/03, section 9). */
+export const DistrictDef = z.strictObject({
+  type: z.literal('district'),
+  id: Id,
+  name: Text,
+  description: Text.optional(),
+  icon: z.string().min(1).max(3),
+  /** Base production cost (rises as you progress through the trees). */
+  cost: z.int().min(1),
+  /** Flat yields to the settlement. */
+  yields: YieldMap.default({}),
+  adjacency: z.array(Adjacency).default([]),
+  /** Counts toward the district limit and gets the bonus for neighboring districts. */
+  specialty: z.boolean().default(true),
+  /** Only one in the whole empire (e.g. a government plaza). */
+  onePerEmpire: z.boolean().default(false),
+  happiness: z.int().default(0),
+  placement: Placement.default(anyPlacement),
+  /** Each building in the district adds one specialist slot; a specialist yields this. */
+  specialistYields: YieldMap.default({}),
+  localEffects: z.array(Effect).default([]),
+  effects: z.array(Effect).default([]),
+  ...requires,
+  model: z
+    .enum([
+      'campus',
+      'holy_site',
+      'theater',
+      'commercial',
+      'harbor',
+      'industrial',
+      'encampment',
+      'entertainment',
+      'aqueduct',
+      'plaza',
+      'generic',
+    ])
+    .default('generic'),
+  /** Accent color for the map and UI. */
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #5fb8f0'),
+});
+
+/** A world wonder: one per world, a big bonus for its builder. */
+export const WonderDef = z.strictObject({
+  type: z.literal('wonder'),
+  id: Id,
+  name: Text,
+  description: Text,
+  icon: z.string().min(1).max(3),
+  cost: z.int().min(1),
+  era: Id,
+  /** Yields to the settlement that built it. */
+  yields: YieldMap.default({}),
+  happiness: z.int().default(0),
+  placement: Placement.default(anyPlacement),
+  localEffects: z.array(Effect).default([]),
+  effects: z.array(Effect).default([]),
+  ...requires,
+  model: z
+    .enum([
+      'pyramid',
+      'gardens',
+      'stones',
+      'temple',
+      'library',
+      'statue',
+      'arena',
+      'rock_city',
+      'generic',
+    ])
+    .default('generic'),
+});
+
+/** A one-off city project on a tile (e.g. clearing woods for a burst of production). */
+export const ProjectDef = z.strictObject({
+  type: z.literal('project'),
+  id: Id,
+  name: Text,
+  description: Text,
+  icon: z.string().min(1).max(3),
+  cost: z.int().min(1),
+  /** Removes any of these features from the chosen tile. */
+  clears: z.array(Id).min(1),
+  /** One-time reward: food to the settlement's store, production to its next item, gold... */
+  reward: YieldMap.default({}),
+  ...requires,
+});
+
+/** A town specialization (docs/03, "Towns vs Cities"): one at a time, from a minimum size. */
+export const SpecializationDef = z.strictObject({
+  type: z.literal('specialization'),
+  id: Id,
+  name: Text,
+  description: Text,
+  icon: z.string().min(1).max(3),
+  /** Effects on the town itself. */
+  localEffects: z.array(Effect).default([]),
+  /** Effects on the whole empire. */
+  effects: z.array(Effect).default([]),
+  /** Share of the town's food or production sent to its nearest city each turn. */
+  send: z
+    .strictObject({ yield: z.enum(['food', 'production']), percent: z.int().min(1).max(100) })
+    .optional(),
   ...requires,
 });
 
@@ -567,6 +723,10 @@ export const ENTITY_SCHEMAS = {
   improvement: ImprovementDef,
   building: BuildingDef,
   civ: CivDef,
+  district: DistrictDef,
+  wonder: WonderDef,
+  project: ProjectDef,
+  specialization: SpecializationDef,
   era: EraDef,
   tech: TechDef,
   civic: CivicDef,
@@ -596,6 +756,10 @@ export type ImprovementDef = z.infer<typeof ImprovementDef>;
 export type BuildingDef = z.infer<typeof BuildingDef>;
 export type CivDef = z.infer<typeof CivDef>;
 export type EraDef = z.infer<typeof EraDef>;
+export type DistrictDef = z.infer<typeof DistrictDef>;
+export type WonderDef = z.infer<typeof WonderDef>;
+export type ProjectDef = z.infer<typeof ProjectDef>;
+export type SpecializationDef = z.infer<typeof SpecializationDef>;
 export type TechDef = z.infer<typeof TechDef>;
 export type CivicDef = z.infer<typeof CivicDef>;
 export type GovernmentDef = z.infer<typeof GovernmentDef>;
@@ -616,6 +780,10 @@ export interface EntityByType {
   improvement: ImprovementDef;
   building: BuildingDef;
   civ: CivDef;
+  district: DistrictDef;
+  wonder: WonderDef;
+  project: ProjectDef;
+  specialization: SpecializationDef;
   era: EraDef;
   tech: TechDef;
   civic: CivicDef;

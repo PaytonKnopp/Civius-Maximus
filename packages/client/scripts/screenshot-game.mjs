@@ -48,7 +48,7 @@ await page.screenshot({ path: `${out}/game-founded.png` });
 // Play turns: skip units, take growth choices, keep building, end the turn.
 let developShot = false;
 const shots = new Set();
-for (let guard = 0; guard < 200 && (await turn(page)) < TURNS; guard++) {
+for (let guard = 0; guard < TURNS * 15 && (await turn(page)) < TURNS; guard++) {
   const next = await label(page);
   if (next === 'End turn') {
     await page.keyboard.press('Enter');
@@ -64,13 +64,33 @@ for (let guard = 0; guard < 200 && (await turn(page)) < TURNS; guard++) {
     await page.click('.develop .choices button');
   } else if (next === 'Choose production') {
     await page.keyboard.press('Enter');
-    await page.click('.items li button:has-text("Build")');
+    await page.waitForSelector('.items li');
+    // Place a district when one is available (once), otherwise build the first thing.
+    const place = await page.$(
+      '.item-group:has(h5:has-text("Districts")) button:has-text("Place")',
+    );
+    if (place && !shots.has('place')) {
+      await place.click();
+      await page.waitForSelector('.placement .choices button');
+      await page.waitForTimeout(600);
+      await page.screenshot({ path: `${out}/game-place.png` });
+      shots.add('place');
+      console.log('place:', (await page.textContent('.placement .choices button'))?.trim());
+      await page.click('.placement .choices button');
+    } else {
+      await page.click('.items li button:has-text("Build")');
+    }
   } else if (next === 'Choose research' || next === 'Choose a civic') {
     await page.keyboard.press('Enter');
     await page.waitForSelector('.tree-node.available');
     const tree = next === 'Choose research' ? 'tech' : 'civic';
     // Aim a few steps ahead, so the path queues up.
-    const target = (await page.$('.tree-node.locked')) ?? (await page.$('.tree-node.available'));
+    // (Writing first, for the Campus.)
+    const target =
+      (tree === 'tech' &&
+        (await page.$('.tree-node:not(.done):has(.node-name:text-is("Writing"))'))) ||
+      (await page.$('.tree-node.locked')) ||
+      (await page.$('.tree-node.available'));
     await target.click();
     if (!shots.has(tree)) {
       await page.waitForTimeout(300);

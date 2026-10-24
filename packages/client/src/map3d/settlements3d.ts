@@ -1,22 +1,16 @@
 import {
-  BoxGeometry,
   BufferGeometry,
   CanvasTexture,
   Color,
-  ConeGeometry,
-  CylinderGeometry,
-  DodecahedronGeometry,
   DoubleSide,
   Euler,
   Float32BufferAttribute,
   Group,
-  IcosahedronGeometry,
   Matrix4,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
   Quaternion,
-  SphereGeometry,
   Sprite,
   SpriteMaterial,
   SRGBColorSpace,
@@ -24,6 +18,8 @@ import {
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { SettlementView, TerritoryView, TileHighlight } from '../map/renderer';
+import { districtParts, wonderParts } from './districts3d';
+import { G, house, part, scaled, seeded } from './parts';
 
 /**
  * Settlements in the 3D world: clusters of houses that grow with population (a keep for cities,
@@ -40,98 +36,6 @@ export interface SettlementWorld {
   wrap(): boolean;
   /** Fog level per tile: 2 visible, 1 remembered, 0 unexplored. */
   fog(tile: number): number;
-}
-
-// --- Geometry helpers ------------------------------------------------------------------------
-
-const tmp = new Matrix4();
-const q = new Quaternion();
-const yAxis = new Vector3(0, 1, 0);
-
-/** A geometry part, placed and colored, ready to merge (position + normal + color only). */
-function part(
-  g: BufferGeometry,
-  color: number | Color,
-  x = 0,
-  y = 0,
-  z = 0,
-  rotY = 0,
-  scale = 1,
-): BufferGeometry {
-  const out = g.index ? g.toNonIndexed() : g.clone();
-  out.deleteAttribute('uv');
-  q.setFromAxisAngle(yAxis, rotY);
-  out.applyMatrix4(tmp.compose(new Vector3(x, y, z), q, new Vector3(scale, scale, scale)));
-  const c = color instanceof Color ? color : new Color(color);
-  const n = out.getAttribute('position').count;
-  const colors = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) colors.set([c.r, c.g, c.b], i * 3);
-  out.setAttribute('color', new Float32BufferAttribute(colors, 3));
-  return out;
-}
-
-/** Deterministic pseudo-random numbers from a seed (so a town looks the same every frame). */
-function seeded(seed: number) {
-  let s = (seed * 2654435761) >>> 0 || 1;
-  return () => {
-    s ^= s << 13;
-    s ^= s >>> 17;
-    s ^= s << 5;
-    return ((s >>> 0) % 10000) / 10000;
-  };
-}
-
-const G = {
-  box: new BoxGeometry(1, 1, 1),
-  roof: new ConeGeometry(0.75, 1, 4).rotateY(Math.PI / 4),
-  cyl: new CylinderGeometry(1, 1, 1, 8),
-  cone: new ConeGeometry(1, 1, 8),
-  dome: new SphereGeometry(1, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2),
-  rock: new DodecahedronGeometry(1, 0),
-  bush: new IcosahedronGeometry(1, 0),
-};
-
-const WALLS = [0xa89679, 0x9c8a6e, 0xb3a385, 0x8f7f66];
-const ROOFS = [0x7a3f2c, 0x6b3a2a, 0x845034, 0x5e4a3c];
-
-function house(
-  parts: BufferGeometry[],
-  x: number,
-  y: number,
-  z: number,
-  rot: number,
-  r: () => number,
-  big = 1,
-) {
-  const w = (0.09 + r() * 0.05) * big;
-  const d = (0.08 + r() * 0.04) * big;
-  const h = (0.06 + r() * 0.04) * big;
-  const wall = WALLS[Math.floor(r() * WALLS.length)]!;
-  const roof = ROOFS[Math.floor(r() * ROOFS.length)]!;
-  parts.push(
-    scaled(G.box, wall, x, y + h / 2, z, w, h, d, rot),
-    scaled(G.roof, roof, x, y + h + h * 0.45, z, w * 0.95, h * 0.9, d * 0.95, rot),
-  );
-}
-
-function scaled(
-  g: BufferGeometry,
-  color: number,
-  x: number,
-  y: number,
-  z: number,
-  sx: number,
-  sy: number,
-  sz: number,
-  rot = 0,
-) {
-  return part(g, color).applyMatrix4(
-    new Matrix4().compose(
-      new Vector3(x, y, z),
-      new Quaternion().setFromAxisAngle(yAxis, rot),
-      new Vector3(sx, sy, sz),
-    ),
-  );
 }
 
 /** The buildings of one settlement, around its center tile at (cx, cz). */
@@ -425,6 +329,8 @@ const TONES: Record<TileHighlight['tone'], number> = {
   buy: 0xd4a94e,
   worked: 0xe8dcc0,
   selected: 0xe6c070,
+  place: 0x7fc3e8,
+  planned: 0xb49ce0,
 };
 
 const labelCache = new Map<string, SpriteMaterial>();
@@ -592,7 +498,8 @@ export class SettlementLayer {
             .neighbors(t)
             .map((n) => (ownerOf(n) === view.owner ? 1 : 0))
             .join('');
-          return `${t}:${territory.improvements[t] ?? ''}:${this.world.fog(t)}:${ns}`;
+          const built = territory.districts[t]?.model ?? territory.wonders[t]?.model ?? '';
+          return `${t}:${territory.improvements[t] ?? ''}:${built}:${this.world.fog(t)}:${ns}`;
         })
         .join('|');
       const key = `${JSON.stringify(view)}#${this.world.fog(view.tile)}#${sig}`;
@@ -627,10 +534,15 @@ export class SettlementLayer {
     // Buildings and improvements: one merged mesh.
     const parts: BufferGeometry[] = centerKnown ? settlementParts(view, cx, cz, height) : [];
     for (const t of tiles) {
-      const model = territory.improvements[t];
-      if (!model || t === view.tile) continue;
+      if (t === view.tile) continue;
       const [x, z] = this.world.center(t);
-      parts.push(...improvementParts(model, x, z, Math.max(0, height(x, z)) - 0.005, t));
+      const ground = Math.max(0, height(x, z)) - 0.005;
+      const district = territory.districts[t];
+      const wonder = territory.wonders[t];
+      const model = territory.improvements[t];
+      if (district) parts.push(...districtParts(district.model, district.color, x, z, ground, t));
+      else if (wonder) parts.push(...wonderParts(wonder.model, x, z, ground, t));
+      else if (model) parts.push(...improvementParts(model, x, z, ground, t));
     }
     if (parts.length > 0) {
       const merged = mergeGeometries(parts);

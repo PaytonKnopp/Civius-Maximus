@@ -5,7 +5,12 @@ const UnitRef = z.string().regex(/^u\d+$/);
 const TileRef = z.int().min(0).max(1_000_000);
 const SettlementRef = z.string().regex(/^s\d+$/);
 const ContentRef = z.string().regex(/^[a-z][a-z0-9_]*$/);
-const BuildItem = z.strictObject({ kind: z.enum(['unit', 'building']), id: ContentRef });
+const BuildItem = z.strictObject({
+  kind: z.enum(['unit', 'building', 'district', 'wonder', 'project']),
+  id: ContentRef,
+  /** Districts, wonders and projects go on a tile. */
+  tile: TileRef.optional(),
+});
 const Focus = z.enum(['balanced', 'food', 'production', 'gold', 'science', 'culture', 'faith']);
 
 /**
@@ -87,6 +92,13 @@ export const Action = z.discriminatedUnion('type', [
       diplomatic: z.array(ContentRef).max(8),
       wildcard: z.array(ContentRef).max(8),
     }),
+  }),
+  /** Pick (or change, for gold) a town's specialization; null clears it. */
+  z.strictObject({
+    type: z.literal('set_specialization'),
+    player: PlayerRef,
+    settlement: SettlementRef,
+    specialization: ContentRef.nullable(),
   }),
   z.strictObject({
     type: z.literal('rename_settlement'),

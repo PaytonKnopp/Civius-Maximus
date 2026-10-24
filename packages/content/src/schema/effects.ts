@@ -12,15 +12,23 @@ const tileMatchShape = {
   terrain: IdOrIds.optional(),
   feature: IdOrIds.optional(),
   elevation: z.union([Elevation, z.array(Elevation).min(1)]).optional(),
-  resource: IdOrIds.optional(),
+  /** These resources, or `true` for any resource. */
+  resource: z.union([IdOrIds, z.literal(true)]).optional(),
   resourceClass: ResourceClass.optional(),
-  improvement: IdOrIds.optional(),
+  /** These improvements, or `true` for any improvement. */
+  improvement: z.union([IdOrIds, z.literal(true)]).optional(),
+  /** These districts, or `true` for any district. */
+  district: z.union([IdOrIds, z.literal(true)]).optional(),
+  /** These wonders, or `true` for any wonder. */
+  wonder: z.union([IdOrIds, z.literal(true)]).optional(),
+  /** A settlement's center tile. */
+  cityCenter: z.boolean().optional(),
   river: z.boolean().optional(),
 };
 const matchesSomething = (m: object) =>
   Object.keys(m).some((k) => k !== 'min' && k in tileMatchShape);
 const NEEDS_FIELD =
-  'must match on at least one of: terrain, feature, elevation, resource, resourceClass, improvement, river';
+  'must match on at least one of: terrain, feature, elevation, resource, resourceClass, improvement, district, wonder, cityCenter, river';
 
 export const TileMatch = z.strictObject(tileMatchShape).refine(matchesSomething, NEEDS_FIELD);
 export type TileMatch = z.infer<typeof TileMatch>;
@@ -136,10 +144,12 @@ const ModifyProduction = z.strictObject({
     percent: Percent,
     toward: z
       .strictObject({
-        kind: z.enum(['unit', 'building']).optional(),
+        kind: z.enum(['unit', 'building', 'district', 'wonder', 'project']).optional(),
         unitClass: IdOrIds.optional(),
         unit: IdOrIds.optional(),
         building: IdOrIds.optional(),
+        district: IdOrIds.optional(),
+        wonder: IdOrIds.optional(),
       })
       .default({}),
   }),
@@ -196,6 +206,26 @@ const EnableEmbark = z.strictObject({
   target: PlayerTarget,
   condition: Condition.optional(),
 });
+
+/**
+ * An adjacency bonus: `amount` of `yield` for every `every` neighboring tiles matching `per`
+ * (or, with `self`, once if the tile itself matches). Used by improvements, districts, wonders.
+ */
+export const Adjacency = z
+  .strictObject({
+    yield: Id,
+    amount: Amount,
+    per: TileMatch.optional(),
+    self: TileMatch.optional(),
+    every: z.int().min(1).max(6).default(1),
+    /** Shown in breakdowns ("Mountains"). */
+    label: z.string().min(1).optional(),
+  })
+  .refine(
+    (a) => (a.per === undefined) !== (a.self === undefined),
+    'needs exactly one of per or self',
+  );
+export type Adjacency = z.infer<typeof Adjacency>;
 
 export const Effect = z.discriminatedUnion('effect', [
   ModifyYield,

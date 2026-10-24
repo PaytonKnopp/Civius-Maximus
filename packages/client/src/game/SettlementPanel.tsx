@@ -5,6 +5,8 @@ import {
   type BuildItem,
   type CitizenFocus,
   developCandidates,
+  districtLimit,
+  districtYields,
   type EngineContext,
   formatFixed,
   type GameState,
@@ -12,16 +14,40 @@ import {
   improvementsFor,
   itemCost,
   itemKey,
+  isBuyable,
   type Line,
+  needsTile,
   type PlayerId,
   productionToward,
   purchaseCost,
   townUpgradeCost,
   validateAction,
 } from '@cx/engine';
-import { itemName, settlementSummary, showTurns, tileName, turnsFor, whole } from './model';
+import {
+  itemName,
+  settlementSummary,
+  showTurns,
+  tileName,
+  turnsFor,
+  whole,
+  yieldLabel,
+} from './model';
 
 export type PanelMode = 'citizens' | 'buy';
+
+/** A district, wonder or project waiting for its tile; `front` builds it next. */
+export interface Placing {
+  item: BuildItem;
+  front: boolean;
+}
+
+const GROUPS: { kind: BuildItem['kind']; title: string }[] = [
+  { kind: 'unit', title: 'Units' },
+  { kind: 'building', title: 'Buildings' },
+  { kind: 'district', title: 'Districts' },
+  { kind: 'wonder', title: 'Wonders' },
+  { kind: 'project', title: 'Projects' },
+];
 
 const YIELDS = ['food', 'production', 'gold', 'science', 'culture', 'faith'];
 const FOCUSES: CitizenFocus[] = [
@@ -47,6 +73,11 @@ interface Props {
   act: (action: Action) => boolean;
   onClose: () => void;
   onFocusTile: (tile: number) => void;
+  placing: Placing | null;
+  onPlace: (placing: Placing | null) => void;
+  /** Where the item being placed could go, best first. */
+  choices: { tile: number; label: string }[];
+  onChoose: (tile: number) => void;
 }
 
 /** The settlement screen: growth, yields, happiness, production, growth choices and citizens. */
@@ -60,6 +91,10 @@ export function SettlementPanel({
   act,
   onClose,
   onFocusTile,
+  placing,
+  onPlace,
+  choices,
+  onChoose,
 }: Props) {
   const { content } = ctx;
   const s = state.settlements[id]!;
@@ -83,6 +118,13 @@ export function SettlementPanel({
       ].slice(0, 8),
     );
   const enqueue = (item: BuildItem) => setQueue([...s.queue, item].slice(0, 8));
+  const items = availableItems(ctx, state, s);
+  const isSpecialty = (id: string) => content.entities.district[id]?.specialty ?? false;
+  const specialtyCount =
+    s.districts.filter((d) => isSpecialty(d.id)).length +
+    s.queue.filter((q) => q.kind === 'district' && isSpecialty(q.id)).length;
+  const spec = content.rules.settlements.specialization;
+  const specialists = Object.entries(s.specialists).filter(([, n]) => n > 0);
 
   const foodPct = Math.min(100, Math.max(0, (s.food / sum.foodNeeded) * 100));
   const growthText =
@@ -211,8 +253,12 @@ export function SettlementPanel({
           {s.queue.length > 1 && (
             <ol className="queue">
               {s.queue.slice(1).map((q, i) => (
-                <li key={`${itemKey(q)}:${i}`}>
+                <li
+                  key={`${itemKey(q)}:${i}`}
+                  onMouseEnter={() => q.tile !== undefined && onFocusTile(q.tile)}
+                >
                   {itemName(content, q)}
+                  {q.tile !== undefined && <span className="muted"> 📍</span>}
                   <button
                     type="button"
                     className="link"
@@ -243,66 +289,169 @@ export function SettlementPanel({
           >
             Upgrade to city · {icon('gold')} {whole(townUpgradeCost(ctx, state, viewer))}
           </button>
+          <h4>Specialization</h4>
+          <p className="hint">
+            {s.population < spec.minPopulation
+              ? `At ${spec.minPopulation} citizens a town can specialize.`
+              : s.specializationChanges > 0
+                ? `Changing it costs ${icon('gold')} ${spec.changeCost}.`
+                : 'The first choice is free.'}
+          </p>
+          <ul className="choices specs">
+            {content.ids.specialization.map((sid) => {
+              const def = content.entities.specialization[sid]!;
+              const action: Action = {
+                type: 'set_specialization',
+                player: viewer,
+                settlement: id,
+                specialization: sid,
+              };
+              const on = s.specialization === sid;
+              return (
+                <li key={sid}>
+                  <button
+                    type="button"
+                    className={on ? 'on' : ''}
+                    aria-pressed={on}
+                    disabled={!on && !can(action)}
+                    title={on ? 'Current specialization' : why(action)}
+                    onClick={() => !on && act(action)}
+                  >
+                    <span>
+                      <strong>{resolveText(content, def.name)}</strong>
+                      <span className="spec-text">{resolveText(content, def.description)}</span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </section>
       )}
 
       {mine && (
         <section aria-label={s.kind === 'city' ? 'Build or buy' : 'Buy'}>
           <h4>{s.kind === 'city' ? 'Build or buy' : 'Buy'}</h4>
-          <ul className="items">
-            {availableItems(ctx, state, s).map((item) => {
-              const cost = itemCost(ctx, item);
-              const progress = s.progress[itemKey(item)] ?? 0;
-              const buy: Action = { type: 'buy_item', player: viewer, settlement: id, item };
-              return (
-                <li key={itemKey(item)}>
-                  <span className="item-name">
-                    {itemName(content, item)}
-                    {s.kind === 'city' && (
-                      <span className="muted mono">
-                        {' '}
-                        {whole(cost)}⚙ ·{' '}
-                        {showTurns(
-                          turnsFor(
-                            cost,
-                            progress,
-                            productionToward(ctx, state, s, item, production),
-                          ),
-                        )}
-                        t
-                      </span>
-                    )}
-                  </span>
-                  {s.kind === 'city' && (
-                    <>
-                      <button type="button" onClick={() => build(item)} title="Build this next">
-                        Build
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => enqueue(item)}
-                        title="Add to the queue"
-                        aria-label={`Queue ${itemName(content, item)}`}
-                      >
-                        +
-                      </button>
-                    </>
+          {placing && (
+            <div className="placement" aria-label="Choose a tile">
+              <p className="callout place">
+                Pick a highlighted tile for {itemName(content, placing.item)}, or one here.{' '}
+                <button type="button" className="link" onClick={() => onPlace(null)}>
+                  Cancel
+                </button>
+              </p>
+              <ul className="choices">
+                {choices.slice(0, 6).map((c) => (
+                  <li key={c.tile}>
+                    <button
+                      type="button"
+                      onMouseEnter={() => onFocusTile(c.tile)}
+                      onClick={() => onChoose(c.tile)}
+                    >
+                      <span>{tileName(content, state.map.tiles[c.tile]!)}</span>
+                      <span className="mono">{c.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {GROUPS.map(({ kind, title }) => {
+            const group = items.filter((item) => item.kind === kind);
+            if (group.length === 0) return null;
+            return (
+              <div key={kind} className="item-group">
+                <h5>
+                  {title}
+                  {kind === 'district' && (
+                    <span
+                      className="muted mono"
+                      title="Specialty districts built and queued, out of what this size allows"
+                    >
+                      {' '}
+                      {specialtyCount}/{districtLimit(ctx, s)}
+                    </span>
                   )}
-                  <button
-                    type="button"
-                    disabled={!can(buy)}
-                    title={
-                      why(buy) ??
-                      `Buy now for ${whole(purchaseCost(ctx, state, viewer, item))} gold`
-                    }
-                    onClick={() => act(buy)}
-                  >
-                    {icon('gold')} {whole(purchaseCost(ctx, state, viewer, item))}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+                </h5>
+                <ul className="items">
+                  {group.map((item) => {
+                    const cost = itemCost(ctx, state, viewer, item);
+                    const progress = s.progress[itemKey(item)] ?? 0;
+                    const buy: Action = { type: 'buy_item', player: viewer, settlement: id, item };
+                    const tiled = needsTile(item);
+                    const def =
+                      kind === 'district'
+                        ? content.entities.district[item.id]
+                        : kind === 'wonder'
+                          ? content.entities.wonder[item.id]
+                          : undefined;
+                    const placingThis = placing?.item.id === item.id;
+                    return (
+                      <li
+                        key={itemKey(item)}
+                        className={placingThis ? 'placing' : ''}
+                        title={def?.description ? resolveText(content, def.description) : undefined}
+                      >
+                        <span className="item-name">
+                          {itemName(content, item)}
+                          {s.kind === 'city' && (
+                            <span className="muted mono">
+                              {' '}
+                              {whole(cost)}⚙ ·{' '}
+                              {showTurns(
+                                turnsFor(
+                                  cost,
+                                  progress,
+                                  productionToward(ctx, state, s, item, production),
+                                ),
+                              )}
+                              t
+                            </span>
+                          )}
+                        </span>
+                        {s.kind === 'city' && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => (tiled ? onPlace({ item, front: true }) : build(item))}
+                              title={tiled ? 'Pick a tile, then build it next' : 'Build this next'}
+                            >
+                              {tiled ? 'Place' : 'Build'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                tiled ? onPlace({ item, front: false }) : enqueue(item)
+                              }
+                              title={
+                                tiled ? 'Pick a tile, then add it to the queue' : 'Add to the queue'
+                              }
+                              aria-label={`Queue ${itemName(content, item)}`}
+                            >
+                              +
+                            </button>
+                          </>
+                        )}
+                        {isBuyable(item) && (
+                          <button
+                            type="button"
+                            disabled={!can(buy)}
+                            title={
+                              why(buy) ??
+                              `Buy now for ${whole(purchaseCost(ctx, state, viewer, item))} gold`
+                            }
+                            onClick={() => act(buy)}
+                          >
+                            {icon('gold')} {whole(purchaseCost(ctx, state, viewer, item))}
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
         </section>
       )}
 
@@ -342,6 +491,41 @@ export function SettlementPanel({
               ? `You have ${whole(gold)} gold. Pick a marked tile to buy it.`
               : 'Click a tile in the territory to keep a citizen working it.'}
           </p>
+          {specialists.length > 0 && (
+            <p className="buildings" title="Citizens working as specialists in districts">
+              Specialists:{' '}
+              {specialists
+                .map(
+                  ([d, n]) =>
+                    `${n} in ${resolveText(content, content.entities.district[d]?.name ?? d)}`,
+                )
+                .join(' · ')}
+            </p>
+          )}
+          {(s.districts.length > 0 || s.wonders.length > 0) && (
+            <ul className="districts">
+              {s.districts.map((d) => {
+                const def = content.entities.district[d.id]!;
+                return (
+                  <li
+                    key={d.id}
+                    onMouseEnter={() => onFocusTile(d.tile)}
+                    style={{ borderColor: def.color }}
+                  >
+                    {resolveText(content, def.name)}{' '}
+                    <span className="mono">
+                      {yieldLabel(content, districtYields(ctx, state, d.tile, d.id).total)}
+                    </span>
+                  </li>
+                );
+              })}
+              {s.wonders.map((w) => (
+                <li key={w} className="wonder">
+                  ✦ {resolveText(content, content.entities.wonder[w]?.name ?? w)}
+                </li>
+              ))}
+            </ul>
+          )}
           {s.buildings.length > 0 && (
             <p className="buildings">
               {s.buildings

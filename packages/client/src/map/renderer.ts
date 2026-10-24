@@ -56,12 +56,18 @@ export interface TerritoryView {
   settlement: (string | null)[];
   /** Improvement model per tile (see the content's `improvement.model`), or null. */
   improvements: (string | null)[];
+  /** District per tile: its model, accent color and short icon, or null. */
+  districts: ({ model: string; color: number; icon: string } | null)[];
+  /** Wonder per tile: its model and short icon, or null. */
+  wonders: ({ model: string; icon: string } | null)[];
+  /** Each tile's feature now (woods can be cleared during the game). */
+  features: (string | null)[];
 }
 
 /** A tile marked for a choice: developing it, buying it... `label` is drawn on the tile. */
 export interface TileHighlight {
   tile: number;
-  tone: 'develop' | 'buy' | 'worked' | 'selected';
+  tone: 'develop' | 'buy' | 'worked' | 'selected' | 'place' | 'planned';
   label?: string;
 }
 

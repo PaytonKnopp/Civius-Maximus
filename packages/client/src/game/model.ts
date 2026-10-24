@@ -3,6 +3,7 @@ import {
   availableNodes,
   availablePolicies,
   type BuildItem,
+  districtYields,
   type EngineContext,
   goldPerTurn,
   growthPerTurn,
@@ -14,6 +15,7 @@ import {
   type MapTile,
   type PlayerId,
   percentOf,
+  placementTiles,
   policySlots,
   productionToward,
   SLOT_KINDS,
@@ -22,6 +24,7 @@ import {
   settlementIds,
   settlementsOf,
   settlementYields,
+  toFixed,
   unitClassOf,
   unitDef,
   unitIds,
@@ -101,8 +104,20 @@ export function territoryView(
         ? null
         : (ctx.content.entities.improvement[t.improvement]?.model ?? 'generic'),
     ),
+    districts: state.map.tiles.map((t, i) => {
+      const def = fog[i] === 0 || t.district === null ? undefined : districtDef(ctx, t.district);
+      return def ? { model: def.model, color: hex(def.color), icon: def.icon } : null;
+    }),
+    wonders: state.map.tiles.map((t, i) => {
+      const def =
+        fog[i] === 0 || t.wonder === null ? undefined : ctx.content.entities.wonder[t.wonder];
+      return def ? { model: def.model, icon: def.icon } : null;
+    }),
+    features: state.map.tiles.map((t) => t.feature),
   };
 }
+
+const districtDef = (ctx: EngineContext, id: string) => ctx.content.entities.district[id];
 
 /** "Plains Hills · Woods", "Coast", "Mountain"... */
 export function tileName(content: CompiledContent, t: MapTile): string {
@@ -123,6 +138,58 @@ export function tileName(content: CompiledContent, t: MapTile): string {
 export function itemName(content: CompiledContent, item: BuildItem): string {
   const def = itemDef({ content }, item);
   return def ? resolveText(content, def.name) : item.id;
+}
+
+/** Yields as a short label: "+2🔬 +1💰" (fixed-point amounts, zeroes left out). */
+export function yieldLabel(content: CompiledContent, yields: Record<string, number>): string {
+  return Object.entries(yields)
+    .filter(([, v]) => v !== 0)
+    .map(
+      ([y, v]) => `${v > 0 ? '+' : ''}${formatAmount(v)}${content.entities.yield[y]?.icon ?? ''}`,
+    )
+    .join(' ');
+}
+
+const formatAmount = (n: number) => {
+  const v = n / 100;
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
+};
+
+/**
+ * Where a district, wonder or project could go, with what each tile would give: a district's
+ * yields from adjacency, a project's reward, a wonder's name.
+ */
+export function placementChoices(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+  item: BuildItem,
+): { tile: number; label: string; score: number }[] {
+  const kind = item.kind as 'district' | 'wonder' | 'project';
+  const { content } = ctx;
+  const sum = (y: Record<string, number>) => Object.values(y).reduce((a, b) => a + b, 0);
+  return placementTiles(ctx, state, s, kind, item.id)
+    .map((tile) => {
+      if (kind === 'district') {
+        const total = districtYields(ctx, state, tile, item.id).total;
+        const def = content.entities.district[item.id]!;
+        const main =
+          def.adjacency[0]?.yield ??
+          Object.keys(def.specialistYields)[0] ??
+          Object.keys(def.yields)[0];
+        const none = main
+          ? `+0${content.entities.yield[main]?.icon ?? ''}`
+          : itemName(content, item);
+        return { tile, label: yieldLabel(content, total) || none, score: sum(total) };
+      }
+      if (kind === 'project') {
+        const reward = content.entities.project[item.id]?.reward ?? {};
+        const fixed = Object.fromEntries(Object.entries(reward).map(([y, v]) => [y, toFixed(v)]));
+        return { tile, label: yieldLabel(content, fixed) || itemName(content, item), score: 0 };
+      }
+      return { tile, label: itemName(content, item), score: 0 };
+    })
+    .sort((a, b) => b.score - a.score || a.tile - b.tile);
 }
 
 /** Turns until an item is done at this production rate (Infinity if no production). */
@@ -158,10 +225,10 @@ export function settlementSummary(
   const head = headItem && {
     item: headItem,
     name: itemName(ctx.content, headItem),
-    cost: itemCost(ctx, headItem),
+    cost: itemCost(ctx, state, s.owner, headItem),
     progress: s.progress[itemKey(headItem)] ?? 0,
     turns: turnsFor(
-      itemCost(ctx, headItem),
+      itemCost(ctx, state, s.owner, headItem),
       s.progress[itemKey(headItem)] ?? 0,
       productionToward(ctx, state, s, headItem, production),
     ),

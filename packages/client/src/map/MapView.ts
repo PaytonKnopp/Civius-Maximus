@@ -180,10 +180,17 @@ export class MapView implements MapRenderer {
   }
 
   setSettlements(views: SettlementView[], territory: TerritoryView) {
+    const before = this.settlementData?.territory.features;
     this.settlementData = { views, territory };
     void this.ready.then(() => {
       if (!this.data) return;
-      for (const c of this.chunks) this.drawTerritory(c);
+      for (const c of this.chunks) {
+        const changed = c.tiles.some(
+          (t) => (before ? before[t] : this.data!.map.tiles[t]!.feature) !== territory.features[t],
+        );
+        if (changed) this.drawTerrain(c);
+        this.drawTerritory(c);
+      }
       this.drawSettlements();
     });
   }
@@ -193,7 +200,14 @@ export class MapView implements MapRenderer {
       for (const m of this.highlightMarkers) m.node.destroy({ children: true });
       this.highlightMarkers = [];
       if (!this.data) return;
-      const tones = { develop: 0x9fd36a, buy: 0xd4a94e, worked: 0xe8dcc0, selected: 0xe6c070 };
+      const tones: Record<TileHighlight['tone'], number> = {
+        develop: 0x9fd36a,
+        buy: 0xd4a94e,
+        worked: 0xe8dcc0,
+        selected: 0xe6c070,
+        place: 0x7fc3e8,
+        planned: 0xb49ce0,
+      };
       for (const h of highlights) {
         const node = new Container();
         const [cx, cy] = tileCenter(
@@ -283,7 +297,11 @@ export class MapView implements MapRenderer {
       const view = sid ? byId.get(sid) : undefined;
       const [cx, cy] = tileCenter(i % map.width, Math.floor(i / map.width));
       const model = d.territory.improvements[i];
-      if (model) this.drawImprovement(g, model, cx, cy);
+      const district = d.territory.districts[i];
+      const wonder = d.territory.wonders[i];
+      if (district) this.drawDistrict(g, district.color, cx, cy);
+      else if (wonder) this.drawWonder(g, cx, cy);
+      else if (model) this.drawImprovement(g, model, cx, cy);
       if (!view) continue;
       g.poly(hexPoints(cx, cy, HEX)).fill({ color: view.color, alpha: 0.12 });
       for (let dir = 0; dir < 6; dir++) {
@@ -295,6 +313,32 @@ export class MapView implements MapRenderer {
         g.moveTo(x1, y1).lineTo(x2, y2).stroke({ width: 3.5, color: view.color, cap: 'round' });
       }
     }
+  }
+
+  /** A district: a paved hex in its accent color with a little building on it. */
+  private drawDistrict(g: Graphics, color: number, cx: number, cy: number) {
+    g.poly(hexPoints(cx, cy, HEX * 0.62))
+      .fill({ color: 0x3a352e, alpha: 0.9 })
+      .stroke({ width: 2.5, color });
+    g.rect(cx - 7, cy - 2, 14, 9)
+      .fill(0xd2c4a0)
+      .poly([cx - 9, cy - 2, cx, cy - 10, cx + 9, cy - 2])
+      .fill(color);
+  }
+
+  /** A wonder: a gold-rimmed stepped monument. */
+  private drawWonder(g: Graphics, cx: number, cy: number) {
+    g.poly(hexPoints(cx, cy, HEX * 0.66))
+      .fill({ color: 0x2a241a, alpha: 0.9 })
+      .stroke({ width: 2.5, color: 0xd4a94e });
+    g.rect(cx - 12, cy + 4, 24, 5)
+      .fill(0xd8c08a)
+      .rect(cx - 8, cy - 1, 16, 5)
+      .fill(0xe0cc98)
+      .rect(cx - 4, cy - 6, 8, 5)
+      .fill(0xeadab0)
+      .star(cx, cy - 11, 5, 4, 2)
+      .fill(0xd4a94e);
   }
 
   private drawImprovement(g: Graphics, model: string, cx: number, cy: number) {
@@ -521,6 +565,9 @@ export class MapView implements MapRenderer {
   private drawTerrain(chunk: Chunk) {
     const { map, content, starts, playerOrder } = this.data!;
     const g = chunk.terrain;
+    g.clear();
+    // Features as the game has them now (cleared woods disappear), else as generated.
+    const features = this.settlementData?.territory.features;
     const startOwner = new Map(Object.entries(starts).map(([p, t]) => [t, p]));
     for (const i of chunk.tiles) {
       const t = map.tiles[i]!;
@@ -550,7 +597,8 @@ export class MapView implements MapRenderer {
         g.poly([cx + 2, cy + 12, cx + 12, cy - 6, cx + 22, cy + 12]).fill(0x6b7076);
       }
 
-      if (t.feature !== null) this.drawFeature(g, t.feature, cx, cy);
+      const feature = features ? (features[i] ?? null) : t.feature;
+      if (feature !== null) this.drawFeature(g, feature, cx, cy);
 
       for (const [d, bit] of [
         [0, 1],

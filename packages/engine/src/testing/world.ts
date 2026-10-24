@@ -33,6 +33,8 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
         owner: null,
         settlement: null,
         improvement: null,
+        district: null,
+        wonder: null,
       };
       if (ch === 'p') t.terrain = 'plains';
       if (ch === 'd') t.terrain = 'desert';

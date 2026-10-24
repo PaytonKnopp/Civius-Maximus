@@ -160,6 +160,12 @@ Every yield displayed anywhere can be clicked to see a **breakdown tree**, e.g.,
 radius), *Religious Site* (+faith, missionaries), *Resort Town* (+happiness and tourism by appeal).
 Mods can add more.
 
+- **Built so far (M8):** all six, at 5 citizens; the first choice is free, a change costs 50 gold
+  (D41). Farming and Mining towns send **half** their food or production to the owner's nearest
+  city within 10 tiles (production goes toward that city's current build). Trade, Fort,
+  Religious and Resort towns get local yields and happiness for now; their range, defense,
+  missionary and tourism parts arrive with the systems they belong to.
+
 Why: an empire can be wide without every settlement needing a build queue every turn. Only your
 important cities need constant attention, which keeps simultaneous turns fast with 8 players.
 
@@ -426,6 +432,10 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   ones from civs.
 - **Adjacency for improvements:** farms gain +1🍞 for every two adjacent farms (Feudalism makes it
   every one), mines gain from adjacent mines later, and so on.
+- **Built so far (M8):** farms get +1🍞 per two neighboring farms; the Open Fields policy
+  (Feudalism) makes it +1 per neighboring farm. Quarries need Mining, pastures and camps Animal
+  Husbandry, plantations Irrigation; farms, mines, fishing boats and woodcutters are available
+  from the start.
 - **Pillaged** improvements are repaired with a cheap city project or by a unit with the *Engineer*
   ability (Military Engineer).
 - **Roads** are built automatically by trade routes. Military engineers can build them manually.
@@ -465,6 +475,28 @@ Districts are Civ 6's signature system and the main source of city planning.
   need desert, Machu Picchu needs a mountain). Building one gives a big unique bonus, tourism, and
   bragging rights in chat. If someone completes a wonder first, the other players building it
   have their production converted to gold.
+
+**Built so far (M8):**
+- All 10 districts in the table except Neighborhood and Spaceport (later eras), with the listed
+  adjacencies. A district costs its base (54 production for specialty districts, 36 for the
+  Aqueduct) **+2% per tech and civic you've finished** (D39). Districts can't be bought.
+- Placement rules: the tile must be the city's own, within 3 tiles, not its center, without a
+  district or wonder, and fit the district (Harbor on coast or lake next to land, Encampment not
+  next to the center, Aqueduct next to the center and fresh water or a mountain). Building on a
+  tile removes woods, rainforest or marsh and any improvement there.
+- 9 Ancient and Classical wonders (Pyramids, Hanging Gardens, Stonehenge, Temple of Artemis,
+  Oracle, Colossus, Great Library, Colosseum, Petra), each with a placement rule, local yields and
+  an empire-wide effect (D40). The race is world-wide: when one finishes, every other settlement
+  building it gets its production back as gold and drops it from the queue.
+- 11 buildings now belong to districts (Library and University in the Campus, Shrine and Temple
+  in the Holy Site, and so on); a district building needs its district first.
+- **Specialists:** each building in a district opens one specialist slot. Specialists give the
+  district's specialist yields (e.g. +2🔬 in a Campus) instead of working a tile, and are assigned
+  by the citizen focus like tiles.
+- Clear Woods (+25⚙️ toward the next item), Clear Rainforest (+15🍞 +15⚙️) and Drain Marsh
+  (+20🍞) are 15-production city projects on a tile.
+- The settlement screen previews each possible tile's yield before you place a district, on the
+  map and in a list.
 
 ---
 

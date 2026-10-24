@@ -1,18 +1,35 @@
-import { type BuildingDef, type ImprovementDef, resolveText, type UnitDef } from '@cx/content';
+import {
+  type BuildingDef,
+  type DistrictDef,
+  type ImprovementDef,
+  type ProjectDef,
+  resolveText,
+  type UnitDef,
+  type WonderDef,
+} from '@cx/content';
 import { type EngineContext, type RuleError, unitDef } from '../context';
 import { computeTileYields, type YieldBreakdown } from '../effects/yields';
 import { type Fixed, percentOf, powFloor, toFixed } from '../fixed';
 import { distance, neighbors, tilesWithin, tileTouchesRiver } from '../map/hex';
 import type { MapState } from '../map/types';
 import type { BuildItem, CitizenFocus, GameState, PlayerId, SettlementState } from '../state';
+import type { TileFacts } from '../effects/tile';
 import {
-  activeSources,
   playerEffects,
   playerFacts,
   playerPercent,
   settlementLimitOf,
+  sourcesFor,
 } from '../progress/sources';
 import { isWater } from '../units/movement';
+import {
+  districtCost,
+  districtYields,
+  needsTile,
+  placementProblem,
+  placementTiles,
+  specialistSlots,
+} from './districts';
 
 /**
  * Settlement rules as pure functions of the game state (docs/03-core-mechanics.md, section 3).
@@ -44,23 +61,31 @@ export function tileYields(
   tile: number,
   viewer: PlayerId | null = null,
 ): YieldBreakdown {
-  const facts = (i: number) => {
-    const t = state.map.tiles[i]!;
-    return { ...t, river: tileOnRiver(state.map, i), ownerId: t.owner };
-  };
   const t = state.map.tiles[tile]!;
   const pid = t.owner ?? viewer;
   const p = pid === null ? undefined : state.players[pid];
+  const here = t.settlement === null ? undefined : state.settlements[t.settlement];
   return computeTileYields(
     {
       content: ctx.content,
-      tile: facts(tile),
-      neighbors: neighbors(state.map, tile).map(facts),
+      tile: tileFacts(state, tile),
+      neighbors: neighbors(state.map, tile).map((n) => tileFacts(state, n)),
       playerId: pid ?? '',
       ...(p ? { player: playerFacts(p) } : {}),
     },
-    p ? activeSources(ctx, p) : [],
+    p && pid !== null ? sourcesFor(ctx, state, pid, here?.owner === pid ? here : undefined) : [],
   );
+}
+
+/** What effects and adjacency rules see on a tile. */
+export function tileFacts(state: GameState, i: number): TileFacts {
+  const t = state.map.tiles[i]!;
+  return {
+    ...t,
+    river: tileOnRiver(state.map, i),
+    ownerId: t.owner,
+    center: t.settlement !== null && state.settlements[t.settlement]?.tile === i,
+  };
 }
 
 /** Whether a player has what something requires (its tech and civic). */
@@ -111,7 +136,12 @@ export function isCoastal(ctx: EngineContext, state: GameState, tile: number): b
 /** Tiles a settlement's citizens may work: its own, within the work radius, center excluded. */
 export function workableTiles(ctx: EngineContext, state: GameState, s: SettlementState): number[] {
   return tilesWithin(state.map, s.tile, ctx.content.rules.settlements.workRadius)
-    .filter((t) => t !== s.tile && state.map.tiles[t]!.settlement === s.id)
+    .filter((t) => {
+      const tile = state.map.tiles[t]!;
+      return (
+        t !== s.tile && tile.settlement === s.id && tile.district === null && tile.wonder === null
+      );
+    })
     .sort((a, b) => a - b);
 }
 
@@ -209,6 +239,8 @@ export function developCandidates(
       return (
         t !== s.tile &&
         tile.improvement === null &&
+        tile.district === null &&
+        tile.wonder === null &&
         (tile.settlement === s.id ||
           (tile.owner === null &&
             neighbors(state.map, t).some((n) => state.map.tiles[n]!.settlement === s.id))) &&
@@ -261,6 +293,16 @@ export function happinessOf(ctx: EngineContext, state: GameState, s: SettlementS
   for (const b of s.buildings) {
     const def = ctx.content.entities.building[b]!;
     if (def.happiness !== 0)
+      lines.push({ label: resolveText(ctx.content, def.name), amount: def.happiness });
+  }
+  for (const d of s.districts) {
+    const def = ctx.content.entities.district[d.id];
+    if (def?.happiness)
+      lines.push({ label: resolveText(ctx.content, def.name), amount: def.happiness });
+  }
+  for (const w of s.wonders) {
+    const def = ctx.content.entities.wonder[w];
+    if (def?.happiness)
       lines.push({ label: resolveText(ctx.content, def.name), amount: def.happiness });
   }
   lines.push(...improvedLuxuries(ctx, state, s));
@@ -339,6 +381,23 @@ export function settlementYields(
     const def = ctx.content.entities.building[b]!;
     for (const y of Object.keys(def.yields).sort())
       add(y, resolveText(ctx.content, def.name), toFixed(def.yields[y]!));
+  }
+
+  for (const d of s.districts) {
+    const dy = districtYields(ctx, state, d.tile, d.id);
+    for (const y of Object.keys(dy.lines).sort())
+      for (const l of dy.lines[y]!) add(y, l.label, l.amount);
+  }
+  for (const w of s.wonders) {
+    const def = ctx.content.entities.wonder[w]!;
+    for (const y of Object.keys(def.yields).sort())
+      add(y, resolveText(ctx.content, def.name), toFixed(def.yields[y]!));
+  }
+  for (const [id, n] of Object.entries(s.specialists).sort()) {
+    const def = ctx.content.entities.district[id];
+    if (!def || n <= 0) continue;
+    for (const [y, v] of Object.entries(def.specialistYields).sort())
+      add(y, `${resolveText(ctx.content, def.name)} specialists (${n})`, toFixed(v * n));
   }
 
   // Settlement-wide effects (government, policies...): flat amounts now, percentages after.
@@ -437,23 +496,46 @@ export function tileScore(
 }
 
 /**
- * Picks the tiles a settlement's citizens work: locked tiles first, then the best by focus.
- * Deterministic: ties go to the lower tile index.
+ * Picks what a settlement's citizens do: locked tiles first, then the best tiles or specialist
+ * slots (in districts with buildings) by focus. Deterministic: ties go to tiles, then the lower
+ * tile index, then the district id.
  */
 export function assignCitizens(
   ctx: EngineContext,
   state: GameState,
   s: SettlementState,
-): { worked: number[]; locked: number[] } {
+): { worked: number[]; locked: number[]; specialists: Record<string, number> } {
   const workable = workableTiles(ctx, state, s);
   const locked = s.locked.filter((t) => workable.includes(t)).slice(0, s.population);
-  const rest = workable
+  type Choice = { tile: number; district: string; score: number };
+  const choices: Choice[] = workable
     .filter((t) => !locked.includes(t))
-    .map((t) => ({ t, score: tileScore(ctx, tileYields(ctx, state, t).total, s.focus) }))
-    .sort((a, b) => b.score - a.score || a.t - b.t)
-    .slice(0, Math.max(0, s.population - locked.length))
-    .map((x) => x.t);
-  return { worked: [...locked, ...rest].sort((a, b) => a - b), locked };
+    .map((t) => ({
+      tile: t,
+      district: '',
+      score: tileScore(ctx, tileYields(ctx, state, t).total, s.focus),
+    }));
+  for (const [id, n] of Object.entries(specialistSlots(ctx, s)).sort()) {
+    const yields: Record<string, Fixed> = {};
+    for (const [y, v] of Object.entries(ctx.content.entities.district[id]!.specialistYields))
+      yields[y] = toFixed(v);
+    const score = tileScore(ctx, yields, s.focus);
+    for (let i = 0; i < n; i++) choices.push({ tile: -1, district: id, score });
+  }
+  const picked = choices
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        Number(a.tile < 0) - Number(b.tile < 0) ||
+        a.tile - b.tile ||
+        (a.district < b.district ? -1 : a.district > b.district ? 1 : 0),
+    )
+    .slice(0, Math.max(0, s.population - locked.length));
+  const specialists: Record<string, number> = {};
+  for (const c of picked)
+    if (c.tile < 0) specialists[c.district] = (specialists[c.district] ?? 0) + 1;
+  const rest = picked.filter((c) => c.tile >= 0).map((c) => c.tile);
+  return { worked: [...locked, ...rest].sort((a, b) => a - b), locked, specialists };
 }
 
 /** The tile border growth claims next: the most valuable unclaimed tile touching the territory. */
@@ -509,17 +591,41 @@ export function purchasableTiles(
 
 // --- Production ------------------------------------------------------------------------------
 
-export const itemKey = (item: BuildItem) => `${item.kind}:${item.id}`;
+/** Progress key for an item (projects are per tile: two woods can be cleared at once). */
+export const itemKey = (item: BuildItem) =>
+  item.kind === 'project' ? `project:${item.id}@${item.tile ?? ''}` : `${item.kind}:${item.id}`;
 
-export function itemDef(ctx: EngineContext, item: BuildItem): UnitDef | BuildingDef | undefined {
-  return item.kind === 'unit'
-    ? ctx.content.entities.unit[item.id]
-    : ctx.content.entities.building[item.id];
+type ItemDef = UnitDef | BuildingDef | DistrictDef | WonderDef | ProjectDef;
+
+export function itemDef(ctx: EngineContext, item: BuildItem): ItemDef | undefined {
+  const e = ctx.content.entities;
+  switch (item.kind) {
+    case 'unit':
+      return e.unit[item.id];
+    case 'building':
+      return e.building[item.id];
+    case 'district':
+      return e.district[item.id];
+    case 'wonder':
+      return e.wonder[item.id];
+    case 'project':
+      return e.project[item.id];
+  }
 }
 
-export function itemCost(ctx: EngineContext, item: BuildItem): Fixed {
+/** Production to finish an item (districts cost more as you progress through the trees). */
+export function itemCost(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  item: BuildItem,
+): Fixed {
+  if (item.kind === 'district') return districtCost(ctx, state, player, item.id);
   return toFixed(itemDef(ctx, item)?.cost ?? 0);
 }
+
+/** Units and buildings can be bought; districts, wonders and projects can't. */
+export const isBuyable = (item: BuildItem) => item.kind === 'unit' || item.kind === 'building';
 
 /** Gold to buy an item outright (policies can make it cheaper). */
 export function purchaseCost(
@@ -528,7 +634,8 @@ export function purchaseCost(
   player: PlayerId,
   item: BuildItem,
 ): Fixed {
-  const base = itemCost(ctx, item) * ctx.content.rules.settlements.purchase.goldPerProduction;
+  const base =
+    itemCost(ctx, state, player, item) * ctx.content.rules.settlements.purchase.goldPerProduction;
   const percent = playerPercent(ctx, state, player, 'modify_purchase_cost');
   return Math.max(0, base + percentOf(base, percent));
 }
@@ -549,13 +656,20 @@ export function productionToward(
   for (const { effect } of playerEffects(ctx, state, s.owner, 'modify_production', s)) {
     const t = effect.params.toward;
     if (t.kind !== undefined && t.kind !== item.kind) continue;
-    if (item.kind === 'unit') {
-      if (t.building !== undefined) continue;
-      if (!oneOf(item.id, t.unit) || !oneOf((def as UnitDef).class, t.unitClass)) continue;
-    } else {
-      if (t.unit !== undefined || t.unitClass !== undefined) continue;
-      if (!oneOf(item.id, t.building)) continue;
-    }
+    const named = {
+      unit: t.unit,
+      building: t.building,
+      district: t.district,
+      wonder: t.wonder,
+      project: undefined,
+    };
+    // A filter naming one kind of item never matches another kind.
+    const others = (Object.keys(named) as (keyof typeof named)[]).filter(
+      (k) => k !== item.kind && named[k] !== undefined,
+    );
+    if (others.length > 0 || (item.kind !== 'unit' && t.unitClass !== undefined)) continue;
+    if (!oneOf(item.id, named[item.kind])) continue;
+    if (item.kind === 'unit' && !oneOf((def as UnitDef).class, t.unitClass)) continue;
     percent += effect.params.percent;
   }
   return Math.max(0, production + percentOf(production, percent));
@@ -567,6 +681,8 @@ export function itemProblem(
   state: GameState,
   s: SettlementState,
   item: BuildItem,
+  /** The queue the item would be in (defaults to the current one). */
+  queue: readonly BuildItem[] = s.queue,
 ): RuleError | undefined {
   const def = itemDef(ctx, item);
   if (!def) return { code: 'unknown_item', message: `Unknown ${item.kind} "${item.id}"` };
@@ -575,8 +691,24 @@ export function itemProblem(
       code: 'not_buildable',
       message: `${resolveText(ctx.content, def.name)} can't be built`,
     };
+  if (
+    item.kind === 'wonder' &&
+    Object.values(state.settlements).some((x) => x.wonders.includes(item.id))
+  )
+    return {
+      code: 'wonder_built',
+      message: `${resolveText(ctx.content, def.name)} has already been built`,
+    };
   const locked = lockedReason(ctx, state, s.owner, def);
   if (locked) return { code: 'locked', message: locked };
+  if (needsTile(item)) {
+    if (s.kind === 'town')
+      return { code: 'city_only', message: 'Only cities build districts, wonders and projects' };
+    if (item.tile !== undefined) return placementProblem(ctx, state, s, item, queue);
+    return placementTiles(ctx, state, s, item.kind as 'district', item.id).length > 0
+      ? undefined
+      : { code: 'no_site', message: `No tile in ${s.name} can take it` };
+  }
   if (item.kind === 'unit') {
     const u = def as UnitDef;
     const domain = ctx.content.entities.unitClass[u.class]!.domain;
@@ -596,6 +728,13 @@ export function itemProblem(
     return { code: 'needs_coast', message: 'Needs a settlement on the coast' };
   if (b.cityOnly && s.kind === 'town')
     return { code: 'city_only', message: 'Only cities can have this' };
+  if (b.district && !s.districts.some((d) => d.id === b.district)) {
+    const needed = ctx.content.entities.district[b.district];
+    return {
+      code: 'needs_district',
+      message: `Needs a ${needed ? resolveText(ctx.content, needed.name) : b.district} first`,
+    };
+  }
   if (b.requiresBuilding && !s.buildings.includes(b.requiresBuilding)) {
     const needed = ctx.content.entities.building[b.requiresBuilding];
     return {
@@ -615,6 +754,9 @@ export function availableItems(
   const all: BuildItem[] = [
     ...ctx.content.ids.unit.map((id) => ({ kind: 'unit' as const, id })),
     ...ctx.content.ids.building.map((id) => ({ kind: 'building' as const, id })),
+    ...ctx.content.ids.district.map((id) => ({ kind: 'district' as const, id })),
+    ...ctx.content.ids.wonder.map((id) => ({ kind: 'wonder' as const, id })),
+    ...ctx.content.ids.project.map((id) => ({ kind: 'project' as const, id })),
   ];
   return all.filter((item) => !itemProblem(ctx, state, s, item));
 }

@@ -87,9 +87,16 @@ features on top.
   screen (adopt, slot cards, cost preview), progress chips, and Next Action prompts for research,
   civics and policies.
 
-### M8 · Improvements, districts, wonders
+### M8 · Improvements, districts, wonders ✅
 - Improvements and their adjacency, the clear-land project, district placement with adjacency
   previews, the district limit, buildings in districts, and the first wonders.
+- Built: 10 districts with adjacency and cost growth, specialists, 11 district buildings
+  (4 new: Amphitheater, Workshop, Arena, Barracks), 9 wonders with a world-wide race, 3 tile
+  projects, farm adjacency, tech-gated improvements, and the 6 town specializations with food
+  and production sending.
+- Client: the placement mode (valid tiles highlighted with their yields, plus a best-first list),
+  district and wonder models in 3D and glyphs in 2D, planned districts marked on the map, the
+  district limit, specialists, the specialization picker for towns, and wonder notices.
 
 ### M9 · Combat and conflict
 - The combat formula (lookup tables), modifiers, ranged attacks, city HP, walls, city strikes,

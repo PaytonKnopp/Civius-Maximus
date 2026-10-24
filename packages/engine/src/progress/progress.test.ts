@@ -111,17 +111,17 @@ describe('locked content', () => {
   it('hides buildings, units and improvements until their tech', () => {
     const { s, id } = capital();
     const city = s.settlements[id]!;
-    expect(itemProblem(ctx, s, city, { kind: 'building', id: 'building_library' })).toMatchObject({
+    expect(itemProblem(ctx, s, city, { kind: 'building', id: 'building_granary' })).toMatchObject({
       code: 'locked',
-      message: 'Needs Writing',
+      message: 'Needs Pottery',
     });
     const pasture = s.map.tiles.findIndex((_, i) => i === tileIndex(s.map, 3, 4));
     s.map.tiles[pasture]!.resource = 'cattle';
     expect(improvementsFor(ctx, s, pasture, 'p1')).not.toContain('improvement_pasture');
     s.players.p1!.techs.done.push('tech_animal_husbandry');
     expect(improvementsFor(ctx, s, pasture, 'p1')[0]).toBe('improvement_pasture');
-    s.players.p1!.techs.done.push('tech_writing');
-    expect(itemProblem(ctx, s, city, { kind: 'building', id: 'building_library' })).toBeUndefined();
+    s.players.p1!.techs.done.push('tech_pottery');
+    expect(itemProblem(ctx, s, city, { kind: 'building', id: 'building_granary' })).toBeUndefined();
   });
 });
 

@@ -345,15 +345,18 @@
     "type": "policy",
     "id": "policy_open_fields",
     "name": "Open Fields",
-    "description": "Farms give +1 food.",
+    "description": "Farms get +1 food for every neighboring farm (instead of every two).",
     "slot": "economic",
     "requiresCivic": "civic_feudalism",
     "effects": [
       {
-        "effect": "modify_yield",
+        "effect": "yield_per_adjacent",
         "params": {
           "yield": "food",
-          "amount": 1
+          "amount": 0.5,
+          "per": {
+            "improvement": "improvement_farm"
+          }
         },
         "target": {
           "scope": "tiles",
