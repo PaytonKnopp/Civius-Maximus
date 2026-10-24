@@ -68,6 +68,7 @@ import {
   whole,
 } from './model';
 import { GovernmentScreen } from './GovernmentScreen';
+import { GreatPeopleScreen } from './GreatPeopleScreen';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -189,6 +190,15 @@ function noticeFor(
       return e.owner === ME
         ? `Your trader from ${name(e.from)} is home: send it out again`
         : undefined;
+    case 'great_person_born': {
+      const gp = content.entities.greatPerson[e.person];
+      const who = gp ? resolveText(content, gp.name) : 'A great person';
+      return e.player === ME
+        ? `${who} joins you! Activate them in one of your settlements`
+        : `${who} was born in ${civName(content, state, e.player)}`;
+    }
+    case 'great_person_activated':
+      return undefined;
     case 'commander_retreated':
       return e.owner === ME
         ? `Your commander fell back to a settlement (back in action on turn ${e.until})`
@@ -317,7 +327,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
   const [notices, setNotices] = useState<{ id: number; text: string }[]>([]);
   const [fps, setFps] = useState(0);
   const [overlay, setOverlay] = useState<
-    { kind: 'tree'; tree: TreeKind } | { kind: 'government' } | null
+    { kind: 'tree'; tree: TreeKind } | { kind: 'government' } | { kind: 'greatPeople' } | null
   >(null);
   const [policiesSeenBy, setPoliciesSeenBy] = useState<Record<PlayerId, number>>({});
   const policiesSeen = policiesSeenBy[viewer] ?? 0;
@@ -915,6 +925,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
       else if (e.key === 't') setOverlay({ kind: 'tree', tree: 'tech' });
       else if (e.key === 'c') setOverlay({ kind: 'tree', tree: 'civic' });
       else if (e.key === 'g') openGovernment();
+      else if (e.key === 'p') setOverlay({ kind: 'greatPeople' });
       else if (e.key === 'Escape') {
         if (placing) setPlacing(null);
         else if (striking) setStriking(false);
@@ -1079,6 +1090,15 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
         })}
         <button
           type="button"
+          className="progress-chip"
+          onClick={() => setOverlay({ kind: 'greatPeople' })}
+          title="Great people (P)"
+        >
+          <span aria-hidden="true">★</span>
+          <span className="chip-name">Great people</span>
+        </button>
+        <button
+          type="button"
           className="progress-chip government"
           onClick={openGovernment}
           title="Government and policies (G)"
@@ -1202,6 +1222,15 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
           perTurn={overlay.tree === 'tech' ? empire.science : empire.culture}
           act={act}
           onKind={(tree) => setOverlay({ kind: 'tree', tree })}
+          onClose={() => setOverlay(null)}
+        />
+      )}
+      {overlay?.kind === 'greatPeople' && (
+        <GreatPeopleScreen
+          ctx={ctx}
+          state={state}
+          viewer={viewer}
+          act={act}
           onClose={() => setOverlay(null)}
         />
       )}

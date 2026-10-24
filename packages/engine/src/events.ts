@@ -47,6 +47,8 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         from: SettlementId;
         to: SettlementId;
       }
+    | { type: 'great_person_born'; person: string; player: PlayerId }
+    | { type: 'great_person_activated'; person: string; player: PlayerId; settlement: SettlementId }
     /** A commander caught by enemies fell back to a settlement until turn `until`. */
     | {
         type: 'commander_retreated';

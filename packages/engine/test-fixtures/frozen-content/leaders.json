@@ -248,7 +248,7 @@
     "civ": "civ_england",
     "ability": {
       "name": "Gloriana",
-      "description": "Naval units +1 movement and +3 strength. Coastal settlements +1 gold.",
+      "description": "+100% great admiral points. Naval units +1 movement. (+1 trade route per era after the Medieval arrives with later eras.)",
       "effects": [
         {
           "effect": "grant_promotion",
@@ -258,6 +258,16 @@
           },
           "target": {
             "scope": "settlements"
+          }
+        },
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_admiral",
+            "percent": 100
+          },
+          "target": {
+            "scope": "player"
           }
         }
       ]

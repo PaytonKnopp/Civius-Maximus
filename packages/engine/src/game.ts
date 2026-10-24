@@ -17,6 +17,7 @@ import { newProgress } from './progress/sources';
 import { settlementHandlers, settlementsTurn } from './settlements/handlers';
 import { commanderHandlers } from './units/commanders';
 import { tradeHandlers, tradeTurn } from './trade/handlers';
+import { greatPeopleHandlers, greatPeopleTurn } from './greatpeople/greatpeople';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
 
@@ -114,6 +115,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       leader,
       gold: 0,
       influence: 0,
+      greatPeople: [],
       faith: 0,
       capital: null,
       settlementsFounded: 0,
@@ -145,6 +147,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     diplomacy: emptyDiplomacy(),
     roads: encodeBits(emptyBits(map.tiles.length)),
     routes: [],
+    greatPeople: { points: {}, claimed: {} },
   };
   spawnStartingUnits(state, ctx);
   placeStartingCamps(state, ctx, random);
@@ -162,6 +165,7 @@ const handlers: Handlers = {
   ...diplomacyHandlers,
   ...commanderHandlers,
   ...tradeHandlers,
+  ...greatPeopleHandlers,
   end_turn: {
     validate(state, action) {
       const p = state.players[action.player];
@@ -199,6 +203,7 @@ const turnSteps: TurnStep[] = [
   { id: 'settlements', order: 100, run: settlementsTurn },
   { id: 'diplomacy', order: 110, run: diplomacyTurn },
   { id: 'trade', order: 120, run: tradeTurn },
+  { id: 'greatPeople', order: 115, run: greatPeopleTurn },
 ];
 
 function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {

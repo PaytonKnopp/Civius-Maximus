@@ -50,7 +50,19 @@
       "faith": 2
     },
     "requiresTech": "tech_astrology",
-    "district": "district_holy_site"
+    "district": "district_holy_site",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_prophet",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
@@ -79,7 +91,19 @@
       "science": 2
     },
     "requiresTech": "tech_writing",
-    "district": "district_campus"
+    "district": "district_campus",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_scientist",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
@@ -92,7 +116,19 @@
       "gold": 3
     },
     "requiresTech": "tech_currency",
-    "district": "district_commercial_hub"
+    "district": "district_commercial_hub",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_merchant",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
@@ -107,7 +143,19 @@
       "gold": 1
     },
     "requiresTech": "tech_celestial_navigation",
-    "district": "district_harbor"
+    "district": "district_harbor",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_admiral",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
@@ -134,7 +182,19 @@
     "requiresBuilding": "building_library",
     "requiresTech": "tech_education",
     "cityOnly": true,
-    "district": "district_campus"
+    "district": "district_campus",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_scientist",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
@@ -150,7 +210,19 @@
     "happiness": 1,
     "district": "district_holy_site",
     "requiresBuilding": "building_shrine",
-    "requiresCivic": "civic_theology"
+    "requiresCivic": "civic_theology",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_prophet",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
@@ -164,7 +236,19 @@
       "culture": 3
     },
     "district": "district_theater",
-    "requiresCivic": "civic_drama_and_poetry"
+    "requiresCivic": "civic_drama_and_poetry",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_writer",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
@@ -178,7 +262,19 @@
       "production": 3
     },
     "district": "district_industrial_zone",
-    "requiresTech": "tech_apprenticeship"
+    "requiresTech": "tech_apprenticeship",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_engineer",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
@@ -207,7 +303,19 @@
       "production": 1
     },
     "district": "district_encampment",
-    "requiresTech": "tech_bronze_working"
+    "requiresTech": "tech_bronze_working",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_general",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
@@ -425,7 +533,19 @@
       }
     ],
     "civ": "civ_macedon",
-    "replaces": "building_barracks"
+    "replaces": "building_barracks",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_general",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
@@ -453,7 +573,19 @@
       }
     ],
     "civ": "civ_mongols",
-    "replaces": "building_barracks"
+    "replaces": "building_barracks",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_general",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
@@ -482,6 +614,18 @@
       }
     ],
     "civ": "civ_england",
-    "replaces": "building_lighthouse"
+    "replaces": "building_lighthouse",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_admiral",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   }
 ]

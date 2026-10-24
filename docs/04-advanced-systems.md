@@ -157,6 +157,22 @@ because each one is unique.
 - **Content:** great people are just data, so a mod can add "Great Engineer Mike: completes 50% of
   any wonder" in about 10 lines of JSON.
 
+### Built so far (V1 part 6)
+
+- Seven classes (Scientist, Engineer, Merchant, Prophet, General, Writer, Admiral), 22 named
+  people from the Ancient to the Medieval era, in `great-people.json`. Points come from
+  districts (+1) and their buildings (+1 or +2); each class's next person costs 50–60 points,
+  rising by the same each time one is earned. The first player to the cost earns them (most
+  points wins ties) and they appear at the capital.
+- **Recruit:** buy the next one now for 3 gold per missing point (the Great People screen,
+  P).
+- **Activate** in one of your settlements: yields at once (science and culture toward your
+  current tech and civic, production toward the settlement's build), boosts, or inspiring
+  nearby soldiers; some also give a lasting effect (Hypatia: +1 science in Library
+  settlements; Marco Polo: +1 trade route...).
+- Elizabeth's +100% great admiral points works. Not yet: great works and tourism, patronage
+  with faith, founding religions with prophets (part 7).
+
 ---
 
 ## Religion

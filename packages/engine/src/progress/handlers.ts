@@ -220,7 +220,7 @@ export function grantBoost(
 // --- The empire's turn -----------------------------------------------------------------------
 
 /** Puts this turn's science or culture into a track; finishes at most one node. */
-function advance(
+export function advance(
   draft: Draft<GameState>,
   ctx: EngineContext,
   player: PlayerId,

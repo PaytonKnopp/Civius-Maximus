@@ -55,6 +55,8 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
 35. **D64 Commanders:** carry 4, radius 1, +2 strength, 5 turns out after a retreat.
 36. **D65 Trade routes:** 20 turns, 15 tiles; domestic +2🍞 +2⚙, international +4💰
     (+1 per destination district), roads halve movement.
+37. **D66 Great people:** 50–60 points (rising), districts and buildings earn them, recruit
+    for 3 gold per missing point. Also: who should be on the list? Ask for anyone.
 28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
     expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 
@@ -111,6 +113,15 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
   sides. Roads draw in 2D and 3D.
 - The AI builds traders for its free slots and picks the best routes (abroad to players it
   likes). The trade parts of the Mongol, Egyptian, Malian and Roman kits now work.
+
+### Part 6: great people
+- ★ **Great people** (top bar, or P): seven kinds, 22 named people (Euclid, Hypatia, Imhotep,
+  Marco Polo, Sun Tzu, Homer, Zheng He...). Districts and buildings earn points; the first to
+  the cost earns the person, or **Recruit** them with gold for the points you're missing.
+- A great person appears at your capital: select it and **Activate** in a settlement for its
+  reward (science, production, gold, boosts, inspired soldiers...) and, for some, a lasting
+  bonus.
+- The AI uses its great people at once and buys one when it's rich and leading the race.
 
 ## Known issues
 

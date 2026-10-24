@@ -2489,3 +2489,53 @@ kbd {
 .deal-verdict.no {
   color: #e08072;
 }
+
+.gp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+  padding: 12px 16px;
+  overflow-y: auto;
+}
+.gp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+}
+.gp-card h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.gp-name {
+  margin: 0;
+  font-weight: 600;
+}
+.gp-text {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  min-height: 3em;
+}
+.gp-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--panel-edge) 70%, transparent);
+  overflow: hidden;
+}
+.gp-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent, #e3b25a);
+}
+.gp-mine {
+  padding: 0 16px 16px;
+  font-size: 13px;
+}
+.great-person p {
+  margin: 4px 0 8px;
+  font-size: 13px;
+}

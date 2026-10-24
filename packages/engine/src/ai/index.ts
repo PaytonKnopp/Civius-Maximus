@@ -2,7 +2,7 @@ import type { EngineContext } from '../context';
 import type { GameState, PlayerId } from '../state';
 import { manageCaptures, manageProduction, manageTowns, strikeFromSettlements } from './cities';
 import { manageDiplomacy } from './diplomacy';
-import { manageProgress } from './economy';
+import { manageProgress, recruitGreatPeople } from './economy';
 import { manageUnits } from './military';
 import { type Act, Turn } from './turn';
 import { manageWar } from './war';
@@ -35,6 +35,7 @@ export function playAiTurn(
   manageUnits(t);
   manageTowns(t);
   manageProduction(t);
+  recruitGreatPeople(t);
   t.act({ type: 'end_turn', player });
   return t.state;
 }

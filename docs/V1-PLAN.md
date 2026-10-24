@@ -16,7 +16,7 @@ Milestone numbers refer to [07-roadmap.md](07-roadmap.md). Each part ends with a
 | 3 | **Diplomacy**: opinions with reasons, agendas, friendship, denouncing, alliances, open borders, deals (gold, per-turn gold, luxuries, peace terms), AI proposals, the diplomacy screen | M15 | ✅ (open borders and luxury trades wait for trade routes) |
 | 4 | **Commanders**: pack and unpack, command radius bonuses, retreat instead of death | M9 (moved) | ✅ (fleet commanders wait for a naval AI) |
 | 5 | **Trade routes**: traders, routes and their yields, roads | M16 | ✅ (plunder and sea routes later) |
-| 6 | **Great people**: points race, named individuals with one-off actions | M17 | |
+| 6 | **Great people**: points race, named individuals with one-off actions | M17 | ✅ (great works later) |
 | 7 | **Religion**: pantheons, founding, beliefs, spread, religious units, religious victory | M18 | |
 | 8 | **City-states**: independent settlements with suzerains and bonuses | M19 | |
 | 9 | **Later eras**: Renaissance → Modern techs, civics, units, buildings, governments; science and culture victories | M21 | |

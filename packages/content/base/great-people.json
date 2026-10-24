@@ -1,0 +1,496 @@
+[
+  {
+    "type": "greatPersonClass",
+    "id": "gp_scientist",
+    "name": "Great Scientist",
+    "icon": "🔬",
+    "baseCost": 60,
+    "costStep": 60
+  },
+  {
+    "type": "greatPersonClass",
+    "id": "gp_engineer",
+    "name": "Great Engineer",
+    "icon": "⚙",
+    "baseCost": 60,
+    "costStep": 60
+  },
+  {
+    "type": "greatPersonClass",
+    "id": "gp_merchant",
+    "name": "Great Merchant",
+    "icon": "💰",
+    "baseCost": 60,
+    "costStep": 60
+  },
+  {
+    "type": "greatPersonClass",
+    "id": "gp_prophet",
+    "name": "Great Prophet",
+    "icon": "🙏",
+    "baseCost": 50,
+    "costStep": 50
+  },
+  {
+    "type": "greatPersonClass",
+    "id": "gp_general",
+    "name": "Great General",
+    "icon": "⚔",
+    "baseCost": 50,
+    "costStep": 50
+  },
+  {
+    "type": "greatPersonClass",
+    "id": "gp_writer",
+    "name": "Great Writer",
+    "icon": "📜",
+    "baseCost": 60,
+    "costStep": 60
+  },
+  {
+    "type": "greatPersonClass",
+    "id": "gp_admiral",
+    "name": "Great Admiral",
+    "icon": "⚓",
+    "baseCost": 50,
+    "costStep": 50
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_euclid",
+    "name": "Euclid",
+    "class": "gp_scientist",
+    "era": "era_ancient",
+    "description": "+150 science toward your current tech, and 1 tech boost.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "science": 150
+        }
+      },
+      {
+        "kind": "boosts",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_hypatia",
+    "name": "Hypatia",
+    "class": "gp_scientist",
+    "era": "era_classical",
+    "description": "Every settlement with a Library gets +1 science, for good.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "science": 100
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_library"
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_aryabhata",
+    "name": "Aryabhata",
+    "class": "gp_scientist",
+    "era": "era_classical",
+    "description": "3 tech or civic boosts.",
+    "activate": [
+      {
+        "kind": "boosts",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_al_haytham",
+    "name": "Ibn al-Haytham",
+    "class": "gp_scientist",
+    "era": "era_medieval",
+    "description": "+400 science toward your current tech.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "science": 400
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_imhotep",
+    "name": "Imhotep",
+    "class": "gp_engineer",
+    "era": "era_ancient",
+    "description": "+150 production toward what the settlement is building.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "production": 150
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_archimedes",
+    "name": "Archimedes",
+    "class": "gp_engineer",
+    "era": "era_classical",
+    "description": "+250 production toward what the settlement is building.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "production": 250
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_isidore",
+    "name": "Isidore of Miletus",
+    "class": "gp_engineer",
+    "era": "era_medieval",
+    "description": "+20% production toward wonders in every settlement, for good.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "production": 100
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 20,
+          "toward": {
+            "kind": "wonder"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_colaeus",
+    "name": "Colaeus",
+    "class": "gp_merchant",
+    "era": "era_ancient",
+    "description": "+200 gold.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "gold": 200
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_marco_polo",
+    "name": "Marco Polo",
+    "class": "gp_merchant",
+    "era": "era_medieval",
+    "description": "+1 trade route, for good, and +150 gold.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "gold": 150
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "extra_trade_route",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_zhang_qian",
+    "name": "Zhang Qian",
+    "class": "gp_merchant",
+    "era": "era_classical",
+    "description": "+1 trade route, for good.",
+    "effects": [
+      {
+        "effect": "extra_trade_route",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_zoroaster",
+    "name": "Zoroaster",
+    "class": "gp_prophet",
+    "era": "era_ancient",
+    "description": "+150 faith. (Founding religions arrives with religion.)",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "faith": 150
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_siddhartha",
+    "name": "Siddhartha",
+    "class": "gp_prophet",
+    "era": "era_classical",
+    "description": "+200 faith and +1 happiness in every settlement, for good.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "faith": 200
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_simon_peter",
+    "name": "Simon Peter",
+    "class": "gp_prophet",
+    "era": "era_classical",
+    "description": "+300 faith.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "faith": 300
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_sun_tzu",
+    "name": "Sun Tzu",
+    "class": "gp_general",
+    "era": "era_ancient",
+    "description": "Your soldiers within 3 tiles are Inspired (+4 strength, for good).",
+    "activate": [
+      {
+        "kind": "promote",
+        "promotion": "promo_inspired",
+        "radius": 3
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_hamilcar",
+    "name": "Hamilcar Barca",
+    "class": "gp_general",
+    "era": "era_classical",
+    "description": "Your soldiers within 4 tiles are Inspired (+4 strength), and +100 gold.",
+    "activate": [
+      {
+        "kind": "promote",
+        "promotion": "promo_inspired",
+        "radius": 4
+      },
+      {
+        "kind": "yields",
+        "yields": {
+          "gold": 100
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_el_cid",
+    "name": "El Cid",
+    "class": "gp_general",
+    "era": "era_medieval",
+    "description": "Your soldiers within 5 tiles are Inspired (+4 strength).",
+    "activate": [
+      {
+        "kind": "promote",
+        "promotion": "promo_inspired",
+        "radius": 5
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_homer",
+    "name": "Homer",
+    "class": "gp_writer",
+    "era": "era_ancient",
+    "description": "+150 culture toward your current civic.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "culture": 150
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_ovid",
+    "name": "Ovid",
+    "class": "gp_writer",
+    "era": "era_classical",
+    "description": "+1 culture in every settlement, for good, and +100 culture.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "culture": 100
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_murasaki",
+    "name": "Murasaki Shikibu",
+    "class": "gp_writer",
+    "era": "era_medieval",
+    "description": "+350 culture toward your current civic.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "culture": 350
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_themistocles",
+    "name": "Themistocles",
+    "class": "gp_admiral",
+    "era": "era_ancient",
+    "description": "Your ships within 4 tiles are Admiral-led (+1 movement, +3 strength).",
+    "activate": [
+      {
+        "kind": "promote",
+        "promotion": "promo_admiral_led",
+        "radius": 4
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_zheng_he",
+    "name": "Zheng He",
+    "class": "gp_admiral",
+    "era": "era_medieval",
+    "description": "Your ships within 6 tiles are Admiral-led, and +200 gold.",
+    "activate": [
+      {
+        "kind": "promote",
+        "promotion": "promo_admiral_led",
+        "radius": 6
+      },
+      {
+        "kind": "yields",
+        "yields": {
+          "gold": 200
+        }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_artemisia",
+    "name": "Artemisia",
+    "class": "gp_admiral",
+    "era": "era_classical",
+    "description": "+1 trade route, for good, and +100 gold.",
+    "activate": [
+      {
+        "kind": "yields",
+        "yields": {
+          "gold": 100
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "extra_trade_route",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  }
+]

@@ -44,6 +44,13 @@ export interface GameState {
   roads: string;
   /** Trade routes running now. */
   routes: TradeRoute[];
+  /** The great people race (docs/04-advanced-systems.md, "Great people"). */
+  greatPeople: {
+    /** Points per player, per great person class. */
+    points: Record<PlayerId, Record<string, number>>;
+    /** Great people already earned (or bought), and by whom. */
+    claimed: Record<string, PlayerId>;
+  };
 }
 
 /** A trader on its route: it's off the map until the route ends and it comes home. */
@@ -233,6 +240,8 @@ export interface UnitState {
   skippedTurn: number | null;
   /** `promotion` content ids, in the order they were taken. */
   promotions: string[];
+  /** A great person: which one (a `greatPerson` content id). */
+  person?: string;
   /** Commanders: the units packed inside (off the map until unpacked). */
   cargo?: UnitState[];
   /** Commanders: out of action after a retreat until this turn. */
@@ -274,6 +283,8 @@ export interface PlayerState {
   gold: number;
   /** Influence for diplomacy, in hundredths. */
   influence: number;
+  /** Great people this player has activated (their lasting effects apply). */
+  greatPeople: string[];
   /** Faith stored, in hundredths (spent from M13). */
   faith: number;
   capital: SettlementId | null;

@@ -60,6 +60,18 @@
   },
   {
     "type": "unit",
+    "id": "unit_great_person",
+    "name": "Great Person",
+    "class": "class_civilian",
+    "movement": 3,
+    "sight": 2,
+    "cost": 0,
+    "upkeep": 0,
+    "icon": "GP",
+    "model": "settler"
+  },
+  {
+    "type": "unit",
     "id": "unit_warrior",
     "name": "Warrior",
     "class": "class_melee",
