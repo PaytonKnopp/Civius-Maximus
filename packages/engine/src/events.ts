@@ -19,7 +19,11 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } & (
   | { type: 'turn_ended_by_player'; player: PlayerId }
   | { type: 'turn_unended_by_player'; player: PlayerId }
   | { type: 'turn_started'; turn: number }
-  | { type: 'game_ended'; reason: 'turn_limit' | 'conquest'; winner: PlayerId | null }
+  | {
+      type: 'game_ended';
+      reason: 'score' | 'conquest' | 'domination';
+      winner: PlayerId | null;
+    }
   /** `path` starts at the tile the unit left. */
   | { type: 'unit_moved'; unit: UnitId; owner: PlayerId; path: number[] }
   | {

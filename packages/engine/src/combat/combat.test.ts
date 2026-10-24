@@ -157,6 +157,7 @@ describe('settlements at war', () => {
 
   it('fall to a melee unit at 0 health; the captor keeps, razes or liberates', () => {
     const { s, capital, town } = siege(true);
+    s.settings.domination = false;
     s.settlements[capital]!.health = 1;
     s.settlements[capital]!.population = 4;
     const a = addUnit(s, 'p1', 'unit_swordsman', at(s, 3, 2));
@@ -181,6 +182,16 @@ describe('settlements at war', () => {
     expect(choose('keep')).toBeUndefined();
     // Unanswered, the choice is "keep" at the end of the turn.
     expect(endTurn(r.state).settlements[capital]!.captureChoice).toBe(false);
+  });
+
+  it('holding every rival original capital is a domination victory', () => {
+    const { s, capital } = siege(true);
+    s.settings.domination = true;
+    s.settlements[capital]!.health = 1;
+    const a = addUnit(s, 'p1', 'unit_swordsman', at(s, 3, 2));
+    const r = act(s, { type: 'attack', player: 'p1', unit: a.id, tile: at(s, 4, 2) });
+    expect(r.state.players.p2!.alive).toBe(true);
+    expect(event(r.events, 'game_ended')).toMatchObject({ reason: 'domination', winner: 'p1' });
   });
 
   it('can be razed if it was never a capital', () => {

@@ -1,12 +1,14 @@
 import {
   type Action,
   atWar,
+  dominationProgress,
   type EngineContext,
   type GameState,
   liberateProblem,
   peaceProblem,
   type PlayerId,
   razeProblem,
+  scoreOf,
   warKey,
   warWeariness,
 } from '@cx/engine';
@@ -33,6 +35,8 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
   const theyOffer = state.peaceOffers.includes(`${other}>${viewer}`);
   const weOffered = state.peaceOffers.includes(`${viewer}>${other}`);
   const peace = peaceProblem(ctx, state, viewer, other);
+  const score = scoreOf(ctx, state, other);
+  const domination = dominationProgress(state, other);
   const support = state.warSupport[warKey(viewer, other)] ?? {};
   const weariness = warWeariness(ctx, state, viewer);
   const settlements = Object.values(state.settlements).filter((s) => s.owner === other).length;
@@ -58,6 +62,10 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
           ✕
         </button>
       </div>
+      <p className="hint" title={score.lines.map((l) => `${l.label}: ${l.amount}`).join('\n')}>
+        Score {score.total}
+        {domination.needed > 0 && ` · holds ${domination.held}/${domination.needed} rival capitals`}
+      </p>
       {p.alive && (
         <>
           <p className={`relation ${war ? 'war' : 'peace'}`}>
@@ -218,16 +226,30 @@ export function CaptureDialog({ ctx, state, viewer, id, act }: CaptureProps) {
 
 interface GameOverProps {
   won: boolean;
+  title: string;
   text: string;
+  scores: { name: string; player: string; score: number; alive: boolean }[];
   onClose: () => void;
 }
 
-export function GameOver({ won, text, onClose }: GameOverProps) {
+export function GameOver({ won, title, text, scores, onClose }: GameOverProps) {
   return (
     <div className="modal-backdrop">
       <div className={`modal game-over ${won ? 'won' : 'lost'}`} role="alertdialog">
-        <h2>{won ? 'Victory' : 'Defeat'}</h2>
+        <p className="game-over-kicker">{won ? 'Victory' : 'Defeat'}</p>
+        <h2>{title}</h2>
         <p>{text}</p>
+        <table className="scores">
+          <tbody>
+            {scores.map((s) => (
+              <tr key={s.name + s.player} className={s.alive ? '' : 'dead'}>
+                <td>{s.name}</td>
+                <td className="muted">{s.player}</td>
+                <td className="mono">{s.score}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         <div className="modal-actions">
           <button type="button" className="primary" onClick={onClose}>
             Look at the map

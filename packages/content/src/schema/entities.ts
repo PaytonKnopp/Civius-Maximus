@@ -304,6 +304,20 @@ export const RulesDef = z.strictObject({
       maxUnhappiness: z.int().min(0),
     }),
   }),
+  /** Score (docs/03-core-mechanics.md, section 11): decides the score victory at the turn limit. */
+  score: z.strictObject({
+    perCitizen: z.int().min(0),
+    perTown: z.int().min(0),
+    perCity: z.int().min(0),
+    perTech: z.int().min(0),
+    perCivic: z.int().min(0),
+    perWonder: z.int().min(0),
+    perDistrict: z.int().min(0),
+    /** Per era reached beyond the first. */
+    perEra: z.int().min(0),
+    /** Per enemy unit destroyed. */
+    perKill: z.int().min(0),
+  }),
   /** Hostile camps: raiders that belong to no one and attack everyone. */
   camps: z.strictObject({
     /** One camp per this many land tiles, at the start and at most (0 = no camps). */

@@ -148,12 +148,25 @@ Simultaneous turns are played live, so notifications are mostly about getting ev
 
 - A "pass the device" screen hides the map between players.
 - Uses the same engine and rules. Turns are taken one player at a time on the shared screen.
+- **Built so far (M10):** 1–8 human players plus AI rivals, chosen in the new-game dialog.
+  Within each (simultaneous) turn the humans play one after another in turn order; ending your
+  turn brings up the pass screen for the next one, and once everyone is done the turn is
+  processed and the first player is up again (D51). Each player starts their turn with a
+  summary of what they could see happen since their last one (wars, captures, kills, growth,
+  wonders...). Undo isn't there yet.
 
 ## Spectators and eliminated players
 
 - The host can allow spectators (via the join code), who get full-map or team views.
 - Eliminated players can choose to keep spectating with full vision (and are muted in all-chat,
   optionally, so they can't spill secrets).
+
+## Saving (built in M10)
+
+- **Save / Load** in the top bar: named saves kept in the browser (IndexedDB), an autosave at
+  the start of every turn, and export/import as a file (D52). A save is the whole game state as
+  JSON; it only loads with the same content (base + mods), since other rules would play
+  differently.
 
 ## End of game
 

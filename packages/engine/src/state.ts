@@ -13,6 +13,8 @@ export interface GameState {
   contentHash: string;
   settings: GameSettings;
   status: 'playing' | 'ended';
+  /** How the game ended, once it has. */
+  result: { reason: 'score' | 'conquest' | 'domination'; winner: PlayerId | null } | null;
   /** Starts at 1. */
   turn: number;
   rng: RngState;
@@ -155,6 +157,8 @@ export interface GameSettings {
   map: MapSettings;
   /** Hostile camps (on unless false). */
   camps?: boolean | undefined;
+  /** Domination victory (on unless false). */
+  domination?: boolean | undefined;
 }
 
 export interface PlayerState {
@@ -182,6 +186,8 @@ export interface PlayerState {
   capital: SettlementId | null;
   /** How many settlements this player has founded (picks the next name). */
   settlementsFounded: number;
+  /** Enemy units destroyed (for score). */
+  kills: number;
   /** The tech tree (paid with science) and the civics tree (paid with culture). */
   techs: Track;
   civics: Track;

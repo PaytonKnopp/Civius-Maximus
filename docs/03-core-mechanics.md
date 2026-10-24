@@ -562,3 +562,6 @@ military unit onto a camp clears it for 50 gold. The new-game dialog can turn ca
 
 - Score from population, wonders, techs, civics, great people, eras and military. It's shown in
   reports and decides a **score victory** at the turn limit.
+- **Built so far (M10):** 1 per citizen, 5 per city, 2 per town, 2 per tech, 2 per civic, 10 per
+  wonder, 2 per district, 10 per era past the first, 1 per enemy unit destroyed (D50). Shown on
+  each player's chip and panel and on the end-of-game screen.

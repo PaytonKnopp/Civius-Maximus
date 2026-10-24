@@ -8,6 +8,7 @@ import { generateMap } from './map/generate';
 import { makeRandom } from './map/random';
 import type { StartBias } from './map/types';
 import { createRng } from './rng';
+import { scoreVictory } from './victory';
 import { checkBoosts, progressHandlers } from './progress/handlers';
 import { newProgress } from './progress/sources';
 import { settlementHandlers, settlementsTurn } from './settlements/handlers';
@@ -98,6 +99,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       faith: 0,
       capital: null,
       settlementsFounded: 0,
+      kills: 0,
       ...newProgress(ctx),
     };
   }
@@ -107,6 +109,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     contentHash: ctx.content.hash,
     settings: { ...setup.settings, map: { ...setup.settings.map } },
     status: 'playing',
+    result: null,
     turn: 1,
     rng: random.state(),
     players,
@@ -177,8 +180,7 @@ function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   }
   const limit = draft.settings.turnLimit;
   if (limit !== null && draft.turn >= limit) {
-    draft.status = 'ended';
-    emit({ type: 'game_ended', reason: 'turn_limit', winner: null, visibleTo: 'all' });
+    scoreVictory(draft, ctx, emit);
     return;
   }
   draft.turn += 1;

@@ -1,6 +1,8 @@
 import { compileFromDirs } from '@cx/content/node';
 import { describe, expect, it } from 'vitest';
+import { stateHash } from '@cx/engine';
 import { LocalGame } from './local';
+import { makeSave, readSave } from './saves';
 
 const ctx = { content: compileFromDirs().content! };
 
@@ -75,5 +77,43 @@ describe('a long game with raiders', () => {
       expect(r.ok).toBe(true);
     }
     expect(game.state.turn).toBe(41);
+  });
+});
+
+describe('saves', () => {
+  it('round-trip through JSON and play on', () => {
+    const game = new LocalGame(setup(['human', 'ai']), ctx);
+    game.act({ type: 'end_turn', player: 'p1' });
+    const text = JSON.stringify(makeSave(game.state, 'Test'));
+    const read = readSave(text, ctx);
+    expect(read.ok).toBe(true);
+    if (!read.ok) return;
+    const loaded = new LocalGame(read.save.state, ctx);
+    expect(stateHash(loaded.state)).toBe(stateHash(game.state));
+    expect(loaded.act({ type: 'end_turn', player: 'p1' }).ok).toBe(true);
+    expect(loaded.state.turn).toBe(3);
+  });
+
+  it('refuse other content and non-saves', () => {
+    const game = new LocalGame(setup(['human', 'ai']), ctx);
+    const save = makeSave(game.state, 'Test');
+    expect(readSave('{"hello":1}', ctx).ok).toBe(false);
+    expect(readSave('not json', ctx).ok).toBe(false);
+    const other = readSave(JSON.stringify({ ...save, contentHash: 'x' }), ctx);
+    expect(!other.ok && other.message).toMatch(/different rules/);
+  });
+});
+
+describe('hotseat', () => {
+  it('passes the turn from human to human, then advances', () => {
+    const game = new LocalGame(setup(['human', 'human', 'ai']), ctx);
+    expect(game.humans()).toEqual(['p1', 'p2']);
+    expect(game.nextHuman()).toBe('p1');
+    game.act({ type: 'end_turn', player: 'p1' });
+    expect(game.nextHuman()).toBe('p2');
+    expect(game.state.turn).toBe(1);
+    game.act({ type: 'end_turn', player: 'p2' });
+    expect(game.state.turn).toBe(2);
+    expect(game.nextHuman()).toBe('p1');
   });
 });

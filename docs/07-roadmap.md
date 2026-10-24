@@ -116,8 +116,11 @@ features on top.
 - Moved later: **commanders** (pack/unpack, command radius), after the M10 checkpoint, so how
   armies move can be shaped by playing. Puppets wait for loyalty.
 
-### M10 · Hotseat alpha 🎮
+### M10 · Hotseat alpha 🎮 ✅
 - 2–8 player hotseat, a turn summary, domination and score victories, and save/load.
+- Built: the new-game dialog (players, AI rivals, turn limit, camps, domination), the pass
+  screen, per-player turn summaries, score, the three victories with an end screen, saves in
+  the browser with an autosave each turn, and save files. Next comes the 🎮 checkpoint: play.
 - **Done when:** you and a friend can play a full Ancient → Medieval hotseat game on one machine.
 - 🎮 **Big checkpoint: play 2–3 games.** Expect balance and UX notes. These decide the order of
   everything after this point.

@@ -19,6 +19,7 @@ import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
 import { ownedUnit, watchers } from '../units/handlers';
 import { availablePromotions, nextPromotionXp } from '../units/promotions';
 import { canTraverse, fullMoves, hasRoom, unitsOn } from '../units/movement';
+import { checkVictory } from '../victory';
 import { clearCampsOn } from './camps';
 import { damageFor } from './damage';
 import {
@@ -97,6 +98,7 @@ export function killUnit(
   const visibleTo = watchers(ctx, current(draft), owner, [tile]);
   delete draft.units[id];
   emit({ type: 'unit_killed', unit: id, owner, unitType: type, tile, by, visibleTo });
+  if (by !== owner && draft.players[by] && by !== HOSTILE) draft.players[by]!.kills++;
   addWarSupport(draft, ctx, by, owner, ctx.content.rules.combat.warSupport.kill);
 }
 
@@ -187,11 +189,6 @@ function checkDefeat(draft: Draft<GameState>, player: PlayerId, by: PlayerId | n
     if (k.split('|').includes(player)) delete draft.warSupport[k];
   }
   emit({ type: 'player_defeated', player, by, visibleTo: 'all' });
-  const alive = draft.playerOrder.filter((id) => draft.players[id]!.alive);
-  if (alive.length === 1 && draft.playerOrder.length > 1) {
-    draft.status = 'ended';
-    emit({ type: 'game_ended', reason: 'conquest', winner: alive[0]!, visibleTo: 'all' });
-  }
 }
 
 /** `captor` takes a settlement with unit `unitId` (whose health brought it to 0). */
@@ -246,6 +243,7 @@ export function captureSettlement(
   addWarSupport(draft, ctx, captor, from, ctx.content.rules.combat.warSupport.capture);
   if (wasCapital) relocateCapital(draft, ctx, from, emit);
   checkDefeat(draft, from, captor, emit);
+  checkVictory(draft, emit);
 }
 
 function raze(draft: Draft<GameState>, id: string, emit: Emit) {

@@ -62,6 +62,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     faith: 0,
     capital: null,
     settlementsFounded: 0,
+    kills: 0,
     ...newProgress(ctx),
   });
   return {
@@ -80,6 +81,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
       },
     },
     status: 'playing',
+    result: null,
     turn: 1,
     rng: createRng('s'),
     players: { p1: player('p1'), p2: player('p2') },

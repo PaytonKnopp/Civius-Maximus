@@ -17372,6 +17372,68 @@
               ],
               "additionalProperties": false
             },
+            "score": {
+              "type": "object",
+              "properties": {
+                "perCitizen": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perTown": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perCity": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perTech": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perCivic": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perWonder": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perDistrict": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perEra": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perKill": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "perCitizen",
+                "perTown",
+                "perCity",
+                "perTech",
+                "perCivic",
+                "perWonder",
+                "perDistrict",
+                "perEra",
+                "perKill"
+              ],
+              "additionalProperties": false
+            },
             "camps": {
               "type": "object",
               "properties": {
@@ -17573,6 +17635,7 @@
             "progress",
             "units",
             "combat",
+            "score",
             "camps",
             "mapgen"
           ],
@@ -35082,6 +35145,68 @@
                 ],
                 "additionalProperties": false
               },
+              "score": {
+                "type": "object",
+                "properties": {
+                  "perCitizen": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perTown": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perCity": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perTech": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perCivic": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perWonder": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perDistrict": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perEra": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perKill": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "perCitizen",
+                  "perTown",
+                  "perCity",
+                  "perTech",
+                  "perCivic",
+                  "perWonder",
+                  "perDistrict",
+                  "perEra",
+                  "perKill"
+                ],
+                "additionalProperties": false
+              },
               "camps": {
                 "type": "object",
                 "properties": {
@@ -35283,6 +35408,7 @@
               "progress",
               "units",
               "combat",
+              "score",
               "camps",
               "mapgen"
             ],

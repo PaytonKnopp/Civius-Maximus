@@ -224,5 +224,16 @@
         "units": ["unit_swordsman", "unit_crossbowman", "unit_horseman"]
       }
     ]
+  },
+  "score": {
+    "perCitizen": 1,
+    "perTown": 2,
+    "perCity": 5,
+    "perTech": 2,
+    "perCivic": 2,
+    "perWonder": 10,
+    "perDistrict": 2,
+    "perEra": 10,
+    "perKill": 1
   }
 }

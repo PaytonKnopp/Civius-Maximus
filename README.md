@@ -7,11 +7,11 @@ Built from the ground up to be modded: leaders, civs, units and rules are all da
 > **Play it:** https://paytonknopp.github.io/Civius-Maximus/ (deployed from `main` by
 > `.github/workflows/pages.yml`).
 >
-> **Status:** M9 done: found settlements and grow them by developing tiles; research through the
-> tech and civics trees (Ancient → Medieval); adopt governments and slot policy cards; place
-> districts by adjacency and race rivals for wonders; declare war, fight with a full combat
-> preview, besiege and take settlements, promote veterans, and clear hostile camps. 3D or 2D.
-> Next: M10, the hotseat alpha.
+> **Status:** M10 done, the hotseat alpha: play alone against AI rivals or pass the device
+> between up to 8 players. Found and grow settlements, research Ancient → Medieval, adopt
+> governments, place districts and race for wonders, fight with a full combat preview, take
+> settlements, promote veterans, clear hostile camps, and win by domination, conquest or score.
+> Save and load in the browser or as files. 3D or 2D. Next: the playtest checkpoint, then the AI.
 
 ## Design docs
 

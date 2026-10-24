@@ -1,21 +1,37 @@
 import type { CompiledContent } from '@cx/content';
-import type { GameSetup, MapSettings } from '@cx/engine';
-import { useMemo, useState } from 'react';
+import type { EngineContext, GameSetup, GameState, MapSettings } from '@cx/engine';
+import { type LocalGame, makeSave, readSave } from '@cx/host';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadContent } from './content';
-import { GameScreen } from './game/GameScreen';
+import { type GameStart, GameScreen } from './game/GameScreen';
+import {
+  AUTOSAVE,
+  deleteSave,
+  downloadSave,
+  listSaves,
+  loadSave,
+  type SaveSummary,
+  storeSave,
+} from './game/storage';
 import { MapLab } from './lab/MapLab';
 import type { Quality } from './map/renderer';
 
 const randomSeed = () => Math.random().toString(36).slice(2, 8);
+let nextStart = 0;
+const startId = () => `start-${++nextStart}`;
 
 interface NewGameOptions {
   script: string;
   size: string;
+  /** Human players' names: one for single player, more for hotseat. */
+  humans: string[];
   rivals: number;
   seed: string;
   wrapX: boolean;
   resources: MapSettings['resources'];
   camps: boolean;
+  domination: boolean;
+  turnLimit: number | null;
 }
 
 function makeSetup(o: NewGameOptions): GameSetup {
@@ -24,7 +40,8 @@ function makeSetup(o: NewGameOptions): GameSetup {
     settings: {
       seed: o.seed,
       camps: o.camps,
-      turnLimit: null,
+      domination: o.domination,
+      turnLimit: o.turnLimit,
       map: {
         script: o.script,
         size: o.size,
@@ -34,9 +51,13 @@ function makeSetup(o: NewGameOptions): GameSetup {
       },
     },
     players: [
-      { id: 'p1', name: 'You', kind: 'human' },
+      ...o.humans.map((name, i) => ({
+        id: `p${i + 1}`,
+        name: name.trim() || `Player ${i + 1}`,
+        kind: 'human' as const,
+      })),
       ...Array.from({ length: o.rivals }, (_, i) => ({
-        id: `p${i + 2}`,
+        id: `p${o.humans.length + i + 1}`,
         name: `Rival ${i + 1}`,
         kind: 'ai' as const,
       })),
@@ -54,6 +75,7 @@ function hasWebGL2() {
 
 export function App() {
   const content = useMemo(loadContent, []);
+  const ctx: EngineContext = useMemo(() => ({ content }), [content]);
   // `#lab` opens the Map Lab directly (handy for sharing a map, and for the screenshot scripts).
   const [screen, setScreenState] = useState<'game' | 'lab'>(() =>
     location.hash === '#lab' ? 'lab' : 'game',
@@ -65,33 +87,47 @@ export function App() {
   const [options, setOptions] = useState<NewGameOptions>({
     script: 'continents',
     size: 'small',
+    humans: ['You'],
     rivals: 3,
     seed: randomSeed(),
     wrapX: true,
     resources: 'standard',
     camps: true,
+    domination: true,
+    turnLimit: null,
   });
-  const [setup, setSetup] = useState(() => makeSetup(options));
-  const [dialog, setDialog] = useState(false);
+  const [start, setStart] = useState<GameStart>(() => ({
+    id: startId(),
+    setup: makeSetup(options),
+  }));
+  const [dialog, setDialog] = useState<'new' | 'saves' | null>(null);
   const [mode, setMode] = useState<'3d' | '2d'>(() => (hasWebGL2() ? '3d' : '2d'));
   const [quality, setQuality] = useState<Quality>('medium');
+  const game = useRef<LocalGame>(undefined);
+  const onGame = useCallback((g: LocalGame) => {
+    game.current = g;
+  }, []);
 
   if (screen === 'lab') return <MapLab content={content} onBack={() => setScreen('game')} />;
 
   return (
     <div className="app">
       <GameScreen
-        key={setup.gameId}
+        key={start.id}
         content={content}
-        setup={setup}
+        start={start}
         mode={mode}
         quality={quality}
+        onGame={onGame}
       />
       <header className="game-bar">
         <span className="brand-name">Civius Maximus</span>
         <div className="bar-actions">
-          <button type="button" className="ghost small" onClick={() => setDialog(true)}>
+          <button type="button" className="ghost small" onClick={() => setDialog('new')}>
             New game
+          </button>
+          <button type="button" className="ghost small" onClick={() => setDialog('saves')}>
+            Save / Load
           </button>
           <button type="button" className="ghost small" onClick={() => setScreen('lab')}>
             Map Lab
@@ -123,15 +159,26 @@ export function App() {
           )}
         </div>
       </header>
-      {dialog && (
+      {dialog === 'new' && (
         <NewGameDialog
           content={content}
           initial={options}
-          onCancel={() => setDialog(false)}
+          onCancel={() => setDialog(null)}
           onStart={(o) => {
             setOptions(o);
-            setSetup(makeSetup(o));
-            setDialog(false);
+            setStart({ id: startId(), setup: makeSetup(o) });
+            setDialog(null);
+          }}
+        />
+      )}
+      {dialog === 'saves' && (
+        <SavesDialog
+          ctx={ctx}
+          current={() => game.current?.state}
+          onClose={() => setDialog(null)}
+          onLoad={(state) => {
+            setStart({ id: startId(), state });
+            setDialog(null);
           }}
         />
       )}
@@ -154,6 +201,8 @@ function NewGameDialog({
   const sizes = [...content.ids.mapSize].sort(
     (a, b) => content.entities.mapSize[a]!.order - content.entities.mapSize[b]!.order,
   );
+  const total = o.humans.length + o.rivals;
+  const hotseat = o.humans.length > 1;
   return (
     <div className="dialog-backdrop" role="presentation" onClick={onCancel}>
       <form
@@ -163,13 +212,49 @@ function NewGameDialog({
         onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => {
           e.preventDefault();
-          onStart(o);
+          if (total >= 2) onStart(o);
         }}
       >
         <h2 id="new-game-title">New game</h2>
-        <p className="hint">
-          The full setup screen (speeds, victories, every option) comes with the hotseat milestone.
-        </p>
+        <fieldset className="players-field">
+          <legend>
+            Players{' '}
+            <span className="muted small-text">
+              {hotseat ? 'Hotseat: pass the device each turn' : 'Single player'}
+            </span>
+          </legend>
+          {o.humans.map((name, i) => (
+            <div key={i} className="player-row">
+              <input
+                aria-label={`Player ${i + 1} name`}
+                value={name}
+                maxLength={24}
+                onChange={(e) =>
+                  setO({ ...o, humans: o.humans.map((n, k) => (k === i ? e.target.value : n)) })
+                }
+              />
+              {o.humans.length > 1 && (
+                <button
+                  type="button"
+                  className="ghost small"
+                  aria-label={`Remove ${name || `player ${i + 1}`}`}
+                  onClick={() => setO({ ...o, humans: o.humans.filter((_, k) => k !== i) })}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+          {o.humans.length < 8 && (
+            <button
+              type="button"
+              className="ghost small add-player"
+              onClick={() => setO({ ...o, humans: [...o.humans, `Player ${o.humans.length + 1}`] })}
+            >
+              + Add a player (hotseat)
+            </button>
+          )}
+        </fieldset>
         <label htmlFor="ng-script">Map type</label>
         <select
           id="ng-script"
@@ -192,7 +277,10 @@ function NewGameDialog({
                 setO({
                   ...o,
                   size: e.target.value,
-                  rivals: content.entities.mapSize[e.target.value]!.players - 1,
+                  rivals: Math.max(
+                    0,
+                    content.entities.mapSize[e.target.value]!.players - o.humans.length,
+                  ),
                 })
               }
             >
@@ -204,15 +292,15 @@ function NewGameDialog({
             </select>
           </div>
           <div>
-            <label htmlFor="ng-rivals">Rivals</label>
+            <label htmlFor="ng-rivals">AI rivals</label>
             <input
               id="ng-rivals"
               type="number"
-              min={1}
+              min={0}
               max={15}
               value={o.rivals}
               onChange={(e) =>
-                setO({ ...o, rivals: Math.max(1, Math.min(15, Number(e.target.value) || 1)) })
+                setO({ ...o, rivals: Math.max(0, Math.min(15, Number(e.target.value) || 0)) })
               }
             />
           </div>
@@ -233,15 +321,30 @@ function NewGameDialog({
             </select>
           </div>
           <div>
-            <label htmlFor="ng-seed">Seed</label>
-            <input
-              id="ng-seed"
-              value={o.seed}
-              onChange={(e) => setO({ ...o, seed: e.target.value })}
-              spellCheck={false}
-            />
+            <label htmlFor="ng-limit">Turn limit</label>
+            <select
+              id="ng-limit"
+              value={o.turnLimit ?? ''}
+              onChange={(e) =>
+                setO({ ...o, turnLimit: e.target.value ? Number(e.target.value) : null })
+              }
+            >
+              <option value="">None</option>
+              {[60, 100, 150, 200, 250].map((n) => (
+                <option key={n} value={n}>
+                  {n} turns
+                </option>
+              ))}
+            </select>
           </div>
         </div>
+        <label htmlFor="ng-seed">Seed</label>
+        <input
+          id="ng-seed"
+          value={o.seed}
+          onChange={(e) => setO({ ...o, seed: e.target.value })}
+          spellCheck={false}
+        />
         <label className="check" htmlFor="ng-wrap">
           <input
             id="ng-wrap"
@@ -260,15 +363,163 @@ function NewGameDialog({
           />
           Hostile camps (raiders)
         </label>
+        <label className="check" htmlFor="ng-domination">
+          <input
+            id="ng-domination"
+            type="checkbox"
+            checked={o.domination}
+            onChange={(e) => setO({ ...o, domination: e.target.checked })}
+          />
+          Domination victory (hold every rival&apos;s original capital)
+        </label>
+        <p className="hint">
+          The last civilization standing always wins. With a turn limit, the highest score wins when
+          it&apos;s reached.
+        </p>
+        {total < 2 && <p className="error">A game needs at least two players.</p>}
         <div className="dialog-actions">
           <button type="button" className="ghost" onClick={onCancel}>
             Cancel
           </button>
-          <button type="submit" className="primary">
+          <button type="submit" className="primary" disabled={total < 2}>
             Start game
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+function SavesDialog({
+  ctx,
+  current,
+  onClose,
+  onLoad,
+}: {
+  ctx: EngineContext;
+  current: () => GameState | undefined;
+  onClose: () => void;
+  onLoad: (state: GameState) => void;
+}) {
+  const [saves, setSaves] = useState<SaveSummary[] | null>(null);
+  const [name, setName] = useState(() => `Turn ${current()?.turn ?? 1}`);
+  const [message, setMessage] = useState<string | null>(null);
+  const file = useRef<HTMLInputElement>(null);
+  const refresh = useCallback(() => {
+    listSaves()
+      .then(setSaves)
+      .catch(() => {
+        setSaves([]);
+        setMessage("This browser can't keep saved games here; use Export file instead.");
+      });
+  }, []);
+  useEffect(refresh, [refresh]);
+
+  const save = async () => {
+    const state = current();
+    if (!state) return;
+    try {
+      await storeSave(`save-${Date.now()}`, makeSave(state, name.trim() || `Turn ${state.turn}`));
+      setMessage('Saved.');
+      refresh();
+    } catch {
+      setMessage('Saving failed (is the browser out of space?). Try Export file.');
+    }
+  };
+  const load = async (id: string) => {
+    const s = await loadSave(id).catch(() => undefined);
+    const read = s ? readSave(JSON.stringify(s), ctx) : undefined;
+    if (!read) setMessage('That save is gone.');
+    else if (!read.ok) setMessage(read.message);
+    else onLoad(read.save.state);
+  };
+  const importFile = async (f: File) => {
+    const read = readSave(await f.text(), ctx);
+    if (!read.ok) setMessage(read.message);
+    else onLoad(read.save.state);
+  };
+
+  return (
+    <div className="dialog-backdrop" role="presentation" onClick={onClose}>
+      <div
+        className="dialog saves"
+        role="dialog"
+        aria-labelledby="saves-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="saves-title">Save / Load</h2>
+        <form
+          className="save-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void save();
+          }}
+        >
+          <input aria-label="Save name" value={name} onChange={(e) => setName(e.target.value)} />
+          <button type="submit" className="primary">
+            Save game
+          </button>
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => {
+              const state = current();
+              if (state) downloadSave(makeSave(state, name.trim() || `Turn ${state.turn}`));
+            }}
+          >
+            Export file
+          </button>
+        </form>
+        {message && <p className="hint">{message}</p>}
+        <h3>Saved games</h3>
+        {saves === null ? (
+          <p className="hint">Loading…</p>
+        ) : saves.length === 0 ? (
+          <p className="hint">No saved games yet. An autosave is made at the start of each turn.</p>
+        ) : (
+          <ul className="save-list">
+            {saves.map((s) => (
+              <li key={s.id}>
+                <span className="save-name">
+                  <strong>{s.id === AUTOSAVE ? 'Autosave' : s.name}</strong>
+                  <span className="muted small-text">
+                    turn {s.turn} · {new Date(s.savedAt).toLocaleString()}
+                  </span>
+                </span>
+                <button type="button" className="primary small" onClick={() => void load(s.id)}>
+                  Load
+                </button>
+                <button
+                  type="button"
+                  className="ghost small"
+                  aria-label={`Delete ${s.name}`}
+                  onClick={() => void deleteSave(s.id).then(refresh)}
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="dialog-actions">
+          <input
+            ref={file}
+            type="file"
+            accept=".json,application/json"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void importFile(f);
+            }}
+          />
+          <button type="button" className="ghost" onClick={() => file.current?.click()}>
+            Import file…
+          </button>
+          <button type="button" className="primary" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
