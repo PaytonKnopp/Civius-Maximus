@@ -1,0 +1,262 @@
+[
+  {
+    "type": "leader",
+    "id": "leader_caesar",
+    "name": "Julius Caesar",
+    "civ": "civ_rome",
+    "ability": {
+      "name": "Crossing the Rubicon",
+      "description": "Declaring war gives your units +5 strength for 10 turns. Each settlement you capture gives 50 gold per citizen."
+    },
+    "agenda": {
+      "name": "Imperator",
+      "description": "Respects big armies. Dislikes smaller empires that turn down his deals."
+    },
+    "personality": {
+      "aggression": 8,
+      "expansion": 8,
+      "science": 5,
+      "culture": 4,
+      "wonders": 4,
+      "faith": 3,
+      "gold": 5,
+      "naval": 4,
+      "diplomacy": 4,
+      "districts": 5
+    }
+  },
+  {
+    "type": "leader",
+    "id": "leader_cleopatra",
+    "name": "Cleopatra",
+    "civ": "civ_egypt",
+    "ability": {
+      "name": "Serpent of the Nile",
+      "description": "Each deal you sign gives +1 influence a turn while it lasts. Trade routes to other players give +2 gold to both sides."
+    },
+    "agenda": {
+      "name": "Allure",
+      "description": "Likes strong militaries. Dislikes weak ones."
+    },
+    "personality": {
+      "aggression": 3,
+      "expansion": 5,
+      "science": 5,
+      "culture": 6,
+      "wonders": 8,
+      "faith": 6,
+      "gold": 6,
+      "naval": 4,
+      "diplomacy": 8,
+      "districts": 6
+    }
+  },
+  {
+    "type": "leader",
+    "id": "leader_alexander",
+    "name": "Alexander the Great",
+    "civ": "civ_macedon",
+    "ability": {
+      "name": "Never Defeated",
+      "description": "Your war support never fades. Capturing a settlement fully heals all your units."
+    },
+    "agenda": {
+      "name": "Conqueror",
+      "description": "Dislikes players who are at peace with everyone."
+    },
+    "personality": {
+      "aggression": 10,
+      "expansion": 6,
+      "science": 5,
+      "culture": 3,
+      "wonders": 3,
+      "faith": 3,
+      "gold": 4,
+      "naval": 3,
+      "diplomacy": 3,
+      "districts": 5
+    }
+  },
+  {
+    "type": "leader",
+    "id": "leader_genghis",
+    "name": "Genghis Khan",
+    "civ": "civ_mongols",
+    "ability": {
+      "name": "Khan of the Steppe",
+      "description": "Cavalry +3 strength. Defeating an enemy cavalry unit can capture it."
+    },
+    "agenda": {
+      "name": "Horde",
+      "description": "Respects mounted armies. Dislikes players with few cavalry."
+    },
+    "personality": {
+      "aggression": 10,
+      "expansion": 8,
+      "science": 3,
+      "culture": 3,
+      "wonders": 2,
+      "faith": 3,
+      "gold": 5,
+      "naval": 2,
+      "diplomacy": 3,
+      "districts": 4
+    }
+  },
+  {
+    "type": "leader",
+    "id": "leader_elizabeth",
+    "name": "Elizabeth I",
+    "civ": "civ_england",
+    "ability": {
+      "name": "Gloriana",
+      "description": "Naval units +1 movement and +3 strength. Coastal settlements +1 gold."
+    },
+    "agenda": {
+      "name": "Queen of the Seas",
+      "description": "Likes players with big navies who stay off her continent."
+    },
+    "personality": {
+      "aggression": 6,
+      "expansion": 6,
+      "science": 6,
+      "culture": 5,
+      "wonders": 4,
+      "faith": 4,
+      "gold": 7,
+      "naval": 9,
+      "diplomacy": 5,
+      "districts": 5
+    }
+  },
+  {
+    "type": "leader",
+    "id": "leader_napoleon",
+    "name": "Napoleon Bonaparte",
+    "civ": "civ_france",
+    "ability": {
+      "name": "Emperor of the French",
+      "description": "Commanders gain XP 50% faster. Units within a commander's radius get +2 strength."
+    },
+    "agenda": {
+      "name": "Grand Strategist",
+      "description": "Respects players with commanders and big armies. Dislikes players who beat him in war."
+    },
+    "personality": {
+      "aggression": 8,
+      "expansion": 6,
+      "science": 5,
+      "culture": 6,
+      "wonders": 6,
+      "faith": 3,
+      "gold": 5,
+      "naval": 4,
+      "diplomacy": 4,
+      "districts": 5
+    }
+  },
+  {
+    "type": "leader",
+    "id": "leader_lincoln",
+    "name": "Abraham Lincoln",
+    "civ": "civ_america",
+    "ability": {
+      "name": "A House United",
+      "description": "Settlements on your home continent +2 happiness. Each Industrial Zone grants a free melee unit."
+    },
+    "agenda": {
+      "name": "Union",
+      "description": "Dislikes players who start surprise wars. Likes players who keep their promises."
+    },
+    "personality": {
+      "aggression": 3,
+      "expansion": 6,
+      "science": 6,
+      "culture": 8,
+      "wonders": 5,
+      "faith": 4,
+      "gold": 6,
+      "naval": 4,
+      "diplomacy": 8,
+      "districts": 6
+    }
+  },
+  {
+    "type": "leader",
+    "id": "leader_qin",
+    "name": "Qin Shi Huang",
+    "civ": "civ_china",
+    "ability": {
+      "name": "The First Emperor",
+      "description": "The first military unit each city trains is free. +15% production toward Ancient and Classical wonders."
+    },
+    "agenda": {
+      "name": "Wonder of the World",
+      "description": "Likes players who build wonders. Envies anyone who beats him to one."
+    },
+    "personality": {
+      "aggression": 4,
+      "expansion": 6,
+      "science": 8,
+      "culture": 6,
+      "wonders": 10,
+      "faith": 4,
+      "gold": 5,
+      "naval": 3,
+      "diplomacy": 5,
+      "districts": 6
+    }
+  },
+  {
+    "type": "leader",
+    "id": "leader_mansa",
+    "name": "Mansa Musa",
+    "civ": "civ_mali",
+    "ability": {
+      "name": "Pilgrimage of Gold",
+      "description": "+1 gold for each desert tile near your settlements. Buildings can be bought with faith."
+    },
+    "agenda": {
+      "name": "Richest Man in History",
+      "description": "Likes players with large trade networks. Dislikes poor ones."
+    },
+    "personality": {
+      "aggression": 2,
+      "expansion": 6,
+      "science": 5,
+      "culture": 5,
+      "wonders": 5,
+      "faith": 8,
+      "gold": 10,
+      "naval": 4,
+      "diplomacy": 7,
+      "districts": 5
+    }
+  },
+  {
+    "type": "leader",
+    "id": "leader_nobunaga",
+    "name": "Oda Nobunaga",
+    "civ": "civ_japan",
+    "ability": {
+      "name": "The Demon King",
+      "description": "Melee units +5 strength when attacking a damaged unit. Gunpowder units cost 25% less."
+    },
+    "agenda": {
+      "name": "Unifier",
+      "description": "Respects players who take settlements. Dislikes players with weak armies."
+    },
+    "personality": {
+      "aggression": 8,
+      "expansion": 5,
+      "science": 6,
+      "culture": 5,
+      "wonders": 4,
+      "faith": 4,
+      "gold": 5,
+      "naval": 6,
+      "diplomacy": 4,
+      "districts": 9
+    }
+  }
+]

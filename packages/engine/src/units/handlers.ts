@@ -15,6 +15,7 @@ import { clearCampsOn } from '../combat/camps';
 import { canTraverse, fullMoves, hasRoom } from './movement';
 import { findPath, type PathStep } from './pathfind';
 import { exploreVisible, lineOfSight, sightOf } from './vision';
+import { unitSnapshot } from '../draft';
 
 type UnitAction<T extends Action['type']> = Extract<Action, { type: T }>;
 
@@ -96,6 +97,8 @@ export function advanceAlongPath(
   path: PathStep[],
   target: number,
   emit: Emit,
+  /** A `current()` copy to read the map from (see `unitSnapshot`), when moving many units. */
+  base?: GameState,
 ) {
   const unit = draft.units[unitId]!;
   const start = unit.tile;
@@ -107,7 +110,7 @@ export function advanceAlongPath(
   }
   unit.orders = now.length < path.length ? { kind: 'move', target } : null;
   if (now.length === 0) return;
-  const snapshot = current(draft);
+  const snapshot = base ? unitSnapshot(draft, base) : current(draft);
   // Raiders already know the whole map.
   if (unit.owner !== HOSTILE)
     draft.players[unit.owner]!.explored = exploreVisible(ctx, snapshot, unit.owner);
@@ -199,10 +202,11 @@ export function startTurnForUnits(draft: Draft<GameState>, ctx: EngineContext, e
     u.moves = fullMoves(ctx, u);
     u.skippedTurn = null;
   }
+  const base = current(draft);
   for (const id of unitIds(draft)) {
     const orders = draft.units[id]?.orders;
     if (orders?.kind !== 'move') continue;
-    const snapshot = current(draft);
+    const snapshot = unitSnapshot(draft, base);
     const path = findPath(ctx, snapshot, snapshot.units[id]!, orders.target);
     if (!path) {
       draft.units[id]!.orders = null;
@@ -214,7 +218,7 @@ export function startTurnForUnits(draft: Draft<GameState>, ctx: EngineContext, e
       });
       continue;
     }
-    advanceAlongPath(draft, ctx, id, path, orders.target, emit);
+    advanceAlongPath(draft, ctx, id, path, orders.target, emit, base);
   }
 }
 

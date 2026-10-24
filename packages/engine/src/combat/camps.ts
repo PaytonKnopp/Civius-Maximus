@@ -43,6 +43,7 @@ export function hostilePlayer(ctx: EngineContext, state: GameState): PlayerState
     explored: encodeBits(all),
     canEmbark: false,
     civ: '',
+    leader: '',
     gold: 0,
     faith: 0,
     capital: null,

@@ -180,3 +180,4 @@ export {
   SLOT_KINDS,
   sourcesFor,
 } from './progress/sources';
+export { type Act as AiAct, militaryStrength, personalityOf, playAiTurn } from './ai';

@@ -222,6 +222,9 @@ export function collectRefs(entity: AnyEntity): Ref[] {
     case 'civ':
     case 'era':
       break;
+    case 'leader':
+      out.push({ path: ['civ'], kind: 'civ', id: entity.civ });
+      break;
     case 'tech':
     case 'civic':
       ids(out, 'era', entity.era, ['era']);

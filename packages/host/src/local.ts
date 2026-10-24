@@ -7,16 +7,16 @@ import {
   type GameEvent,
   type GameSetup,
   type GameState,
+  playAiTurn,
   type PlayerId,
 } from '@cx/engine';
-import { placeholderAiActions } from './placeholder-ai';
 
 export type GameListener = (state: GameState, events: GameEvent[]) => void;
 
 /**
  * A game hosted in this browser tab: single player and hotseat use it directly, and the online
- * host (M13) wraps the same idea with a network transport. Until the AI exists (M11), AI seats
- * play a placeholder routine (found settlements, keep building) and end their turn at once.
+ * host (M13) wraps the same idea with a network transport. AI seats play their whole turn as soon
+ * as it starts (the engine's AI, `playAiTurn`).
  */
 export class LocalGame {
   state: GameState;
@@ -75,17 +75,13 @@ export class LocalGame {
       });
       if (waiting.length === 0) return;
       for (const player of waiting) {
-        const actions = [
-          ...placeholderAiActions(this.ctx, this.state, player),
-          { type: 'end_turn' as const, player },
-        ];
-        for (const action of actions) {
+        this.state = playAiTurn(this.ctx, this.state, player, (action) => {
           const r = applyAction(this.state, action, this.ctx);
-          if (r.ok) {
-            this.state = r.state;
-            events.push(...r.events);
-          }
-        }
+          if (!r.ok) return undefined;
+          this.state = r.state;
+          events.push(...r.events);
+          return r.state;
+        });
       }
     }
   }

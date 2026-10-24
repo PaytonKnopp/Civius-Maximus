@@ -179,6 +179,8 @@ export interface PlayerState {
   canEmbark: boolean;
   /** A `civ` content id. */
   civ: string;
+  /** A `leader` content id ('' for the raiders' owner). */
+  leader: string;
   /** Treasury, in hundredths. */
   gold: number;
   /** Faith stored, in hundredths (spent from M13). */
