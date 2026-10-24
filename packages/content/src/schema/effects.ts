@@ -53,11 +53,19 @@ export type Condition =
   | { settlement_kind: 'town' | 'city' }
   | { settlement_population_at_least: number }
   | { settlement_has_building: IdOrIds }
+  | { settlement_on_river: boolean }
+  /** Fewer than this many soldiers trained there so far. */
+  | { settlement_units_trained_below: number }
   // The player
   | { has_tech: Id }
   | { has_civic: Id }
   | { government_is: IdOrIds }
-  | { celebrating: boolean };
+  | { celebrating: boolean }
+  /** The player has reached this era (or a later one). */
+  | { era_at_least: Id }
+  // Tiles (more)
+  /** The tile is a settlement's center. */
+  | { tile_city_center: boolean };
 
 export const Condition: z.ZodType<Condition> = z.lazy(() =>
   z.union([
@@ -86,6 +94,10 @@ export const Condition: z.ZodType<Condition> = z.lazy(() =>
     z.strictObject({ has_civic: Id }),
     z.strictObject({ government_is: IdOrIds }),
     z.strictObject({ celebrating: z.boolean() }),
+    z.strictObject({ settlement_on_river: z.boolean() }),
+    z.strictObject({ settlement_units_trained_below: z.int().min(1) }),
+    z.strictObject({ era_at_least: Id }),
+    z.strictObject({ tile_city_center: z.boolean() }),
   ]),
 );
 
@@ -98,7 +110,14 @@ export const TileTarget = z.strictObject({
 export const SettlementTarget = z.strictObject({ scope: z.literal('settlements') });
 /** The player's empire as a whole. */
 export const PlayerTarget = z.strictObject({ scope: z.literal('player') });
-export const Target = z.discriminatedUnion('scope', [TileTarget, SettlementTarget, PlayerTarget]);
+/** The player's units (the effect's params narrow it, e.g. to cavalry). */
+export const UnitTarget = z.strictObject({ scope: z.literal('units') });
+export const Target = z.discriminatedUnion('scope', [
+  TileTarget,
+  SettlementTarget,
+  PlayerTarget,
+  UnitTarget,
+]);
 export type Target = z.infer<typeof Target>;
 
 const Amount = z.number().multipleOf(0.5);
@@ -137,22 +156,25 @@ const ModifyHappiness = z.strictObject({
   condition: Condition.optional(),
 });
 
+/** Which items an effect is about (empty = every item). */
+export const Toward = z
+  .strictObject({
+    kind: z.enum(['unit', 'building', 'district', 'wonder', 'project']).optional(),
+    unitClass: IdOrIds.optional(),
+    unit: IdOrIds.optional(),
+    building: IdOrIds.optional(),
+    district: IdOrIds.optional(),
+    wonder: IdOrIds.optional(),
+    /** Units only: soldiers (units of a class that fights). */
+    military: z.boolean().optional(),
+  })
+  .default({});
+export type Toward = z.infer<typeof Toward>;
+
 /** Faster (or slower) production toward some kinds of items. Leave `toward` empty for all. */
 const ModifyProduction = z.strictObject({
   effect: z.literal('modify_production'),
-  params: z.strictObject({
-    percent: Percent,
-    toward: z
-      .strictObject({
-        kind: z.enum(['unit', 'building', 'district', 'wonder', 'project']).optional(),
-        unitClass: IdOrIds.optional(),
-        unit: IdOrIds.optional(),
-        building: IdOrIds.optional(),
-        district: IdOrIds.optional(),
-        wonder: IdOrIds.optional(),
-      })
-      .default({}),
-  }),
+  params: z.strictObject({ percent: Percent, toward: Toward }),
   target: SettlementTarget,
   condition: Condition.optional(),
 });
@@ -192,10 +214,11 @@ const ModifyUnitUpkeep = z.strictObject({
   condition: Condition.optional(),
 });
 
+/** Cheaper (or dearer) purchases: everywhere (player) or in one settlement (a local effect). */
 const ModifyPurchaseCost = z.strictObject({
   effect: z.literal('modify_purchase_cost'),
   params: z.strictObject({ percent: Percent }),
-  target: PlayerTarget,
+  target: z.discriminatedUnion('scope', [PlayerTarget, SettlementTarget]),
   condition: Condition.optional(),
 });
 
@@ -227,6 +250,132 @@ export const Adjacency = z
   );
 export type Adjacency = z.infer<typeof Adjacency>;
 
+/** Items cost less (or more) production, and so less gold to buy. −100 makes them free. */
+const ModifyItemCost = z.strictObject({
+  effect: z.literal('modify_item_cost'),
+  params: z.strictObject({ percent: Percent, toward: Toward }),
+  target: SettlementTarget,
+  condition: Condition.optional(),
+});
+
+/** Combat strength for some of the player's units, in the situations named. */
+export const StrengthBonus = z.strictObject({
+  amount: z.int(),
+  when: z.enum(['attack', 'defend', 'always']).default('always'),
+  /** Only against these classes, against settlements, against ranged attacks, or wounded foes. */
+  vs: z
+    .strictObject({
+      classes: z.array(Id).min(1).optional(),
+      settlement: z.boolean().optional(),
+      ranged: z.boolean().optional(),
+      wounded: z.boolean().optional(),
+    })
+    .optional(),
+  /** Only when the unit stands (defending) or fights from (attacking) such a tile. */
+  on: z
+    .strictObject({
+      features: z.array(Id).min(1).optional(),
+      elevations: z.array(Elevation).min(1).optional(),
+    })
+    .optional(),
+});
+export type StrengthBonus = z.infer<typeof StrengthBonus>;
+
+const ModifyStrength = z.strictObject({
+  effect: z.literal('modify_strength'),
+  params: StrengthBonus.extend({
+    /** Only units of these classes. */
+    unitClass: IdOrIds.optional(),
+    /** Only for this many turns after the player declares a war. */
+    afterDeclaringWar: z.int().min(1).optional(),
+  }),
+  target: UnitTarget,
+  condition: Condition.optional(),
+});
+
+/** Units trained (or bought) start with a promotion; local to a building, or empire-wide. */
+const GrantPromotion = z.strictObject({
+  effect: z.literal('grant_promotion'),
+  params: z.strictObject({
+    promotion: Id,
+    unitClass: IdOrIds.optional(),
+    domain: z.enum(['land', 'sea', 'air']).optional(),
+  }),
+  target: SettlementTarget,
+  condition: Condition.optional(),
+});
+
+/** When the player captures a settlement. */
+const OnCapture = z.strictObject({
+  effect: z.literal('on_capture'),
+  params: z.strictObject({
+    /** Gold for each citizen the settlement has when taken. */
+    goldPerCitizen: z.int().min(0).default(0),
+    /** Every unit of the player heals fully. */
+    healUnits: z.boolean().default(false),
+    /** Boosts toward the cheapest unboosted techs or civics, per district in the settlement. */
+    boostsPerDistrict: z.int().min(0).default(0),
+  }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** When the player's unit destroys an enemy unit of these classes: a chance to take it instead. */
+const CaptureOnKill = z.strictObject({
+  effect: z.literal('capture_on_kill'),
+  params: z.strictObject({ unitClass: IdOrIds, percent: z.int().min(1).max(100) }),
+  target: UnitTarget,
+  condition: Condition.optional(),
+});
+
+/** Every new settlement the player founds starts with this building. */
+const FreeBuilding = z.strictObject({
+  effect: z.literal('free_building'),
+  params: z.strictObject({ building: Id }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** Tech and civic boosts give this much more (percent of the cost, added to the base). */
+const ModifyBoost = z.strictObject({
+  effect: z.literal('modify_boost'),
+  params: z.strictObject({ percent: Percent }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** Districts get this much more from each neighboring district (on top of the base). */
+const DistrictNeighborBonus = z.strictObject({
+  effect: z.literal('district_neighbor_bonus'),
+  params: z.strictObject({ amount: z.number().multipleOf(0.5) }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** An extra adjacency rule for some districts. */
+const ExtraAdjacency = z.strictObject({
+  effect: z.literal('extra_adjacency'),
+  params: z.strictObject({ district: IdOrIds, adjacency: Adjacency }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** Finishing one of these districts gives a free unit: the strongest of these classes it can train. */
+const FreeUnitOnDistrict = z.strictObject({
+  effect: z.literal('free_unit_on_district'),
+  params: z.strictObject({ district: IdOrIds, unitClass: IdOrIds }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** Items of this kind can also be bought with faith (same price as in gold). */
+const PurchaseWithFaith = z.strictObject({
+  effect: z.literal('purchase_with_faith'),
+  params: z.strictObject({ kind: z.enum(['unit', 'building']) }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
 export const Effect = z.discriminatedUnion('effect', [
   ModifyYield,
   YieldPerAdjacent,
@@ -239,6 +388,17 @@ export const Effect = z.discriminatedUnion('effect', [
   ModifyUnitUpkeep,
   ModifyPurchaseCost,
   EnableEmbark,
+  ModifyItemCost,
+  ModifyStrength,
+  GrantPromotion,
+  OnCapture,
+  CaptureOnKill,
+  FreeBuilding,
+  ModifyBoost,
+  DistrictNeighborBonus,
+  ExtraAdjacency,
+  PurchaseWithFaith,
+  FreeUnitOnDistrict,
 ]);
 export type Effect = z.infer<typeof Effect>;
 export const EFFECT_TYPES = Effect.options.map((o) => o.shape.effect.value);

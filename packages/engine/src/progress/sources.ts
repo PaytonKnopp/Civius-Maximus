@@ -3,12 +3,13 @@ import type { EngineContext } from '../context';
 import { evaluateCondition } from '../effects/conditions';
 import type { PlayerFacts, SettlementFacts } from '../effects/tile';
 import type { EffectSource } from '../effects/yields';
+import { tileTouchesRiver } from '../map/hex';
 import type { GameState, PlayerId, PlayerState, SettlementState, Track } from '../state';
 
 /**
  * Where a player's effects come from (docs/05-modding.md, "The effects system"): their
  * government, slotted policy cards, a running celebration, and finished techs and civics with
- * effects. Later: civ and leader abilities, beliefs, wonders, great people.
+ * effects, the leader's and civ's abilities. Later: beliefs, great people.
  */
 
 export const SLOT_KINDS: readonly SlotKind[] = ['military', 'economic', 'diplomatic', 'wildcard'];
@@ -38,17 +39,44 @@ export function newProgress(
   };
 }
 
-export function playerFacts(p: PlayerState): PlayerFacts {
+export function playerFacts(ctx: EngineContext, p: PlayerState): PlayerFacts {
   return {
     techs: p.techs.done,
     civics: p.civics.done,
     government: p.government,
     celebrating: p.celebration.turnsLeft > 0,
+    eraOrder: eraOrderOf(ctx, p),
   };
 }
 
-export function settlementFacts(s: SettlementState): SettlementFacts {
-  return { kind: s.kind, capital: s.capital, population: s.population, buildings: s.buildings };
+/** Era order by finished-techs list, then finished-civics list (both frozen and shared). */
+const eraCache = new WeakMap<object, WeakMap<object, number>>();
+
+/** The order of the latest era among the player's finished techs and civics. */
+function eraOrderOf(ctx: EngineContext, p: PlayerState): number {
+  const cached = eraCache.get(p.techs.done)?.get(p.civics.done);
+  if (cached !== undefined) return cached;
+  const e = ctx.content.entities;
+  let best = 0;
+  for (const id of p.techs.done) best = Math.max(best, e.era[e.tech[id]?.era ?? '']?.order ?? 0);
+  for (const id of p.civics.done) best = Math.max(best, e.era[e.civic[id]?.era ?? '']?.order ?? 0);
+  if (Object.isFrozen(p.techs.done) && Object.isFrozen(p.civics.done)) {
+    const byCivics = eraCache.get(p.techs.done) ?? new WeakMap<object, number>();
+    byCivics.set(p.civics.done, best);
+    eraCache.set(p.techs.done, byCivics);
+  }
+  return best;
+}
+
+export function settlementFacts(state: GameState, s: SettlementState): SettlementFacts {
+  return {
+    kind: s.kind,
+    capital: s.capital,
+    population: s.population,
+    buildings: s.buildings,
+    onRiver: tileTouchesRiver(state.map, state.map.tiles, s.tile),
+    unitsTrained: s.unitsTrained,
+  };
 }
 
 const sourceCache = new WeakMap<PlayerState, EffectSource[]>();
@@ -59,6 +87,21 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
   if (cached) return cached;
   const { content } = ctx;
   const out: EffectSource[] = [];
+  // The leader's and the civ's abilities.
+  const leader = content.entities.leader[p.leader];
+  if (leader && leader.ability.effects.length > 0)
+    out.push({
+      id: leader.id,
+      label: resolveText(content, leader.ability.name),
+      effects: leader.ability.effects,
+    });
+  const civ = content.entities.civ[p.civ];
+  if (civ?.ability && civ.ability.effects.length > 0)
+    out.push({
+      id: civ.id,
+      label: resolveText(content, civ.ability.name),
+      effects: civ.ability.effects,
+    });
   const gov = content.entities.government[p.government];
   if (gov && gov.effects.length > 0)
     out.push({ id: gov.id, label: resolveText(content, gov.name), effects: gov.effects });
@@ -169,7 +212,7 @@ export function playerEffects<T extends Effect['effect']>(
   settlement?: SettlementState,
 ): { source: EffectSource; effect: Extract<Effect, { effect: T }> }[] {
   const p = state.players[player]!;
-  const facts = playerFacts(p);
+  const facts = playerFacts(ctx, p);
   const out: { source: EffectSource; effect: Extract<Effect, { effect: T }> }[] = [];
   for (const source of sourcesFor(ctx, state, player, settlement)) {
     for (const effect of source.effects) {
@@ -181,7 +224,7 @@ export function playerEffects<T extends Effect['effect']>(
             content: ctx.content,
             playerId: player,
             player: facts,
-            ...(settlement ? { settlement: settlementFacts(settlement) } : {}),
+            ...(settlement ? { settlement: settlementFacts(state, settlement) } : {}),
           },
           effect.condition,
         );

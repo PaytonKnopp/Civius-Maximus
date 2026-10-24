@@ -8,6 +8,8 @@ import type { BuildItem, GameState, PlayerId, SettlementState } from '../state';
 import { isWater } from '../units/movement';
 import type { Line } from './rules';
 import { tileFacts } from './rules';
+import { playerEffects } from '../progress/sources';
+import { baseOf } from '../uniques';
 
 /**
  * Districts, wonders and tile projects (docs/03-core-mechanics.md, section 9): where they can go,
@@ -120,7 +122,11 @@ export function placementProblem(
     const def = ctx.content.entities.district[item.id];
     if (!def) return bad(`Unknown district "${item.id}"`);
     const name = resolveText(ctx.content, def.name);
-    if (s.districts.some((d) => d.id === item.id) || others.some((q) => q.id === item.id))
+    const same = (id: string) => baseOf(ctx, 'district', id) === baseOf(ctx, 'district', item.id);
+    if (
+      s.districts.some((d) => same(d.id)) ||
+      others.some((q) => q.kind === 'district' && same(q.id))
+    )
       return { code: 'already_built', message: `${s.name} already has a ${name}` };
     if (def.onePerEmpire) {
       const elsewhere = Object.values(state.settlements).some(
@@ -200,13 +206,26 @@ export function districtYields(
   for (const a of def.adjacency) {
     add(a.yield, `${name}: ${a.label ?? 'adjacency'}`, adjacencyBonus(tctx, a));
   }
+  const owner = state.map.tiles[tile]!.owner;
+  const effects = <T extends 'district_neighbor_bonus' | 'extra_adjacency'>(type: T) =>
+    owner !== null && state.players[owner] ? playerEffects(ctx, state, owner, type) : [];
+  // Abilities' extra adjacency rules (a unique counts as the district it replaces).
+  const base = baseOf(ctx, 'district', id);
+  for (const { source, effect } of effects('extra_adjacency')) {
+    const wanted = effect.params.district;
+    if (!(Array.isArray(wanted) ? wanted : [wanted]).some((w) => w === id || w === base)) continue;
+    const a = effect.params.adjacency;
+    add(a.yield, `${source.label}: ${a.label ?? 'adjacency'}`, adjacencyBonus(tctx, a));
+  }
   // Clustering: every specialty district gets a bonus for each neighboring district.
   const main =
     def.adjacency[0]?.yield ?? Object.keys(def.specialistYields)[0] ?? Object.keys(def.yields)[0];
   if (def.specialty && main) {
     const near = tctx.neighbors.filter((n) => n.district).length;
-    const bonus = toFixed(ctx.content.rules.settlements.districts.neighborBonus) * near;
-    add(main, `${name}: neighboring districts`, bonus);
+    const per =
+      ctx.content.rules.settlements.districts.neighborBonus +
+      effects('district_neighbor_bonus').reduce((sum, e) => sum + e.effect.params.amount, 0);
+    add(main, `${name}: neighboring districts`, toFixed(per) * near);
   }
   const total: Record<string, Fixed> = {};
   for (const [y, ls] of Object.entries(lines)) total[y] = ls.reduce((a, l) => a + l.amount, 0);

@@ -8,9 +8,14 @@ import {
   type Emit,
   type RuleError,
   unitClassOf,
+  unitDef,
   unitIds,
   warKey,
 } from '../context';
+import { view } from '../draft';
+import { toFixed } from '../fixed';
+import { grantBoost } from '../progress/handlers';
+import { playerEffects } from '../progress/sources';
 import type { Combatant } from '../events';
 import { refreshCitizens, refreshExplored } from '../settlements/handlers';
 import { settlementIds } from '../settlements/rules';
@@ -18,7 +23,7 @@ import { nextRange } from '../rng';
 import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
 import { ownedUnit, watchers } from '../units/handlers';
 import { availablePromotions, nextPromotionXp } from '../units/promotions';
-import { canTraverse, fullMoves, hasRoom, unitsOn } from '../units/movement';
+import { canTraverse, fullMoves, hasRoom, MP, unitsOn } from '../units/movement';
 import { checkVictory } from '../victory';
 import { clearCampsOn } from './camps';
 import { damageFor } from './damage';
@@ -100,6 +105,59 @@ export function killUnit(
   emit({ type: 'unit_killed', unit: id, owner, unitType: type, tile, by, visibleTo });
   if (by !== owner && draft.players[by] && by !== HOSTILE) draft.players[by]!.kills++;
   addWarSupport(draft, ctx, by, owner, ctx.content.rules.combat.warSupport.kill);
+}
+
+/** Yields a unit's owner earns when it destroys an enemy (its `killYields`). */
+function rewardKill(draft: Draft<GameState>, ctx: EngineContext, killer: UnitState) {
+  const p = draft.players[killer.owner];
+  if (!p) return;
+  const y = unitDef(ctx, killer).killYields;
+  if (y.gold) p.gold += toFixed(y.gold);
+  if (y.faith) p.faith += toFixed(y.faith);
+}
+
+/**
+ * Abilities that take a beaten unit instead of destroying it (`capture_on_kill`): a roll of the
+ * game's random numbers decides. Returns true if the unit changed hands.
+ */
+function takeOver(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  killer: UnitState,
+  id: string,
+  emit: Emit,
+): boolean {
+  if (killer.owner === HOSTILE) return false;
+  const d = draft.units[id]!;
+  const cls = unitDef(ctx, d).class;
+  const snap = view(draft);
+  const chance = playerEffects(ctx, snap, killer.owner, 'capture_on_kill')
+    .filter(({ effect }) => {
+      const c = effect.params.unitClass;
+      return Array.isArray(c) ? c.includes(cls) : c === cls;
+    })
+    .reduce((best, { effect }) => Math.max(best, effect.params.percent), 0);
+  if (chance === 0) return false;
+  const [roll, next] = nextRange(draft.rng as GameState['rng'], 1, 100);
+  draft.rng = castDraft(next);
+  if (roll > chance) return false;
+  const from = d.owner;
+  d.owner = killer.owner;
+  d.health = Math.floor(ctx.content.rules.combat.maxHealth / 2);
+  d.moves = 0;
+  d.orders = null;
+  d.xp = 0;
+  if (from !== HOSTILE && draft.players[killer.owner]) draft.players[killer.owner]!.kills++;
+  emit({
+    type: 'civilian_captured',
+    unit: id,
+    unitType: d.type,
+    from,
+    by: killer.owner,
+    tile: d.tile,
+    visibleTo: seenBy(watchers(ctx, current(draft), killer.owner, [d.tile]), from),
+  });
+  return true;
 }
 
 /** Other players' civilians on `tile` change hands. */
@@ -241,9 +299,33 @@ export function captureSettlement(
     visibleTo: 'all',
   });
   addWarSupport(draft, ctx, captor, from, ctx.content.rules.combat.warSupport.capture);
+  captureRewards(draft, ctx, captor, id, emit);
   if (wasCapital) relocateCapital(draft, ctx, from, emit);
   checkDefeat(draft, from, captor, emit);
   checkVictory(draft, emit);
+}
+
+/** Abilities that pay out when the captor takes a settlement (`on_capture`). */
+function captureRewards(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  captor: PlayerId,
+  id: string,
+  emit: Emit,
+) {
+  const p = draft.players[captor]!;
+  const s = draft.settlements[id]!;
+  for (const { effect } of playerEffects(ctx, view(draft), captor, 'on_capture')) {
+    const r = effect.params;
+    if (r.goldPerCitizen > 0) p.gold += toFixed(r.goldPerCitizen * s.population);
+    if (r.healUnits) {
+      for (const u of Object.values(draft.units)) {
+        if (u.owner === captor) u.health = ctx.content.rules.combat.maxHealth;
+      }
+    }
+    for (let i = 0; i < r.boostsPerDistrict * s.districts.length; i++)
+      grantBoost(draft, ctx, captor, emit);
+  }
 }
 
 function raze(draft: Draft<GameState>, id: string, emit: Emit) {
@@ -351,7 +433,8 @@ export function performAttack(
   const unit = base.units[unitId]!;
   const target = targetAt(ctx, base, unit.owner, tile)!;
   const a = draft.units[unit.id]!;
-  a.moves = 0;
+  // Some units (horse archers) keep moving after they attack.
+  a.moves = unitDef(ctx, unit).movesAfterAttack ? Math.max(0, unit.moves - MP) : 0;
   a.orders = null;
   if (target.kind === 'civilian') {
     captureCivilians(draft, ctx, tile, unit.owner, emit);
@@ -383,7 +466,10 @@ export function performAttack(
       visibleTo: seenBy(watchers(ctx, current(draft), unit.owner, [unit.tile, tile]), d.owner),
     });
     const won = d.health <= 0;
-    if (won) killUnit(draft, ctx, d.id, unit.owner, emit);
+    if (won) {
+      rewardKill(draft, ctx, unit);
+      if (!takeOver(draft, ctx, unit, d.id, emit)) killUnit(draft, ctx, d.id, unit.owner, emit);
+    }
     if (a.health <= 0) {
       killUnit(draft, ctx, a.id, d.owner, emit);
       return;
@@ -547,6 +633,7 @@ export const combatHandlers = {
       const key = warKey(action.player, action.target);
       draft.wars = [...draft.wars, key].sort();
       draft.warStarted[key] = draft.turn;
+      draft.players[action.player]!.declaredWarTurn = draft.turn;
       // A surprise war rallies the side that was declared on.
       draft.warSupport[key] = {
         [action.player]: 0,

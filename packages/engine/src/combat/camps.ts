@@ -49,6 +49,7 @@ export function hostilePlayer(ctx: EngineContext, state: GameState): PlayerState
     capital: null,
     settlementsFounded: 0,
     kills: 0,
+    declaredWarTurn: null,
     ...newProgress(ctx),
   };
 }

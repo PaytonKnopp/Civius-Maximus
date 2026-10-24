@@ -15,6 +15,30 @@ have their signature idea fixed; their full kits (ability numbers, unique unit, 
 building/district/improvement, agenda) are written when units and buildings exist (M6–M8), so
 every number can be checked against the real systems.
 
+## In the game now (V1 part 2)
+
+Kits are data: civ and leader abilities are lists of effects in `civs.json` / `leaders.json`, and
+unique units, buildings, districts and improvements name their `civ` (and the item they
+`replaces`). The rival panel (click a civ in the top bar, yours too) lists each kit.
+
+| Leader / civ | Working now | Waits for |
+|---|---|---|
+| Caesar / Rome | +5 strength for 10 turns after declaring war; 50 gold per citizen of a captured settlement; free Forum (+1 culture, +1 happiness) in every new settlement; **Legionary** (Swordsman, 39 strength); **Thermae** (replaces Baths: +3 happiness, +1 culture) | Roads to the capital (trade routes), Legionary's fort/road |
+| Cleopatra / Egypt | +15% production toward districts and wonders in river settlements; floodplains +1 food; **War Chariot** (replaces Horseman: 31 strength, cheaper); **Obelisk** (desert: +1 faith, +1 culture) | Leader ability (deals, trade routes); appeal |
+| Alexander / Macedon | Capturing a settlement heals all your units and gives a boost per district in it; **Companion Cavalry** (Knight, 50 strength, 5 movement); **Royal Pages School** (replaces Barracks: +1 science per soldier trained there, up to 10) | Great general points |
+| Genghis Khan / Mongols | Cavalry +3 strength; 50% chance to capture beaten cavalry; **Keshig** (replaces Crossbowman: ranged cavalry that keeps moving after attacking); **Ordu** (replaces Barracks: cavalry trained there +1 movement) | Civ ability (trade routes) |
+| Elizabeth I / England | Ships +1 movement; Industrial Zones +2 production next to a Harbor; **Royal Dockyard** (replaces Lighthouse: +3 gold, ships built there +1 movement) | Great admirals, trade capacity, stockpiles, Privateer (Renaissance) |
+| Napoleon / France | +20% production toward wonders from the Medieval era; **Château** (next to a river: +2 culture, +1 gold, after Feudalism) | Leader ability (commanders), tourism, Imperial Guard (later era) |
+| Lincoln / United States | Finishing an Industrial Zone gives a free melee unit; +1 diplomatic policy slot | Home-continent happiness (continents), Rough Rider and Film Studio (later eras) |
+| Qin Shi Huang / China | The first soldier trained in each settlement is free; +15% production toward Ancient and Classical wonders; boosts give 50%; **Fire Lance Cart** (replaces Crossbowman: 46 ranged strength, range 1); **Great Wall** (border tiles: +1 gold, +1 culture, +4 defense) | — |
+| Mansa Musa / Mali | Settlement centers +1 faith and +1 food per adjacent desert; mines −1 production, +4 gold; buildings can be bought with faith; **Mandekalu Cavalry** (Knight, earns 20 gold per kill); **Suguba** (replaces Commercial Hub: purchases there cost 20% less) | Leader ability (trade routes, golden ages) |
+| Oda Nobunaga / Japan | Melee units +5 strength attacking a wounded unit; districts +1 per neighboring district; **Samurai** (replaces Swordsman: 37 strength, no penalty when wounded) | Gunpowder discount, Electronics Works (later eras) |
+
+Changes from the kits below, because the replaced unit or building doesn't exist yet: War
+Chariot replaces the Horseman, Samurai the Swordsman, Thermae the Baths, Ordu and Royal Pages
+School the Barracks, Royal Dockyard the Lighthouse. Companion Cavalry gets +1 movement (not +2).
+Alexander's "war support never decays" is dropped (war support doesn't decay).
+
 ## Leaders 1–10 (full kits)
 
 ### 1. Julius Caesar — Rome

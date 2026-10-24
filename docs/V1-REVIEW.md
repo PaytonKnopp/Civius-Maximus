@@ -41,6 +41,11 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
 25. **D55 AI peace:** accepts unless clearly winning; offers when losing or tired of the war.
 26. **D56 Army strength is public** (shown in the rival panel). (Or hidden.)
 27. **D57 AI keeps captured settlements** (never razes or liberates).
+29. **D58 Kit numbers** (abilities and uniques, first pass): see the table in
+    `docs/09-base-roster.md`, "In the game now". Tell me any that feel too strong or weak.
+30. **D59 What uniques replace** while the planned base items don't exist (War Chariot →
+    Horseman, Samurai → Swordsman, Thermae → Baths, Ordu/Royal Pages School → Barracks,
+    Royal Dockyard → Lighthouse).
 28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
     expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 
@@ -60,6 +65,15 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
 - **Rival panel** (click a civ in the top bar) shows the leader, their agenda, and army
   strength next to yours.
 - **For testing:** `pnpm cx simulate 8 150` plays an all-AI game and prints how it went.
+
+### Part 2: leaders and civ kits
+- All 10 leaders and civs have their abilities, and 7 unique units, 6 unique buildings, a
+  unique district and 3 unique improvements are in. A few pieces wait for systems that come
+  later (trade routes, commanders, later eras); the table in `docs/09-base-roster.md` shows
+  exactly what works now.
+- Click any civ in the top bar (your own too) and open **Abilities and uniques**.
+- Mali can buy buildings with faith (a ✨ button next to the gold one).
+- The AI builds its civ's uniques automatically (they're stronger versions of what it wants).
 
 ## Known issues
 

@@ -143,5 +143,67 @@
     ],
     "color": "#4d6b34",
     "model": "woodcutter"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_obelisk",
+    "name": "Obelisk",
+    "icon": "Ob",
+    "yields": {
+      "faith": 1,
+      "culture": 1
+    },
+    "order": 60,
+    "sites": [
+      {
+        "terrains": ["desert"],
+        "elevations": ["flat", "hills"]
+      }
+    ],
+    "color": "#d9c08a",
+    "civ": "civ_egypt"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_chateau",
+    "name": "Château",
+    "icon": "Ch",
+    "yields": {
+      "culture": 2,
+      "gold": 1
+    },
+    "order": 60,
+    "sites": [
+      {
+        "terrains": ["grassland", "plains"],
+        "elevations": ["flat", "hills"],
+        "river": true
+      }
+    ],
+    "color": "#c7b6e0",
+    "requiresCivic": "civic_feudalism",
+    "civ": "civ_france"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_great_wall",
+    "name": "Great Wall",
+    "icon": "GW",
+    "yields": {
+      "gold": 1,
+      "culture": 1
+    },
+    "defense": 4,
+    "order": 60,
+    "sites": [
+      {
+        "terrains": ["grassland", "plains", "desert", "tundra"],
+        "elevations": ["flat", "hills"],
+        "edge": true
+      }
+    ],
+    "color": "#a89a80",
+    "requiresTech": "tech_masonry",
+    "civ": "civ_china"
   }
 ]

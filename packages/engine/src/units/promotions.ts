@@ -38,7 +38,9 @@ export function ignoresTerrainCost(ctx: EngineContext, unit: Promoted): boolean 
 /** XP the unit needs for its next promotion. */
 export function nextPromotionXp(ctx: EngineContext, unit: Pick<UnitState, 'promotions'>): number {
   const steps = ctx.content.rules.combat.promotionXp;
-  return steps[Math.min(unit.promotions.length, steps.length - 1)]!;
+  // Promotions given by buildings and abilities don't count toward the next one.
+  const earned = unit.promotions.filter((id) => !ctx.content.entities.promotion[id]?.granted);
+  return steps[Math.min(earned.length, steps.length - 1)]!;
 }
 
 /** Promotions this unit could take now (it has the XP, its class qualifies, prerequisites met). */
@@ -54,6 +56,7 @@ export function promotionChoices(ctx: EngineContext, unit: UnitState): string[] 
   return ctx.content.ids.promotion.filter((id) => {
     const p = ctx.content.entities.promotion[id]!;
     return (
+      !p.granted &&
       p.classes.includes(cls) &&
       !taken.has(id) &&
       (p.requires.length === 0 || p.requires.some((r) => taken.has(r)))
@@ -66,6 +69,6 @@ export function promotionTree(ctx: EngineContext, unit: Pick<UnitState, 'type'>)
   const cls = unitClassOf(ctx, unit).id;
   return ctx.content.ids.promotion
     .map((id) => ctx.content.entities.promotion[id]!)
-    .filter((p) => p.classes.includes(cls))
+    .filter((p) => !p.granted && p.classes.includes(cls))
     .sort((a, b) => a.tier - b.tier);
 }

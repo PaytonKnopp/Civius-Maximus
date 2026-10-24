@@ -1,3 +1,4 @@
+import { baseOf } from '../uniques';
 import {
   type CivicDef,
   type EraDef,
@@ -167,11 +168,20 @@ export function empireFacts(ctx: EngineContext, state: GameState, player: Player
       const t = state.map.tiles[i]!;
       if (t.settlement !== s.id) continue;
       tilesOwned++;
-      if (t.improvement) improvements[t.improvement] = (improvements[t.improvement] ?? 0) + 1;
+      if (t.improvement) {
+        const k = baseOf(ctx, 'improvement', t.improvement);
+        improvements[k] = (improvements[k] ?? 0) + 1;
+      }
     }
   }
   const buildings: Record<string, number> = {};
-  for (const s of mine) for (const b of s.buildings) buildings[b] = (buildings[b] ?? 0) + 1;
+  // Uniques count as what they replace (a Legionary is a Swordsman for a boost's goal).
+  for (const s of mine) {
+    for (const b of s.buildings) {
+      const k = baseOf(ctx, 'building', b);
+      buildings[k] = (buildings[k] ?? 0) + 1;
+    }
+  }
   return {
     settlements: mine.length,
     cities: mine.filter((s) => s.kind === 'city').length,
@@ -179,7 +189,7 @@ export function empireFacts(ctx: EngineContext, state: GameState, player: Player
     population: mine.reduce((sum, s) => sum + s.population, 0),
     units: Object.values(state.units)
       .filter((u) => u.owner === player)
-      .map((u) => ({ type: u.type, class: unitDef(ctx, u).class })),
+      .map((u) => ({ type: baseOf(ctx, 'unit', u.type), class: unitDef(ctx, u).class })),
     improvements,
     buildings,
     tilesOwned,

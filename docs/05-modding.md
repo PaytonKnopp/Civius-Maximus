@@ -113,10 +113,24 @@ lists of **effects**. An effect = *what changes* + *who it applies to* + *when*.
 `modify_yield` (tiles or settlements, flat or %), `yield_per_adjacent`, `modify_happiness`,
 `modify_production` (toward unit classes, units or buildings), `modify_growth`,
 `modify_border_growth`, `modify_settlement_limit`, `extra_policy_slot`, `modify_unit_upkeep`,
-`modify_purchase_cost`, `enable_embark`. Targets: `tiles`, `settlements`, `player`.
+`modify_purchase_cost` (empire-wide or one settlement), `enable_embark`, `modify_item_cost`
+(−100% = free), `modify_strength` (by class, attacking/defending, against classes, settlements,
+ranged or wounded foes, on terrain, for N turns after declaring war), `grant_promotion` (units
+trained there get it), `on_capture` (gold per citizen, heal units, boosts per district),
+`capture_on_kill` (a chance to take beaten units), `free_building` (in every new settlement),
+`modify_boost`, `district_neighbor_bonus`, `extra_adjacency`, `purchase_with_faith`,
+`free_unit_on_district`. Targets: `tiles`, `settlements`, `player`, `units`.
 
-Governments, policy cards, techs and civics (their permanent effects) and celebrations are all
-effect sources; civ and leader abilities, beliefs and wonders join them as they're built.
+Governments, policy cards, techs and civics (their permanent effects), celebrations, built
+wonders and districts, and the leader's and civ's abilities are all effect sources; beliefs and
+great people join them as they're built.
+
+**Uniques:** a unit, building, district or improvement with `"civ": "civ_rome"` is only for that
+civ, and with `"replaces": "unit_swordsman"` it takes that item's place for them. Everywhere
+else (adjacency, prerequisites, boost goals) a unique counts as what it replaces. Units can
+also have `movesAfterAttack`, `ignoresWounds` and `killYields`; improvements `defense` and
+sites that need a `river` or the territory's `edge`; promotions can be `granted` (given by an
+effect, never chosen with XP).
 
 ### Conditions
 
@@ -129,8 +143,9 @@ These can be combined with `all`, `any` and `not`:
 Implemented so far: `tile_terrain`, `tile_feature`, `tile_elevation`, `tile_has_resource`,
 `tile_resource_class`, `tile_has_improvement`, `tile_on_river`, `tile_coastal`,
 `tile_owned_by_self`, `tile_adjacent_to`, `settlement_is_capital`, `settlement_kind`,
-`settlement_population_at_least`, `settlement_has_building`, `has_tech`, `has_civic`,
-`government_is`, `celebrating`.
+`settlement_population_at_least`, `settlement_has_building`, `settlement_on_river`,
+`settlement_units_trained_below`, `tile_city_center`, `has_tech`, `has_civic`, `government_is`,
+`celebrating`, `era_at_least`.
 
 ### Techs and civics
 

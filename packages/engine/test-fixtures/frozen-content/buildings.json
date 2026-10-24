@@ -229,5 +229,259 @@
     "walls": 100,
     "requiresBuilding": "building_walls",
     "requiresTech": "tech_military_tactics"
+  },
+  {
+    "type": "building",
+    "id": "building_forum",
+    "name": "Forum",
+    "description": "Every Roman settlement starts with one.",
+    "icon": "Fm",
+    "cost": 0,
+    "yields": {
+      "culture": 1
+    },
+    "happiness": 1,
+    "civ": "civ_rome"
+  },
+  {
+    "type": "building",
+    "id": "building_thermae",
+    "name": "Thermae",
+    "description": "Grand public baths.",
+    "icon": "Th",
+    "cost": 120,
+    "maintenance": 1,
+    "happiness": 3,
+    "yields": {
+      "culture": 1
+    },
+    "requiresTech": "tech_construction",
+    "civ": "civ_rome",
+    "replaces": "building_baths"
+  },
+  {
+    "type": "building",
+    "id": "building_royal_pages_school",
+    "name": "Royal Pages School",
+    "description": "+1 science for each soldier trained here (up to +10).",
+    "icon": "RP",
+    "cost": 90,
+    "maintenance": 1,
+    "yields": {
+      "production": 1
+    },
+    "district": "district_encampment",
+    "requiresTech": "tech_bronze_working",
+    "localEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "not": {
+            "settlement_units_trained_below": 1
+          }
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "not": {
+            "settlement_units_trained_below": 2
+          }
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "not": {
+            "settlement_units_trained_below": 3
+          }
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "not": {
+            "settlement_units_trained_below": 4
+          }
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "not": {
+            "settlement_units_trained_below": 5
+          }
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "not": {
+            "settlement_units_trained_below": 6
+          }
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "not": {
+            "settlement_units_trained_below": 7
+          }
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "not": {
+            "settlement_units_trained_below": 8
+          }
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "not": {
+            "settlement_units_trained_below": 9
+          }
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "not": {
+            "settlement_units_trained_below": 10
+          }
+        }
+      }
+    ],
+    "civ": "civ_macedon",
+    "replaces": "building_barracks"
+  },
+  {
+    "type": "building",
+    "id": "building_ordu",
+    "name": "Ordu",
+    "description": "Cavalry trained here get +1 movement.",
+    "icon": "Or",
+    "cost": 90,
+    "maintenance": 1,
+    "yields": {
+      "production": 1
+    },
+    "district": "district_encampment",
+    "requiresTech": "tech_bronze_working",
+    "localEffects": [
+      {
+        "effect": "grant_promotion",
+        "params": {
+          "promotion": "promo_ordu_trained",
+          "unitClass": ["class_light_cavalry", "class_heavy_cavalry"]
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "civ": "civ_mongols",
+    "replaces": "building_barracks"
+  },
+  {
+    "type": "building",
+    "id": "building_royal_dockyard",
+    "name": "Royal Dockyard",
+    "description": "Ships built here get +1 movement.",
+    "icon": "RD",
+    "cost": 110,
+    "maintenance": 1,
+    "yields": {
+      "food": 1,
+      "gold": 3
+    },
+    "district": "district_harbor",
+    "requiresTech": "tech_celestial_navigation",
+    "localEffects": [
+      {
+        "effect": "grant_promotion",
+        "params": {
+          "promotion": "promo_royal_dockyard",
+          "domain": "sea"
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "civ": "civ_england",
+    "replaces": "building_lighthouse"
   }
 ]

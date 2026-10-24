@@ -25,7 +25,22 @@
       "Pompeii",
       "Verona",
       "Florentia"
-    ]
+    ],
+    "ability": {
+      "name": "Roads to the Forum",
+      "description": "Every new settlement starts with a free Forum (+1 culture, +1 happiness). (Its road to the capital arrives with roads.)",
+      "effects": [
+        {
+          "effect": "free_building",
+          "params": {
+            "building": "building_forum"
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "civ",
@@ -53,7 +68,56 @@
       "Bubastis",
       "Tanis",
       "Kom Ombo"
-    ]
+    ],
+    "ability": {
+      "name": "Bounty of the Nile",
+      "description": "+15% production toward districts and wonders in settlements next to a river. Floodplains get +1 food.",
+      "effects": [
+        {
+          "effect": "modify_production",
+          "params": {
+            "percent": 15,
+            "toward": {
+              "kind": "district"
+            }
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_on_river": true
+          }
+        },
+        {
+          "effect": "modify_production",
+          "params": {
+            "percent": 15,
+            "toward": {
+              "kind": "wonder"
+            }
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_on_river": true
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "food",
+            "amount": 1
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_feature": ["floodplains", "floodplains_grassland", "floodplains_plains"]
+          }
+        }
+      ]
+    }
   },
   {
     "type": "civ",
@@ -79,7 +143,22 @@
       "Olynthus",
       "Kassandreia",
       "Alexandria Eschate"
-    ]
+    ],
+    "ability": {
+      "name": "Spoils of the Known World",
+      "description": "Capturing a settlement gives a tech or civic boost for each district in it.",
+      "effects": [
+        {
+          "effect": "on_capture",
+          "params": {
+            "boostsPerDistrict": 1
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "civ",
@@ -103,7 +182,12 @@
       "Otrar",
       "Bukhara",
       "Samarkand"
-    ]
+    ],
+    "ability": {
+      "name": "Empire of Relays",
+      "description": "Trade routes reveal the settlements they reach, and your units are stronger against players you trade with. (Arrives with trade routes.)",
+      "effects": []
+    }
   },
   {
     "type": "civ",
@@ -131,7 +215,30 @@
       "Plymouth",
       "Leeds",
       "Exeter"
-    ]
+    ],
+    "ability": {
+      "name": "Forge of the World",
+      "description": "Industrial Zones get +2 production next to a Harbor. (Extra iron and coal arrive with strategic stockpiles.)",
+      "effects": [
+        {
+          "effect": "extra_adjacency",
+          "params": {
+            "district": "district_industrial_zone",
+            "adjacency": {
+              "yield": "production",
+              "amount": 2,
+              "per": {
+                "district": "district_harbor"
+              },
+              "label": "Harbor"
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "civ",
@@ -159,7 +266,28 @@
       "Nantes",
       "Bordeaux",
       "Toulouse"
-    ]
+    ],
+    "ability": {
+      "name": "Belle Époque",
+      "description": "+20% production toward wonders from the Medieval era onward. (Double tourism from wonders arrives with culture victory.)",
+      "effects": [
+        {
+          "effect": "modify_production",
+          "params": {
+            "percent": 20,
+            "toward": {
+              "kind": "wonder"
+            }
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "era_at_least": "era_medieval"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "civ",
@@ -187,7 +315,23 @@
       "Denver",
       "New Orleans",
       "Baltimore"
-    ]
+    ],
+    "ability": {
+      "name": "Land of Opportunity",
+      "description": "+1 diplomatic policy slot. (Double tourism from national parks arrives with culture victory.)",
+      "effects": [
+        {
+          "effect": "extra_policy_slot",
+          "params": {
+            "slot": "diplomatic",
+            "amount": 1
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "civ",
@@ -215,7 +359,22 @@
       "Yangzhou",
       "Nanjing",
       "Beijing"
-    ]
+    ],
+    "ability": {
+      "name": "Mandate of Heaven",
+      "description": "Tech and civic boosts give 50% of the cost instead of 40%.",
+      "effects": [
+        {
+          "effect": "modify_boost",
+          "params": {
+            "percent": 10
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "civ",
@@ -241,7 +400,80 @@
       "Kati",
       "Sikasso",
       "Bamako"
-    ]
+    ],
+    "ability": {
+      "name": "Road of Salt and Gold",
+      "description": "Settlement centers get +1 faith and +1 food for each adjacent desert tile. Mines give 1 less production but 4 more gold. Buildings can be bought with faith.",
+      "effects": [
+        {
+          "effect": "yield_per_adjacent",
+          "params": {
+            "yield": "faith",
+            "amount": 1,
+            "per": {
+              "terrain": "desert"
+            }
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_city_center": true
+          }
+        },
+        {
+          "effect": "yield_per_adjacent",
+          "params": {
+            "yield": "food",
+            "amount": 1,
+            "per": {
+              "terrain": "desert"
+            }
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_city_center": true
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "amount": -1
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_has_improvement": "improvement_mine"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "gold",
+            "amount": 4
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_has_improvement": "improvement_mine"
+          }
+        },
+        {
+          "effect": "purchase_with_faith",
+          "params": {
+            "kind": "building"
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "civ",
@@ -269,6 +501,21 @@
       "Kagoshima",
       "Nagasaki",
       "Kumamoto"
-    ]
+    ],
+    "ability": {
+      "name": "Island Discipline",
+      "description": "Districts get +1 adjacency for each neighboring district (instead of +0.5).",
+      "effects": [
+        {
+          "effect": "district_neighbor_bonus",
+          "params": {
+            "amount": 0.5
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
   }
 ]

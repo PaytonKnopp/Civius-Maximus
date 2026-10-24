@@ -1,5 +1,5 @@
 import type { PathSegment } from './diagnostics';
-import type { Adjacency, Condition, Effect, TileMatch } from './schema/effects';
+import type { Adjacency, Condition, Effect, TileMatch, Toward } from './schema/effects';
 import type { AnyEntity, EntityType, Goal, Placement } from './schema/entities';
 
 /** A field that points at other content. Checked after all packages and patches are loaded. */
@@ -75,26 +75,67 @@ function condition(out: Refs, c: Condition, path: PathSegment[]) {
   else if ('has_civic' in c) ids(out, 'civic', c.has_civic, [...path, 'has_civic']);
   else if ('government_is' in c)
     ids(out, 'government', c.government_is, [...path, 'government_is']);
+  else if ('era_at_least' in c) ids(out, 'era', c.era_at_least, [...path, 'era_at_least']);
+}
+
+function towardRefs(out: Refs, t: Toward, at: PathSegment[]) {
+  ids(out, 'unitClass', t.unitClass, [...at, 'unitClass']);
+  ids(out, 'unit', t.unit, [...at, 'unit']);
+  ids(out, 'building', t.building, [...at, 'building']);
+  ids(out, 'district', t.district, [...at, 'district']);
+  ids(out, 'wonder', t.wonder, [...at, 'wonder']);
 }
 
 export function effectRefs(out: Refs, e: Effect, path: PathSegment[]) {
   if (e.effect === 'modify_yield' || e.effect === 'yield_per_adjacent')
     out.push({ path: [...path, 'params', 'yield'], kind: 'yield', id: e.params.yield });
   if (e.effect === 'yield_per_adjacent') tileMatch(out, e.params.per, [...path, 'params', 'per']);
-  if (e.effect === 'modify_production') {
-    const t = e.params.toward;
-    const at = [...path, 'params', 'toward'];
-    ids(out, 'unitClass', t.unitClass, [...at, 'unitClass']);
-    ids(out, 'unit', t.unit, [...at, 'unit']);
-    ids(out, 'building', t.building, [...at, 'building']);
-    ids(out, 'district', t.district, [...at, 'district']);
-    ids(out, 'wonder', t.wonder, [...at, 'wonder']);
+  const at = [...path, 'params'];
+  switch (e.effect) {
+    case 'modify_production':
+    case 'modify_item_cost':
+      towardRefs(out, e.params.toward, [...at, 'toward']);
+      break;
+    case 'modify_strength':
+      ids(out, 'unitClass', e.params.unitClass, [...at, 'unitClass']);
+      ids(out, 'unitClass', e.params.vs?.classes, [...at, 'vs', 'classes']);
+      ids(out, 'feature', e.params.on?.features, [...at, 'on', 'features']);
+      break;
+    case 'grant_promotion':
+      ids(out, 'promotion', e.params.promotion, [...at, 'promotion']);
+      ids(out, 'unitClass', e.params.unitClass, [...at, 'unitClass']);
+      break;
+    case 'capture_on_kill':
+      ids(out, 'unitClass', e.params.unitClass, [...at, 'unitClass']);
+      break;
+    case 'free_unit_on_district':
+      ids(out, 'district', e.params.district, [...at, 'district']);
+      ids(out, 'unitClass', e.params.unitClass, [...at, 'unitClass']);
+      break;
+    case 'free_building':
+      ids(out, 'building', e.params.building, [...at, 'building']);
+      break;
+    case 'extra_adjacency':
+      ids(out, 'district', e.params.district, [...at, 'district']);
+      adjacencyRefs(out, [e.params.adjacency], [...at, 'adjacency']);
+      break;
+    default:
+      break;
   }
   if (e.condition) condition(out, e.condition, [...path, 'condition']);
 }
 
 function effectList(out: Refs, effects: readonly Effect[], path: PathSegment[]) {
   effects.forEach((e, i) => effectRefs(out, e, [...path, i]));
+}
+
+function uniqueRefs(
+  out: Refs,
+  kind: 'unit' | 'building' | 'district' | 'improvement',
+  entity: { civ?: string | undefined; replaces?: string | undefined },
+) {
+  ids(out, 'civ', entity.civ, ['civ']);
+  ids(out, kind, entity.replaces, ['replaces']);
 }
 
 function requirements(
@@ -165,9 +206,12 @@ export function collectRefs(entity: AnyEntity): Ref[] {
     case 'unit':
       out.push({ path: ['class'], kind: 'unitClass', id: entity.class });
       requirements(out, entity);
+      uniqueRefs(out, 'unit', entity);
+      yieldKeys(out, entity.killYields, ['killYields']);
       break;
     case 'improvement':
       requirements(out, entity);
+      uniqueRefs(out, 'improvement', entity);
       adjacencyRefs(out, entity.adjacency, ['adjacency']);
       yieldKeys(out, entity.yields, ['yields']);
       ids(out, 'resource', entity.resources, ['resources']);
@@ -183,8 +227,10 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ids(out, 'district', entity.district, ['district']);
       effectList(out, entity.localEffects, ['localEffects']);
       effectList(out, entity.effects, ['effects']);
+      uniqueRefs(out, 'building', entity);
       break;
     case 'district':
+      uniqueRefs(out, 'district', entity);
       yieldKeys(out, entity.yields, ['yields']);
       yieldKeys(out, entity.specialistYields, ['specialistYields']);
       adjacencyRefs(out, entity.adjacency, ['adjacency']);
@@ -220,10 +266,13 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       });
       break;
     case 'civ':
+      if (entity.ability) effectList(out, entity.ability.effects, ['ability', 'effects']);
+      break;
     case 'era':
       break;
     case 'leader':
       out.push({ path: ['civ'], kind: 'civ', id: entity.civ });
+      effectList(out, entity.ability.effects, ['ability', 'effects']);
       break;
     case 'tech':
     case 'civic':

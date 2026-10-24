@@ -13,6 +13,7 @@ import { unitUpkeep } from '../settlements/rules';
 import type { GameState, PlayerId, Track } from '../state';
 import {
   availableGovernments,
+  availableNodes,
   celebrationThreshold,
   empireFacts,
   goalMet,
@@ -26,7 +27,7 @@ import {
   type TreeKind,
   trackOf,
 } from './rules';
-import { canEmbarkNow, policySlots, SLOT_KINDS } from './sources';
+import { canEmbarkNow, playerEffects, policySlots, SLOT_KINDS } from './sources';
 
 type A<T extends Action['type']> = Extract<Action, { type: T }>;
 
@@ -168,11 +169,52 @@ export function checkBoosts(
       if (!goalMet(ctx, facts, node.boost.goal)) continue;
       const track = trackOf(draft.players[player]!, kind);
       track.boosted.push(id);
-      const bonus = percentOf(nodeCost(ctx, kind, id), ctx.content.rules.progress.boostPercent);
+      const bonus = percentOf(nodeCost(ctx, kind, id), boostPercent(ctx, snap, player));
       track.progress[id] = (track.progress[id] ?? 0) + bonus;
       emit({ type: 'boost_earned', player, kind, id, visibleTo: [player] });
     }
   }
+}
+
+/** The share of a node's cost a boost gives this player (the rule, plus abilities). */
+export function boostPercent(ctx: EngineContext, state: GameState, player: PlayerId): number {
+  return (
+    ctx.content.rules.progress.boostPercent +
+    playerEffects(ctx, state, player, 'modify_boost').reduce(
+      (sum, e) => sum + e.effect.params.percent,
+      0,
+    )
+  );
+}
+
+/**
+ * A free boost (from an ability): toward the cheapest tech or civic the player can work on now
+ * that isn't boosted yet. Does nothing if there's none.
+ */
+export function grantBoost(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  player: PlayerId,
+  emit: Emit,
+) {
+  const snap = view(draft);
+  const p = snap.players[player]!;
+  let best: { kind: TreeKind; id: string; cost: number } | undefined;
+  for (const kind of ['tech', 'civic'] as const) {
+    const track = trackOf(p, kind);
+    for (const id of availableNodes(ctx, p, kind)) {
+      if (track.boosted.includes(id)) continue;
+      const cost = nodeCost(ctx, kind, id);
+      if (!best || cost < best.cost || (cost === best.cost && id < best.id))
+        best = { kind, id, cost };
+    }
+  }
+  if (!best) return;
+  const track = trackOf(draft.players[player]!, best.kind);
+  track.boosted.push(best.id);
+  track.progress[best.id] =
+    (track.progress[best.id] ?? 0) + percentOf(best.cost, boostPercent(ctx, snap, player));
+  emit({ type: 'boost_earned', player, kind: best.kind, id: best.id, visibleTo: [player] });
 }
 
 // --- The empire's turn -----------------------------------------------------------------------
