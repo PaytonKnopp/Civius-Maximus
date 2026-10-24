@@ -211,6 +211,14 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       effectList(out, entity.effects, ['effects']);
       requirements(out, entity);
       break;
+    case 'promotion':
+      ids(out, 'unitClass', entity.classes, ['classes']);
+      ids(out, 'promotion', entity.requires, ['requires']);
+      entity.strength.forEach((b, i) => {
+        ids(out, 'unitClass', b.vs?.classes, ['strength', i, 'vs', 'classes']);
+        ids(out, 'feature', b.on?.features, ['strength', i, 'on', 'features']);
+      });
+      break;
     case 'civ':
     case 'era':
       break;
@@ -259,6 +267,10 @@ export function collectRefs(entity: AnyEntity): Ref[] {
         id: entity.progress.startingGovernment,
       });
       effectList(out, entity.progress.celebration.effects, ['progress', 'celebration', 'effects']);
+      entity.camps.units.forEach((u, i) => {
+        out.push({ path: ['camps', 'units', i, 'era'], kind: 'era', id: u.era });
+        ids(out, 'unit', u.units, ['camps', 'units', i, 'units']);
+      });
       break;
     default: {
       // Adding a content type? Teach this function which of its fields point at other content.

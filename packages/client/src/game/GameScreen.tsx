@@ -177,6 +177,10 @@ function noticeFor(content: CompiledContent, state: GameState, e: GameEvent): st
       return `${e.name} was liberated and returned to ${civName(content, state, e.to)}`;
     case 'capital_moved':
       return e.player === ME ? `Your capital moved to ${name(e.settlement)}` : undefined;
+    case 'camp_cleared':
+      return e.by === ME
+        ? `Hostile camp cleared: +${Math.floor(e.gold / 100)} gold`
+        : `${civName(content, state, e.by)} cleared a hostile camp`;
     case 'player_defeated':
       return e.player === ME
         ? 'Your civilization has fallen'
@@ -226,6 +230,8 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
   const game = useMemo(() => new LocalGame(setup, ctx), [setup, ctx]);
   const [state, setState] = useState<GameState>(game.state);
   const [selection, setSelection] = useState<Selection>(null);
+  const selectionRef = useRef<Selection>(null);
+  selectionRef.current = selection;
   const [hover, setHover] = useState<number>();
   const [pinned, setPinned] = useState<number | null>(null);
   const [inspect, setInspect] = useState<number>();
@@ -640,8 +646,14 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
       if (!act({ type: 'attack', player: ME, unit: u.id, tile })) return;
       setPinned(null);
       const after = game.state.units[u.id];
-      // Let the hit play out on screen before the camera moves on to the next unit.
-      if (!after || after.moves === 0) setTimeout(() => selectNextUnit(u.id), 1100);
+      // Let the hit play out on screen before the camera moves on to the next unit (unless
+      // the player has picked something else meanwhile).
+      if (!after || after.moves === 0) {
+        setTimeout(() => {
+          const now = selectionRef.current;
+          if (now === null || (now.kind === 'unit' && now.id === u.id)) selectNextUnit(u.id);
+        }, 1100);
+      }
     },
     [game, act, selectNextUnit],
   );

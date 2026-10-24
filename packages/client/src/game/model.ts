@@ -2,10 +2,12 @@ import { type CompiledContent, resolveText } from '@cx/content';
 import {
   availableNodes,
   availablePolicies,
+  availablePromotions,
   type BuildItem,
   districtYields,
   type EngineContext,
   goldPerTurn,
+  HOSTILE,
   growthPerTurn,
   growthThreshold,
   itemCost,
@@ -54,6 +56,8 @@ export function playerColors(content: CompiledContent, state: GameState): Record
       ? { main: hex(civ.colors.primary), accent: hex(civ.colors.secondary) }
       : { main: 0x8d9db6, accent: 0x10161d };
   }
+  // Raiders: soot and ember.
+  out[HOSTILE] = { main: 0x2b2420, accent: 0xe0503c };
   return out;
 }
 
@@ -90,6 +94,7 @@ export function unitViews(
         mine: u.owner === viewer,
         needsOrders: needing.has(u.id),
         health: Math.round((u.health * 100) / ctx.content.rules.combat.maxHealth),
+        promotable: u.owner === viewer && availablePromotions(ctx, u).length > 0,
       };
     });
 }
@@ -117,6 +122,11 @@ export function territoryView(
       return def ? { model: def.model, icon: def.icon } : null;
     }),
     features: state.map.tiles.map((t) => t.feature),
+    camps: (() => {
+      const out = state.map.tiles.map(() => false);
+      for (const c of Object.values(state.camps)) if (fog[c.tile] !== 0) out[c.tile] = true;
+      return out;
+    })(),
   };
 }
 

@@ -34,6 +34,8 @@ export interface UnitView {
   needsOrders: boolean;
   /** Percent of full health (bars show below 100). */
   health: number;
+  /** Has the XP for a promotion (your units only). */
+  promotable: boolean;
 }
 
 /** A settlement as the renderer draws it (only ones on tiles the viewer has explored). */
@@ -69,6 +71,8 @@ export interface TerritoryView {
   wonders: ({ model: string; icon: string } | null)[];
   /** Each tile's feature now (woods can be cleared during the game). */
   features: (string | null)[];
+  /** Hostile camps on explored tiles. */
+  camps: boolean[];
 }
 
 /** A tile marked for a choice: developing it, buying it... `label` is drawn on the tile. */

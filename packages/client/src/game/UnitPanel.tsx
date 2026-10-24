@@ -1,11 +1,14 @@
 import { resolveText } from '@cx/content';
 import {
   type Action,
+  availablePromotions,
   type EngineContext,
   foundingProblem,
   type GameState,
   MP,
+  nextPromotionXp,
   type PlayerId,
+  promotionsOf,
   type UnitState,
   unitClassOf,
   unitDef,
@@ -43,6 +46,7 @@ export function UnitPanel({
   const [confirmDisband, setConfirmDisband] = useState(false);
   const def = unitDef(ctx, unit);
   const { fortify, maxHealth } = ctx.content.rules.combat;
+  const promotable = availablePromotions(ctx, unit);
   const cls = unitClassOf(ctx, unit);
   const mine = unit.owner === viewer;
   const status =
@@ -134,10 +138,47 @@ export function UnitPanel({
         {cls.combat && (
           <div>
             <dt>XP</dt>
-            <dd>{unit.xp}</dd>
+            <dd title="Experience toward the next promotion">
+              {unit.xp}/{nextPromotionXp(ctx, unit)}
+            </dd>
           </div>
         )}
       </dl>
+      {unit.promotions.length > 0 && (
+        <ul className="promotions" aria-label="Promotions">
+          {promotionsOf(ctx, unit).map((p) => (
+            <li key={p.id} title={resolveText(ctx.content, p.description)}>
+              ★ {resolveText(ctx.content, p.name)}
+            </li>
+          ))}
+        </ul>
+      )}
+      {mine && promotable.length > 0 && (
+        <section className="promote" aria-label="Promote">
+          <h4>★ Promotion ready</h4>
+          <p className="hint">Promoting heals the unit fully and ends its turn.</p>
+          <ul className="choices">
+            {promotable.map((id) => {
+              const p = ctx.content.entities.promotion[id]!;
+              return (
+                <li key={id}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      act({ type: 'promote_unit', player: viewer, unit: unit.id, promotion: id })
+                    }
+                  >
+                    <span>{resolveText(ctx.content, p.name)}</span>
+                    <span className="muted small-text">
+                      {resolveText(ctx.content, p.description)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
       {mine && (
         <div className="unit-actions">
           {def.actions.includes('found_settlement') && (

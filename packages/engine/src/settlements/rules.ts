@@ -148,6 +148,20 @@ export function workableTiles(ctx: EngineContext, state: GameState, s: Settlemen
 // --- Founding --------------------------------------------------------------------------------
 
 /** Why `player` can't found a settlement on `tile`, or undefined if they can. */
+/** Unhappiness in each of a player's settlements from wars where the other side leads in support. */
+export function warWeariness(ctx: EngineContext, state: GameState, player: PlayerId): number {
+  const rules = ctx.content.rules.combat.warSupport;
+  let behind = 0;
+  for (const key of state.wars) {
+    const sides = key.split('|');
+    if (!sides.includes(player)) continue;
+    const other = sides[0] === player ? sides[1]! : sides[0]!;
+    const support = state.warSupport[key] ?? {};
+    behind += Math.max(0, (support[other] ?? 0) - (support[player] ?? 0));
+  }
+  return Math.min(rules.maxUnhappiness, behind * rules.unhappinessPerPoint);
+}
+
 export function foundingProblem(
   ctx: EngineContext,
   state: GameState,
@@ -165,6 +179,8 @@ export function foundingProblem(
       code: 'bad_site',
       message: `Settlements can't be founded on ${resolveText(ctx.content, feature.name)}`,
     };
+  if (Object.values(state.camps).some((c) => c.tile === tile))
+    return { code: 'camp', message: 'Clear the hostile camp first' };
   if (t.owner !== null && t.owner !== player)
     return {
       code: 'foreign_territory',
@@ -311,6 +327,8 @@ export function happinessOf(ctx: EngineContext, state: GameState, s: SettlementS
   }
   const citizens = Math.floor(s.population / h.citizensPerUnhappy);
   if (citizens > 0) lines.push({ label: 'Citizens', amount: -citizens });
+  const weariness = warWeariness(ctx, state, s.owner);
+  if (weariness > 0) lines.push({ label: 'War weariness', amount: -weariness });
   const maintained = s.buildings.filter(
     (b) => ctx.content.entities.building[b]!.maintenance > 0,
   ).length;

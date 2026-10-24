@@ -1,6 +1,7 @@
 import { type EngineContext, atWar, unitClassOf, unitDef } from '../context';
 import { directionTo, hasRiverEdge, neighbors } from '../map/hex';
 import type { GameState, UnitState } from '../state';
+import { extraMovement, ignoresTerrainCost } from './promotions';
 
 /**
  * Movement rules (docs/03-core-mechanics.md, "Movement"). All costs are in hundredths of a
@@ -9,7 +10,7 @@ import type { GameState, UnitState } from '../state';
 
 export const MP = 100;
 
-type Unit = Pick<UnitState, 'id' | 'owner' | 'type'>;
+type Unit = Pick<UnitState, 'id' | 'owner' | 'type'> & { promotions?: string[] | undefined };
 
 export function isWater(ctx: EngineContext, state: GameState, tile: number): boolean {
   return ctx.content.entities.terrain[state.map.tiles[tile]!.terrain]!.water;
@@ -101,7 +102,6 @@ export function inEnemyZoc(
   unit: Unit,
   tile: number,
 ): boolean {
-  if (state.wars.length === 0) return false;
   for (const t of [tile, ...neighbors(state.map, tile)]) {
     for (const u of unitsOn(state, t)) {
       if (atWar(state, unit.owner, u.owner) && unitClassOf(ctx, u).combat) return true;
@@ -128,7 +128,7 @@ export function stepMoves(
   const cls = unitClassOf(ctx, unit);
   const toWater = isWater(ctx, state, to);
   let cost: number;
-  if (def.ignoresTerrainCost || cls.domain !== 'land' || toWater) cost = MP;
+  if (ignoresTerrainCost(ctx, unit) || cls.domain !== 'land' || toWater) cost = MP;
   else cost = landCost(ctx, state, to)!;
 
   const rules = ctx.content.rules;
@@ -159,6 +159,9 @@ export function riverBits(state: GameState): number[] {
   return bits;
 }
 
-export function fullMoves(ctx: EngineContext, unit: Pick<UnitState, 'type'>): number {
-  return unitDef(ctx, unit).movement * MP;
+export function fullMoves(
+  ctx: EngineContext,
+  unit: Pick<UnitState, 'type'> & { promotions?: string[] | undefined },
+): number {
+  return (unitDef(ctx, unit).movement + extraMovement(ctx, unit)) * MP;
 }

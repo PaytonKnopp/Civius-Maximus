@@ -11284,6 +11284,152 @@
           "properties": {
             "type": {
               "type": "string",
+              "const": "promotion"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "classes": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              }
+            },
+            "tier": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            },
+            "requires": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              }
+            },
+            "strength": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "when": {
+                    "default": "always",
+                    "type": "string",
+                    "enum": [
+                      "attack",
+                      "defend",
+                      "always"
+                    ]
+                  },
+                  "vs": {
+                    "type": "object",
+                    "properties": {
+                      "classes": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$"
+                        }
+                      },
+                      "settlement": {
+                        "type": "boolean"
+                      },
+                      "ranged": {
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "on": {
+                    "type": "object",
+                    "properties": {
+                      "features": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$"
+                        }
+                      },
+                      "elevations": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "flat",
+                            "hills",
+                            "mountain"
+                          ]
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "amount"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "movement": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "sight": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "range": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "ignoresTerrainCost": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "name",
+            "description",
+            "classes",
+            "tier"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
               "const": "era"
             },
             "id": {
@@ -17151,6 +17297,59 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
+                },
+                "promotionXp": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "warSupport": {
+                  "type": "object",
+                  "properties": {
+                    "surprise": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "kill": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "capture": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "max": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "unhappinessPerPoint": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "maxUnhappiness": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "surprise",
+                    "kill",
+                    "capture",
+                    "max",
+                    "unhappinessPerPoint",
+                    "maxUnhappiness"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
@@ -17167,7 +17366,86 @@
                 "xp",
                 "heal",
                 "settlement",
-                "minWarTurns"
+                "minWarTurns",
+                "promotionXp",
+                "warSupport"
+              ],
+              "additionalProperties": false
+            },
+            "camps": {
+              "type": "object",
+              "properties": {
+                "landTilesPerCamp": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "minDistance": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "spawnEvery": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "unitEvery": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "maxUnits": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "aggroRange": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "reward": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "units": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "era": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "units": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$"
+                        }
+                      }
+                    },
+                    "required": [
+                      "era",
+                      "units"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "landTilesPerCamp",
+                "minDistance",
+                "spawnEvery",
+                "unitEvery",
+                "maxUnits",
+                "aggroRange",
+                "reward",
+                "units"
               ],
               "additionalProperties": false
             },
@@ -17295,6 +17573,7 @@
             "progress",
             "units",
             "combat",
+            "camps",
             "mapgen"
           ],
           "additionalProperties": false
@@ -28715,6 +28994,152 @@
             "properties": {
               "type": {
                 "type": "string",
+                "const": "promotion"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "classes": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                }
+              },
+              "tier": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5
+              },
+              "requires": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                }
+              },
+              "strength": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "when": {
+                      "default": "always",
+                      "type": "string",
+                      "enum": [
+                        "attack",
+                        "defend",
+                        "always"
+                      ]
+                    },
+                    "vs": {
+                      "type": "object",
+                      "properties": {
+                        "classes": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          }
+                        },
+                        "settlement": {
+                          "type": "boolean"
+                        },
+                        "ranged": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "on": {
+                      "type": "object",
+                      "properties": {
+                        "features": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          }
+                        },
+                        "elevations": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "flat",
+                              "hills",
+                              "mountain"
+                            ]
+                          }
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "amount"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "movement": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "sight": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "range": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "ignoresTerrainCost": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "name",
+              "description",
+              "classes",
+              "tier"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
                 "const": "era"
               },
               "id": {
@@ -34582,6 +35007,59 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "promotionXp": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "warSupport": {
+                    "type": "object",
+                    "properties": {
+                      "surprise": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "kill": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "capture": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "max": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "unhappinessPerPoint": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "maxUnhappiness": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "surprise",
+                      "kill",
+                      "capture",
+                      "max",
+                      "unhappinessPerPoint",
+                      "maxUnhappiness"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
@@ -34598,7 +35076,86 @@
                   "xp",
                   "heal",
                   "settlement",
-                  "minWarTurns"
+                  "minWarTurns",
+                  "promotionXp",
+                  "warSupport"
+                ],
+                "additionalProperties": false
+              },
+              "camps": {
+                "type": "object",
+                "properties": {
+                  "landTilesPerCamp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "minDistance": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "spawnEvery": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "unitEvery": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "maxUnits": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "aggroRange": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "reward": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "units": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "era": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$"
+                        },
+                        "units": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          }
+                        }
+                      },
+                      "required": [
+                        "era",
+                        "units"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "landTilesPerCamp",
+                  "minDistance",
+                  "spawnEvery",
+                  "unitEvery",
+                  "maxUnits",
+                  "aggroRange",
+                  "reward",
+                  "units"
                 ],
                 "additionalProperties": false
               },
@@ -34726,6 +35283,7 @@
               "progress",
               "units",
               "combat",
+              "camps",
               "mapgen"
             ],
             "additionalProperties": false

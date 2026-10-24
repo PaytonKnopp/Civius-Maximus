@@ -284,6 +284,43 @@ export const RulesDef = z.strictObject({
     }),
     /** Turns a war lasts before peace can be offered. */
     minWarTurns: z.int().min(0),
+    /** XP needed for the 1st, 2nd... promotion (the last value repeats). */
+    promotionXp: z.array(z.int().min(1)).min(1),
+    /**
+     * War support (from Civ VII): each side of a war has a score. The side behind loses
+     * happiness in every settlement, so long, losing wars get harder to keep up.
+     */
+    warSupport: z.strictObject({
+      /** The side that's declared on starts this far ahead. */
+      surprise: z.int().min(0),
+      /** For each enemy unit destroyed. */
+      kill: z.int().min(0),
+      /** For each settlement taken. */
+      capture: z.int().min(0),
+      /** The most one side can lead by. */
+      max: z.int().min(1),
+      /** Unhappiness per point behind, in every settlement, up to `maxUnhappiness`. */
+      unhappinessPerPoint: z.int().min(0),
+      maxUnhappiness: z.int().min(0),
+    }),
+  }),
+  /** Hostile camps: raiders that belong to no one and attack everyone. */
+  camps: z.strictObject({
+    /** One camp per this many land tiles, at the start and at most (0 = no camps). */
+    landTilesPerCamp: z.int().min(0),
+    /** No camp within this many tiles of a start, a settlement or another camp. */
+    minDistance: z.int().min(1),
+    /** Every this many turns a new camp may appear, in land no player can see. */
+    spawnEvery: z.int().min(1),
+    /** A camp trains a raider every this many turns, while it has fewer than `maxUnits`. */
+    unitEvery: z.int().min(1),
+    maxUnits: z.int().min(1),
+    /** Raiders go after anything of a player's within this many tiles. */
+    aggroRange: z.int().min(1),
+    /** Gold for clearing a camp (moving a military unit onto it). */
+    reward: z.int().min(0),
+    /** Raider units by era: the latest era any player has reached picks the list. */
+    units: z.array(z.strictObject({ era: Id, units: z.array(Id).min(1) })).min(1),
   }),
   mapgen: z.strictObject({
     coastTerrain: Id,
@@ -660,6 +697,49 @@ export const SpecializationDef = z.strictObject({
   ...requires,
 });
 
+/** A unit promotion (docs/03-core-mechanics.md, "Experience and promotions"). */
+export const PromotionDef = z.strictObject({
+  type: z.literal('promotion'),
+  id: Id,
+  name: Text,
+  description: Text,
+  /** Unit classes that can take it. */
+  classes: z.array(Id).min(1),
+  /** Its row in the class's tree (shown in order). */
+  tier: z.int().min(1).max(5),
+  /** Needs any one of these first (empty = available from the start). */
+  requires: z.array(Id).default([]),
+  /** Strength bonuses, each in the situations it names. */
+  strength: z
+    .array(
+      z.strictObject({
+        amount: z.int(),
+        when: z.enum(['attack', 'defend', 'always']).default('always'),
+        /** Only against these classes, against settlements, or against ranged attacks. */
+        vs: z
+          .strictObject({
+            classes: z.array(Id).min(1).optional(),
+            settlement: z.boolean().optional(),
+            ranged: z.boolean().optional(),
+          })
+          .optional(),
+        /** Only when the unit stands (defending) or fights from (attacking) such a tile. */
+        on: z
+          .strictObject({
+            features: z.array(Id).min(1).optional(),
+            elevations: z.array(Elevation).min(1).optional(),
+          })
+          .optional(),
+      }),
+    )
+    .default([]),
+  movement: z.int().min(0).default(0),
+  sight: z.int().min(0).default(0),
+  range: z.int().min(0).default(0),
+  /** Every tile costs 1 movement. */
+  ignoresTerrainCost: z.boolean().default(false),
+});
+
 /** Something a player can do to earn a boost (a share of a tech's or civic's cost). */
 export const Goal = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('settlements'), count: z.int().min(1) }),
@@ -788,6 +868,7 @@ export const ENTITY_SCHEMAS = {
   wonder: WonderDef,
   project: ProjectDef,
   specialization: SpecializationDef,
+  promotion: PromotionDef,
   era: EraDef,
   tech: TechDef,
   civic: CivicDef,
@@ -821,6 +902,7 @@ export type DistrictDef = z.infer<typeof DistrictDef>;
 export type WonderDef = z.infer<typeof WonderDef>;
 export type ProjectDef = z.infer<typeof ProjectDef>;
 export type SpecializationDef = z.infer<typeof SpecializationDef>;
+export type PromotionDef = z.infer<typeof PromotionDef>;
 export type TechDef = z.infer<typeof TechDef>;
 export type CivicDef = z.infer<typeof CivicDef>;
 export type GovernmentDef = z.infer<typeof GovernmentDef>;
@@ -845,6 +927,7 @@ export interface EntityByType {
   wonder: WonderDef;
   project: ProjectDef;
   specialization: SpecializationDef;
+  promotion: PromotionDef;
   era: EraDef;
   tech: TechDef;
   civic: CivicDef;

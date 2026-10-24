@@ -191,6 +191,38 @@
       "wallsRepair": 10,
       "capturePopulationLoss": 25
     },
-    "minWarTurns": 10
+    "minWarTurns": 10,
+    "promotionXp": [15, 30, 50, 75, 105],
+    "warSupport": {
+      "surprise": 3,
+      "kill": 1,
+      "capture": 3,
+      "max": 10,
+      "unhappinessPerPoint": 1,
+      "maxUnhappiness": 5
+    }
+  },
+  "camps": {
+    "landTilesPerCamp": 120,
+    "minDistance": 6,
+    "spawnEvery": 12,
+    "unitEvery": 7,
+    "maxUnits": 3,
+    "aggroRange": 4,
+    "reward": 50,
+    "units": [
+      {
+        "era": "era_ancient",
+        "units": ["unit_warrior", "unit_warrior", "unit_slinger"]
+      },
+      {
+        "era": "era_classical",
+        "units": ["unit_spearman", "unit_archer", "unit_horseman"]
+      },
+      {
+        "era": "era_medieval",
+        "units": ["unit_swordsman", "unit_crossbowman", "unit_horseman"]
+      }
+    ]
   }
 }

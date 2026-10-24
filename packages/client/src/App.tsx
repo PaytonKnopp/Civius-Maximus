@@ -15,6 +15,7 @@ interface NewGameOptions {
   seed: string;
   wrapX: boolean;
   resources: MapSettings['resources'];
+  camps: boolean;
 }
 
 function makeSetup(o: NewGameOptions): GameSetup {
@@ -22,6 +23,7 @@ function makeSetup(o: NewGameOptions): GameSetup {
     gameId: `local-${o.seed}`,
     settings: {
       seed: o.seed,
+      camps: o.camps,
       turnLimit: null,
       map: {
         script: o.script,
@@ -67,6 +69,7 @@ export function App() {
     seed: randomSeed(),
     wrapX: true,
     resources: 'standard',
+    camps: true,
   });
   const [setup, setSetup] = useState(() => makeSetup(options));
   const [dialog, setDialog] = useState(false);
@@ -247,6 +250,15 @@ function NewGameDialog({
             onChange={(e) => setO({ ...o, wrapX: e.target.checked })}
           />
           Wrap east–west
+        </label>
+        <label className="check" htmlFor="ng-camps">
+          <input
+            id="ng-camps"
+            type="checkbox"
+            checked={o.camps}
+            onChange={(e) => setO({ ...o, camps: e.target.checked })}
+          />
+          Hostile camps (raiders)
         </label>
         <div className="dialog-actions">
           <button type="button" className="ghost" onClick={onCancel}>

@@ -471,3 +471,44 @@ export function wonderParts(
   }
   return out;
 }
+
+/** A hostile camp: hide tents inside a rough palisade, a fire, a war banner. */
+export function campParts(x: number, z: number, ground: number, seed: number): BufferGeometry[] {
+  const r = seeded(seed * 13 + 7);
+  const rot = r() * Math.PI * 2;
+  const at = placer(x, z, rot);
+  const out: BufferGeometry[] = [];
+  const y = ground;
+  out.push(scaled(G.hex, 0x4a3b2c, x, y + 0.004, z, 0.52, 0.02, 0.52));
+  for (let i = 0; i < 18; i++) {
+    if (i === 4 || i === 5) continue; // the gap they ride out of
+    const a = (i / 18) * Math.PI * 2;
+    const h = 0.1 + r() * 0.06;
+    const [sx, sz] = at(Math.cos(a) * 0.46, Math.sin(a) * 0.46);
+    out.push(
+      scaled(G.cyl, 0x4a3420, sx, y + h / 2, sz, 0.016, h, 0.016),
+      scaled(G.cone, 0x4a3420, sx, y + h + 0.015, sz, 0.017, 0.03, 0.017),
+    );
+  }
+  for (const [dx, dz, s] of [
+    [-0.16, -0.12, 0.11],
+    [0.15, -0.16, 0.09],
+    [-0.04, 0.2, 0.1],
+  ] as const) {
+    const [tx, tz] = at(dx, dz);
+    out.push(scaled(G.cone, 0x6b5a44, tx, y + s * 0.8, tz, s, s * 1.6, s));
+  }
+  const [fx, fz] = at(0.08, 0.04);
+  out.push(
+    scaled(G.cyl, 0x2a2622, fx, y + 0.01, fz, 0.06, 0.02, 0.06),
+    scaled(G.cone, 0xff7a2a, fx, y + 0.05, fz, 0.035, 0.08, 0.035),
+    scaled(G.cone, 0xffd060, fx, y + 0.045, fz, 0.018, 0.05, 0.018),
+  );
+  const [px, pz] = at(-0.24, 0.12);
+  out.push(
+    scaled(G.cyl, 0x3a2a1a, px, y + 0.2, pz, 0.01, 0.4, 0.01),
+    scaled(G.box, 0xb02a1e, px + 0.05, y + 0.34, pz, 0.1, 0.07, 0.005, rot),
+    scaled(G.ball, 0xd8d0bc, px, y + 0.41, pz, 0.025, 0.022, 0.025),
+  );
+  return out;
+}

@@ -30,11 +30,25 @@ export interface GameState {
   warStarted: Record<string, number>;
   /** Peace offers waiting for an answer, as `"from>to"`. */
   peaceOffers: string[];
+  /** War support per war (by war key), per side. The side behind loses happiness. */
+  warSupport: Record<string, Record<PlayerId, number>>;
+  /** Hostile camps, by id (`c4`...). Their raiders belong to `HOSTILE`. */
+  camps: Record<string, CampState>;
   /** Every settlement, by id (`s3`...). Iterate with `settlementIds()` for a stable order. */
   settlements: Record<SettlementId, SettlementState>;
 }
 
 export type SettlementId = string;
+
+/** A hostile camp: it trains raiders until a player's military unit moves onto it. */
+export interface CampState {
+  id: string;
+  tile: number;
+  /** Raiders it trained that are still alive. */
+  units: UnitId[];
+  /** The turn it trains its next raider. */
+  nextUnit: number;
+}
 
 /** Something a city can produce. */
 export interface BuildItem {
@@ -130,6 +144,8 @@ export interface UnitState {
   orders: UnitOrders | null;
   /** Turn on which the player chose "skip" for this unit, so it stops asking for orders. */
   skippedTurn: number | null;
+  /** `promotion` content ids, in the order they were taken. */
+  promotions: string[];
 }
 
 export interface GameSettings {
@@ -137,12 +153,15 @@ export interface GameSettings {
   /** The game ends after this turn (score victory). `null` = no limit. */
   turnLimit: number | null;
   map: MapSettings;
+  /** Hostile camps (on unless false). */
+  camps?: boolean | undefined;
 }
 
 export interface PlayerState {
   id: PlayerId;
   name: string;
-  kind: 'human' | 'ai';
+  /** `hostile`: the owner of camp raiders, outside the turn order (see `HOSTILE`). */
+  kind: 'human' | 'ai' | 'hostile';
   /** Team number; players on the same team share victory. `null` = no team. */
   team: number | null;
   alive: boolean;

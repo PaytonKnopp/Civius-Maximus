@@ -3,6 +3,7 @@ import type { Action } from '../actions';
 import {
   type ActionHandler,
   atWar,
+  HOSTILE,
   type EngineContext,
   type Emit,
   type RuleError,
@@ -16,7 +17,9 @@ import { settlementIds } from '../settlements/rules';
 import { nextRange } from '../rng';
 import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
 import { ownedUnit, watchers } from '../units/handlers';
+import { availablePromotions, nextPromotionXp } from '../units/promotions';
 import { canTraverse, fullMoves, hasRoom, unitsOn } from '../units/movement';
+import { clearCampsOn } from './camps';
 import { damageFor } from './damage';
 import {
   attackMode,
@@ -64,6 +67,24 @@ function settlementSide(s: Pick<SettlementState, 'id' | 'owner' | 'health' | 'wa
   return { kind: 'settlement', settlement: s.id, owner: s.owner, health: s.health, walls: s.walls };
 }
 
+/** Shifts war support between two players at war (raiders don't count). */
+function addWarSupport(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  gainer: PlayerId,
+  other: PlayerId,
+  amount: number,
+) {
+  if (gainer === HOSTILE || other === HOSTILE || amount === 0) return;
+  const key = warKey(gainer, other);
+  if (!draft.wars.includes(key)) return;
+  const support = (draft.warSupport[key] ??= { [gainer]: 0, [other]: 0 });
+  support[gainer] = Math.min(
+    ctx.content.rules.combat.warSupport.max,
+    (support[gainer] ?? 0) + amount,
+  );
+}
+
 export function killUnit(
   draft: Draft<GameState>,
   ctx: EngineContext,
@@ -76,6 +97,7 @@ export function killUnit(
   const visibleTo = watchers(ctx, current(draft), owner, [tile]);
   delete draft.units[id];
   emit({ type: 'unit_killed', unit: id, owner, unitType: type, tile, by, visibleTo });
+  addWarSupport(draft, ctx, by, owner, ctx.content.rules.combat.warSupport.kill);
 }
 
 /** Other players' civilians on `tile` change hands. */
@@ -88,6 +110,11 @@ function captureCivilians(
 ) {
   for (const u of unitsOn(current(draft), tile)) {
     if (u.owner === by || unitClassOf(ctx, u).combat) continue;
+    // Raiders carry civilians off.
+    if (by === HOSTILE) {
+      killUnit(draft, ctx, u.id, by, emit);
+      continue;
+    }
     const d = draft.units[u.id]!;
     const from = d.owner;
     d.owner = by;
@@ -110,7 +137,7 @@ function advance(draft: Draft<GameState>, ctx: EngineContext, id: string, to: nu
   const u = draft.units[id]!;
   const from = u.tile;
   u.tile = to;
-  refreshExplored(draft, ctx, u.owner);
+  if (u.owner !== HOSTILE) refreshExplored(draft, ctx, u.owner);
   emit({
     type: 'unit_moved',
     unit: id,
@@ -118,6 +145,7 @@ function advance(draft: Draft<GameState>, ctx: EngineContext, id: string, to: nu
     path: [from, to],
     visibleTo: watchers(ctx, current(draft), u.owner, [from, to]),
   });
+  if (unitClassOf(ctx, u).combat) clearCampsOn(draft, ctx, u.owner, [to], emit);
 }
 
 /** The biggest remaining settlement becomes the capital (and gets the capital's building). */
@@ -155,6 +183,9 @@ function checkDefeat(draft: Draft<GameState>, player: PlayerId, by: PlayerId | n
     if (k.split('|').includes(player)) delete draft.warStarted[k];
   }
   draft.peaceOffers = draft.peaceOffers.filter((o) => !o.split('>').includes(player));
+  for (const k of Object.keys(draft.warSupport)) {
+    if (k.split('|').includes(player)) delete draft.warSupport[k];
+  }
   emit({ type: 'player_defeated', player, by, visibleTo: 'all' });
   const alive = draft.playerOrder.filter((id) => draft.players[id]!.alive);
   if (alive.length === 1 && draft.playerOrder.length > 1) {
@@ -212,6 +243,7 @@ export function captureSettlement(
     tile: s.tile,
     visibleTo: 'all',
   });
+  addWarSupport(draft, ctx, captor, from, ctx.content.rules.combat.warSupport.capture);
   if (wasCapital) relocateCapital(draft, ctx, from, emit);
   checkDefeat(draft, from, captor, emit);
 }
@@ -272,7 +304,7 @@ export function liberateProblem(state: GameState, s: SettlementState): RuleError
 function warProblem(state: GameState, player: PlayerId, target: PlayerId): RuleError | undefined {
   const p = state.players[player]!;
   const t = state.players[target];
-  if (!t?.alive || target === player)
+  if (!t?.alive || target === player || !state.playerOrder.includes(target))
     return { code: 'bad_target', message: 'No such player in the game' };
   if (p.team !== null && p.team === t.team)
     return { code: 'teammate', message: `${t.name} is on your team` };
@@ -302,7 +334,106 @@ function endWar(draft: Draft<GameState>, a: PlayerId, b: PlayerId) {
   const key = warKey(a, b);
   draft.wars = draft.wars.filter((k) => k !== key);
   delete draft.warStarted[key];
+  delete draft.warSupport[key];
   draft.peaceOffers = draft.peaceOffers.filter((o) => o !== `${a}>${b}` && o !== `${b}>${a}`);
+}
+
+/**
+ * A unit attacks a tile (already checked with `attackProblem`). Shared by players' attacks and
+ * hostile raiders (mid-turn, so the numbers come from a snapshot of the state as it is now).
+ */
+export function performAttack(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  unitId: string,
+  tile: number,
+  emit: Emit,
+) {
+  const base = current(draft);
+  const unit = base.units[unitId]!;
+  const target = targetAt(ctx, base, unit.owner, tile)!;
+  const a = draft.units[unit.id]!;
+  a.moves = 0;
+  a.orders = null;
+  if (target.kind === 'civilian') {
+    captureCivilians(draft, ctx, tile, unit.owner, emit);
+    advance(draft, ctx, unit.id, tile, emit);
+    return;
+  }
+  const combat = ctx.content.rules.combat;
+  const mode = attackMode(ctx, unit)!;
+  const attack = attackStrength(ctx, base, unit, target, mode);
+  if (target.kind === 'unit') {
+    const defense = defenseStrength(ctx, base, target.unit, unit);
+    const diff = attack.total - defense.total;
+    const dealt = rollDamage(draft, ctx, diff);
+    const taken = mode === 'melee' ? rollDamage(draft, ctx, -diff) : 0;
+    const d = draft.units[target.unit.id]!;
+    d.health = Math.max(0, d.health - dealt);
+    a.health = Math.max(0, a.health - taken);
+    a.xp += combat.xp.attack;
+    d.xp += combat.xp.defend;
+    emit({
+      type: 'combat',
+      mode,
+      attacker: unitSide(a),
+      defender: unitSide(d),
+      from: unit.tile,
+      tile: tile,
+      dealt,
+      taken,
+      visibleTo: seenBy(watchers(ctx, current(draft), unit.owner, [unit.tile, tile]), d.owner),
+    });
+    const won = d.health <= 0;
+    if (won) killUnit(draft, ctx, d.id, unit.owner, emit);
+    if (a.health <= 0) {
+      killUnit(draft, ctx, a.id, d.owner, emit);
+      return;
+    }
+    // A melee winner moves into the tile it cleared, if it can stand there.
+    if (won && mode === 'melee') {
+      const snap = current(draft);
+      if (canTraverse(ctx, snap, unit, tile)) {
+        captureCivilians(draft, ctx, tile, unit.owner, emit);
+        if (hasRoom(ctx, current(draft), unit, tile)) advance(draft, ctx, unit.id, tile, emit);
+      }
+    }
+    return;
+  }
+
+  const s = draft.settlements[target.settlement.id]!;
+  const defense = settlementStrength(ctx, base, target.settlement);
+  const diff = attack.total - defense.total;
+  const hit = settlementHit(ctx, s, rollDamage(draft, ctx, diff), unit);
+  s.walls -= hit.walls;
+  s.health -= hit.health;
+  s.attackedTurn = draft.turn;
+  const taken = mode === 'melee' ? rollDamage(draft, ctx, -diff) : 0;
+  a.health = Math.max(0, a.health - taken);
+  a.xp += combat.xp.attack;
+  emit({
+    type: 'combat',
+    mode,
+    attacker: unitSide(a),
+    defender: settlementSide(s),
+    from: unit.tile,
+    tile: tile,
+    dealt: hit.walls + hit.health,
+    taken,
+    visibleTo: seenBy(watchers(ctx, current(draft), unit.owner, [unit.tile, tile]), s.owner),
+  });
+  if (a.health <= 0) {
+    killUnit(draft, ctx, a.id, s.owner, emit);
+    return;
+  }
+  if (
+    mode === 'melee' &&
+    s.health <= 0 &&
+    unitClassOf(ctx, unit).captures &&
+    unit.owner !== HOSTILE
+  ) {
+    captureSettlement(draft, ctx, s.id, unit.owner, unit.id, emit);
+  }
 }
 
 export const combatHandlers = {
@@ -313,93 +444,7 @@ export const combatHandlers = {
       return attackProblem(ctx, state, unit, action.tile);
     },
     apply(draft, action, ctx, emit) {
-      const base = original(draft) as GameState;
-      const unit = base.units[action.unit]!;
-      const target = targetAt(ctx, base, unit.owner, action.tile)!;
-      const a = draft.units[unit.id]!;
-      a.moves = 0;
-      a.orders = null;
-      if (target.kind === 'civilian') {
-        captureCivilians(draft, ctx, action.tile, unit.owner, emit);
-        advance(draft, ctx, unit.id, action.tile, emit);
-        return;
-      }
-      const combat = ctx.content.rules.combat;
-      const mode = attackMode(ctx, unit)!;
-      const attack = attackStrength(ctx, base, unit, target, mode);
-      if (target.kind === 'unit') {
-        const defense = defenseStrength(ctx, base, target.unit, unit);
-        const diff = attack.total - defense.total;
-        const dealt = rollDamage(draft, ctx, diff);
-        const taken = mode === 'melee' ? rollDamage(draft, ctx, -diff) : 0;
-        const d = draft.units[target.unit.id]!;
-        d.health = Math.max(0, d.health - dealt);
-        a.health = Math.max(0, a.health - taken);
-        a.xp += combat.xp.attack;
-        d.xp += combat.xp.defend;
-        emit({
-          type: 'combat',
-          mode,
-          attacker: unitSide(a),
-          defender: unitSide(d),
-          from: unit.tile,
-          tile: action.tile,
-          dealt,
-          taken,
-          visibleTo: seenBy(
-            watchers(ctx, current(draft), unit.owner, [unit.tile, action.tile]),
-            d.owner,
-          ),
-        });
-        const won = d.health <= 0;
-        if (won) killUnit(draft, ctx, d.id, unit.owner, emit);
-        if (a.health <= 0) {
-          killUnit(draft, ctx, a.id, d.owner, emit);
-          return;
-        }
-        // A melee winner moves into the tile it cleared, if it can stand there.
-        if (won && mode === 'melee') {
-          const snap = current(draft);
-          if (canTraverse(ctx, snap, unit, action.tile)) {
-            captureCivilians(draft, ctx, action.tile, unit.owner, emit);
-            if (hasRoom(ctx, current(draft), unit, action.tile))
-              advance(draft, ctx, unit.id, action.tile, emit);
-          }
-        }
-        return;
-      }
-
-      const s = draft.settlements[target.settlement.id]!;
-      const defense = settlementStrength(ctx, base, target.settlement);
-      const diff = attack.total - defense.total;
-      const hit = settlementHit(ctx, s, rollDamage(draft, ctx, diff), unit);
-      s.walls -= hit.walls;
-      s.health -= hit.health;
-      s.attackedTurn = draft.turn;
-      const taken = mode === 'melee' ? rollDamage(draft, ctx, -diff) : 0;
-      a.health = Math.max(0, a.health - taken);
-      a.xp += combat.xp.attack;
-      emit({
-        type: 'combat',
-        mode,
-        attacker: unitSide(a),
-        defender: settlementSide(s),
-        from: unit.tile,
-        tile: action.tile,
-        dealt: hit.walls + hit.health,
-        taken,
-        visibleTo: seenBy(
-          watchers(ctx, current(draft), unit.owner, [unit.tile, action.tile]),
-          s.owner,
-        ),
-      });
-      if (a.health <= 0) {
-        killUnit(draft, ctx, a.id, s.owner, emit);
-        return;
-      }
-      if (mode === 'melee' && s.health <= 0 && unitClassOf(ctx, unit).captures) {
-        captureSettlement(draft, ctx, s.id, unit.owner, unit.id, emit);
-      }
+      performAttack(draft, ctx, action.unit, action.tile, emit);
     },
   } satisfies ActionHandler<A<'attack'>>,
 
@@ -440,6 +485,37 @@ export const combatHandlers = {
     },
   } satisfies ActionHandler<A<'strike'>>,
 
+  promote_unit: {
+    validate(state, action, ctx) {
+      const unit = ownedUnit(state, action.player, action.unit);
+      if (isError(unit)) return unit;
+      if (unit.xp < nextPromotionXp(ctx, unit))
+        return {
+          code: 'not_enough_xp',
+          message: `Needs ${nextPromotionXp(ctx, unit)} XP (has ${unit.xp})`,
+        };
+      if (!availablePromotions(ctx, unit).includes(action.promotion))
+        return { code: 'not_available', message: "This unit can't take that promotion now" };
+      return undefined;
+    },
+    apply(draft, action, ctx, emit) {
+      const u = draft.units[action.unit]!;
+      u.xp -= nextPromotionXp(ctx, u);
+      u.promotions.push(action.promotion);
+      // Promoting heals fully but uses up the turn (Civ VI's rule).
+      u.health = ctx.content.rules.combat.maxHealth;
+      u.moves = 0;
+      u.orders = null;
+      emit({
+        type: 'unit_promoted',
+        unit: u.id,
+        owner: u.owner,
+        promotion: action.promotion,
+        visibleTo: [u.owner],
+      });
+    },
+  } satisfies ActionHandler<A<'promote_unit'>>,
+
   capture_choice: {
     validate(state, action) {
       const err = playing(state, action.player);
@@ -469,10 +545,15 @@ export const combatHandlers = {
         return { code: 'already_at_war', message: 'Already at war' };
       return undefined;
     },
-    apply(draft, action, _ctx, emit) {
+    apply(draft, action, ctx, emit) {
       const key = warKey(action.player, action.target);
       draft.wars = [...draft.wars, key].sort();
       draft.warStarted[key] = draft.turn;
+      // A surprise war rallies the side that was declared on.
+      draft.warSupport[key] = {
+        [action.player]: 0,
+        [action.target]: ctx.content.rules.combat.warSupport.surprise,
+      };
       emit({ type: 'war_declared', by: action.player, target: action.target, visibleTo: 'all' });
     },
   } satisfies ActionHandler<A<'declare_war'>>,
@@ -517,7 +598,14 @@ export const combatHandlers = {
   } satisfies ActionHandler<A<'accept_peace'>>,
 } satisfies {
   [
-    T in 'attack' | 'strike' | 'capture_choice' | 'declare_war' | 'offer_peace' | 'accept_peace'
+    T in
+      | 'attack'
+      | 'strike'
+      | 'promote_unit'
+      | 'capture_choice'
+      | 'declare_war'
+      | 'offer_peace'
+      | 'accept_peace'
   ]: ActionHandler<A<T>>;
 };
 

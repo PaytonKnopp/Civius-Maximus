@@ -8,6 +8,7 @@ import {
   type PlayerId,
   razeProblem,
   warKey,
+  warWeariness,
 } from '@cx/engine';
 import { useEffect, useState } from 'react';
 import { civName, type Colors, cssColor } from './model';
@@ -32,6 +33,8 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
   const theyOffer = state.peaceOffers.includes(`${other}>${viewer}`);
   const weOffered = state.peaceOffers.includes(`${viewer}>${other}`);
   const peace = peaceProblem(ctx, state, viewer, other);
+  const support = state.warSupport[warKey(viewer, other)] ?? {};
+  const weariness = warWeariness(ctx, state, viewer);
   const settlements = Object.values(state.settlements).filter((s) => s.owner === other).length;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -103,6 +106,12 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
             <button type="button" className="wide" onClick={() => setConfirm(true)}>
               Declare war…
             </button>
+          )}
+          {war && (
+            <p className="hint" title="The side behind in war support loses happiness everywhere">
+              War support: you {support[viewer] ?? 0} · them {support[other] ?? 0}
+              {weariness > 0 ? ` (war weariness −${weariness} happiness)` : ''}
+            </p>
           )}
           {war && peace && !weOffered && <p className="hint">{peace.message}.</p>}
         </>

@@ -124,7 +124,47 @@ console.log(
 await page.screenshot({ path: `${out}/combat-captured.png` });
 if (dialog) await page.click('.modal-choices button.primary');
 
-// 5. The player panel for the rival.
+// 5. A veteran: give the swordsman XP, look at its promotions.
+await page.evaluate(({ sword }) => {
+  const s = structuredClone(window.cx.game.state);
+  if (s.units[sword]) {
+    s.units[sword].xp = 20;
+    s.units[sword].moves = 200;
+  }
+  window.cx.game.load(s);
+  window.cx.select('unit', sword);
+}, setup);
+await page.waitForTimeout(600);
+await page.screenshot({ path: `${out}/combat-promotion.png` });
+console.log('promote:', (await page.textContent('.promote'))?.replace(/\s+/g, ' ') ?? 'none');
+
+// 6. A hostile camp up close.
+const camp = await page.evaluate(() => {
+  const s = window.cx.game.state;
+  const c = Object.values(s.camps)[0];
+  if (!c) return null;
+  window.cx.view.focusTile(c.tile, true);
+  window.cx.view.dist = 7;
+  return { tile: c.tile, raiders: c.units.length };
+});
+console.log('camp:', JSON.stringify(camp));
+if (camp) {
+  await page.evaluate((t) => {
+    // Park a scout next to the camp so it's in view.
+    const s = structuredClone(window.cx.game.state);
+    const scout = Object.values(s.units).find((u) => u.owner === 'p1' && u.type === 'unit_scout');
+    const near = window.cx.hex
+      .tilesWithin(s.map, t, 1)
+      .find((x) => x !== t && !Object.values(s.units).some((u) => u.tile === x));
+    if (scout && near !== undefined) scout.tile = near;
+    window.cx.game.load(s);
+  }, camp.tile);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: `${out}/combat-camp.png` });
+}
+
+// 7. The player panel for the rival.
 await page.click('.player-chip:not(:disabled)');
 await page.waitForSelector('.player-panel');
 await page.screenshot({ path: `${out}/combat-player-panel.png` });

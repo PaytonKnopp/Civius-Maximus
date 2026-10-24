@@ -4,6 +4,7 @@ import { directionTo, distance, hasRiverEdge, neighbors, tilesWithin } from '../
 import { isUnlocked } from '../settlements/rules';
 import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
 import { canTraverse, isWater, riverBits, unitsOn } from '../units/movement';
+import { promotionsOf, unitRange } from '../units/promotions';
 import { lineOfSight, visibleTiles } from '../units/vision';
 import { damageRange } from './damage';
 
@@ -151,6 +152,32 @@ function classBonuses(
     }));
 }
 
+/** Strength from promotions that apply in this fight, fought on `tile`. */
+function promotionLines(
+  ctx: EngineContext,
+  state: GameState,
+  unit: UnitState,
+  role: 'attack' | 'defend',
+  against: { unit: UnitState | null; settlement: boolean; ranged: boolean },
+  tile: number,
+): StrengthLine[] {
+  const out: StrengthLine[] = [];
+  const t = state.map.tiles[tile]!;
+  const vsClass = against.unit ? unitDef(ctx, against.unit).class : null;
+  for (const p of promotionsOf(ctx, unit)) {
+    for (const b of p.strength) {
+      if (b.when !== 'always' && b.when !== role) continue;
+      if (b.vs?.classes && !(vsClass && b.vs.classes.includes(vsClass))) continue;
+      if (b.vs?.settlement && !against.settlement) continue;
+      if (b.vs?.ranged && !against.ranged) continue;
+      if (b.on?.features && !(t.feature && b.on.features.includes(t.feature))) continue;
+      if (b.on?.elevations && !b.on.elevations.includes(t.elevation)) continue;
+      out.push({ label: resolveText(ctx.content, p.name), amount: b.amount });
+    }
+  }
+  return out;
+}
+
 /** The strongest unit a player can train that takes settlements: the base of their defenses. */
 export function bestUnitStrength(ctx: EngineContext, state: GameState, player: PlayerId): number {
   let best = 0;
@@ -220,6 +247,20 @@ export function defenseStrength(
   if (friends > 0) lines.push({ label: `Support (${friends})`, amount: friends * combat.support });
   lines.push(wounded(ctx, unit.health, combat.maxHealth));
   lines.push(...classBonuses(ctx, unit, by));
+  lines.push(
+    ...promotionLines(
+      ctx,
+      state,
+      unit,
+      'defend',
+      {
+        unit: by,
+        settlement: by === null,
+        ranged: by === null || attackMode(ctx, by) === 'ranged',
+      },
+      unit.tile,
+    ),
+  );
   return strength(lines);
 }
 
@@ -244,6 +285,20 @@ export function attackStrength(
     const bonus = unitClassOf(ctx, unit).vsSettlement;
     if (bonus) lines.push({ label: 'Against settlements', amount: bonus });
   }
+  lines.push(
+    ...promotionLines(
+      ctx,
+      state,
+      unit,
+      'attack',
+      {
+        unit: target.kind === 'unit' ? target.unit : null,
+        settlement: target.kind === 'settlement',
+        ranged: false,
+      },
+      tile,
+    ),
+  );
   if (mode === 'melee') {
     const friends = friendsAround(ctx, state, unit.owner, tile, unit.id);
     if (friends > 0)
@@ -295,7 +350,7 @@ export function attackProblem(
       return { code: 'unreachable', message: `${unitName(ctx, unit)} can't go there` };
     return undefined;
   }
-  const range = unitDef(ctx, unit).range;
+  const range = unitRange(ctx, unit);
   if (d > range) return { code: 'too_far', message: `Out of range (range ${range})` };
   if (!lineOfSight(ctx, state, unit.tile, tile))
     return { code: 'no_line_of_sight', message: 'Something blocks the line of sight' };
@@ -303,11 +358,17 @@ export function attackProblem(
 }
 
 /** Every tile `unit` could attack (or capture civilians on) right now. */
-export function attackTargets(ctx: EngineContext, state: GameState, unit: UnitState): number[] {
+export function attackTargets(
+  ctx: EngineContext,
+  state: GameState,
+  unit: UnitState,
+  /** The owner's visible tiles, when asking for many units at once. */
+  seen?: Uint8Array,
+): number[] {
   const mode = attackMode(ctx, unit);
-  if (!mode || unit.moves <= 0 || state.wars.length === 0) return [];
-  const reach = mode === 'ranged' ? unitDef(ctx, unit).range : 1;
-  const visible = visibleTiles(ctx, state, unit.owner);
+  if (!mode || unit.moves <= 0) return [];
+  const reach = mode === 'ranged' ? unitRange(ctx, unit) : 1;
+  const visible = seen ?? visibleTiles(ctx, state, unit.owner);
   return tilesWithin(state.map, unit.tile, reach)
     .filter((t) => t !== unit.tile && !attackProblem(ctx, state, unit, t, visible))
     .sort((a, b) => a - b);
@@ -417,7 +478,7 @@ export function strikeProblem(
 
 /** Tiles a settlement could strike now. */
 export function strikeTargets(ctx: EngineContext, state: GameState, s: SettlementState): number[] {
-  if (state.wars.length === 0 || s.struckTurn === state.turn) return [];
+  if (s.struckTurn === state.turn) return [];
   const range = ctx.content.rules.combat.settlement.strikeRange;
   const visible = visibleTiles(ctx, state, s.owner);
   return tilesWithin(state.map, s.tile, range)

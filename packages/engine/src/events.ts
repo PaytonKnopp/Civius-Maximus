@@ -116,4 +116,6 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } & (
     }
   | { type: 'capital_moved'; player: PlayerId; settlement: SettlementId }
   | { type: 'player_defeated'; player: PlayerId; by: PlayerId | null }
+  | { type: 'camp_cleared'; camp: string; tile: number; by: PlayerId; gold: number }
+  | { type: 'unit_promoted'; unit: UnitId; owner: PlayerId; promotion: string }
 );

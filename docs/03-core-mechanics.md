@@ -321,6 +321,11 @@ last player standing wins. Puppets wait for the loyalty and settlement-limit wor
 - Units gain XP from combat. Each class has a promotion tree with 2 branches.
 - Promoting **fully heals** the unit but uses up its turn (Civ 6 rule, which keeps promotion a real
   decision).
+- **Built so far (M9):** 32 promotions for the 8 combat classes, with original names (D47).
+  Each class has 2 starting choices, a middle tier that needs either of them, and a top tier.
+  They add strength in situations (when attacking or defending, against some classes, against
+  settlements or ranged attacks, fighting in woods), or movement, sight or range. XP: 4 per
+  attack and 3 per defense; promotions cost 15, 30, 50, 75, then 105 XP each.
 
 ### Upkeep and requirements
 
@@ -408,6 +413,9 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   side. It starts in favor of the defender if the war was a surprise (no casus belli). Captured
   settlements, battles won, and allies joining shift it. Negative war support costs happiness in
   every settlement, so long unpopular wars get harder to sustain.
+- **Built so far (M9):** each side of a war has a score. The side that's declared on starts at +3;
+  each enemy unit destroyed adds 1 and each settlement taken adds 3, up to 10. The side behind
+  loses 1 happiness per point behind in every settlement, at most 5 (D48). Raiders don't count.
 
 ---
 
@@ -538,6 +546,15 @@ Barbarians and city-states are one system (from Civ 7). See
 [04-advanced-systems.md](04-advanced-systems.md#independent-powers-city-states-and-barbarians).
 With the module off, they act as classic barbarians: camps spawn in fog, send scouts, then raid,
 and clearing one gives gold and XP. Settings: off / normal / raging.
+
+**Built so far (M9): hostile camps.** One camp per 120 land tiles at the start, at least 6
+tiles from any start, each with a raider; a new camp may appear every 12 turns in land no
+player can see, up to the same number. A camp trains a raider every 7 turns while it has fewer
+than 3, picked by the latest era any player has reached (warriors and slingers, then spearmen,
+archers and horsemen...). Raiders belong to no one and are at war with everyone: each turn they
+attack the best target in reach, close in on anything within 4 tiles, or wander near home.
+They carry civilians off rather than capture them and can't take settlements (D49). Moving a
+military unit onto a camp clears it for 50 gold. The new-game dialog can turn camps off.
 
 ---
 

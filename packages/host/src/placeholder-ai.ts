@@ -2,6 +2,7 @@ import {
   type Action,
   atWar,
   attackTargets,
+  availablePromotions,
   availableItems,
   type BuildItem,
   distance,
@@ -26,6 +27,7 @@ import {
   unitClassOf,
   unitDef,
   unitIds,
+  visibleTiles,
 } from '@cx/engine';
 
 /**
@@ -61,8 +63,12 @@ export function placeholderAiActions(
     const [from, to] = offer.split('>');
     if (to === player) actions.push({ type: 'accept_peace', player, from: from! });
   }
-  if (state.wars.some((k) => k.split('|').includes(player))) {
-    actions.push(...fight(ctx, state, player));
+  // Fight whoever is at war with us, raiders included; spend XP on promotions.
+  actions.push(...fight(ctx, state, player));
+  for (const id of unitIds(state)) {
+    const u = state.units[id]!;
+    const pick = u.owner === player ? availablePromotions(ctx, u)[0] : undefined;
+    if (pick) actions.push({ type: 'promote_unit', player, unit: id, promotion: pick });
   }
   for (const s of settlementsOf(state, player)) {
     if (s.kind !== 'city' || s.queue.length > 0) continue;
@@ -137,11 +143,12 @@ function bestDistrict(
 /** At war: attack where the odds are good, strike from settlements, train defenders. */
 function fight(ctx: EngineContext, state: GameState, player: PlayerId): Action[] {
   const out: Action[] = [];
+  const seen = visibleTiles(ctx, state, player);
   for (const id of unitIds(state)) {
     const u = state.units[id]!;
     if (u.owner !== player || u.moves <= 0) continue;
     let best: { tile: number; score: number } | undefined;
-    for (const tile of attackTargets(ctx, state, u)) {
+    for (const tile of attackTargets(ctx, state, u, seen)) {
       const p = previewAttack(ctx, state, u, tile)!;
       // Sums of the low and high rolls (twice the average), to stay in whole numbers.
       const dealt = p.toDefender[0] + p.toDefender[1];

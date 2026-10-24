@@ -18,7 +18,7 @@ import {
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { SettlementView, TerritoryView, TileHighlight } from '../map/renderer';
-import { districtParts, wonderParts } from './districts3d';
+import { campParts, districtParts, wonderParts } from './districts3d';
 import { G, house, part, scaled, seeded } from './parts';
 
 /**
@@ -463,6 +463,8 @@ function ribbonMesh(pos: number[], col: number[]): Mesh {
 export class SettlementLayer {
   readonly group = new Group();
   private drawn = new Map<string, Drawn>();
+  /** Hostile camps, one small group each (by tile). */
+  private camps = new Map<number, Drawn>();
   private highlights = new Group();
   private highlightKey = '';
   private highlightX: number[] = [];
@@ -534,6 +536,38 @@ export class SettlementLayer {
       if (keep.has(id)) continue;
       this.dispose(d);
       this.drawn.delete(id);
+    }
+    this.setCamps(territory.camps);
+  }
+
+  private setCamps(camps: boolean[]) {
+    const want = new Set<number>();
+    camps.forEach((c, t) => c && want.add(t));
+    for (const [t, d] of this.camps) {
+      const key = `${this.world.fog(t)}`;
+      if (want.has(t) && d.key === key) continue;
+      this.dispose(d);
+      this.camps.delete(t);
+    }
+    for (const t of want) {
+      if (this.camps.has(t)) continue;
+      const [x, z] = this.world.center(t);
+      const parts = campParts(x, z, Math.max(0, this.world.height(x, z)) - 0.005, t);
+      const merged = mergeGeometries(parts);
+      for (const p of parts) p.dispose();
+      const group = new Group();
+      if (merged) {
+        if (this.world.fog(t) === 1) {
+          const c = merged.getAttribute('color');
+          for (let i = 0; i < c.count; i++) {
+            c.setXYZ(i, c.getX(i) * 0.35, c.getY(i) * 0.37, c.getZ(i) * 0.42);
+          }
+        }
+        merged.computeBoundingSphere();
+        group.add(new Mesh(merged, buildingMaterial));
+      }
+      this.group.add(group);
+      this.camps.set(t, { key: `${this.world.fog(t)}`, group, x });
     }
   }
 
@@ -671,6 +705,7 @@ export class SettlementLayer {
     const w = this.world.worldWidth();
     const shift = (x: number) => Math.round((cameraX - x) / w) * w;
     for (const d of this.drawn.values()) d.group.position.x = shift(d.x);
+    for (const d of this.camps.values()) d.group.position.x = shift(d.x);
     this.highlights.children.forEach((c, i) => {
       c.position.x = shift(this.highlightX[i] ?? 0);
     });
@@ -679,5 +714,7 @@ export class SettlementLayer {
   clear() {
     for (const d of this.drawn.values()) this.dispose(d);
     this.drawn.clear();
+    for (const d of this.camps.values()) this.dispose(d);
+    this.camps.clear();
   }
 }

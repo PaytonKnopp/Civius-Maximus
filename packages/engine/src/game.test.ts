@@ -14,12 +14,13 @@ import type { GameState } from './state';
 
 const ctx: EngineContext = { content: compileFromDirs().content! };
 
-function setup(playerCount: number, turnLimit: number | null = null): GameSetup {
+function setup(playerCount: number, turnLimit: number | null = null, camps = false): GameSetup {
   return {
     gameId: 'test-game',
     settings: {
       seed: 'seed-1',
       turnLimit,
+      camps,
       map: {
         script: 'continents',
         size:
@@ -193,7 +194,8 @@ describe('replays', () => {
    * tiles as they grow, with players changing their minds about ending turns along the way.
    */
   function scriptedReplay(): { replay: Replay; state: GameState } {
-    const s = setup(8, 25);
+    // With hostile camps: raiders move and fight, and must replay exactly too.
+    const s = setup(8, 25, true);
     let state = createGame(s, ctx);
     const actions: Action[] = [];
     const play = (...more: Action[]) => {
@@ -281,8 +283,10 @@ describe('replays', () => {
     expect(a.state.status).toBe('ended');
     expect(Object.keys(a.state.settlements)).toHaveLength(8);
     expect(Object.values(a.state.settlements).every((x) => x.population > 1)).toBe(true);
-    expect(Object.values(a.state.players).every((p) => p.techs.done.length >= 1)).toBe(true);
-    expect(Object.values(a.state.players).every((p) => p.civics.done.length >= 2)).toBe(true);
+    const players = a.state.playerOrder.map((id) => a.state.players[id]!);
+    expect(players.every((p) => p.techs.done.length >= 1)).toBe(true);
+    expect(players.every((p) => p.civics.done.length >= 2)).toBe(true);
+    expect(Object.keys(a.state.camps).length).toBeGreaterThan(0);
   });
 
   it(
@@ -298,7 +302,7 @@ describe('replays', () => {
         readPackageDir(new URL('../test-fixtures/frozen-content', import.meta.url).pathname),
       ]).content!;
       expect(runReplay(played().replay, { content: frozen }).hash).toMatchInlineSnapshot(
-        `"ad1865e5c2891a70a1b012bd01"`,
+        `"9a30566f3c12ae38577a3fc3ba"`,
       );
     },
   );

@@ -35,6 +35,15 @@ export {
   wallsMax,
 } from './combat/strength';
 export { liberateProblem, peaceProblem, razeProblem } from './combat/handlers';
+export { campAt, campIds } from './combat/camps';
+export {
+  availablePromotions,
+  nextPromotionXp,
+  promotionChoices,
+  promotionsOf,
+  promotionTree,
+  unitRange,
+} from './units/promotions';
 export { type Fixed, FIXED_ONE, formatFixed, percentOf, powFloor, toFixed } from './fixed';
 export {
   type ActionResult,
@@ -62,7 +71,7 @@ export type { MapSettings, MapState, MapTile, StartBias } from './map/types';
 export { type Replay, runReplay } from './replay';
 export { createRng, nextInt, nextRange, nextU32, type RngState } from './rng';
 export { decodeBits, encodeBits, getBit } from './bitset';
-export { atWar, unitClassOf, unitDef, unitIds, warKey } from './context';
+export { atWar, HOSTILE, unitClassOf, unitDef, unitIds, warKey } from './context';
 export { unitsNeedingOrders } from './units/handlers';
 export {
   canTraverse,
@@ -77,6 +86,7 @@ export { findPath, type PathStep } from './units/pathfind';
 export { fogOfWar, lineOfSight, sightOf, visibleTiles } from './units/vision';
 export type {
   BuildItem,
+  CampState,
   CitizenFocus,
   GameSettings,
   GameState,
@@ -124,6 +134,7 @@ export {
   tileYields,
   townUpgradeCost,
   unitUpkeep,
+  warWeariness,
   workableTiles,
 } from './settlements/rules';
 export { bestDevelopChoice } from './settlements/handlers';

@@ -185,7 +185,7 @@ const badgeCache = new Map<string, SpriteMaterial>();
 function badge(view: UnitView): SpriteMaterial {
   // Health in steps of 5%, so a badge is drawn once per look, not once per HP.
   const health = Math.max(0, Math.min(100, Math.ceil(view.health / 5) * 5));
-  const key = `${view.color}:${view.accent}:${view.icon}:${view.mine}:${view.needsOrders}:${health}`;
+  const key = `${view.color}:${view.accent}:${view.icon}:${view.mine}:${view.needsOrders}:${health}:${view.promotable}`;
   const cached = badgeCache.get(key);
   if (cached) return cached;
   const size = 128;
@@ -220,6 +220,21 @@ function badge(view: UnitView): SpriteMaterial {
     ctx.arc(104, 22, 15, 0, Math.PI * 2);
     ctx.fillStyle = '#d4a94e';
     ctx.fill();
+  }
+  if (view.promotable) {
+    // A gold star: a promotion is ready.
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI) / 5;
+      const rr = i % 2 === 0 ? 17 : 7;
+      ctx.lineTo(24 + Math.cos(a) * rr, 24 + Math.sin(a) * rr);
+    }
+    ctx.closePath();
+    ctx.fillStyle = '#ffd56a';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#10161d';
+    ctx.stroke();
   }
   if (health < 100) {
     // Health bar across the bottom of the shield: green, amber, then red.

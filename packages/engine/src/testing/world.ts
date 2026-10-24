@@ -90,6 +90,8 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     wars: [],
     warStarted: {},
     peaceOffers: [],
+    warSupport: {},
+    camps: {},
     settlements: {},
   };
 }
@@ -115,6 +117,7 @@ export function addUnit(
     xp: 0,
     orders: null,
     skippedTurn: null,
+    promotions: [],
   };
   s.units = { ...s.units, [id]: unit };
   return unit;

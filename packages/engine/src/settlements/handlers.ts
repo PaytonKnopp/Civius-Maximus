@@ -114,6 +114,7 @@ export function spawnUnit(
     xp: 0,
     orders: null,
     skippedTurn: null,
+    promotions: [],
   };
   draft.nextEntityId++;
   return id;

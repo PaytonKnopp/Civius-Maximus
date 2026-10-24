@@ -7,11 +7,11 @@ Built from the ground up to be modded: leaders, civs, units and rules are all da
 > **Play it:** https://paytonknopp.github.io/Civius-Maximus/ (deployed from `main` by
 > `.github/workflows/pages.yml`).
 >
-> **Status:** M8 done: found settlements and grow them by developing tiles; research through the
-> tech and civics trees (Ancient → Medieval) with boosts; adopt governments and slot policy cards;
-> place districts by adjacency, race rivals for 9 wonders, specialize towns; declare war, fight
-> with a full combat preview, besiege and take settlements. 3D or 2D. Next: M9 part 2
-> (promotions, commanders, hostile camps).
+> **Status:** M9 done: found settlements and grow them by developing tiles; research through the
+> tech and civics trees (Ancient → Medieval); adopt governments and slot policy cards; place
+> districts by adjacency and race rivals for wonders; declare war, fight with a full combat
+> preview, besiege and take settlements, promote veterans, and clear hostile camps. 3D or 2D.
+> Next: M10, the hotseat alpha.
 
 ## Design docs
 

@@ -98,7 +98,7 @@ features on top.
   district and wonder models in 3D and glyphs in 2D, planned districts marked on the map, the
   district limit, specialists, the specialization picker for towns, and wonder notices.
 
-### M9 · Combat and conflict (part 1 ✅)
+### M9 · Combat and conflict ✅
 - The combat formula (lookup tables), modifiers, ranged attacks, city HP, walls, city strikes,
   capture/puppet/raze/liberate, promotions, healing, commanders (pack/unpack, radius), war
   support, and hostile camps (classic barbarians).
@@ -109,7 +109,12 @@ features on top.
   and makes peace. Client: red attack tiles with expected damage, the combat preview (every
   modifier, damage ranges, verdict), the declare-war prompt, a panel per rival (war, peace),
   the capture dialog, health bars on units and banners, floating damage, lunges and shots.
-- Part 2: promotions, commanders, war support, hostile camps.
+- Part 2 built: promotions (32, by class), war support with war weariness, and hostile camps
+  with raiders; the placeholder AI fights raiders and takes promotions. Client: the promotion
+  picker, a star on units with a promotion ready, camps in 3D and 2D, war support in the rival
+  panel, a camps toggle in the new-game dialog.
+- Moved later: **commanders** (pack/unpack, command radius), after the M10 checkpoint, so how
+  armies move can be shaped by playing. Puppets wait for loyalty.
 
 ### M10 · Hotseat alpha 🎮
 - 2–8 player hotseat, a turn summary, domination and score victories, and save/load.

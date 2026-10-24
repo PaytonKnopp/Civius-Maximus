@@ -314,7 +314,8 @@ export class MapView implements MapRenderer {
       const model = d.territory.improvements[i];
       const district = d.territory.districts[i];
       const wonder = d.territory.wonders[i];
-      if (district) this.drawDistrict(g, district.color, cx, cy);
+      if (d.territory.camps[i]) this.drawCamp(g, cx, cy);
+      else if (district) this.drawDistrict(g, district.color, cx, cy);
       else if (wonder) this.drawWonder(g, cx, cy);
       else if (model) this.drawImprovement(g, model, cx, cy);
       if (!view) continue;
@@ -339,6 +340,19 @@ export class MapView implements MapRenderer {
       .fill(0xd2c4a0)
       .poly([cx - 9, cy - 2, cx, cy - 10, cx + 9, cy - 2])
       .fill(color);
+  }
+
+  /** A hostile camp: two dark tents and a fire. */
+  private drawCamp(g: Graphics, cx: number, cy: number) {
+    g.circle(cx, cy, HEX * 0.5)
+      .fill({ color: 0x2a1c14, alpha: 0.85 })
+      .stroke({ width: 2, color: 0xb02a1e });
+    g.poly([cx - 13, cy + 7, cx - 6, cy - 7, cx + 1, cy + 7])
+      .fill(0x6b5a44)
+      .poly([cx - 1, cy + 7, cx + 6, cy - 5, cx + 13, cy + 7])
+      .fill(0x5a4a38)
+      .circle(cx + 1, cy + 10, 3)
+      .fill(0xff7a2a);
   }
 
   /** A wonder: a gold-rimmed stepped monument. */
@@ -426,6 +440,7 @@ export class MapView implements MapRenderer {
         g.circle(0, 0, 11).fill(color);
         if (view.id === this.selectedUnit) g.circle(0, 0, 16).stroke({ width: 3, color: 0xe6c070 });
         if (view.needsOrders) g.circle(10, -10, 4).fill(0xd4a94e);
+        if (view.promotable) g.star(-10, -10, 5, 5, 2).fill(0xffd56a);
         if (view.health < 100) {
           const hp = Math.max(0, view.health) / 100;
           g.rect(-11, 14, 22, 5).fill(0x0b1620);

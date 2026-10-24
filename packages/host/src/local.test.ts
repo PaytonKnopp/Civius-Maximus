@@ -64,3 +64,16 @@ describe('LocalGame', () => {
     expect(game.state).toBe(before);
   });
 });
+
+describe('a long game with raiders', () => {
+  it('plays 40 turns without a rules error', { timeout: 60_000 }, () => {
+    const s = setup(['human', 'ai', 'ai', 'ai']);
+    const game = new LocalGame({ ...s, settings: { ...s.settings, seed: 'raiders' } }, ctx);
+    expect(Object.keys(game.state.camps).length).toBeGreaterThan(0);
+    for (let i = 0; i < 40; i++) {
+      const r = game.act({ type: 'end_turn', player: 'p1' });
+      expect(r.ok).toBe(true);
+    }
+    expect(game.state.turn).toBe(41);
+  });
+});

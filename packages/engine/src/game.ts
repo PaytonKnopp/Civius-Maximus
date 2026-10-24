@@ -1,4 +1,5 @@
-import { type Draft, produce } from 'immer';
+import { type Draft, freeze, produce } from 'immer';
+import { placeStartingCamps, raidersTurn } from './combat/camps';
 import { combatHandlers, combatTurn, healUnits } from './combat/handlers';
 import type { Action, ActionType } from './actions';
 import type { ActionHandler, Emit, EngineContext, RuleError } from './context';
@@ -116,10 +117,16 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     wars: [],
     warStarted: {},
     peaceOffers: [],
+    warSupport: {},
+    camps: {},
     settlements: {},
   };
   spawnStartingUnits(state, ctx);
-  return state;
+  placeStartingCamps(state, ctx, random);
+  state.rng = random.state();
+  // Frozen like every later state: Immer then shares the untouched parts instead of copying
+  // them (snapshots during turn processing would otherwise copy the whole map each time).
+  return freeze(state, true);
 }
 
 const handlers: Handlers = {
@@ -179,6 +186,7 @@ function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   emit({ type: 'turn_started', turn: draft.turn, visibleTo: 'all' });
   healUnits(draft, ctx);
   startTurnForUnits(draft, ctx, emit);
+  // Raiders move next, in a step of their own (see `applyAction`).
 }
 
 /** Actions that can complete a boost goal on the spot. */
@@ -211,9 +219,9 @@ export function applyAction(state: GameState, action: Action, ctx: EngineContext
   const error = validateAction(state, action, ctx);
   if (error) return { ok: false, error };
   const events: GameEvent[] = [];
+  const emit = (e: GameEvent) => events.push(e);
   const handler = handlers[action.type] as ActionHandler<Action>;
-  const next = produce(state, (draft) => {
-    const emit = (e: GameEvent) => events.push(e);
+  let next = produce(state, (draft) => {
     handler.apply(draft, action, ctx, emit);
     // Doing things can earn boosts (founding on the coast, buying a shrine...): pay them now.
     // (Turn processing checks everyone's at the end of each turn.)
@@ -225,5 +233,10 @@ export function applyAction(state: GameState, action: Action, ctx: EngineContext
       checkBoosts(draft, ctx, action.player, emit);
     }
   });
+  // A new turn began: hostile raiders act first. They run on the finished turn as a second
+  // step, so their many small snapshots copy only what they change, not the whole turn's work.
+  if (next.turn !== state.turn && next.status === 'playing') {
+    next = produce(next, (draft) => raidersTurn(draft, ctx, emit));
+  }
   return { ok: true, state: next, events };
 }

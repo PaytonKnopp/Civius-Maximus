@@ -121,6 +121,13 @@ export const Action = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('offer_peace'), player: PlayerRef, target: PlayerRef }),
   /** Accept a peace offer from `from`. */
   z.strictObject({ type: z.literal('accept_peace'), player: PlayerRef, from: PlayerRef }),
+  /** Spend XP on a promotion (heals the unit fully and ends its turn). */
+  z.strictObject({
+    type: z.literal('promote_unit'),
+    player: PlayerRef,
+    unit: UnitRef,
+    promotion: ContentRef,
+  }),
   /** After taking a settlement: keep it, raze it, or give it back to its founder. */
   z.strictObject({
     type: z.literal('capture_choice'),

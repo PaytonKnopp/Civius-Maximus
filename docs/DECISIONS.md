@@ -59,4 +59,8 @@ To change one, tell Claude in a session (or edit this file). The relevant docs g
 | D43 | **Settlement strikes** | Every settlement has a ranged strike from the start (range 2, once a turn), so a lone early raid can be fought off | Civ VI (needs walls first) | M9 | Open (default assumed) |
 | D44 | **Razing** | Immediate | Civ VI (shrinks a citizen per turn, can be stopped) | M9 | Open (default assumed) |
 | D45 | **Minimum war length** | Peace can be offered after 10 turns of war | Any time; 20 turns | M9 | Open (default assumed) |
+| D46 | **Hostile camps** | On by default: one per 120 land tiles, a raider every 7 turns (3 per camp at most), a new camp every 12 turns in unseen land, 50 gold for clearing | Fewer (calmer early game); more ("raging"); off | M9 | Open (default assumed) |
+| D47 | **Promotion trees** | Small trees per class (2 + 1–2 + 1), original names, flat strength bonuses in situations | Civ VI's bigger trees; Civ VII's commander-only promotions | M9 | Open (default assumed) |
+| D48 | **War support numbers** | Declared-on side starts +3; +1 per kill, +3 per settlement taken, cap 10; −1 happiness per point behind, at most −5 | Harsher weariness; none until diplomacy | M9 | Open (default assumed) |
+| D49 | **Raiders** | Carry civilians off and can't take settlements (they damage and pin them) | Civ VI (capture civilians; can take city-states) | M9 | Open (default assumed) |
 | D32 | **Unit auto-cycling** | After a unit uses its moves, the next unit that needs orders is selected and the camera pans to it | Stay on the moved unit until you pick another | M5 | Open (default assumed; becomes a setting) |
