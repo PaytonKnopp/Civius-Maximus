@@ -1,6 +1,7 @@
 import { resolveText } from '@cx/content';
 import {
   type Action,
+  activateProblem,
   availablePromotions,
   commandOf,
   type EngineContext,
@@ -70,6 +71,8 @@ export function UnitPanel({
             : 'Ready';
   const found: Action = { type: 'found_settlement', player: viewer, unit: unit.id };
   const command = commandOf(ctx, unit);
+  const person = unit.person ? ctx.content.entities.greatPerson[unit.person] : undefined;
+  const activateBlocked = person ? activateProblem(state, unit.id, viewer) : undefined;
   const recovering = (unit.recovering ?? 0) > state.turn;
   const room = command ? command.capacity - (unit.cargo?.length ?? 0) : 0;
   const packable = command ? packableUnits(ctx, state, unit).slice(0, Math.max(0, room)) : [];
@@ -215,6 +218,25 @@ export function UnitPanel({
               Packed:{' '}
               {unit.cargo!.map((u) => resolveText(ctx.content, unitDef(ctx, u).name)).join(', ')}
             </p>
+          )}
+        </section>
+      )}
+      {person && (
+        <section className="great-person" aria-label={resolveText(ctx.content, person.name)}>
+          <p>
+            <strong>{resolveText(ctx.content, person.name)}</strong>:{' '}
+            {resolveText(ctx.content, person.description)}
+          </p>
+          {mine && (
+            <button
+              type="button"
+              className="primary"
+              disabled={!!activateBlocked}
+              title={activateBlocked?.message ?? 'Use them here (they are used up)'}
+              onClick={() => act({ type: 'activate_great_person', player: viewer, unit: unit.id })}
+            >
+              Activate
+            </button>
           )}
         </section>
       )}

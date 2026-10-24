@@ -38,7 +38,19 @@
       "science": 2
     },
     "model": "campus",
-    "color": "#5fb8f0"
+    "color": "#5fb8f0",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_scientist",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "district",
@@ -71,7 +83,19 @@
       "faith": 2
     },
     "model": "holy_site",
-    "color": "#e8e2c8"
+    "color": "#e8e2c8",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_prophet",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "district",
@@ -103,7 +127,19 @@
       "culture": 2
     },
     "model": "theater",
-    "color": "#d47ae0"
+    "color": "#d47ae0",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_writer",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "district",
@@ -140,6 +176,16 @@
       {
         "effect": "extra_trade_route",
         "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_merchant",
           "amount": 1
         },
         "target": {
@@ -203,6 +249,16 @@
         "target": {
           "scope": "player"
         }
+      },
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_admiral",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
       }
     ]
   },
@@ -236,7 +292,19 @@
       "production": 2
     },
     "model": "industrial",
-    "color": "#e8a04a"
+    "color": "#e8a04a",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_engineer",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "district",
@@ -258,7 +326,19 @@
       "gold": 1
     },
     "model": "encampment",
-    "color": "#c0503c"
+    "color": "#c0503c",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_general",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "district",
@@ -392,6 +472,16 @@
       {
         "effect": "extra_trade_route",
         "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_merchant",
           "amount": 1
         },
         "target": {

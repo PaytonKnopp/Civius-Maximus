@@ -88,7 +88,10 @@ export function unitViews(
         owner: u.owner,
         color: colors[u.owner]!.main,
         accent: colors[u.owner]!.accent,
-        name: resolveText(ctx.content, def.name),
+        name: resolveText(
+          ctx.content,
+          (u.person ? ctx.content.entities.greatPerson[u.person]?.name : undefined) ?? def.name,
+        ),
         icon: def.icon,
         model: def.model,
         layer: unitClassOf(ctx, u).layer,

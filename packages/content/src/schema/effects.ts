@@ -418,6 +418,22 @@ const RoadToCapital = z.strictObject({
   condition: Condition.optional(),
 });
 
+/** Great person points each turn toward one class (a district or building's, usually). */
+const GreatPersonPoints = z.strictObject({
+  effect: z.literal('great_person_points'),
+  params: z.strictObject({ class: Id, amount: z.int().min(1) }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** More (or fewer) great person points toward one class, in percent. */
+const GreatPersonPointsPercent = z.strictObject({
+  effect: z.literal('great_person_points_percent'),
+  params: z.strictObject({ class: Id, percent: Percent }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
 /** Items of this kind can also be bought with faith (same price as in gold). */
 const PurchaseWithFaith = z.strictObject({
   effect: z.literal('purchase_with_faith'),
@@ -454,6 +470,8 @@ export const Effect = z.discriminatedUnion('effect', [
   TradeReveals,
   InfluencePerDeal,
   RoadToCapital,
+  GreatPersonPoints,
+  GreatPersonPointsPercent,
 ]);
 export type Effect = z.infer<typeof Effect>;
 export const EFFECT_TYPES = Effect.options.map((o) => o.shape.effect.value);

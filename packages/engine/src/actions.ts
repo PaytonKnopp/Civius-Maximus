@@ -138,6 +138,14 @@ export const Action = z.discriminatedUnion('type', [
     unit: UnitRef,
     promotion: ContentRef,
   }),
+  /** Buy the next great person of a class with gold (for the points you're missing). */
+  z.strictObject({
+    type: z.literal('recruit_great_person'),
+    player: PlayerRef,
+    class: ContentRef,
+  }),
+  /** Use a great person in one of your settlements (it's used up). */
+  z.strictObject({ type: z.literal('activate_great_person'), player: PlayerRef, unit: UnitRef }),
   /** A trader in one of your settlements starts a trade route to another settlement. */
   z.strictObject({
     type: z.literal('start_trade_route'),

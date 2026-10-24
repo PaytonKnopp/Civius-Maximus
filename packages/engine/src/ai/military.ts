@@ -7,6 +7,7 @@ import { canTraverse, hasForeignUnit, hasRoom } from '../units/movement';
 import { availablePromotions, unitRange } from '../units/promotions';
 import { opinionOf } from '../diplomacy/rules';
 import { tradeDestinations, traderOrigin } from '../trade/rules';
+import { activateProblem } from '../greatpeople/greatpeople';
 import { isSoldier } from './cities';
 import { fixedYieldsValue } from './values';
 import { moveSettler, settleHere } from './settle';
@@ -35,6 +36,10 @@ export function manageUnits(t: Turn) {
     promote(t, u);
     const unit = t.state.units[u.id];
     if (!unit || unit.moves <= 0) continue;
+    if (unit.person) {
+      useGreatPerson(t, unit);
+      continue;
+    }
     const role = unitRole(t.ctx, unit);
     if (role === 'settler') continue;
     else if (role === 'explorer') explore(t, unit);
@@ -252,6 +257,17 @@ function soldier(t: Turn, u: UnitState, plan: Plan) {
   }
   if (goNear(t, u, target.tile, reach)) return;
   if (goNear(t, u, target.tile, reach + 1)) return;
+  hold(t, u);
+}
+
+/** Great people: activate in the settlement they stand in, or walk to the nearest one. */
+function useGreatPerson(t: Turn, u: UnitState) {
+  if (!activateProblem(t.state, u.id, t.player)) {
+    t.act({ type: 'activate_great_person', player: t.player, unit: u.id });
+    return;
+  }
+  const home = nearestOwnSettlement(t, u);
+  if (home && goNear(t, u, home.tile, 0)) return;
   hold(t, u);
 }
 

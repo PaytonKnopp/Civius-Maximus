@@ -76,6 +76,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     leader: id === 'p1' ? 'leader_caesar' : 'leader_cleopatra',
     gold: 0,
     influence: 0,
+    greatPeople: [],
     faith: 0,
     capital: null,
     settlementsFounded: 0,
@@ -116,6 +117,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     diplomacy: emptyDiplomacy(),
     roads: encodeBits(emptyBits(tiles.length)),
     routes: [],
+    greatPeople: { points: {}, claimed: {} },
   };
 }
 

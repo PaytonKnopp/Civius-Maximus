@@ -10,6 +10,12 @@ import {
   trackOf,
 } from '../progress/rules';
 import { policySlots, SLOT_KINDS } from '../progress/sources';
+import {
+  greatPersonCost,
+  nextGreatPerson,
+  pointsOf,
+  recruitCost,
+} from '../greatpeople/greatpeople';
 import { isCoastal } from '../settlements/rules';
 import { roleOf, type Turn } from './turn';
 import { effectValue, happinessWeight, yieldsValue } from './values';
@@ -33,6 +39,29 @@ export function manageProgress(t: Turn) {
     t.act({ type: 'set_government', player: t.player, government: gov });
   const cards = bestPolicies(t);
   if (cards) t.act({ type: 'set_policies', player: t.player, policies: cards });
+}
+
+/**
+ * Buys a great person when rich and already leading its race (closest to the cost): it's
+ * whatever the empire was built for anyway.
+ */
+export function recruitGreatPeople(t: Turn) {
+  const spare = t.p.gold - toFixed(250 + 20 * t.mySettlements().length);
+  if (spare <= 0) return;
+  let best: { cls: string; cost: number } | undefined;
+  for (const cls of t.ctx.content.ids.greatPersonClass) {
+    if (!nextGreatPerson(t.ctx, t.state, cls)) continue;
+    const mine = pointsOf(t.state, t.player, cls);
+    const need = greatPersonCost(t.ctx, t.state, cls);
+    if (mine * 2 < need) continue;
+    const ahead = t.state.playerOrder.some(
+      (o) => o !== t.player && pointsOf(t.state, o, cls) > mine,
+    );
+    if (ahead) continue;
+    const cost = recruitCost(t.ctx, t.state, t.player, cls);
+    if (cost <= spare && (!best || cost < best.cost)) best = { cls, cost };
+  }
+  if (best) t.act({ type: 'recruit_great_person', player: t.player, class: best.cls });
 }
 
 /** The available node with the most value for its remaining cost. */

@@ -225,3 +225,11 @@ export {
   tradePath,
   traderOrigin,
 } from './trade/rules';
+export {
+  activateProblem,
+  greatPersonCost,
+  greatPersonRates,
+  nextGreatPerson,
+  pointsOf,
+  recruitCost,
+} from './greatpeople/greatpeople';

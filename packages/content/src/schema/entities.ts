@@ -394,6 +394,13 @@ export const RulesDef = z.strictObject({
     friendshipOpinion: z.int(),
     allianceOpinion: z.int(),
   }),
+  /** Great people: buying the one you're racing for. */
+  greatPeople: z.strictObject({
+    /** Gold per point still missing, to recruit a great person now. */
+    goldPerPoint: z.int().min(1),
+    /** The unit a great person walks the map as. */
+    unit: Id,
+  }),
   /** Hostile camps: raiders that belong to no one and attack everyone. */
   camps: z.strictObject({
     /** One camp per this many land tiles, at the start and at most (0 = no camps). */
@@ -1061,6 +1068,46 @@ export const LeaderDef = z.strictObject({
   personality: Personality,
 });
 
+/** A kind of great person (docs/04-advanced-systems.md, "Great people"): its points race. */
+export const GreatPersonClassDef = z.strictObject({
+  type: z.literal('greatPersonClass'),
+  id: Id,
+  name: Text,
+  icon: z.string().min(1).max(3),
+  /** Points for its first great person; each later one costs `costStep` more. */
+  baseCost: z.int().min(1),
+  costStep: z.int().min(0),
+});
+
+/** Something a great person does once, when activated in one of your settlements. */
+export const GreatAction = z.discriminatedUnion('kind', [
+  /**
+   * Yields at once: gold, faith and influence to the treasury; science and culture toward the
+   * current tech and civic; production toward the settlement's build; food into its growth.
+   */
+  z.strictObject({ kind: z.literal('yields'), yields: YieldMap }),
+  /** Boosts toward the cheapest techs and civics you can work on. */
+  z.strictObject({ kind: z.literal('boosts'), count: z.int().min(1).max(10) }),
+  /** A promotion for your soldiers within `radius` of the settlement. */
+  z.strictObject({ kind: z.literal('promote'), promotion: Id, radius: z.int().min(0).max(10) }),
+]);
+export type GreatAction = z.infer<typeof GreatAction>;
+
+/** A named great person: one of a kind in the whole game, earned by the first to the points. */
+export const GreatPersonDef = z.strictObject({
+  type: z.literal('greatPerson'),
+  id: Id,
+  name: Text,
+  class: Id,
+  era: Id,
+  /** What they do, for the player. */
+  description: Text,
+  /** Done once, when activated. */
+  activate: z.array(GreatAction).default([]),
+  /** Lasting effects for their player once activated. */
+  effects: z.array(Effect).default([]),
+});
+
 /** Schemas for entities that have an `id` and are stored in compiled content. */
 export const ENTITY_SCHEMAS = {
   yield: YieldDef,
@@ -1086,6 +1133,8 @@ export const ENTITY_SCHEMAS = {
   civic: CivicDef,
   government: GovernmentDef,
   policy: PolicyDef,
+  greatPersonClass: GreatPersonClassDef,
+  greatPerson: GreatPersonDef,
   rules: RulesDef,
 } as const;
 
@@ -1120,6 +1169,8 @@ export type TechDef = z.infer<typeof TechDef>;
 export type CivicDef = z.infer<typeof CivicDef>;
 export type GovernmentDef = z.infer<typeof GovernmentDef>;
 export type PolicyDef = z.infer<typeof PolicyDef>;
+export type GreatPersonClassDef = z.infer<typeof GreatPersonClassDef>;
+export type GreatPersonDef = z.infer<typeof GreatPersonDef>;
 export type StringsDef = z.infer<typeof StringsDef>;
 export type PatchDef = z.infer<typeof PatchDef>;
 
@@ -1147,6 +1198,8 @@ export interface EntityByType {
   civic: CivicDef;
   government: GovernmentDef;
   policy: PolicyDef;
+  greatPersonClass: GreatPersonClassDef;
+  greatPerson: GreatPersonDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

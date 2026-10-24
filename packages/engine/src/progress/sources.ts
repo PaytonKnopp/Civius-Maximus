@@ -102,6 +102,12 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
       label: resolveText(content, civ.ability.name),
       effects: civ.ability.effects,
     });
+  // Great people activated: their lasting effects.
+  for (const id of p.greatPeople ?? []) {
+    const gp = content.entities.greatPerson[id];
+    if (gp && gp.effects.length > 0)
+      out.push({ id, label: resolveText(content, gp.name), effects: gp.effects });
+  }
   const gov = content.entities.government[p.government];
   if (gov && gov.effects.length > 0)
     out.push({ id: gov.id, label: resolveText(content, gov.name), effects: gov.effects });

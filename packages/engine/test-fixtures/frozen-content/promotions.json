@@ -551,5 +551,42 @@
     "command": {
       "radius": 1
     }
+  },
+  {
+    "type": "promotion",
+    "id": "promo_inspired",
+    "name": "Inspired",
+    "description": "+4 strength (a great general's presence).",
+    "classes": [
+      "class_melee",
+      "class_ranged",
+      "class_anti_cavalry",
+      "class_light_cavalry",
+      "class_heavy_cavalry",
+      "class_siege",
+      "class_recon"
+    ],
+    "tier": 1,
+    "strength": [
+      {
+        "amount": 4
+      }
+    ],
+    "granted": true
+  },
+  {
+    "type": "promotion",
+    "id": "promo_admiral_led",
+    "name": "Admiral-led",
+    "description": "+1 movement and +3 strength (a great admiral's crews).",
+    "classes": ["class_naval_melee"],
+    "tier": 1,
+    "movement": 1,
+    "strength": [
+      {
+        "amount": 3
+      }
+    ],
+    "granted": true
   }
 ]

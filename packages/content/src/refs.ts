@@ -124,6 +124,10 @@ export function effectRefs(out: Refs, e: Effect, path: PathSegment[]) {
         yieldKeys(out, e.params.perOriginTerrain.yields, [...at, 'perOriginTerrain', 'yields']);
       }
       break;
+    case 'great_person_points':
+    case 'great_person_points_percent':
+      ids(out, 'greatPersonClass', e.params.class, [...at, 'class']);
+      break;
     case 'free_building':
       ids(out, 'building', e.params.building, [...at, 'building']);
       break;
@@ -305,6 +309,17 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ids(out, 'civic', entity.obsoletedBy, ['obsoletedBy']);
       effectList(out, entity.effects, ['effects']);
       break;
+    case 'greatPersonClass':
+      break;
+    case 'greatPerson':
+      ids(out, 'greatPersonClass', entity.class, ['class']);
+      ids(out, 'era', entity.era, ['era']);
+      entity.activate.forEach((a, i) => {
+        if (a.kind === 'yields') yieldKeys(out, a.yields, ['activate', i, 'yields']);
+        if (a.kind === 'promote') ids(out, 'promotion', a.promotion, ['activate', i, 'promotion']);
+      });
+      effectList(out, entity.effects, ['effects']);
+      break;
     case 'rules':
       yieldKeys(out, entity.settlements.centerMinimumYields, [
         'settlements',
@@ -321,6 +336,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
         out.push({ path: ['mapgen', key], kind: 'terrain', id: entity.mapgen[key] });
       }
       ids(out, 'unit', entity.units.startingUnits, ['units', 'startingUnits']);
+      out.push({ path: ['greatPeople', 'unit'], kind: 'unit', id: entity.greatPeople.unit });
       out.push({
         path: ['settlements', 'capitalBuilding'],
         kind: 'building',

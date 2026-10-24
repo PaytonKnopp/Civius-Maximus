@@ -257,6 +257,10 @@
     "friendshipOpinion": 6,
     "allianceOpinion": 14
   },
+  "greatPeople": {
+    "goldPerPoint": 3,
+    "unit": "unit_great_person"
+  },
   "camps": {
     "landTilesPerCamp": 120,
     "minDistance": 6,
