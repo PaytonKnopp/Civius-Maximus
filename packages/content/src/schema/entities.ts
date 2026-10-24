@@ -236,6 +236,55 @@ export const RulesDef = z.strictObject({
     /** Gold of unit upkeep each player gets for free every turn. */
     freeUpkeep: z.int().min(0),
   }),
+  /** Combat (docs/03-core-mechanics.md, section 5). */
+  combat: z.strictObject({
+    /** Damage, in HP, between two units of equal strength. */
+    baseDamage: z.int().min(1),
+    /** Damage scales by e^(strengthScale × the strength difference). */
+    strengthScale: z.number().min(0).max(0.5),
+    /** Each hit varies by up to ± this percent. */
+    randomPercent: z.int().min(0).max(100),
+    /** Units' full health. */
+    maxHealth: z.int().min(1),
+    /** Strength for being fortified 1, 2... turns (the last value holds after that). */
+    fortify: z.array(z.int()).min(1),
+    /** Attacker: per other friendly military unit next to the target (melee only). */
+    flanking: z.int(),
+    /** Defender: per friendly military unit next to it. */
+    support: z.int(),
+    /** Strength lost for every 10 HP missing. */
+    woundedPer10: z.int().min(0),
+    /** Melee attacks from water onto land. */
+    amphibiousPenalty: z.int().min(0),
+    /** Embarked units defend with at most this strength. */
+    embarkedStrength: z.int().min(0),
+    xp: z.strictObject({ attack: z.int().min(0), defend: z.int().min(0) }),
+    /** HP a unit regains at the end of a turn it didn't act, by where it stands. */
+    heal: z.strictObject({
+      enemy: z.int().min(0),
+      neutral: z.int().min(0),
+      own: z.int().min(0),
+      settlement: z.int().min(0),
+    }),
+    settlement: z.strictObject({
+      cityHealth: z.int().min(1),
+      townHealth: z.int().min(1),
+      /** Strength = the best unit strength the owner has unlocked + this. */
+      cityStrengthBonus: z.int(),
+      townStrengthBonus: z.int(),
+      /** Extra strength while walls stand. */
+      wallsStrength: z.int(),
+      /** Range of the once-a-turn ranged strike. */
+      strikeRange: z.int().min(0),
+      /** HP and walls regained per turn when not attacked that turn. */
+      heal: z.int().min(0),
+      wallsRepair: z.int().min(0),
+      /** Percent of citizens lost when captured. */
+      capturePopulationLoss: z.int().min(0).max(100),
+    }),
+    /** Turns a war lasts before peace can be offered. */
+    minWarTurns: z.int().min(0),
+  }),
   mapgen: z.strictObject({
     coastTerrain: Id,
     oceanTerrain: Id,
@@ -279,6 +328,16 @@ export const UnitClassDef = z.strictObject({
   /** Land units of this class can embark onto water (once the player can embark). */
   embarks: z.boolean().default(true),
   ignoresZoc: z.boolean().default(false),
+  /** Strength bonuses against other classes (e.g. anti-cavalry against cavalry). */
+  bonuses: z
+    .array(z.strictObject({ vs: z.array(Id).min(1), amount: z.int(), label: Text.optional() }))
+    .default([]),
+  /** Extra strength when attacking a settlement (siege). */
+  vsSettlement: z.int().default(0),
+  /** Percent of its damage that gets through standing walls. */
+  wallsDamagePercent: z.int().min(0).max(100).default(15),
+  /** Takes settlements and captures civilians by moving in (melee and cavalry). */
+  captures: z.boolean().default(false),
 });
 
 /** A unit type: stats, special actions, and how it looks. */
@@ -460,6 +519,8 @@ export const BuildingDef = z.strictObject({
   requiresBuilding: Id.optional(),
   /** Built inside this district (the settlement needs it first). */
   district: Id.optional(),
+  /** Outer defenses: HP that attacks must break before they hurt the settlement much. */
+  walls: z.int().min(0).default(0),
   /** Effects on the settlement it's in. */
   localEffects: z.array(Effect).default([]),
   /** Effects on the whole empire. */

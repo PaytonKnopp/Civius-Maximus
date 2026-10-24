@@ -55,4 +55,8 @@ To change one, tell Claude in a session (or edit this file). The relevant docs g
 | D39 | **District cost growth** | +2% of the base cost per tech and civic finished (about double by the Renaissance), so early districts are a bargain | Civ VI's steeper curve; flat cost | M8 | Open (default assumed) |
 | D40 | **Wonder strength** | Each Ancient/Classical wonder gives +2–3 of a yield where it stands plus one empire-wide effect worth roughly a policy card (e.g. Pyramids +15% production toward buildings everywhere) | Stronger, Civ VI-style signature effects; weaker | M8 | Open (default assumed) |
 | D41 | **Town specialization numbers** | Specialize at 5 citizens; first choice free, then 50 gold to change; Farming/Mining towns send half their food or production to the nearest city within 10 tiles | All of it (Civ VII); only a bonus, no sending | M8 | Open (default assumed) |
+| D42 | **Captured civilians** | Join the captor as they are (a captured Settler is your Settler) | Civ VI (settlers become builders); Civ VII (removed) | M9 | Open (default assumed) |
+| D43 | **Settlement strikes** | Every settlement has a ranged strike from the start (range 2, once a turn), so a lone early raid can be fought off | Civ VI (needs walls first) | M9 | Open (default assumed) |
+| D44 | **Razing** | Immediate | Civ VI (shrinks a citizen per turn, can be stopped) | M9 | Open (default assumed) |
+| D45 | **Minimum war length** | Peace can be offered after 10 turns of war | Any time; 20 turns | M9 | Open (default assumed) |
 | D32 | **Unit auto-cycling** | After a unit uses its moves, the next unit that needs orders is selected and the camera pans to it | Stay on the moved unit until you pick another | M5 | Open (default assumed; becomes a setting) |

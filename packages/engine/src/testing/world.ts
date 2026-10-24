@@ -88,6 +88,8 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     map: { width, height: rows.length, wrapX: false, tiles },
     units: {},
     wars: [],
+    warStarted: {},
+    peaceOffers: [],
     settlements: {},
   };
 }

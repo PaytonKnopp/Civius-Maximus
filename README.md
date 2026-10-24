@@ -9,8 +9,9 @@ Built from the ground up to be modded: leaders, civs, units and rules are all da
 >
 > **Status:** M8 done: found settlements and grow them by developing tiles; research through the
 > tech and civics trees (Ancient → Medieval) with boosts; adopt governments and slot policy cards;
-> place districts by adjacency, race rivals for 9 wonders, specialize towns. 3D or 2D. Next: M9,
-> combat.
+> place districts by adjacency, race rivals for 9 wonders, specialize towns; declare war, fight
+> with a full combat preview, besiege and take settlements. 3D or 2D. Next: M9 part 2
+> (promotions, commanders, hostile camps).
 
 ## Design docs
 

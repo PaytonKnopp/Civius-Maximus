@@ -158,7 +158,9 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'mapScript':
     case 'mapSize':
+      break;
     case 'unitClass':
+      entity.bonuses.forEach((b, i) => ids(out, 'unitClass', b.vs, ['bonuses', i, 'vs']));
       break;
     case 'unit':
       out.push({ path: ['class'], kind: 'unitClass', id: entity.class });

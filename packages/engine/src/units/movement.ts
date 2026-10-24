@@ -150,7 +150,7 @@ export function stepMoves(
 
 /** River bits per tile, cached per map object. */
 const riverCache = new WeakMap<object, number[]>();
-function riverBits(state: GameState): number[] {
+export function riverBits(state: GameState): number[] {
   let bits = riverCache.get(state.map.tiles);
   if (!bits) {
     bits = state.map.tiles.map((t) => t.river);

@@ -133,7 +133,7 @@ export const unitHandlers = {
         ? undefined
         : { code: 'cannot_fortify', message: 'Only military units can fortify' },
     (unit) => {
-      unit.orders = { kind: 'fortify' };
+      unit.orders = { kind: 'fortify', turns: 0 };
     },
   ),
   wake_unit: simple<'wake_unit'>(
@@ -211,7 +211,7 @@ export function spawnStartingUnits(state: GameState, ctx: EngineContext) {
           ...probe,
           tile,
           moves: fullMoves(ctx, probe),
-          health: 100,
+          health: ctx.content.rules.combat.maxHealth,
           xp: 0,
           orders: null,
           skippedTurn: null,

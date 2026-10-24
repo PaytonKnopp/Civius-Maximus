@@ -1,4 +1,5 @@
 import { type Draft, produce } from 'immer';
+import { combatHandlers, combatTurn, healUnits } from './combat/handlers';
 import type { Action, ActionType } from './actions';
 import type { ActionHandler, Emit, EngineContext, RuleError } from './context';
 import type { GameEvent } from './events';
@@ -113,6 +114,8 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     map,
     units: {},
     wars: [],
+    warStarted: {},
+    peaceOffers: [],
     settlements: {},
   };
   spawnStartingUnits(state, ctx);
@@ -123,6 +126,7 @@ const handlers: Handlers = {
   ...unitHandlers,
   ...settlementHandlers,
   ...progressHandlers,
+  ...combatHandlers,
   end_turn: {
     validate(state, action) {
       const p = state.players[action.player];
@@ -155,7 +159,10 @@ const handlers: Handlers = {
 };
 
 /** Per-turn processing. Modules add steps here as they're built (growth, research, ...). */
-const turnSteps: TurnStep[] = [{ id: 'settlements', order: 100, run: settlementsTurn }];
+const turnSteps: TurnStep[] = [
+  { id: 'combat', order: 90, run: combatTurn },
+  { id: 'settlements', order: 100, run: settlementsTurn },
+];
 
 function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   for (const step of [...turnSteps].sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : 1))) {
@@ -164,12 +171,13 @@ function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   const limit = draft.settings.turnLimit;
   if (limit !== null && draft.turn >= limit) {
     draft.status = 'ended';
-    emit({ type: 'game_ended', reason: 'turn_limit', visibleTo: 'all' });
+    emit({ type: 'game_ended', reason: 'turn_limit', winner: null, visibleTo: 'all' });
     return;
   }
   draft.turn += 1;
   for (const id of draft.playerOrder) draft.players[id]!.turnEnded = false;
   emit({ type: 'turn_started', turn: draft.turn, visibleTo: 'all' });
+  healUnits(draft, ctx);
   startTurnForUnits(draft, ctx, emit);
 }
 

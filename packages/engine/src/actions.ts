@@ -106,6 +106,28 @@ export const Action = z.discriminatedUnion('type', [
     settlement: SettlementRef,
     name: z.string().trim().min(1).max(40),
   }),
+
+  // Combat and war (M9)
+  /** Melee or ranged attack on a tile (moving onto lone civilians captures them). */
+  z.strictObject({ type: z.literal('attack'), player: PlayerRef, unit: UnitRef, tile: TileRef }),
+  /** A settlement's once-a-turn ranged strike. */
+  z.strictObject({
+    type: z.literal('strike'),
+    player: PlayerRef,
+    settlement: SettlementRef,
+    tile: TileRef,
+  }),
+  z.strictObject({ type: z.literal('declare_war'), player: PlayerRef, target: PlayerRef }),
+  z.strictObject({ type: z.literal('offer_peace'), player: PlayerRef, target: PlayerRef }),
+  /** Accept a peace offer from `from`. */
+  z.strictObject({ type: z.literal('accept_peace'), player: PlayerRef, from: PlayerRef }),
+  /** After taking a settlement: keep it, raze it, or give it back to its founder. */
+  z.strictObject({
+    type: z.literal('capture_choice'),
+    player: PlayerRef,
+    settlement: SettlementRef,
+    choice: z.enum(['keep', 'raze', 'liberate']),
+  }),
 ]);
 export type Action = z.infer<typeof Action>;
 export type ActionType = Action['type'];

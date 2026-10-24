@@ -1,6 +1,10 @@
 import { type CompiledContent, resolveText } from '@cx/content';
 import {
   type Action,
+  atWar,
+  attackProblem,
+  attackTargets,
+  type CombatPreview as Preview,
   developCandidates,
   distance,
   type EngineContext,
@@ -14,13 +18,25 @@ import {
   celebrationThreshold,
   nodeCost,
   playerEra,
+  type PlayerId,
   policySlots,
+  previewAttack,
+  previewStrike,
   purchasableTiles,
+  settlementMaxHealth,
+  type SettlementState,
   SLOT_KINDS,
+  strikeTargets,
+  targetAt,
+  targetOwner,
   tilePurchaseCost,
   tilesWithin,
   type TreeKind,
+  unitDef,
   unitIds,
+  type UnitState,
+  wallsMax,
+  warKey,
   workableTiles,
 } from '@cx/engine';
 import { LocalGame } from '@cx/host';
@@ -29,6 +45,8 @@ import { TileCard } from '../components/TileCard';
 import { MapView } from '../map/MapView';
 import type { MapRenderer, PathView, Quality, TileHighlight } from '../map/renderer';
 import { World3D } from '../map3d/World3D';
+import { CombatPreview, type Side } from './CombatPreview';
+import { CaptureDialog, GameOver, PlayerPanel, WarPrompt } from './Diplomacy';
 import {
   civName,
   cssColor,
@@ -115,9 +133,84 @@ function noticeFor(content: CompiledContent, state: GameState, e: GameEvent): st
         ? `${wonder} was built elsewhere: ${name(e.settlement)} got ${Math.floor(e.gold / 100)} gold back`
         : undefined;
     }
+    case 'war_declared':
+      return e.target === ME
+        ? `${civName(content, state, e.by)} declared war on you!`
+        : e.by === ME
+          ? `You declared war on ${civName(content, state, e.target)}`
+          : `${civName(content, state, e.by)} declared war on ${civName(content, state, e.target)}`;
+    case 'peace_offered':
+      return e.to === ME
+        ? `${civName(content, state, e.from)} offers peace (open their name above to accept)`
+        : `You offered peace to ${civName(content, state, e.to)}`;
+    case 'peace_made': {
+      const [a, b] = e.players;
+      return a === ME || b === ME
+        ? `Peace with ${civName(content, state, a === ME ? b : a)}`
+        : `${civName(content, state, a)} and ${civName(content, state, b)} made peace`;
+    }
+    case 'unit_killed': {
+      const unitName = resolveText(content, content.entities.unit[e.unitType]?.name ?? e.unitType);
+      return e.owner === ME
+        ? `Your ${unitName} was destroyed`
+        : e.by === ME
+          ? `You destroyed a ${unitName}`
+          : undefined;
+    }
+    case 'civilian_captured': {
+      const unitName = resolveText(content, content.entities.unit[e.unitType]?.name ?? e.unitType);
+      return e.from === ME
+        ? `Your ${unitName} was captured!`
+        : e.by === ME
+          ? `You captured a ${unitName}`
+          : undefined;
+    }
+    case 'settlement_captured':
+      return e.by === ME
+        ? `You took ${e.name}!`
+        : e.from === ME
+          ? `${e.name} fell to ${civName(content, state, e.by)}!`
+          : `${civName(content, state, e.by)} took ${e.name}`;
+    case 'settlement_razed':
+      return `${e.name} was razed`;
+    case 'settlement_liberated':
+      return `${e.name} was liberated and returned to ${civName(content, state, e.to)}`;
+    case 'capital_moved':
+      return e.player === ME ? `Your capital moved to ${name(e.settlement)}` : undefined;
+    case 'player_defeated':
+      return e.player === ME
+        ? 'Your civilization has fallen'
+        : `${civName(content, state, e.player)} has been defeated`;
     default:
       return undefined;
   }
+}
+
+/** A fight's sides as the preview shows them. */
+function unitSide(ctx: EngineContext, state: GameState, u: UnitState): Side {
+  const name = resolveText(ctx.content, unitDef(ctx, u).name);
+  return {
+    name: u.owner === ME ? name : `${name} (${civName(ctx.content, state, u.owner)})`,
+    health: u.health,
+    maxHealth: ctx.content.rules.combat.maxHealth,
+  };
+}
+
+function settlementSide(ctx: EngineContext, s: SettlementState): Side {
+  return {
+    name: s.name,
+    health: s.health,
+    maxHealth: settlementMaxHealth(ctx, s.kind),
+    walls: s.walls,
+    wallsMax: wallsMax(ctx, s),
+  };
+}
+
+function targetSide(ctx: EngineContext, state: GameState, p: Preview): Side {
+  const t = p.target;
+  if (t.kind === 'unit') return unitSide(ctx, state, t.unit);
+  if (t.kind === 'settlement') return settlementSide(ctx, t.settlement);
+  return unitSide(ctx, state, t.units[0]!);
 }
 
 interface Props {
@@ -144,6 +237,14 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     { kind: 'tree'; tree: TreeKind } | { kind: 'government' } | null
   >(null);
   const [policiesSeen, setPoliciesSeen] = useState(0);
+  const [playerPanel, setPlayerPanel] = useState<PlayerId | null>(null);
+  const [warPrompt, setWarPrompt] = useState<{
+    target: PlayerId;
+    unit: string;
+    tile: number;
+  } | null>(null);
+  const [striking, setStriking] = useState(false);
+  const [gameOverSeen, setGameOverSeen] = useState(false);
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<MapRenderer>(undefined);
   const pendingMoves = useRef<{ unit: string; path: number[] }[]>([]);
@@ -175,6 +276,8 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
   );
   const me = state.players[ME]!;
   const era = playerEra(ctx, me);
+  const captured = Object.values(state.settlements).find((x) => x.owner === ME && x.captureChoice);
+  const rivalsLeft = state.playerOrder.filter((p) => p !== ME && state.players[p]!.alive).length;
   const openGovernment = useCallback(() => {
     setOverlay({ kind: 'government' });
     setPoliciesSeen(game.state.turn);
@@ -216,7 +319,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
       get view() {
         return viewRef.current;
       },
-      select: (id: string) => select({ kind: 'settlement', id }, true),
+      select: (kind: 'unit' | 'settlement', id: string) => select({ kind, id }, true),
       hex: { distance, tilesWithin },
     };
   });
@@ -231,10 +334,26 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
               : [],
           ),
         );
+        const view = viewRef.current;
         for (const e of events) {
           if (e.visibleTo !== 'all' && !e.visibleTo.includes(ME)) continue;
           const text = noticeFor(content, s, e);
           if (text) notify(text);
+          if (!view) continue;
+          if (e.type === 'combat') {
+            view.animateAttack(
+              e.attacker.kind === 'unit' ? e.attacker.unit : null,
+              e.from,
+              e.tile,
+              e.mode,
+            );
+            view.flash(e.tile, `−${e.dealt}`, 'damage');
+            if (e.taken > 0) view.flash(e.from, `−${e.taken}`, 'damage');
+          } else if (e.type === 'unit_killed') {
+            view.flash(e.tile, 'Destroyed', e.owner === ME ? 'damage' : 'good');
+          } else if (e.type === 'civilian_captured' || e.type === 'settlement_captured') {
+            view.flash(e.tile, 'Captured!', e.by === ME ? 'good' : 'damage');
+          }
         }
         setState(s);
       }),
@@ -271,6 +390,67 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     viewRef.current?.setPath(path, unit?.tile ?? null);
   }, [path, unit?.tile]);
 
+  // Combat: what the selected unit (or a settlement striking) can hit, and a preview of the
+  // hovered target.
+  const myUnit = unit && unit.owner === ME ? unit : undefined;
+  const targets = useMemo(
+    () => (myUnit ? attackTargets(ctx, state, myUnit) : []),
+    [ctx, state, myUnit],
+  );
+  const strikes = useMemo(
+    () =>
+      striking && settlement && settlement.owner === ME
+        ? strikeTargets(ctx, state, settlement)
+        : [],
+    [ctx, state, settlement, striking],
+  );
+  /** A rival on `tile` that `u` could attack if they were at war, and that hypothetical war. */
+  const peaceTarget = useCallback(
+    (s: GameState, u: UnitState, tile: number) => {
+      const t = targetAt(ctx, s, u.owner, tile);
+      if (!t) return undefined;
+      const owner = targetOwner(t);
+      if (atWar(s, u.owner, owner)) return undefined;
+      const hypothetical = { ...s, wars: [...s.wars, warKey(u.owner, owner)] };
+      return attackProblem(ctx, hypothetical, u, tile) ? undefined : { owner, hypothetical };
+    },
+    [ctx],
+  );
+  const combat = useMemo(() => {
+    if (hover === undefined) return null;
+    if (striking && settlement && strikes.includes(hover)) {
+      const p = previewStrike(ctx, state, settlement, hover)!;
+      return {
+        preview: p,
+        attacker: settlementSide(ctx, settlement),
+        defender: targetSide(ctx, state, p),
+        hint: 'Click to strike',
+        warning: undefined,
+      };
+    }
+    if (!myUnit) return null;
+    if (targets.includes(hover)) {
+      const p = previewAttack(ctx, state, myUnit, hover)!;
+      return {
+        preview: p,
+        attacker: unitSide(ctx, state, myUnit),
+        defender: targetSide(ctx, state, p),
+        hint: p.mode === 'capture' ? 'Click to capture' : 'Click to attack',
+        warning: undefined,
+      };
+    }
+    const rival = peaceTarget(state, myUnit, hover);
+    if (!rival) return null;
+    const p = previewAttack(ctx, rival.hypothetical, myUnit, hover)!;
+    return {
+      preview: p,
+      attacker: unitSide(ctx, state, myUnit),
+      defender: targetSide(ctx, state, p),
+      hint: 'Click to declare war and attack',
+      warning: `You're at peace with ${civName(content, state, rival.owner)}`,
+    };
+  }, [ctx, content, state, hover, myUnit, targets, striking, strikes, settlement, peaceTarget]);
+
   // Placement choices for the selected settlement (district, wonder or project waiting for a tile).
   const choices = useMemo(
     () =>
@@ -283,8 +463,30 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
   // Tiles to mark for the selected settlement: placement or growth choices, tiles to buy, worked
   // tiles and planned districts.
   const highlights = useMemo((): TileHighlight[] => {
+    if (myUnit) {
+      return targets.map((tile) => {
+        const p = previewAttack(ctx, state, myUnit, tile);
+        const loss = p?.split?.health ?? p?.toDefender ?? [0, 0];
+        const walls = p?.split?.walls ?? [0, 0];
+        const avg = ([lo, hi]: [number, number]) => Math.round((lo + hi) / 2);
+        return {
+          tile,
+          tone: 'attack' as const,
+          label:
+            p?.mode === 'capture'
+              ? 'Capture'
+              : avg(loss) === 0 && avg(walls) > 0
+                ? `⚔ walls −${avg(walls)}`
+                : `⚔ −${avg(loss)}`,
+        };
+      });
+    }
     if (!settlement || settlement.owner !== ME) return [];
     const out: TileHighlight[] = [{ tile: settlement.tile, tone: 'selected' }];
+    if (striking) {
+      for (const tile of strikes) out.push({ tile, tone: 'attack', label: '🎯' });
+      return out;
+    }
     if (placing) {
       for (const c of choices) out.push({ tile: c.tile, tone: 'place', label: c.label });
       return out;
@@ -314,7 +516,19 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
         out.push({ tile: q.tile, tone: 'planned', label: itemName(content, q) });
     }
     return out;
-  }, [ctx, content, state, settlement, panelMode, placing, choices]);
+  }, [
+    ctx,
+    content,
+    state,
+    settlement,
+    panelMode,
+    placing,
+    choices,
+    myUnit,
+    targets,
+    striking,
+    strikes,
+  ]);
   useEffect(() => {
     viewRef.current?.setHighlights(highlights);
   }, [highlights]);
@@ -350,6 +564,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
       setPinned(null);
       setPanelMode('citizens');
       setPlacing(null);
+      setStriking(false);
       if (!next || !focus) return;
       const tile =
         next.kind === 'unit'
@@ -369,7 +584,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
       policiesSeen,
     );
     if (n.kind === 'unit') select({ kind: 'unit', id: n.id }, true);
-    else if (n.kind === 'develop' || n.kind === 'production')
+    else if (n.kind === 'develop' || n.kind === 'production' || n.kind === 'capture')
       select({ kind: 'settlement', id: n.id }, true);
     else if (n.kind === 'research') setOverlay({ kind: 'tree', tree: 'tech' });
     else if (n.kind === 'civic') setOverlay({ kind: 'tree', tree: 'civic' });
@@ -419,6 +634,39 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     [game, unit, act, selectNextUnit],
   );
 
+  /** Attacks with the selected unit; afterwards the next unit is up if this one is done. */
+  const attack = useCallback(
+    (u: UnitState, tile: number) => {
+      if (!act({ type: 'attack', player: ME, unit: u.id, tile })) return;
+      setPinned(null);
+      const after = game.state.units[u.id];
+      // Let the hit play out on screen before the camera moves on to the next unit.
+      if (!after || after.moves === 0) setTimeout(() => selectNextUnit(u.id), 1100);
+    },
+    [game, act, selectNextUnit],
+  );
+
+  /** A click or right-click on a tile the selected unit or striking settlement can hit. */
+  const combatClick = (tile: number): boolean => {
+    const s = game.state;
+    if (striking && settlement && strikes.includes(tile)) {
+      act({ type: 'strike', player: ME, settlement: settlement.id, tile });
+      setStriking(false);
+      return true;
+    }
+    if (!myUnit || myUnit.moves <= 0) return false;
+    if (targets.includes(tile)) {
+      attack(myUnit, tile);
+      return true;
+    }
+    const rival = peaceTarget(s, myUnit, tile);
+    if (rival) {
+      setWarPrompt({ target: rival.owner, unit: myUnit.id, tile });
+      return true;
+    }
+    return false;
+  };
+
   // Map input.
   useEffect(() => {
     const view = viewRef.current;
@@ -427,6 +675,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     view.onSelect = (tile) => {
       if (tile === undefined) return;
       const s = game.state;
+      if (combatClick(tile)) return;
       // A choice the selected settlement is making takes the click first.
       if (settlement && settlement.owner === ME) {
         if (placing) {
@@ -483,6 +732,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
       select(null);
     };
     view.onCommand = (tile) => {
+      if (combatClick(tile)) return;
       if (unit && unit.owner === ME) moveTo(tile);
     };
   });
@@ -498,6 +748,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
       else if (e.key === 'g') openGovernment();
       else if (e.key === 'Escape') {
         if (placing) setPlacing(null);
+        else if (striking) setStriking(false);
         else select(null);
       } else if (!unit || unit.owner !== ME) return;
       else if (e.key === ' ') {
@@ -509,7 +760,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [unit, act, doNext, select, skip, found, overlay, openGovernment, placing]);
+  }, [unit, act, doNext, select, skip, found, overlay, openGovernment, placing, striking]);
 
   const icon = (y: string) => content.entities.yield[y]?.icon ?? '';
   const inspected = selection?.kind === 'settlement' ? undefined : (pathTarget ?? inspect);
@@ -547,17 +798,41 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
       </div>
 
       <div className="players">
-        {state.playerOrder.map((p) => (
-          <span
-            key={p}
-            className={`player-chip ${state.players[p]!.turnEnded ? 'done' : ''}`}
-            title={`${state.players[p]!.name}${state.players[p]!.turnEnded ? ' (turn ended)' : ''}`}
-          >
-            <span className="swatch" style={{ background: cssColor(colors[p]!.main) }} />
-            {p === ME ? `You · ${civName(content, state, p)}` : civName(content, state, p)}
-          </span>
-        ))}
+        {state.playerOrder.map((p) => {
+          const pl = state.players[p]!;
+          const war = atWar(state, ME, p);
+          const offer = state.peaceOffers.includes(`${p}>${ME}`);
+          return (
+            <button
+              type="button"
+              key={p}
+              className={`player-chip ${pl.turnEnded ? 'done' : ''} ${war ? 'war' : ''} ${pl.alive ? '' : 'dead'} ${offer ? 'offer' : ''}`}
+              title={`${pl.name}${war ? ' · at war' : ''}${offer ? ' · offers peace' : ''}${pl.turnEnded ? ' (turn ended)' : ''}`}
+              disabled={p === ME}
+              onClick={() => setPlayerPanel(playerPanel === p ? null : p)}
+            >
+              <span className="swatch" style={{ background: cssColor(colors[p]!.main) }} />
+              {p === ME ? `You · ${civName(content, state, p)}` : civName(content, state, p)}
+              {war && (
+                <span className="war-mark" aria-label="at war">
+                  ⚔
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
+      {playerPanel && (
+        <PlayerPanel
+          ctx={ctx}
+          state={state}
+          viewer={ME}
+          other={playerPanel}
+          colors={colors[playerPanel]!}
+          act={act}
+          onClose={() => setPlayerPanel(null)}
+        />
+      )}
 
       <div className="progress-chips">
         {(['tech', 'civic'] as const).map((k) => {
@@ -645,6 +920,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
           unit={unit}
           colors={colors[unit.owner]!}
           planned={pinned !== null ? { reachable: path !== null } : null}
+          targets={unit.owner === ME ? targets.length : 0}
           act={(a) => {
             if (a.type !== 'found_settlement') return act(a);
             found(a.unit);
@@ -675,6 +951,21 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
             setPlacing(p);
             if (p) setPanelMode('citizens');
           }}
+          striking={striking}
+          onStrike={(on) => {
+            setStriking(on);
+            if (on) setPlacing(null);
+          }}
+        />
+      )}
+
+      {combat && (
+        <CombatPreview
+          preview={combat.preview}
+          attacker={combat.attacker}
+          defender={combat.defender}
+          hint={combat.hint}
+          warning={combat.warning}
         />
       )}
 
@@ -719,6 +1010,33 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
           viewer={ME}
           act={act}
           onClose={() => setOverlay(null)}
+        />
+      )}
+      {warPrompt && (
+        <WarPrompt
+          name={civName(content, state, warPrompt.target)}
+          minTurns={content.rules.combat.minWarTurns}
+          onCancel={() => setWarPrompt(null)}
+          onDeclare={() => {
+            setWarPrompt(null);
+            if (!act({ type: 'declare_war', player: ME, target: warPrompt.target })) return;
+            const u = game.state.units[warPrompt.unit];
+            if (u) attack(u, warPrompt.tile);
+          }}
+        />
+      )}
+      {captured && <CaptureDialog ctx={ctx} state={state} viewer={ME} id={captured.id} act={act} />}
+      {!gameOverSeen && (!me.alive || state.status === 'ended') && (
+        <GameOver
+          won={me.alive && rivalsLeft === 0}
+          text={
+            !me.alive
+              ? 'Your last settlement has fallen. Your civilization is no more.'
+              : rivalsLeft === 0
+                ? 'Every rival has fallen. The world is yours.'
+                : 'The game has reached its turn limit.'
+          }
+          onClose={() => setGameOverSeen(true)}
         />
       )}
     </div>

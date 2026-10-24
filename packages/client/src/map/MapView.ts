@@ -17,6 +17,8 @@ import {
 const CHUNK = 8;
 
 import {
+  FLASH_COLORS,
+  type FlashTone,
   type MapRenderer,
   type MapViewData,
   type MapViewOptions,
@@ -207,6 +209,7 @@ export class MapView implements MapRenderer {
         selected: 0xe6c070,
         place: 0x7fc3e8,
         planned: 0xb49ce0,
+        attack: 0xe0503c,
       };
       for (const h of highlights) {
         const node = new Container();
@@ -271,6 +274,18 @@ export class MapView implements MapRenderer {
         .roundRect(-label.width / 2 - 6, 17, label.width + 12, 18, 5)
         .stroke({ width: 1.5, color: view.mine ? 0xd4a94e : view.color });
       node.addChild(g, bg, label);
+      if (view.health < view.maxHealth || view.wallsMax > 0) {
+        const bars = new Graphics();
+        const w = Math.max(40, label.width + 12);
+        const hp = view.health / view.maxHealth;
+        bars.rect(-w / 2, 36, w, view.wallsMax > 0 ? 9 : 5).fill(0x05080b);
+        bars
+          .rect(-w / 2 + 1, 37, (w - 2) * hp, 3)
+          .fill(hp > 0.6 ? 0x7fc35a : hp > 0.3 ? 0xe0b040 : 0xe0503c);
+        if (view.wallsMax > 0)
+          bars.rect(-w / 2 + 1, 41, ((w - 2) * view.walls) / view.wallsMax, 3).fill(0x8fa8c0);
+        node.addChild(bars);
+      }
       if (fog === 1) node.alpha = 0.6;
       node.position.set(cx, cy);
       this.overlay.addChildAt(node, 0);
@@ -411,6 +426,11 @@ export class MapView implements MapRenderer {
         g.circle(0, 0, 11).fill(color);
         if (view.id === this.selectedUnit) g.circle(0, 0, 16).stroke({ width: 3, color: 0xe6c070 });
         if (view.needsOrders) g.circle(10, -10, 4).fill(0xd4a94e);
+        if (view.health < 100) {
+          const hp = Math.max(0, view.health) / 100;
+          g.rect(-11, 14, 22, 5).fill(0x0b1620);
+          g.rect(-10, 15, 20 * hp, 3).fill(hp > 0.6 ? 0x7fc35a : hp > 0.3 ? 0xe0b040 : 0xe0503c);
+        }
         const label = new Text({
           text: view.icon,
           style: {
@@ -433,6 +453,43 @@ export class MapView implements MapRenderer {
       }
       if (this.overlay.parent !== this.world) this.world.addChild(this.overlay);
     });
+  }
+
+  flash(tile: number, text: string, tone: FlashTone) {
+    void this.ready.then(() => {
+      if (!this.data) return;
+      const w = this.data.map.width;
+      const [cx, cy] = tileCenter(tile % w, Math.floor(tile / w));
+      const t = new Text({
+        text,
+        style: {
+          fontFamily: 'IBM Plex Sans, sans-serif',
+          fontSize: 16,
+          fontWeight: '800',
+          fill: FLASH_COLORS[tone],
+          stroke: { color: 0x0a0c10, width: 4 },
+        },
+      });
+      t.anchor.set(0.5);
+      t.position.set(cx, cy - 20);
+      this.overlay.addChild(t);
+      const start = performance.now();
+      const step = () => {
+        const age = (performance.now() - start) / 1400;
+        if (age >= 1 || t.destroyed) {
+          if (!t.destroyed) t.destroy();
+          this.app.ticker.remove(step);
+          return;
+        }
+        t.y = cy - 20 - age * 22;
+        t.alpha = age < 0.6 ? 1 : 1 - (age - 0.6) / 0.4;
+      };
+      this.app.ticker.add(step);
+    });
+  }
+
+  animateAttack() {
+    // The 2D view shows the result (flashes and bars) without a lunge.
   }
 
   setSelected(unit: string | null) {

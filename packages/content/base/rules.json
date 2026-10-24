@@ -158,5 +158,39 @@
         }
       ]
     }
+  },
+  "combat": {
+    "baseDamage": 30,
+    "strengthScale": 0.04,
+    "randomPercent": 20,
+    "maxHealth": 100,
+    "fortify": [3, 6],
+    "flanking": 2,
+    "support": 2,
+    "woundedPer10": 1,
+    "amphibiousPenalty": 10,
+    "embarkedStrength": 10,
+    "xp": {
+      "attack": 4,
+      "defend": 3
+    },
+    "heal": {
+      "enemy": 10,
+      "neutral": 10,
+      "own": 15,
+      "settlement": 20
+    },
+    "settlement": {
+      "cityHealth": 200,
+      "townHealth": 100,
+      "cityStrengthBonus": 3,
+      "townStrengthBonus": 0,
+      "wallsStrength": 5,
+      "strikeRange": 2,
+      "heal": 20,
+      "wallsRepair": 10,
+      "capturePopulationLoss": 25
+    },
+    "minWarTurns": 10
   }
 }

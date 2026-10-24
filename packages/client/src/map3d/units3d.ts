@@ -183,7 +183,9 @@ function buildModel(view: UnitView): Group {
 
 const badgeCache = new Map<string, SpriteMaterial>();
 function badge(view: UnitView): SpriteMaterial {
-  const key = `${view.color}:${view.accent}:${view.icon}:${view.mine}:${view.needsOrders}`;
+  // Health in steps of 5%, so a badge is drawn once per look, not once per HP.
+  const health = Math.max(0, Math.min(100, Math.ceil(view.health / 5) * 5));
+  const key = `${view.color}:${view.accent}:${view.icon}:${view.mine}:${view.needsOrders}:${health}`;
   const cached = badgeCache.get(key);
   if (cached) return cached;
   const size = 128;
@@ -218,6 +220,13 @@ function badge(view: UnitView): SpriteMaterial {
     ctx.arc(104, 22, 15, 0, Math.PI * 2);
     ctx.fillStyle = '#d4a94e';
     ctx.fill();
+  }
+  if (health < 100) {
+    // Health bar across the bottom of the shield: green, amber, then red.
+    ctx.fillStyle = '#10161d';
+    ctx.fillRect(28, 96, 72, 14);
+    ctx.fillStyle = health > 60 ? '#7fc35a' : health > 30 ? '#e0b040' : '#e0503c';
+    ctx.fillRect(31, 99, (66 * health) / 100, 8);
   }
   const tex = new CanvasTexture(canvas);
   tex.colorSpace = SRGBColorSpace;
@@ -357,6 +366,17 @@ export class UnitLayer {
 
   setSelected(id: string | null) {
     this.selected = id;
+  }
+
+  /** A quick lunge toward a tile and back (a melee attack). */
+  lunge(id: string, tile: number) {
+    const d = this.drawn.get(id);
+    if (!d) return;
+    const [x0, z] = this.world.center(tile);
+    const x = this.near(x0, d.pos.x);
+    const home = d.route.length > 0 ? d.route[d.route.length - 1]!.clone() : d.pos.clone();
+    const toward = home.clone().lerp(new Vector3(x, home.y, z), 0.45);
+    d.route.push(toward, home);
   }
 
   setPath(path: PathView | null, fromTile: number | null) {

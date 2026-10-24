@@ -10,7 +10,31 @@ export {
   type YieldBreakdown,
   type YieldLine,
 } from './effects/yields';
-export type { GameEvent } from './events';
+export type { Combatant, GameEvent } from './events';
+export { damageFor, damageRange } from './combat/damage';
+export {
+  attackMode,
+  attackProblem,
+  attackStrength,
+  attackTargets,
+  bestUnitStrength,
+  type CombatPreview,
+  defenseStrength,
+  previewAttack,
+  previewStrike,
+  settlementAt,
+  settlementMaxHealth,
+  settlementStrength,
+  type Strength,
+  type StrengthLine,
+  strikeProblem,
+  strikeTargets,
+  type Target,
+  targetAt,
+  targetOwner,
+  wallsMax,
+} from './combat/strength';
+export { liberateProblem, peaceProblem, razeProblem } from './combat/handlers';
 export { type Fixed, FIXED_ONE, formatFixed, percentOf, powFloor, toFixed } from './fixed';
 export {
   type ActionResult,

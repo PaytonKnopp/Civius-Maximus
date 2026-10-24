@@ -98,11 +98,18 @@ features on top.
   district and wonder models in 3D and glyphs in 2D, planned districts marked on the map, the
   district limit, specialists, the specialization picker for towns, and wonder notices.
 
-### M9 · Combat and conflict
+### M9 · Combat and conflict (part 1 ✅)
 - The combat formula (lookup tables), modifiers, ranged attacks, city HP, walls, city strikes,
   capture/puppet/raze/liberate, promotions, healing, commanders (pack/unpack, radius), war
   support, and hostile camps (classic barbarians).
 - Combat preview UI.
+- Part 1 built: the formula and modifiers, melee and ranged attacks, capturing civilians,
+  settlement health, walls and strikes, capture with keep/raze/liberate, capital moves and
+  elimination (last one standing wins), healing, war and peace; the placeholder AI fights back
+  and makes peace. Client: red attack tiles with expected damage, the combat preview (every
+  modifier, damage ranges, verdict), the declare-war prompt, a panel per rival (war, peace),
+  the capture dialog, health bars on units and banners, floating damage, lunges and shots.
+- Part 2: promotions, commanders, war support, hostile camps.
 
 ### M10 · Hotseat alpha 🎮
 - 2–8 player hotseat, a turn summary, domination and score victories, and save/load.

@@ -20,8 +20,12 @@ import {
   type PlayerId,
   productionToward,
   purchaseCost,
+  settlementMaxHealth,
+  settlementStrength,
+  strikeTargets,
   townUpgradeCost,
   validateAction,
+  wallsMax,
 } from '@cx/engine';
 import {
   itemName,
@@ -78,6 +82,9 @@ interface Props {
   /** Where the item being placed could go, best first. */
   choices: { tile: number; label: string }[];
   onChoose: (tile: number) => void;
+  /** Picking a target for the settlement's ranged strike. */
+  striking: boolean;
+  onStrike: (on: boolean) => void;
 }
 
 /** The settlement screen: growth, yields, happiness, production, growth choices and citizens. */
@@ -95,6 +102,8 @@ export function SettlementPanel({
   onPlace,
   choices,
   onChoose,
+  striking,
+  onStrike,
 }: Props) {
   const { content } = ctx;
   const s = state.settlements[id]!;
@@ -124,6 +133,10 @@ export function SettlementPanel({
     s.districts.filter((d) => isSpecialty(d.id)).length +
     s.queue.filter((q) => q.kind === 'district' && isSpecialty(q.id)).length;
   const spec = content.rules.settlements.specialization;
+  const defense = settlementStrength(ctx, state, s);
+  const maxHealth = settlementMaxHealth(ctx, s.kind);
+  const fullWalls = wallsMax(ctx, s);
+  const strikeCount = mine ? strikeTargets(ctx, state, s).length : 0;
   const specialists = Object.entries(s.specialists).filter(([, n]) => n > 0);
 
   const foodPct = Math.min(100, Math.max(0, (s.food / sum.foodNeeded) * 100));
@@ -191,6 +204,32 @@ export function SettlementPanel({
             ? 'Content'
             : `${happiness.mood === 'unrest' ? 'Unrest' : 'Unhappy'}: ${happiness.yieldPercent}% yields`}
       </p>
+
+      <p
+        className="defense-line"
+        title={`Strength\n${defense.lines.map((l) => `${l.label}: ${l.amount}`).join('\n')}`}
+      >
+        <span>🛡 {defense.total}</span>
+        <span className={s.health < maxHealth ? 'hurt' : ''}>
+          ❤ {s.health}/{maxHealth}
+        </span>
+        {fullWalls > 0 && (
+          <span>
+            🧱 {s.walls}/{fullWalls}
+          </span>
+        )}
+      </p>
+      {mine && (strikeCount > 0 || striking) && (
+        <button
+          type="button"
+          className={`wide strike ${striking ? 'on' : ''}`}
+          onClick={() => onStrike(!striking)}
+        >
+          {striking
+            ? 'Cancel strike (pick a marked unit)'
+            : `🎯 Ranged strike · ${strikeCount} in range`}
+        </button>
+      )}
 
       {mine && s.pendingDevelop > 0 && (
         <section className="develop" aria-label="Develop a tile">

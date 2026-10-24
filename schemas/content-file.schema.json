@@ -1482,6 +1482,53 @@
             "ignoresZoc": {
               "default": false,
               "type": "boolean"
+            },
+            "bonuses": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "vs": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "vs",
+                  "amount"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "vsSettlement": {
+              "default": 0,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "wallsDamagePercent": {
+              "default": 15,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "captures": {
+              "default": false,
+              "type": "boolean"
             }
           },
           "required": [
@@ -2195,6 +2242,12 @@
             "district": {
               "type": "string",
               "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "walls": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
             },
             "localEffects": {
               "default": [],
@@ -16923,6 +16976,201 @@
               ],
               "additionalProperties": false
             },
+            "combat": {
+              "type": "object",
+              "properties": {
+                "baseDamage": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "strengthScale": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 0.5
+                },
+                "randomPercent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "maxHealth": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "fortify": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "flanking": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "support": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "woundedPer10": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "amphibiousPenalty": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "embarkedStrength": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "xp": {
+                  "type": "object",
+                  "properties": {
+                    "attack": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "defend": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "attack",
+                    "defend"
+                  ],
+                  "additionalProperties": false
+                },
+                "heal": {
+                  "type": "object",
+                  "properties": {
+                    "enemy": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "neutral": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "own": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "settlement": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "enemy",
+                    "neutral",
+                    "own",
+                    "settlement"
+                  ],
+                  "additionalProperties": false
+                },
+                "settlement": {
+                  "type": "object",
+                  "properties": {
+                    "cityHealth": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "townHealth": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "cityStrengthBonus": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "townStrengthBonus": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "wallsStrength": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "strikeRange": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "heal": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "wallsRepair": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "capturePopulationLoss": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  },
+                  "required": [
+                    "cityHealth",
+                    "townHealth",
+                    "cityStrengthBonus",
+                    "townStrengthBonus",
+                    "wallsStrength",
+                    "strikeRange",
+                    "heal",
+                    "wallsRepair",
+                    "capturePopulationLoss"
+                  ],
+                  "additionalProperties": false
+                },
+                "minWarTurns": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "baseDamage",
+                "strengthScale",
+                "randomPercent",
+                "maxHealth",
+                "fortify",
+                "flanking",
+                "support",
+                "woundedPer10",
+                "amphibiousPenalty",
+                "embarkedStrength",
+                "xp",
+                "heal",
+                "settlement",
+                "minWarTurns"
+              ],
+              "additionalProperties": false
+            },
             "mapgen": {
               "type": "object",
               "properties": {
@@ -17046,6 +17294,7 @@
             "luxuryHappinessRadius",
             "progress",
             "units",
+            "combat",
             "mapgen"
           ],
           "additionalProperties": false
@@ -18664,6 +18913,53 @@
               "ignoresZoc": {
                 "default": false,
                 "type": "boolean"
+              },
+              "bonuses": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "vs": {
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      }
+                    },
+                    "amount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "vs",
+                    "amount"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "vsSettlement": {
+                "default": 0,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "wallsDamagePercent": {
+                "default": 15,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "captures": {
+                "default": false,
+                "type": "boolean"
               }
             },
             "required": [
@@ -19377,6 +19673,12 @@
               "district": {
                 "type": "string",
                 "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "walls": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
               },
               "localEffects": {
                 "default": [],
@@ -34105,6 +34407,201 @@
                 ],
                 "additionalProperties": false
               },
+              "combat": {
+                "type": "object",
+                "properties": {
+                  "baseDamage": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "strengthScale": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.5
+                  },
+                  "randomPercent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "maxHealth": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "fortify": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "flanking": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "support": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "woundedPer10": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "amphibiousPenalty": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "embarkedStrength": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "xp": {
+                    "type": "object",
+                    "properties": {
+                      "attack": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "defend": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "attack",
+                      "defend"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "heal": {
+                    "type": "object",
+                    "properties": {
+                      "enemy": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "neutral": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "own": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "settlement": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "enemy",
+                      "neutral",
+                      "own",
+                      "settlement"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "settlement": {
+                    "type": "object",
+                    "properties": {
+                      "cityHealth": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "townHealth": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "cityStrengthBonus": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "townStrengthBonus": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "wallsStrength": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "strikeRange": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "heal": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "wallsRepair": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "capturePopulationLoss": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "cityHealth",
+                      "townHealth",
+                      "cityStrengthBonus",
+                      "townStrengthBonus",
+                      "wallsStrength",
+                      "strikeRange",
+                      "heal",
+                      "wallsRepair",
+                      "capturePopulationLoss"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minWarTurns": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "baseDamage",
+                  "strengthScale",
+                  "randomPercent",
+                  "maxHealth",
+                  "fortify",
+                  "flanking",
+                  "support",
+                  "woundedPer10",
+                  "amphibiousPenalty",
+                  "embarkedStrength",
+                  "xp",
+                  "heal",
+                  "settlement",
+                  "minWarTurns"
+                ],
+                "additionalProperties": false
+              },
               "mapgen": {
                 "type": "object",
                 "properties": {
@@ -34228,6 +34725,7 @@
               "luxuryHappinessRadius",
               "progress",
               "units",
+              "combat",
               "mapgen"
             ],
             "additionalProperties": false

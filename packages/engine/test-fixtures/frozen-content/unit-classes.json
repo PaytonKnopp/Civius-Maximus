@@ -21,7 +21,8 @@
     "name": "Melee",
     "domain": "land",
     "layer": "military",
-    "combat": true
+    "combat": true,
+    "captures": true
   },
   {
     "type": "unitClass",
@@ -29,7 +30,8 @@
     "name": "Ranged",
     "domain": "land",
     "layer": "military",
-    "combat": true
+    "combat": true,
+    "wallsDamagePercent": 50
   },
   {
     "type": "unitClass",
@@ -38,7 +40,8 @@
     "domain": "sea",
     "layer": "military",
     "combat": true,
-    "embarks": false
+    "embarks": false,
+    "captures": true
   },
   {
     "type": "unitClass",
@@ -46,7 +49,15 @@
     "name": "Anti-cavalry",
     "domain": "land",
     "layer": "military",
-    "combat": true
+    "combat": true,
+    "captures": true,
+    "bonuses": [
+      {
+        "vs": ["class_light_cavalry", "class_heavy_cavalry"],
+        "amount": 10,
+        "label": "Against cavalry"
+      }
+    ]
   },
   {
     "type": "unitClass",
@@ -54,7 +65,8 @@
     "name": "Light cavalry",
     "domain": "land",
     "layer": "military",
-    "combat": true
+    "combat": true,
+    "captures": true
   },
   {
     "type": "unitClass",
@@ -62,7 +74,8 @@
     "name": "Heavy cavalry",
     "domain": "land",
     "layer": "military",
-    "combat": true
+    "combat": true,
+    "captures": true
   },
   {
     "type": "unitClass",
@@ -70,6 +83,8 @@
     "name": "Siege",
     "domain": "land",
     "layer": "military",
-    "combat": true
+    "combat": true,
+    "vsSettlement": 10,
+    "wallsDamagePercent": 100
   }
 ]

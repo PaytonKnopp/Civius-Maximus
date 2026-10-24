@@ -1,6 +1,7 @@
 import { resolveText } from '@cx/content';
 import { current, type Draft } from 'immer';
 import type { Action } from '../actions';
+import { settlementMaxHealth } from '../combat/strength';
 import {
   type ActionHandler,
   type EngineContext,
@@ -83,7 +84,7 @@ export function refreshCitizens(draft: Draft<GameState>, ctx: EngineContext, id:
   s.specialists = specialists;
 }
 
-function refreshExplored(draft: Draft<GameState>, ctx: EngineContext, player: PlayerId) {
+export function refreshExplored(draft: Draft<GameState>, ctx: EngineContext, player: PlayerId) {
   draft.players[player]!.explored = exploreVisible(ctx, view(draft), player);
 }
 
@@ -109,7 +110,7 @@ export function spawnUnit(
     ...probe,
     tile,
     moves: 0,
-    health: 100,
+    health: ctx.content.rules.combat.maxHealth,
     xp: 0,
     orders: null,
     skippedTurn: null,
@@ -224,6 +225,7 @@ function complete(
       break;
     case 'building':
       s.buildings.push(item.id);
+      s.walls += ctx.content.entities.building[item.id]?.walls ?? 0;
       // A building can only be had once: drop it from the rest of the queue.
       s.queue = s.queue.filter((q) => itemKey(q) !== itemKey(item));
       delete s.progress[itemKey(item)];
@@ -298,6 +300,14 @@ export function foundSettlement(
     specialists: {},
     specialization: null,
     specializationChanges: 0,
+    health: settlementMaxHealth(ctx, capital ? 'city' : 'town'),
+    walls: 0,
+    attackedTurn: null,
+    struckTurn: null,
+    founder: player,
+    originalCapital: capital,
+    capturedFrom: null,
+    captureChoice: false,
   };
   if (capital) p.capital = id;
   p.settlementsFounded++;
@@ -529,7 +539,9 @@ export const settlementHandlers = {
     },
     (draft, action, ctx, emit) => {
       draft.players[action.player]!.gold -= townUpgradeCost(ctx, view(draft), action.player);
-      draft.settlements[action.settlement]!.kind = 'city';
+      const s = draft.settlements[action.settlement]!;
+      s.kind = 'city';
+      s.health += settlementMaxHealth(ctx, 'city') - settlementMaxHealth(ctx, 'town');
       // Cities don't specialize: they build.
       draft.settlements[action.settlement]!.specialization = null;
       emit({

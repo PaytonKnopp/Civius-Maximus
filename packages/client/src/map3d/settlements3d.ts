@@ -287,7 +287,9 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   const nameW = ctx.measureText(name).width;
   ctx.font = '500 26px "IBM Plex Sans", sans-serif';
   const statusW = view.status ? ctx.measureText(view.status).width : 0;
-  const h = view.status ? 118 : 84;
+  const bars = view.health < view.maxHealth || view.wallsMax > 0;
+  const textH = view.status ? 118 : 84;
+  const h = textH + (bars ? 26 : 0);
   const w = Math.ceil(Math.max(nameW, statusW) + 130);
   canvas.width = w;
   canvas.height = h;
@@ -299,7 +301,7 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   ctx.stroke();
   // Population medallion in the owner's colors.
   ctx.beginPath();
-  ctx.arc(48, h / 2, 31, 0, Math.PI * 2);
+  ctx.arc(48, textH / 2, 31, 0, Math.PI * 2);
   ctx.fillStyle = css(view.color);
   ctx.fill();
   ctx.lineWidth = 4;
@@ -309,15 +311,30 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   ctx.font = '700 32px "IBM Plex Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(String(view.population), 48, h / 2 + 1);
+  ctx.fillText(String(view.population), 48, textH / 2 + 1);
   ctx.textAlign = 'left';
   ctx.fillStyle = view.kind === 'city' ? '#f0e6cc' : '#d9cfb6';
   ctx.font = nameFont;
-  ctx.fillText(name, 94, view.status ? 42 : h / 2 + 2);
+  ctx.fillText(name, 94, view.status ? 42 : textH / 2 + 2);
   if (view.status) {
     ctx.font = '500 26px "IBM Plex Sans", sans-serif';
     ctx.fillStyle = '#c9b98a';
     ctx.fillText(view.status, 96, 86);
+  }
+  if (bars) {
+    // Walls (grey-blue) over health (green to red), along the bottom.
+    const x = 18;
+    const width = w - 36;
+    const y = textH - 4;
+    ctx.fillStyle = '#05080b';
+    ctx.fillRect(x - 2, y - 2, width + 4, 22);
+    const hp = view.health / view.maxHealth;
+    ctx.fillStyle = hp > 0.6 ? '#7fc35a' : hp > 0.3 ? '#e0b040' : '#e0503c';
+    ctx.fillRect(x, y + (view.wallsMax > 0 ? 9 : 0), width * hp, view.wallsMax > 0 ? 9 : 18);
+    if (view.wallsMax > 0) {
+      ctx.fillStyle = '#8fa8c0';
+      ctx.fillRect(x, y, (width * view.walls) / view.wallsMax, 8);
+    }
   }
   const texture = new CanvasTexture(canvas);
   texture.colorSpace = SRGBColorSpace;
@@ -331,6 +348,7 @@ const TONES: Record<TileHighlight['tone'], number> = {
   selected: 0xe6c070,
   place: 0x7fc3e8,
   planned: 0xb49ce0,
+  attack: 0xe0503c,
 };
 
 const labelCache = new Map<string, SpriteMaterial>();

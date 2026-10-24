@@ -23,12 +23,14 @@ import {
   type SettlementYields,
   settlementIds,
   settlementsOf,
+  settlementMaxHealth,
   settlementYields,
   toFixed,
   unitClassOf,
   unitDef,
   unitIds,
   unitsNeedingOrders,
+  wallsMax,
 } from '@cx/engine';
 import type { SettlementView, TerritoryView, UnitView } from '../map/renderer';
 
@@ -87,6 +89,7 @@ export function unitViews(
         tile: u.tile,
         mine: u.owner === viewer,
         needsOrders: needing.has(u.id),
+        health: Math.round((u.health * 100) / ctx.content.rules.combat.maxHealth),
       };
     });
 }
@@ -259,8 +262,9 @@ export function settlementViews(
       let status: string | undefined;
       if (s.owner === viewer) {
         const sum = settlementSummary(ctx, state, s);
-        status =
-          s.pendingDevelop > 0
+        status = s.captureChoice
+          ? 'Captured: decide its fate'
+          : s.pendingDevelop > 0
             ? 'Choose a tile to develop'
             : s.kind === 'town'
               ? 'Town'
@@ -280,6 +284,10 @@ export function settlementViews(
         capital: s.capital,
         mine: s.owner === viewer,
         ...(status ? { status } : {}),
+        health: s.health,
+        maxHealth: settlementMaxHealth(ctx, s.kind),
+        walls: s.walls,
+        wallsMax: wallsMax(ctx, s),
       };
     });
 }
@@ -318,6 +326,7 @@ export function empireSummary(
 
 export type NextAction =
   | { kind: 'unit'; id: string; label: string }
+  | { kind: 'capture'; id: string; label: string }
   | { kind: 'develop'; id: string; label: string }
   | { kind: 'production'; id: string; label: string }
   | { kind: 'research'; label: string }
@@ -341,6 +350,9 @@ export function nextAction(
 ): NextAction {
   const p = state.players[player]!;
   if (p.turnEnded) return { kind: 'waiting', label: 'Waiting for others' };
+  const captured = settlementsOf(state, player).find((s) => s.captureChoice);
+  if (captured)
+    return { kind: 'capture', id: captured.id, label: `Decide ${captured.name}'s fate` };
   const units = unitsNeedingOrders(state, player);
   if (units.length > 0) {
     const id =

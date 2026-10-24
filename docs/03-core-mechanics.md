@@ -246,6 +246,15 @@ When you capture a settlement, you choose one of:
 
 Captured settlements lose 25% of their population and some buildings (configurable).
 
+**Built so far (M9):** Keep, Raze and Liberate. A settlement falls when a melee unit (melee,
+anti-cavalry, cavalry, naval melee) attacks it at 0 health. It loses 25% of its citizens
+(rounded up, at least 1 stays), its queue and walls, and comes back at a quarter of its health;
+the defenders inside die and civilians are taken. Razing is immediate (D44) and impossible for
+original capitals and settlements with a wonder. Liberating returns it to its founder (not if
+you took it from them). Not answering by the end of the turn keeps it. Losing the capital moves
+it to the biggest remaining settlement; losing the last settlement knocks a player out, and the
+last player standing wins. Puppets wait for the loyalty and settlement-limit work.
+
 ---
 
 ## 4. Units
@@ -367,6 +376,29 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
 
 - Per turn, if the unit didn't act: +10 HP in enemy land, +10 neutral, +15 own land, +20 in a city.
   Medics give +20 to adjacent units.
+
+### Built so far (M9, part 1)
+
+- The damage formula with every number from `rules.combat`; e^x comes from a table built with
+  integer math (a Taylor series on BigInts), so all machines agree. Damage at equal strength is
+  30 (24–36 with the roll).
+- Modifiers: terrain (hills, woods, rainforest), fortified (+3 after a turn, +6 after two),
+  support and flanking (+2 per unit), wounded (−1 per 10 HP missing), across a river (−5), from
+  the water (−10), embarked defenders (at most 10), class bonuses (anti-cavalry +10 against
+  cavalry, siege +10 against settlements). Every line shows in the combat preview.
+- Melee attacks (both sides take damage; the winner moves into the tile it cleared), ranged
+  attacks (range and line of sight, no damage back), capturing lone civilians by moving onto
+  them (they join you, D42). Attacking uses the unit's turn.
+- Settlements: 200 HP for cities and 100 for towns; strength is the best unit you can train
+  that takes settlements (+3 in a city, +5 while walls stand, plus terrain). Walls (Masonry,
+  +100) and Castles (Military Tactics, +100) absorb hits first and let through 15% of melee,
+  50% of ranged and all of siege damage. Each settlement has a ranged strike (range 2, once a
+  turn, no walls needed, D43). Settlements heal 20 HP and repair 10 walls a turn when not
+  attacked.
+- War: declare it any time on a non-teammate; peace can be offered after 10 turns of war (D45)
+  and is made when the other side accepts (or offers back). Diplomacy proper arrives in M15.
+- Healing as above, at the start of each turn for units that didn't use their moves.
+- Coming in part 2: promotions, commanders, war support and hostile camps.
 
 ### War
 

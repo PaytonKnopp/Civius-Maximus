@@ -24,8 +24,12 @@ export interface GameState {
   map: MapState;
   /** Every unit on the map, by id (`u1`, `u2`...). Iterate with `unitIds()` for a stable order. */
   units: Record<UnitId, UnitState>;
-  /** Pairs of players at war, as sorted `"a|b"` keys. Declaring war arrives with diplomacy (M15). */
+  /** Pairs of players at war, as sorted `"a|b"` keys (see `warKey`). */
   wars: string[];
+  /** The turn each current war began, by war key. */
+  warStarted: Record<string, number>;
+  /** Peace offers waiting for an answer, as `"from>to"`. */
+  peaceOffers: string[];
   /** Every settlement, by id (`s3`...). Iterate with `settlementIds()` for a stable order. */
   settlements: Record<SettlementId, SettlementState>;
 }
@@ -85,6 +89,22 @@ export interface SettlementState {
   specialization: string | null;
   /** How many times the specialization was chosen (the first is free). */
   specializationChanges: number;
+  /** Hit points (full: `rules.combat.settlement.cityHealth` or `townHealth`). */
+  health: number;
+  /** Outer defense left (full: the `walls` of its buildings). */
+  walls: number;
+  /** The last turn it was attacked (it doesn't heal that turn). */
+  attackedTurn: number | null;
+  /** The last turn it made its ranged strike (one a turn). */
+  struckTurn: number | null;
+  /** Who founded it (liberating returns it to them). */
+  founder: PlayerId;
+  /** It was founded as its founder's capital (can't be razed). */
+  originalCapital: boolean;
+  /** Who it was taken from, if it was captured. */
+  capturedFrom: PlayerId | null;
+  /** Just captured: the new owner chooses keep, raze or liberate (keep, if they end the turn). */
+  captureChoice: boolean;
 }
 
 export type UnitId = string;
@@ -94,8 +114,8 @@ export type UnitOrders =
   | { kind: 'move'; target: number }
   /** Asleep until woken (or an enemy comes into view, later). */
   | { kind: 'sleep' }
-  /** Dug in for a defense bonus (combat, M9). */
-  | { kind: 'fortify' };
+  /** Dug in for a defense bonus that grows over the first turns (`turns` fortified so far). */
+  | { kind: 'fortify'; turns: number };
 
 export interface UnitState {
   id: UnitId;

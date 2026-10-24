@@ -208,5 +208,26 @@
     },
     "district": "district_encampment",
     "requiresTech": "tech_bronze_working"
+  },
+  {
+    "type": "building",
+    "id": "building_walls",
+    "name": "Walls",
+    "description": "+100 outer defense: attacks must break the walls before they hurt the settlement much, and its strength rises while they stand.",
+    "icon": "Wa",
+    "cost": 60,
+    "walls": 100,
+    "requiresTech": "tech_masonry"
+  },
+  {
+    "type": "building",
+    "id": "building_castle",
+    "name": "Castle",
+    "description": "+100 more outer defense.",
+    "icon": "Cs",
+    "cost": 120,
+    "walls": 100,
+    "requiresBuilding": "building_walls",
+    "requiresTech": "tech_military_tactics"
   }
 ]

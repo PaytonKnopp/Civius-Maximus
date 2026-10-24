@@ -1,5 +1,7 @@
 import {
   type Action,
+  atWar,
+  attackTargets,
   availableItems,
   type BuildItem,
   distance,
@@ -15,10 +17,14 @@ import {
   nodeCost,
   placementTiles,
   policySlots,
+  previewAttack,
   SLOT_KINDS,
   settlementsOf,
+  strikeTargets,
   trackOf,
   tilesWithin,
+  unitClassOf,
+  unitDef,
   unitIds,
 } from '@cx/engine';
 
@@ -49,6 +55,14 @@ export function placeholderAiActions(
       )
       .find((t) => findPath(ctx, state, unit, t, 8));
     if (site !== undefined) actions.push({ type: 'move_unit', player, unit: id, to: site });
+  }
+  // Peace offers: taken (they can only be made once a war has run its minimum length).
+  for (const offer of state.peaceOffers) {
+    const [from, to] = offer.split('>');
+    if (to === player) actions.push({ type: 'accept_peace', player, from: from! });
+  }
+  if (state.wars.some((k) => k.split('|').includes(player))) {
+    actions.push(...fight(ctx, state, player));
   }
   for (const s of settlementsOf(state, player)) {
     if (s.kind !== 'city' || s.queue.length > 0) continue;
@@ -118,4 +132,79 @@ function bestDistrict(
     }
   }
   return best?.item;
+}
+
+/** At war: attack where the odds are good, strike from settlements, train defenders. */
+function fight(ctx: EngineContext, state: GameState, player: PlayerId): Action[] {
+  const out: Action[] = [];
+  for (const id of unitIds(state)) {
+    const u = state.units[id]!;
+    if (u.owner !== player || u.moves <= 0) continue;
+    let best: { tile: number; score: number } | undefined;
+    for (const tile of attackTargets(ctx, state, u)) {
+      const p = previewAttack(ctx, state, u, tile)!;
+      // Sums of the low and high rolls (twice the average), to stay in whole numbers.
+      const dealt = p.toDefender[0] + p.toDefender[1];
+      const taken = p.toAttacker[0] + p.toAttacker[1];
+      if (taken >= u.health * 2) continue;
+      const left =
+        p.target.kind === 'unit'
+          ? p.target.unit.health
+          : p.target.kind === 'settlement'
+            ? p.target.settlement.health
+            : 0;
+      const score =
+        p.mode === 'capture'
+          ? 1000
+          : p.toDefender[0] >= left && (p.target.kind === 'unit' || p.captures)
+            ? 500
+            : dealt - taken;
+      if (score > 0 && (!best || score > best.score)) best = { tile, score };
+    }
+    if (best) out.push({ type: 'attack', player, unit: id, tile: best.tile });
+  }
+  for (const s of settlementsOf(state, player)) {
+    const target = strikeTargets(ctx, state, s)
+      .map((tile) => ({ tile, health: unitsHealthOn(state, tile) }))
+      .sort((a, b) => a.health - b.health || a.tile - b.tile)[0];
+    if (target) out.push({ type: 'strike', player, settlement: s.id, tile: target.tile });
+    // A threatened city trains its best soldier first.
+    if (s.kind !== 'city') continue;
+    const head = s.queue[0];
+    if (head?.kind === 'unit' && unitClassOf(ctx, { type: head.id }).combat) continue;
+    const threat = tilesWithin(state.map, s.tile, 4).some((t) =>
+      Object.values(state.units).some(
+        (e) =>
+          e.tile === t &&
+          e.owner !== player &&
+          atWar(state, e.owner, player) &&
+          unitClassOf(ctx, e).combat,
+      ),
+    );
+    if (!threat) continue;
+    const soldier = availableItems(ctx, state, s)
+      .filter(
+        (i) =>
+          i.kind === 'unit' &&
+          ctx.content.entities.unitClass[unitDef(ctx, { type: i.id }).class]!.captures,
+      )
+      .sort(
+        (a, b) => unitDef(ctx, { type: b.id }).strength - unitDef(ctx, { type: a.id }).strength,
+      )[0];
+    if (soldier) {
+      out.push({
+        type: 'set_queue',
+        player,
+        settlement: s.id,
+        queue: [soldier, ...s.queue].slice(0, 8),
+      });
+    }
+  }
+  return out;
+}
+
+function unitsHealthOn(state: GameState, tile: number): number {
+  return Object.values(state.units)
+    .filter((u) => u.tile === tile)
+    .reduce((a, u) => a + u.health, 0);
 }

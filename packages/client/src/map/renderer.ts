@@ -32,6 +32,8 @@ export interface UnitView {
   tile: number;
   mine: boolean;
   needsOrders: boolean;
+  /** Percent of full health (bars show below 100). */
+  health: number;
 }
 
 /** A settlement as the renderer draws it (only ones on tiles the viewer has explored). */
@@ -48,6 +50,11 @@ export interface SettlementView {
   mine: boolean;
   /** Second banner line for your own settlements, e.g. "Warrior · 3". */
   status?: string;
+  health: number;
+  maxHealth: number;
+  /** Outer defense left and full (0 = no walls). */
+  walls: number;
+  wallsMax: number;
 }
 
 /** Territory and improvements, per tile, as the viewer knows them. */
@@ -67,9 +74,17 @@ export interface TerritoryView {
 /** A tile marked for a choice: developing it, buying it... `label` is drawn on the tile. */
 export interface TileHighlight {
   tile: number;
-  tone: 'develop' | 'buy' | 'worked' | 'selected' | 'place' | 'planned';
+  tone: 'develop' | 'buy' | 'worked' | 'selected' | 'place' | 'planned' | 'attack';
   label?: string;
 }
+
+export type FlashTone = 'damage' | 'good' | 'info';
+
+export const FLASH_COLORS: Record<FlashTone, string> = {
+  damage: '#ff6b5a',
+  good: '#9fd36a',
+  info: '#ecdcb4',
+};
 
 /** A planned move: each step, which turn it's reached on, and whether a turn ends there. */
 export interface PathView {
@@ -98,6 +113,10 @@ export interface MapRenderer {
   setPath(path: PathView | null, from: number | null): void;
   setSettlements(settlements: SettlementView[], territory: TerritoryView): void;
   setHighlights(highlights: TileHighlight[]): void;
+  /** A number or word that rises from a tile and fades (damage taken, "Captured"...). */
+  flash(tile: number, text: string, tone: FlashTone): void;
+  /** A unit lunges at a tile (melee) or the tile is hit by a shot (ranged). */
+  animateAttack(unit: string | null, from: number, tile: number, mode: 'melee' | 'ranged'): void;
   focusPlayer(player: string | undefined): void;
   /** Pans to a tile, zooming in only if the camera is too far out to see units; `close` zooms in
    * for a good look (used at the start of a game). */
