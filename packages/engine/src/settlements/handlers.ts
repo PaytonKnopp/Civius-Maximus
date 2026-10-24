@@ -11,11 +11,14 @@ import {
 import { percentOf, toFixed } from '../fixed';
 import { tilesWithin } from '../map/hex';
 import type { BuildItem, GameState, PlayerId, SettlementState } from '../state';
+import { view } from '../draft';
+import { empireTurn } from '../progress/handlers';
 import { ownedUnit, watchers } from '../units/handlers';
 import { canTraverse, hasForeignUnit, hasRoom } from '../units/movement';
 import { exploreVisible } from '../units/vision';
 import {
   assignCitizens,
+  borderCulture,
   borderThreshold,
   developCandidates,
   foundingProblem,
@@ -26,6 +29,7 @@ import {
   itemKey,
   itemProblem,
   nextBorderTile,
+  productionToward,
   purchasableTiles,
   purchaseCost,
   settlementIds,
@@ -69,7 +73,7 @@ function claim(draft: Draft<GameState>, tile: number, s: { id: string; owner: Pl
 
 /** Re-picks the tiles a settlement's citizens work. */
 export function refreshCitizens(draft: Draft<GameState>, ctx: EngineContext, id: string) {
-  const snap = current(draft);
+  const snap = view(draft);
   const { worked, locked } = assignCitizens(ctx, snap, snap.settlements[id]!);
   const s = draft.settlements[id]!;
   s.worked = worked;
@@ -77,7 +81,7 @@ export function refreshCitizens(draft: Draft<GameState>, ctx: EngineContext, id:
 }
 
 function refreshExplored(draft: Draft<GameState>, ctx: EngineContext, player: PlayerId) {
-  draft.players[player]!.explored = exploreVisible(ctx, current(draft), player);
+  draft.players[player]!.explored = exploreVisible(ctx, view(draft), player);
 }
 
 /** Puts a new unit on (or as near as possible to) a tile. Returns its id, or undefined if no room. */
@@ -217,7 +221,7 @@ export function foundSettlement(
     owner: player,
     tile,
     name,
-    visibleTo: watchers(ctx, current(draft), player, [tile]),
+    visibleTo: watchers(ctx, view(draft), player, [tile]),
   });
   return id;
 }
@@ -254,7 +258,7 @@ export function bestDevelopChoice(
 ): { tile: number; improvement: string } | undefined {
   let best: { tile: number; improvement: string; score: number } | undefined;
   for (const tile of developCandidates(ctx, state, s)) {
-    const improvement = improvementsFor(ctx, state, tile)[0]!;
+    const improvement = improvementsFor(ctx, state, tile, s.owner)[0]!;
     const yields = { ...tileYields(ctx, state, tile, s.owner).total };
     const extra = ctx.content.entities.improvement[improvement]!.yields;
     for (const [y, v] of Object.entries(extra)) yields[y] = (yields[y] ?? 0) + toFixed(v);
@@ -331,11 +335,16 @@ export const settlementHandlers = {
       const problem =
         itemProblem(ctx, state, s, action.item) ?? completionProblem(ctx, state, s, action.item);
       if (problem) return problem;
-      const cost = purchaseCost(ctx, action.item);
+      const cost = purchaseCost(ctx, state, action.player, action.item);
       return state.players[action.player]!.gold < cost ? noGold(cost) : undefined;
     },
     (draft, action, ctx, emit) => {
-      draft.players[action.player]!.gold -= purchaseCost(ctx, action.item);
+      draft.players[action.player]!.gold -= purchaseCost(
+        ctx,
+        view(draft),
+        action.player,
+        action.item,
+      );
       complete(draft, ctx, action.settlement, action.item, false);
       refreshCitizens(draft, ctx, action.settlement);
       emit({
@@ -354,7 +363,7 @@ export const settlementHandlers = {
         return { code: 'no_growth', message: 'Tiles are developed when the settlement grows' };
       if (!developCandidates(ctx, state, s).includes(action.tile))
         return { code: 'bad_tile', message: "That tile can't be developed by this settlement" };
-      if (!improvementsFor(ctx, state, action.tile).includes(action.improvement))
+      if (!improvementsFor(ctx, state, action.tile, action.player).includes(action.improvement))
         return { code: 'bad_improvement', message: "That improvement can't go on this tile" };
       return undefined;
     },
@@ -392,7 +401,7 @@ export const settlementHandlers = {
       return state.players[action.player]!.gold < cost ? noGold(cost) : undefined;
     },
     (draft, action, ctx) => {
-      const snap = current(draft);
+      const snap = view(draft);
       const s = draft.settlements[action.settlement]!;
       draft.players[action.player]!.gold -= tilePurchaseCost(
         ctx,
@@ -415,7 +424,7 @@ export const settlementHandlers = {
       return state.players[action.player]!.gold < cost ? noGold(cost) : undefined;
     },
     (draft, action, ctx, emit) => {
-      draft.players[action.player]!.gold -= townUpgradeCost(ctx, current(draft), action.player);
+      draft.players[action.player]!.gold -= townUpgradeCost(ctx, view(draft), action.player);
       draft.settlements[action.settlement]!.kind = 'city';
       emit({
         type: 'town_upgraded',
@@ -449,7 +458,19 @@ export const settlementHandlers = {
 
 // --- Turn processing -------------------------------------------------------------------------
 
-function processSettlement(draft: Draft<GameState>, ctx: EngineContext, id: string, emit: Emit) {
+/** What a settlement's turn adds to its owner's empire-wide totals. */
+interface SettlementTurn {
+  science: number;
+  culture: number;
+  happiness: number;
+}
+
+function processSettlement(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  id: string,
+  emit: Emit,
+): SettlementTurn {
   const rules = ctx.content.rules.settlements;
   const s = draft.settlements[id]!;
   const owner = s.owner;
@@ -457,7 +478,7 @@ function processSettlement(draft: Draft<GameState>, ctx: EngineContext, id: stri
 
   // Growth choices nobody made (an AI seat, or the turn timer ran out) are made automatically.
   while (s.pendingDevelop > 0) {
-    const snap = current(draft);
+    const snap = view(draft);
     const choice = bestDevelopChoice(ctx, snap, snap.settlements[id]!);
     if (!choice) {
       s.pendingDevelop = 0;
@@ -467,8 +488,10 @@ function processSettlement(draft: Draft<GameState>, ctx: EngineContext, id: stri
   }
   refreshCitizens(draft, ctx, id);
 
-  const snap = current(draft);
+  const snap = view(draft);
   const y = settlementYields(ctx, snap, snap.settlements[id]!);
+  const population = s.population;
+  const acquired = s.tilesAcquired;
   const production = y.total.production ?? 0;
 
   // Gold, faith and upkeep.
@@ -489,7 +512,9 @@ function processSettlement(draft: Draft<GameState>, ctx: EngineContext, id: stri
         emit({ type: 'production_idle', settlement: id, owner, visibleTo: [owner] });
     } else {
       const key = itemKey(head);
-      s.progress[key] = (s.progress[key] ?? 0) + production;
+      s.progress[key] =
+        (s.progress[key] ?? 0) +
+        productionToward(ctx, snap, snap.settlements[id]!, head, production);
       const cost = itemCost(ctx, head);
       if (s.progress[key]! >= cost && !completionProblem(ctx, current(draft), s, head)) {
         const overflow = s.progress[key]! - cost;
@@ -505,12 +530,12 @@ function processSettlement(draft: Draft<GameState>, ctx: EngineContext, id: stri
   }
 
   // Food: grow (and earn a develop choice) or starve.
-  s.food += growthPerTurn(ctx, y);
+  s.food += growthPerTurn(ctx, snap, snap.settlements[id]!, y);
   const needed = growthThreshold(ctx, s.population);
   if (s.food >= needed) {
     s.food -= needed;
     s.population++;
-    const after = current(draft);
+    const after = view(draft);
     if (developCandidates(ctx, after, after.settlements[id]!).length > 0) s.pendingDevelop++;
     emit({
       type: 'settlement_grew',
@@ -534,10 +559,10 @@ function processSettlement(draft: Draft<GameState>, ctx: EngineContext, id: stri
   }
 
   // Culture: borders grow by one tile each time the store fills.
-  s.culture += y.total.culture ?? 0;
+  s.culture += borderCulture(ctx, snap, snap.settlements[id]!, y.total.culture ?? 0);
   const threshold = borderThreshold(ctx, s.tilesAcquired);
   if (s.culture >= threshold) {
-    const after = current(draft);
+    const after = view(draft);
     const tile = nextBorderTile(ctx, after, after.settlements[id]!);
     if (tile !== undefined) {
       s.culture -= threshold;
@@ -546,18 +571,32 @@ function processSettlement(draft: Draft<GameState>, ctx: EngineContext, id: stri
       emit({ type: 'border_grew', settlement: id, owner, tile, visibleTo: 'all' });
     }
   }
-  refreshCitizens(draft, ctx, id);
+  // Re-pick worked tiles only if the population or territory changed this turn.
+  if (s.population !== population || s.tilesAcquired !== acquired) refreshCitizens(draft, ctx, id);
+  return {
+    science: y.total.science ?? 0,
+    culture: y.total.culture ?? 0,
+    happiness: y.happiness.balance,
+  };
 }
 
-/** Runs every settlement's turn (player order, then founding order), then settles the books. */
+/**
+ * Each player in turn: every settlement's turn (founding order), then the empire's: upkeep,
+ * research, civics, celebrations and boosts.
+ */
 export function settlementsTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   for (const player of draft.playerOrder) {
     const p = draft.players[player]!;
     if (!p.alive) continue;
+    const totals = { science: 0, culture: 0, happiness: 0 };
     for (const id of settlementIds(draft)) {
-      if (draft.settlements[id]!.owner === player) processSettlement(draft, ctx, id, emit);
+      if (draft.settlements[id]!.owner !== player) continue;
+      const t = processSettlement(draft, ctx, id, emit);
+      totals.science += t.science;
+      totals.culture += t.culture;
+      totals.happiness += t.happiness;
     }
-    if (p.gold < 0) p.gold = 0;
+    empireTurn(draft, ctx, player, totals, emit);
     refreshExplored(draft, ctx, player);
   }
 }

@@ -255,7 +255,7 @@ describe('references in rules and units', () => {
         target: 'rules',
         ops: [
           { op: 'set', path: 'mapgen.coastTerrain', value: 'coastt' },
-          { op: 'set', path: 'units.startingUnits', value: ['unit_settler', 'unit_knight'] },
+          { op: 'set', path: 'units.startingUnits', value: ['unit_settler', 'unit_dragon'] },
         ],
       },
     ]);
@@ -264,7 +264,7 @@ describe('references in rules and units', () => {
         expect.stringContaining(
           'mapgen.coastTerrain  unknown terrain "coastt" (did you mean "coast"?)',
         ),
-        expect.stringContaining('units.startingUnits[1]  unknown unit "unit_knight"'),
+        expect.stringContaining('units.startingUnits[1]  unknown unit "unit_dragon"'),
       ]),
     );
   });
@@ -285,6 +285,58 @@ describe('references in rules and units', () => {
         'class  unknown unitClass "class_meele" (did you mean "class_melee"?)',
       ),
     ]);
+  });
+});
+
+describe('tech and civic trees', () => {
+  const base = readPackageDir(BASE_CONTENT_DIR);
+  const withPatch = (data: unknown[]) =>
+    compileContent([base, pkg('m', {}, [{ path: 'p.json', data }])]).diagnostics.map(
+      formatDiagnostic,
+    );
+
+  it('reports prerequisite loops', () => {
+    const out = withPatch([
+      {
+        type: 'patch',
+        target: 'tech_pottery',
+        ops: [{ op: 'append', path: 'requires', value: 'tech_irrigation' }],
+      },
+    ]);
+    expect(out).toEqual([
+      expect.stringContaining(
+        'techs.json  [0].requires  the tech tree loops: tech_pottery → tech_irrigation → tech_pottery',
+      ),
+    ]);
+  });
+
+  it('checks what unlocks things, and boost goals', () => {
+    const out = withPatch([
+      {
+        type: 'patch',
+        target: 'unit_archer',
+        ops: [{ op: 'set', path: 'requiresTech', value: 'tech_archey' }],
+      },
+      {
+        type: 'patch',
+        target: 'tech_sailing',
+        ops: [
+          {
+            op: 'set',
+            path: 'boost',
+            value: { text: 'x', goal: { kind: 'units', count: 1, unit: 'unit_galeon' } },
+          },
+        ],
+      },
+    ]);
+    expect(out).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining(
+          'requiresTech  unknown tech "tech_archey" (did you mean "tech_archery"?)',
+        ),
+        expect.stringContaining('boost.goal.unit  unknown unit "unit_galeon"'),
+      ]),
+    );
   });
 });
 

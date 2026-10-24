@@ -29,7 +29,7 @@
       "perCity": 60
     },
     "purchase": {
-      "goldPerProduction": 3,
+      "goldPerProduction": 4,
       "tileBase": 25,
       "tilePerAcquired": 5,
       "tilePerDistance": 10
@@ -54,6 +54,9 @@
       "culture": 15,
       "faith": 10,
       "happiness": 10
+    },
+    "citizenYields": {
+      "science": 0.5
     }
   },
   "elevation": {
@@ -109,6 +112,40 @@
     },
     "startingUnits": ["unit_settler", "unit_warrior", "unit_scout"],
     "embarkFromStart": false,
-    "embarkedSight": 1
+    "embarkedSight": 1,
+    "freeUpkeep": 3
+  },
+  "progress": {
+    "boostPercent": 40,
+    "startingGovernment": "government_chiefdom",
+    "policySwapCost": 25,
+    "governmentChangeCost": 100,
+    "celebration": {
+      "base": 40,
+      "perCelebration": 30,
+      "turns": 10,
+      "effects": [
+        {
+          "effect": "extra_policy_slot",
+          "params": {
+            "slot": "wildcard",
+            "amount": 1
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "percent": 10
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   }
 }

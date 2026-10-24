@@ -39,5 +39,37 @@
     "layer": "military",
     "combat": true,
     "embarks": false
+  },
+  {
+    "type": "unitClass",
+    "id": "class_anti_cavalry",
+    "name": "Anti-cavalry",
+    "domain": "land",
+    "layer": "military",
+    "combat": true
+  },
+  {
+    "type": "unitClass",
+    "id": "class_light_cavalry",
+    "name": "Light cavalry",
+    "domain": "land",
+    "layer": "military",
+    "combat": true
+  },
+  {
+    "type": "unitClass",
+    "id": "class_heavy_cavalry",
+    "name": "Heavy cavalry",
+    "domain": "land",
+    "layer": "military",
+    "combat": true
+  },
+  {
+    "type": "unitClass",
+    "id": "class_siege",
+    "name": "Siege",
+    "domain": "land",
+    "layer": "military",
+    "combat": true
   }
 ]

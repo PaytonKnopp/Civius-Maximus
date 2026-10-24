@@ -6,6 +6,8 @@ import { generateMap } from './map/generate';
 import { makeRandom } from './map/random';
 import type { StartBias } from './map/types';
 import { createRng } from './rng';
+import { checkBoosts, progressHandlers } from './progress/handlers';
+import { newProgress } from './progress/sources';
 import { settlementHandlers, settlementsTurn } from './settlements/handlers';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
@@ -94,6 +96,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       faith: 0,
       capital: null,
       settlementsFounded: 0,
+      ...newProgress(ctx),
     };
   }
   const state: GameState = {
@@ -119,6 +122,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
 const handlers: Handlers = {
   ...unitHandlers,
   ...settlementHandlers,
+  ...progressHandlers,
   end_turn: {
     validate(state, action) {
       const p = state.players[action.player];
@@ -169,6 +173,17 @@ function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   startTurnForUnits(draft, ctx, emit);
 }
 
+/** Actions that can complete a boost goal on the spot. */
+const BOOSTING_ACTIONS = new Set<ActionType>([
+  'found_settlement',
+  'buy_item',
+  'develop_tile',
+  'buy_tile',
+  'upgrade_town',
+  'set_government',
+  'set_policies',
+]);
+
 /** Checks an action against the rules without applying it (for greying out buttons). */
 export function validateAction(
   state: GameState,
@@ -190,7 +205,17 @@ export function applyAction(state: GameState, action: Action, ctx: EngineContext
   const events: GameEvent[] = [];
   const handler = handlers[action.type] as ActionHandler<Action>;
   const next = produce(state, (draft) => {
-    handler.apply(draft, action, ctx, (e) => events.push(e));
+    const emit = (e: GameEvent) => events.push(e);
+    handler.apply(draft, action, ctx, emit);
+    // Doing things can earn boosts (founding on the coast, buying a shrine...): pay them now.
+    // (Turn processing checks everyone's at the end of each turn.)
+    if (
+      BOOSTING_ACTIONS.has(action.type) &&
+      draft.status === 'playing' &&
+      draft.players[action.player]?.alive
+    ) {
+      checkBoosts(draft, ctx, action.player, emit);
+    }
   });
   return { ok: true, state: next, events };
 }

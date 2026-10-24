@@ -6,6 +6,8 @@ import { type Action, parseAction } from './actions';
 import { applyAction, createGame, type EngineContext, type GameSetup, MAX_PLAYERS } from './game';
 import { stateHash } from './hash';
 import { type Replay, runReplay } from './replay';
+import { availableNodes, availablePolicies } from './progress/rules';
+import { policySlots } from './progress/sources';
 import { settlementIds } from './settlements/rules';
 import { bestDevelopChoice } from './settlements/handlers';
 import type { GameState } from './state';
@@ -216,6 +218,33 @@ describe('replays', () => {
       });
     }
     for (let turn = 1; turn <= 25; turn++) {
+      for (const player of state.playerOrder) {
+        const p = state.players[player]!;
+        // Keep both trees busy, cheapest available first.
+        if (!p.techs.current) {
+          const tech = availableNodes(ctx, p, 'tech')[0];
+          if (tech) play({ type: 'set_research', player, tech });
+        }
+        if (!p.civics.current) {
+          const civic = availableNodes(ctx, p, 'civic')[0];
+          if (civic) play({ type: 'set_civic', player, civic });
+        }
+        // Fill empty policy slots while changes are free.
+        if (state.players[player]!.policyWindow) {
+          const slots = policySlots(ctx, state, player);
+          const fill = {
+            military: [] as string[],
+            economic: [] as string[],
+            diplomatic: [] as string[],
+            wildcard: [] as string[],
+          };
+          for (const id of availablePolicies(ctx, state.players[player]!)) {
+            const kind = ctx.content.entities.policy[id]!.slot;
+            if (fill[kind].length < slots[kind]) fill[kind].push(id);
+          }
+          play({ type: 'set_policies', player, policies: fill });
+        }
+      }
       for (const id of settlementIds(state)) {
         const settlement = state.settlements[id]!;
         const choice = bestDevelopChoice(ctx, state, settlement);
@@ -247,6 +276,8 @@ describe('replays', () => {
     expect(a.state.status).toBe('ended');
     expect(Object.keys(a.state.settlements)).toHaveLength(8);
     expect(Object.values(a.state.settlements).every((x) => x.population > 1)).toBe(true);
+    expect(Object.values(a.state.players).every((p) => p.techs.done.length >= 1)).toBe(true);
+    expect(Object.values(a.state.players).every((p) => p.civics.done.length >= 2)).toBe(true);
   });
 
   it('match a recorded golden hash (fails if a rules change would break old saves)', () => {
@@ -257,7 +288,7 @@ describe('replays', () => {
       readPackageDir(new URL('../test-fixtures/frozen-content', import.meta.url).pathname),
     ]).content!;
     expect(runReplay(scriptedReplay(), { content: frozen }).hash).toMatchInlineSnapshot(
-      `"04c6c44660993c2d931a3a461f"`,
+      `"a89130c33e820a2d48fed0275b"`,
     );
   });
 

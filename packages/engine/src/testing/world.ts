@@ -6,6 +6,7 @@ import { tileIndex } from '../map/hex';
 import type { MapTile } from '../map/types';
 import { createRng } from '../rng';
 import type { GameState, UnitState } from '../state';
+import { newProgress } from '../progress/sources';
 import { MP } from '../units/movement';
 
 /** Test helpers: hand-drawn maps and shortcuts for driving the engine (tests only). */
@@ -59,6 +60,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     faith: 0,
     capital: null,
     settlementsFounded: 0,
+    ...newProgress(ctx),
   });
   return {
     stateVersion: 1,

@@ -8,14 +8,21 @@ import {
   foundingProblem,
   type GameState,
   type PlayerId,
+  availableNodes,
+  availablePolicies,
+  nodeCost,
+  policySlots,
+  SLOT_KINDS,
   settlementsOf,
+  trackOf,
   tilesWithin,
   unitIds,
 } from '@cx/engine';
 
 /**
  * Stand-in for the real AI (M11), so AI seats aren't empty: they found settlements, keep their
- * cities building, and leave every other choice to the engine's automatic defaults.
+ * cities building, research, fill policy slots, and leave every other choice to the engine's
+ * automatic defaults.
  */
 export function placeholderAiActions(
   ctx: EngineContext,
@@ -51,6 +58,36 @@ export function placeholderAiActions(
         id,
       }));
     if (queue.length > 0) actions.push({ type: 'set_queue', player, settlement: s.id, queue });
+  }
+  // Research and civics: the cheapest available node whenever nothing is chosen.
+  const p = state.players[player]!;
+  for (const kind of ['tech', 'civic'] as const) {
+    if (trackOf(p, kind).current) continue;
+    const next = availableNodes(ctx, p, kind).sort(
+      (a, b) => nodeCost(ctx, kind, a) - nodeCost(ctx, kind, b) || (a < b ? -1 : 1),
+    )[0];
+    if (!next) continue;
+    actions.push(
+      kind === 'tech'
+        ? { type: 'set_research', player, tech: next }
+        : { type: 'set_civic', player, civic: next },
+    );
+  }
+  // Policies: fill empty slots while changes are free, newest cards first.
+  if (p.policyWindow) {
+    const slots = policySlots(ctx, state, player);
+    const fill: Record<(typeof SLOT_KINDS)[number], string[]> = {
+      military: [],
+      economic: [],
+      diplomatic: [],
+      wildcard: [],
+    };
+    for (const id of [...availablePolicies(ctx, p)].reverse()) {
+      const kind = ctx.content.entities.policy[id]!.slot;
+      if (fill[kind].length < slots[kind]) fill[kind].push(id);
+      else if (fill.wildcard.length < slots.wildcard) fill.wildcard.push(id);
+    }
+    actions.push({ type: 'set_policies', player, policies: fill });
   }
   return actions;
 }

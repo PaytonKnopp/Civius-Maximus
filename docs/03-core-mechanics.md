@@ -213,8 +213,9 @@ Each settlement has a 😊 **happiness** balance:
 | ≤ −5 | Unrest: no growth, −25% yields, rebels may appear at −10 |
 
 - **Celebrations:** your empire-wide happiness *surplus* each turn accumulates. When it reaches the
-  threshold (which rises with each celebration), you start a **Celebration**: for 10 turns you pick
-  one **bonus policy slot** from your government's list, and all settlements get +10% production.
+  threshold (which rises with each celebration), you start a **Celebration**: for 10 turns you get
+  one **bonus wildcard policy slot**, and all settlements get +10% production. The threshold is
+  40, then +30 for each celebration so far (D38); the bonus is content (`rules.progress.celebration`).
 - **Settlement limit:** starts at 4 and grows with techs, civics and some policies. It's the Civ 5
   "tall vs wide" balance, but softer.
 
@@ -308,7 +309,8 @@ Captured settlements lose 25% of their population and some buildings (configurab
 
 ### Upkeep and requirements
 
-- Gold upkeep per unit, scaling with era.
+- Gold upkeep per unit, scaling with era. Each player gets **3 gold of upkeep free** each turn
+  (D37), so a starting army doesn't drain an empty treasury.
 - Strategic units cost a stockpile amount to train (e.g., Swordsman: 10 Iron) and a small amount
   per turn to maintain. If the stockpile runs out, those units get −20 combat strength.
 
@@ -382,6 +384,9 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   Slinger*) that pays 40% of its cost when met. This keeps players' paths varied, and the
   conditions are moddable.
 - Cost formula: base by era × game-speed multiplier.
+- **Built so far (M7):** Ancient → Medieval, 24 techs. Choosing anything queues the path of
+  prerequisites to it. Each citizen adds **+0.5 🔬** on top of buildings and tiles (D36).
+  Boosts are paid the moment their goal is met (or at the end of the turn).
 
 ### Civics tree
 
@@ -394,7 +399,10 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   Merchant Republic → Democracy / Communism / Fascism) each have **slots**: Military,
   Economic, Diplomatic, Wildcard. Each government also has its own bonus.
 - **Policy cards** go into slots. They can be swapped for free when you finish a civic, otherwise
-  for gold.
+  for gold (25 per new card; a new government costs 100). Wildcard slots take any card.
+- **Built so far (M7):** 19 civics, 7 governments (Chiefdom → Merchant Republic) and 22 policy
+  cards, all original names. Early Empire, Political Philosophy and Civil Service each raise the
+  settlement limit by 1.
 - This is one of Civ 6's best systems. It's very moddable, and it creates lots of strategic
   choices, so we keep it as-is.
 

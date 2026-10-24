@@ -35,7 +35,8 @@
     "maintenance": 1,
     "yields": {
       "food": 2
-    }
+    },
+    "requiresTech": "tech_pottery"
   },
   {
     "type": "building",
@@ -47,7 +48,8 @@
     "maintenance": 1,
     "yields": {
       "faith": 2
-    }
+    },
+    "requiresTech": "tech_astrology"
   },
   {
     "type": "building",
@@ -61,6 +63,73 @@
       "food": 1,
       "production": 1
     },
-    "requiresRiver": true
+    "requiresRiver": true,
+    "requiresTech": "tech_the_wheel"
+  },
+  {
+    "type": "building",
+    "id": "building_library",
+    "name": "Library",
+    "description": "Scrolls and scholars.",
+    "icon": "Li",
+    "cost": 90,
+    "maintenance": 1,
+    "yields": {
+      "science": 2
+    },
+    "requiresTech": "tech_writing"
+  },
+  {
+    "type": "building",
+    "id": "building_marketplace",
+    "name": "Marketplace",
+    "description": "A busy square of traders.",
+    "icon": "Ma",
+    "cost": 100,
+    "yields": {
+      "gold": 3
+    },
+    "requiresTech": "tech_currency"
+  },
+  {
+    "type": "building",
+    "id": "building_lighthouse",
+    "name": "Lighthouse",
+    "description": "Guides ships home.",
+    "icon": "Lh",
+    "cost": 110,
+    "maintenance": 1,
+    "yields": {
+      "food": 1,
+      "gold": 1
+    },
+    "requiresCoast": true,
+    "requiresTech": "tech_celestial_navigation"
+  },
+  {
+    "type": "building",
+    "id": "building_baths",
+    "name": "Baths",
+    "description": "Public bathhouses.",
+    "icon": "Ba",
+    "cost": 120,
+    "maintenance": 1,
+    "happiness": 2,
+    "requiresTech": "tech_construction"
+  },
+  {
+    "type": "building",
+    "id": "building_university",
+    "name": "University",
+    "description": "Advanced study.",
+    "icon": "Un",
+    "cost": 220,
+    "maintenance": 2,
+    "yields": {
+      "science": 4
+    },
+    "requiresBuilding": "building_library",
+    "requiresTech": "tech_education",
+    "cityOnly": true
   }
 ]

@@ -1,3 +1,4 @@
+import type { SlotKind } from '@cx/content';
 import type { MapSettings, MapState } from './map/types';
 import type { RngState } from './rng';
 
@@ -130,4 +131,37 @@ export interface PlayerState {
   capital: SettlementId | null;
   /** How many settlements this player has founded (picks the next name). */
   settlementsFounded: number;
+  /** The tech tree (paid with science) and the civics tree (paid with culture). */
+  techs: Track;
+  civics: Track;
+  /** A `government` content id. */
+  government: string;
+  /** Policy cards in each kind of slot. */
+  policies: Record<SlotKind, string[]>;
+  /** Changing policies and government is free this turn (right after finishing a civic). */
+  policyWindow: boolean;
+  celebration: {
+    /** Happiness surplus saved toward the next celebration. */
+    store: number;
+    /** Celebrations so far (each makes the next one cost more). */
+    count: number;
+    /** Turns left in the current celebration (0 = not celebrating). */
+    turnsLeft: number;
+  };
+}
+
+/** Progress through one tree. Amounts are in hundredths. */
+export interface Track {
+  /** Finished, in the order they were finished. */
+  done: string[];
+  /** Being worked on now. */
+  current: string | null;
+  /** What comes after `current` (a path chosen through the tree). */
+  queue: string[];
+  /** Progress on each started node. */
+  progress: Record<string, number>;
+  /** Nodes whose boost has been earned. */
+  boosted: string[];
+  /** Earned while nothing was chosen; goes to the next choice. */
+  stored: number;
 }

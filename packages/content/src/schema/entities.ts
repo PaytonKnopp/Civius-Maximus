@@ -5,7 +5,13 @@ import { Elevation, Id, ResourceClass, Text, YieldMap } from './common';
 const Range100 = z
   .tuple([z.int().min(0).max(100), z.int().min(0).max(100)])
   .refine(([lo, hi]) => lo <= hi, 'the first number must not be bigger than the second');
-import { Effect } from './effects';
+import { Effect, SlotKind } from './effects';
+
+/** Content that only becomes available with a tech or civic. */
+const requires = {
+  requiresTech: Id.optional(),
+  requiresCivic: Id.optional(),
+};
 
 /**
  * Every content file holds one entity or an array of entities, each tagged with `type`.
@@ -154,6 +160,8 @@ export const RulesDef = z.strictObject({
     }),
     /** How auto-assign values yields when picking tiles for citizens (focus triples one). */
     citizenWeights: YieldMap,
+    /** What every citizen adds on top of the tile it works (e.g. 0.5 science). */
+    citizenYields: YieldMap,
   }),
   elevation: z.strictObject({
     hills: z.strictObject({
@@ -178,6 +186,24 @@ export const RulesDef = z.strictObject({
     canAlwaysMoveOneTile: z.boolean(),
   }),
   luxuryHappinessRadius: z.int().min(0),
+  progress: z.strictObject({
+    /** Percent of a tech's or civic's cost a boost pays. */
+    boostPercent: z.int().min(0).max(100),
+    /** Everyone starts with this government. */
+    startingGovernment: Id,
+    /** Gold per policy card changed outside the free window after finishing a civic. */
+    policySwapCost: z.int().min(0),
+    /** Gold to change government outside the free window. */
+    governmentChangeCost: z.int().min(0),
+    celebration: z.strictObject({
+      /** Happiness surplus needed: `base + perCelebration × celebrations so far`. */
+      base: z.int().min(1),
+      perCelebration: z.int().min(0),
+      turns: z.int().min(1),
+      /** What a celebration gives while it lasts (e.g. a bonus policy slot, +10% production). */
+      effects: z.array(Effect).default([]),
+    }),
+  }),
   units: z.strictObject({
     /** Units of one player allowed on a tile, per layer. Other players' units never share a tile. */
     stacking: z.strictObject({
@@ -191,6 +217,8 @@ export const RulesDef = z.strictObject({
     embarkFromStart: z.boolean(),
     /** Sight of embarked land units. */
     embarkedSight: z.int().min(0),
+    /** Gold of unit upkeep each player gets for free every turn. */
+    freeUpkeep: z.int().min(0),
   }),
   mapgen: z.strictObject({
     coastTerrain: Id,
@@ -253,6 +281,9 @@ export const UnitDef = z.strictObject({
   cost: z.int().min(0).default(0),
   /** Citizens the settlement gives up when this unit is finished (settlers: 1). */
   populationCost: z.int().min(0).default(0),
+  /** Gold per turn to keep. */
+  upkeep: z.int().min(0).default(1),
+  ...requires,
   /** Special actions this unit can take. */
   actions: z.array(z.enum(['found_settlement'])).default([]),
   /** Sea units: can enter deep ocean. */
@@ -366,6 +397,7 @@ export const ImprovementDef = z.strictObject({
   sites: z.array(ImprovementSite).default([]),
   /** When several improvements fit a tile, the lower number is proposed first. */
   order: z.int().default(100),
+  ...requires,
   /** Placeholder map color until models exist. */
   color: z
     .string()
@@ -406,6 +438,105 @@ export const BuildingDef = z.strictObject({
   requiresCoast: z.boolean().default(false),
   /** Towns can buy buildings but not build them; some are city-only. */
   cityOnly: z.boolean().default(false),
+  /** Needs this building in the settlement first (e.g. a University needs a Library). */
+  requiresBuilding: Id.optional(),
+  ...requires,
+});
+
+/** Something a player can do to earn a boost (a share of a tech's or civic's cost). */
+export const Goal = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('settlements'), count: z.int().min(1) }),
+  z.strictObject({ kind: z.literal('cities'), count: z.int().min(1) }),
+  z.strictObject({ kind: z.literal('coastal_settlement') }),
+  /** Citizens across all settlements. */
+  z.strictObject({ kind: z.literal('population'), count: z.int().min(1) }),
+  z.strictObject({
+    kind: z.literal('units'),
+    count: z.int().min(1),
+    unit: z.union([Id, z.array(Id).min(1)]).optional(),
+    unitClass: z.union([Id, z.array(Id).min(1)]).optional(),
+  }),
+  z.strictObject({
+    kind: z.literal('improvements'),
+    count: z.int().min(1),
+    improvement: z.union([Id, z.array(Id).min(1)]).optional(),
+  }),
+  z.strictObject({
+    kind: z.literal('buildings'),
+    count: z.int().min(1),
+    building: z.union([Id, z.array(Id).min(1)]).optional(),
+  }),
+  z.strictObject({ kind: z.literal('tiles_owned'), count: z.int().min(1) }),
+  z.strictObject({ kind: z.literal('techs'), count: z.int().min(1) }),
+  z.strictObject({ kind: z.literal('civics'), count: z.int().min(1) }),
+  /** Adopt a government (any but the starting one, or one of these). */
+  z.strictObject({
+    kind: z.literal('government'),
+    government: z.union([Id, z.array(Id).min(1)]).optional(),
+  }),
+  z.strictObject({ kind: z.literal('policies'), count: z.int().min(1) }),
+  z.strictObject({ kind: z.literal('gold'), amount: z.int().min(1) }),
+]);
+export type Goal = z.infer<typeof Goal>;
+
+/** An age of history. Techs and civics belong to one; the latest one you've reached is your era. */
+export const EraDef = z.strictObject({
+  type: z.literal('era'),
+  id: Id,
+  name: Text,
+  order: z.int(),
+});
+
+const progressShape = {
+  id: Id,
+  name: Text,
+  description: Text.optional(),
+  era: Id,
+  /** Science (techs) or culture (civics) to finish it. */
+  cost: z.int().min(1),
+  /** All of these must be finished first. */
+  requires: z.array(Id).default([]),
+  /** Vertical position in the tree (the column comes from the prerequisites). */
+  row: z.int().min(0).max(20).default(0),
+  boost: z.strictObject({ text: Text, goal: Goal }).optional(),
+  /** Permanent effects once finished (e.g. a higher settlement limit). */
+  effects: z.array(Effect).default([]),
+};
+
+/** A tech (science tree). Things it unlocks name it in their own `requiresTech`. */
+export const TechDef = z.strictObject({ type: z.literal('tech'), ...progressShape });
+/** A civic (culture tree). Things it unlocks name it in their own `requiresCivic`. */
+export const CivicDef = z.strictObject({ type: z.literal('civic'), ...progressShape });
+
+/** A government: policy slots and its own bonus. */
+export const GovernmentDef = z.strictObject({
+  type: z.literal('government'),
+  id: Id,
+  name: Text,
+  description: Text.optional(),
+  slots: z.strictObject({
+    military: z.int().min(0),
+    economic: z.int().min(0),
+    diplomatic: z.int().min(0),
+    wildcard: z.int().min(0),
+  }),
+  effects: z.array(Effect).default([]),
+  requiresCivic: Id.optional(),
+  /** Display order. */
+  order: z.int().default(100),
+});
+
+/** A policy card. Wildcard slots take any card; other slots take cards of their kind. */
+export const PolicyDef = z.strictObject({
+  type: z.literal('policy'),
+  id: Id,
+  name: Text,
+  description: Text,
+  slot: SlotKind,
+  effects: z.array(Effect).min(1),
+  requiresCivic: Id.optional(),
+  /** No longer available once this civic is finished. */
+  obsoletedBy: Id.optional(),
 });
 
 /** A civilization: its names and colors (abilities and uniques arrive with the leader kits). */
@@ -436,6 +567,11 @@ export const ENTITY_SCHEMAS = {
   improvement: ImprovementDef,
   building: BuildingDef,
   civ: CivDef,
+  era: EraDef,
+  tech: TechDef,
+  civic: CivicDef,
+  government: GovernmentDef,
+  policy: PolicyDef,
   rules: RulesDef,
 } as const;
 
@@ -459,6 +595,11 @@ export type UnitDef = z.infer<typeof UnitDef>;
 export type ImprovementDef = z.infer<typeof ImprovementDef>;
 export type BuildingDef = z.infer<typeof BuildingDef>;
 export type CivDef = z.infer<typeof CivDef>;
+export type EraDef = z.infer<typeof EraDef>;
+export type TechDef = z.infer<typeof TechDef>;
+export type CivicDef = z.infer<typeof CivicDef>;
+export type GovernmentDef = z.infer<typeof GovernmentDef>;
+export type PolicyDef = z.infer<typeof PolicyDef>;
 export type StringsDef = z.infer<typeof StringsDef>;
 export type PatchDef = z.infer<typeof PatchDef>;
 
@@ -475,6 +616,11 @@ export interface EntityByType {
   improvement: ImprovementDef;
   building: BuildingDef;
   civ: CivDef;
+  era: EraDef;
+  tech: TechDef;
+  civic: CivicDef;
+  government: GovernmentDef;
+  policy: PolicyDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

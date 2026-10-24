@@ -42,6 +42,9 @@ describe('LocalGame', () => {
       expect(
         Object.values(game.state.units).some((u) => u.owner === p && u.type === 'unit_warrior'),
       ).toBe(true);
+      const player = game.state.players[p]!;
+      expect(player.techs.done.length + player.civics.done.length).toBeGreaterThan(0);
+      expect(player.policies.military.length + player.policies.economic.length).toBeGreaterThan(0);
     }
   });
 

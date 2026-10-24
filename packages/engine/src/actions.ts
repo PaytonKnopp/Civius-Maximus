@@ -72,6 +72,22 @@ export const Action = z.discriminatedUnion('type', [
   }),
   /** Pay gold to turn a town into a city. */
   z.strictObject({ type: z.literal('upgrade_town'), player: PlayerRef, settlement: SettlementRef }),
+  /** Research toward a tech (and the path of prerequisites to it). */
+  z.strictObject({ type: z.literal('set_research'), player: PlayerRef, tech: ContentRef }),
+  /** Work toward a civic (and the path of prerequisites to it). */
+  z.strictObject({ type: z.literal('set_civic'), player: PlayerRef, civic: ContentRef }),
+  z.strictObject({ type: z.literal('set_government'), player: PlayerRef, government: ContentRef }),
+  /** Replace the policy cards in every slot. */
+  z.strictObject({
+    type: z.literal('set_policies'),
+    player: PlayerRef,
+    policies: z.strictObject({
+      military: z.array(ContentRef).max(8),
+      economic: z.array(ContentRef).max(8),
+      diplomatic: z.array(ContentRef).max(8),
+      wildcard: z.array(ContentRef).max(8),
+    }),
+  }),
   z.strictObject({
     type: z.literal('rename_settlement'),
     player: PlayerRef,

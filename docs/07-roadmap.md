@@ -77,10 +77,15 @@ features on top.
 - Moved later: **town specializations** and **specialists** (M8, with districts),
   **celebrations** (M7, with policies), **clear land** (M8).
 
-### M7 · Progress trees and government
-- Tech and civics trees (Ancient → Medieval at first), boosts, governments, policy cards, gold
-  economy, and upkeep.
-- Tech/civics tree UI and the government screen.
+### M7 · Progress trees and government ✅
+- Tech and civics trees (Ancient → Medieval: 24 techs, 19 civics) with boosts and path queueing,
+  7 governments, 22 policy cards, celebrations, unit upkeep, the settlement limit growing with
+  civics, eras, and 8 new units and 5 buildings unlocked along the way.
+- The effects system now reaches settlements and the whole empire (11 effect types, 18
+  conditions); governments, policies, celebrations, techs and civics are effect sources.
+- Client: the tech and civics trees (boost progress, unlocks, path numbers), the government
+  screen (adopt, slot cards, cost preview), progress chips, and Next Action prompts for research,
+  civics and policies.
 
 ### M8 · Improvements, districts, wonders
 - Improvements and their adjacency, the clear-land project, district placement with adjacency

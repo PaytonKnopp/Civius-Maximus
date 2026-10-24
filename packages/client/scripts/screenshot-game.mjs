@@ -47,6 +47,7 @@ await page.screenshot({ path: `${out}/game-founded.png` });
 
 // Play turns: skip units, take growth choices, keep building, end the turn.
 let developShot = false;
+const shots = new Set();
 for (let guard = 0; guard < 200 && (await turn(page)) < TURNS; guard++) {
   const next = await label(page);
   if (next === 'End turn') {
@@ -64,6 +65,38 @@ for (let guard = 0; guard < 200 && (await turn(page)) < TURNS; guard++) {
   } else if (next === 'Choose production') {
     await page.keyboard.press('Enter');
     await page.click('.items li button:has-text("Build")');
+  } else if (next === 'Choose research' || next === 'Choose a civic') {
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('.tree-node.available');
+    const tree = next === 'Choose research' ? 'tech' : 'civic';
+    // Aim a few steps ahead, so the path queues up.
+    const target = (await page.$('.tree-node.locked')) ?? (await page.$('.tree-node.available'));
+    await target.click();
+    if (!shots.has(tree)) {
+      await page.waitForTimeout(300);
+      await page.screenshot({ path: `${out}/game-${tree}-tree.png` });
+      shots.add(tree);
+    }
+    console.log(`${tree}:`, (await page.textContent('.screen-sub'))?.trim());
+    await page.keyboard.press('Escape');
+  } else if (next === 'Choose policies') {
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('.card-pool');
+    const cards = await page.$$('.card-pool .policy-card');
+    for (const c of cards.slice(0, 2)) await c.click();
+    if (!shots.has('gov')) {
+      await page.screenshot({ path: `${out}/game-government.png` });
+      shots.add('gov');
+    }
+    const confirm = await page.$('.gov-confirm .primary:not([disabled])');
+    if (confirm) await confirm.click();
+    console.log(
+      'policies:',
+      (
+        await page.$$eval('.policy-card.slotted .card-name', (n) => n.map((x) => x.textContent))
+      ).join(', '),
+    );
+    await page.keyboard.press('Escape');
   } else if (/need/.test(next ?? '')) {
     await page.keyboard.press('Enter');
     await page.waitForSelector('.unit-panel');

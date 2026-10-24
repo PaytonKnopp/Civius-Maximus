@@ -24,7 +24,9 @@ export interface YieldBreakdown {
   lines: Record<string, YieldLine[]>;
 }
 
+/** Whether a tile-scope effect applies to the context's tile (other scopes never do here). */
 function appliesTo(ctx: TileContext, effect: Effect): boolean {
+  if (effect.target.scope !== 'tiles') return false;
   if (effect.target.owner === 'self' && ctx.tile.ownerId !== ctx.playerId) return false;
   return effect.condition === undefined || evaluateCondition(ctx, effect.condition);
 }
@@ -94,9 +96,6 @@ export function computeTileYields(
           label: source.label,
           amount: groups * toFixed(effect.params.amount),
         });
-      } else {
-        const unhandled: never = effect;
-        throw new Error(`Unhandled effect: ${JSON.stringify(unhandled)}`);
       }
     }
   }

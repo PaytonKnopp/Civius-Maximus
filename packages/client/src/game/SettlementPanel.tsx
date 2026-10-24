@@ -14,6 +14,7 @@ import {
   itemKey,
   type Line,
   type PlayerId,
+  productionToward,
   purchaseCost,
   townUpgradeCost,
   validateAction,
@@ -260,7 +261,15 @@ export function SettlementPanel({
                     {s.kind === 'city' && (
                       <span className="muted mono">
                         {' '}
-                        {whole(cost)}⚙ · {showTurns(turnsFor(cost, progress, production))}t
+                        {whole(cost)}⚙ ·{' '}
+                        {showTurns(
+                          turnsFor(
+                            cost,
+                            progress,
+                            productionToward(ctx, state, s, item, production),
+                          ),
+                        )}
+                        t
                       </span>
                     )}
                   </span>
@@ -282,10 +291,13 @@ export function SettlementPanel({
                   <button
                     type="button"
                     disabled={!can(buy)}
-                    title={why(buy) ?? `Buy now for ${whole(purchaseCost(ctx, item))} gold`}
+                    title={
+                      why(buy) ??
+                      `Buy now for ${whole(purchaseCost(ctx, state, viewer, item))} gold`
+                    }
                     onClick={() => act(buy)}
                   >
-                    {icon('gold')} {whole(purchaseCost(ctx, item))}
+                    {icon('gold')} {whole(purchaseCost(ctx, state, viewer, item))}
                   </button>
                 </li>
               );

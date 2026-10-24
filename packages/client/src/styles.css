@@ -574,7 +574,7 @@ input:focus-visible {
 
 .notices {
   position: absolute;
-  top: 104px;
+  top: 142px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -604,6 +604,472 @@ input:focus-visible {
 .player-chip.done::after {
   content: '✓';
   color: var(--brass);
+}
+
+/* Research, civic, government and celebration (under the empire bar) */
+.progress-chips {
+  position: absolute;
+  top: 96px;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  max-width: calc(100% - 32px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.progress-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 7px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+button.progress-chip:hover {
+  border-color: var(--brass);
+}
+
+.progress-chip.idle {
+  border-color: var(--brass);
+  color: var(--brass);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brass) 30%, transparent);
+  }
+}
+
+.progress-chip.celebrate.on {
+  border-color: #9fd36a;
+  color: #b9e08c;
+}
+
+.chip-name {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip-turns {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.chip-bar {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  background: var(--ink);
+}
+
+.chip-bar span {
+  display: block;
+  height: 100%;
+  background: var(--brass);
+}
+
+.progress-chip.tech .chip-bar span {
+  background: #5fb8f0;
+}
+
+.progress-chip.civic .chip-bar span {
+  background: #d47ae0;
+}
+
+/* Full-screen screens (tech tree, civics, government) */
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--ink) 97%, transparent);
+}
+
+.screen-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) 12px
+    max(16px, env(safe-area-inset-left, 0px));
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.screen-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  color: var(--brass);
+}
+
+.screen-sub {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.segmented.tabs {
+  grid-template-columns: auto auto;
+}
+
+.segmented.tabs button {
+  padding: 7px 16px;
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+}
+
+/* Tree */
+.tree {
+  flex: 1;
+  overflow: auto;
+}
+
+.tree-canvas {
+  position: relative;
+}
+
+.era-label {
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tree-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tree-lines path {
+  fill: none;
+  stroke: #2c4152;
+  stroke-width: 2;
+}
+
+.tree-lines path.lit {
+  stroke: color-mix(in srgb, var(--brass) 70%, transparent);
+}
+
+.tree-node {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 9px;
+  overflow: hidden;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+  color: var(--text);
+}
+
+.tree-node:hover:not(:disabled) {
+  border-color: var(--brass);
+}
+
+.tree-node.done {
+  cursor: default;
+  background: color-mix(in srgb, var(--brass) 12%, var(--panel));
+  border-color: color-mix(in srgb, var(--brass) 45%, transparent);
+}
+
+.tree-node.current {
+  border: 2px solid var(--brass);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--brass) 30%, transparent);
+}
+
+.tree-node.queued {
+  border-color: color-mix(in srgb, var(--brass) 60%, transparent);
+}
+
+.tree-node.locked {
+  opacity: 0.62;
+}
+
+.node-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.node-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-meta {
+  flex: none;
+  font-size: 11px;
+  color: var(--brass);
+}
+
+.node-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+
+.node-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--brass);
+}
+
+.node-boost {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-boost.got {
+  color: #e8c46a;
+}
+
+.node-unlocks {
+  display: flex;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.unlock {
+  flex: none;
+  padding: 0 5px;
+  border-radius: 3px;
+  background: var(--ink);
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.unlock.unit {
+  color: #f0a58a;
+}
+
+.unlock.building {
+  color: #e8d9a8;
+}
+
+.unlock.improvement {
+  color: #a8d48a;
+}
+
+.unlock.government,
+.unlock.policy {
+  color: #c9a8e8;
+}
+
+/* Government */
+.gov-body {
+  flex: 1;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) 1fr;
+  gap: 20px;
+  padding: 16px max(16px, env(safe-area-inset-right, 0px)) 24px
+    max(16px, env(safe-area-inset-left, 0px));
+}
+
+.gov-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gov {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+}
+
+.gov.current {
+  border-color: var(--brass);
+}
+
+.gov.locked {
+  opacity: 0.6;
+}
+
+.gov-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+}
+
+.slot-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.dot.military,
+.policy-card.military {
+  --slot: #c0503c;
+}
+
+.dot.economic,
+.policy-card.economic {
+  --slot: #d4a94e;
+}
+
+.dot.diplomatic,
+.policy-card.diplomatic {
+  --slot: #4a8fc0;
+}
+
+.dot.wildcard,
+.policy-card.wildcard {
+  --slot: #a070c8;
+}
+
+.dot {
+  background: var(--slot);
+}
+
+.badge {
+  align-self: flex-start;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--brass);
+  color: var(--brass);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.small-text {
+  font-size: 12px;
+}
+
+.gov-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.gov-slots h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: var(--brass);
+}
+
+.slot-row h4.military {
+  color: #e07a64;
+}
+
+.slot-row h4.economic {
+  color: #e2bb64;
+}
+
+.slot-row h4.diplomatic {
+  color: #74b2e0;
+}
+
+.slot-row h4.wildcard {
+  color: #c49ae4;
+}
+
+.slot-cards,
+.card-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.policy-card {
+  width: 190px;
+  min-height: 92px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-top: 4px solid var(--slot);
+  border-radius: 6px;
+  color: var(--text);
+}
+
+button.policy-card:hover {
+  border-color: var(--slot);
+}
+
+.policy-card.empty {
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+  border-top-style: solid;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.policy-card.slotted {
+  background: color-mix(in srgb, var(--slot) 12%, var(--panel));
+}
+
+.card-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.03em;
+}
+
+.card-text {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.gov-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.gov-confirm .primary {
+  margin-top: 0;
 }
 
 /* Toasts: turn starts, settlement news, refused actions */
@@ -774,7 +1240,7 @@ kbd {
 /* Settlement screen (left side) */
 .settlement-panel {
   position: absolute;
-  top: 100px;
+  top: 140px;
   left: max(16px, env(safe-area-inset-left, 0px));
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   width: min(360px, calc(100% - 32px));
@@ -1188,6 +1654,24 @@ kbd {
     top: 96px;
   }
 
+  .progress-chips {
+    top: 134px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .progress-chip {
+    flex: none;
+  }
+
+  .gov-body {
+    grid-template-columns: 1fr;
+  }
+
+  .policy-card {
+    width: calc(50% - 4px);
+  }
+
   .resource-bar li {
     padding: 2px 7px;
     font-size: 12px;
@@ -1198,7 +1682,7 @@ kbd {
   }
 
   .players {
-    top: 136px;
+    top: 176px;
     left: max(16px, env(safe-area-inset-left, 0px));
     justify-content: flex-start;
   }
@@ -1209,7 +1693,7 @@ kbd {
   }
 
   .notices {
-    top: 172px;
+    top: 214px;
   }
 
   .settlement-panel {

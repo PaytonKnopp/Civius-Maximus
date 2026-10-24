@@ -1,12 +1,12 @@
 import type { Condition, Elevation, TileMatch } from '@cx/content';
-import type { TileContext, TileFacts } from './tile';
+import type { ConditionContext, TileFacts } from './tile';
 
 function oneOf<T>(value: T | null, wanted: T | readonly T[]): boolean {
   return value !== null && (Array.isArray(wanted) ? wanted.includes(value) : value === wanted);
 }
 
 /** True if a tile matches every field set on `match`. */
-export function tileMatches(ctx: TileContext, tile: TileFacts, match: TileMatch): boolean {
+export function tileMatches(ctx: ConditionContext, tile: TileFacts, match: TileMatch): boolean {
   if (match.terrain !== undefined && !oneOf(tile.terrain, match.terrain)) return false;
   if (match.feature !== undefined && !oneOf(tile.feature, match.feature)) return false;
   if (match.elevation !== undefined && !oneOf<Elevation>(tile.elevation, match.elevation))
@@ -16,46 +16,79 @@ export function tileMatches(ctx: TileContext, tile: TileFacts, match: TileMatch)
     const res = tile.resource === null ? undefined : ctx.content.entities.resource[tile.resource];
     if (res?.class !== match.resourceClass) return false;
   }
+  if (match.improvement !== undefined && !oneOf(tile.improvement ?? null, match.improvement))
+    return false;
   if (match.river !== undefined && tile.river !== match.river) return false;
   return true;
 }
 
-function isWater(ctx: TileContext, tile: TileFacts): boolean {
+function isWater(ctx: ConditionContext, tile: TileFacts): boolean {
   return ctx.content.entities.terrain[tile.terrain]?.water ?? false;
 }
 
-/** Evaluates a condition for the context's tile. */
-export function evaluateCondition(ctx: TileContext, c: Condition): boolean {
-  const { tile } = ctx;
+/**
+ * Evaluates a condition in a context. Conditions about something the context doesn't have (a
+ * tile, a settlement, the player's progress) are false.
+ */
+export function evaluateCondition(ctx: ConditionContext, c: Condition): boolean {
   if ('all' in c) return c.all.every((x) => evaluateCondition(ctx, x));
   if ('any' in c) return c.any.some((x) => evaluateCondition(ctx, x));
   if ('not' in c) return !evaluateCondition(ctx, c.not);
-  if ('tile_terrain' in c) return oneOf(tile.terrain, c.tile_terrain);
+
+  const { tile, settlement, player } = ctx;
+  if ('tile_terrain' in c) return !!tile && oneOf(tile.terrain, c.tile_terrain);
   if ('tile_feature' in c) {
+    if (!tile) return false;
     return c.tile_feature === null ? tile.feature === null : oneOf(tile.feature, c.tile_feature);
   }
-  if ('tile_elevation' in c) return oneOf<Elevation>(tile.elevation, c.tile_elevation);
+  if ('tile_elevation' in c) return !!tile && oneOf<Elevation>(tile.elevation, c.tile_elevation);
   if ('tile_has_resource' in c) {
+    if (!tile) return false;
     return c.tile_has_resource === true
       ? tile.resource !== null
       : oneOf(tile.resource, c.tile_has_resource);
   }
   if ('tile_resource_class' in c)
-    return tileMatches(ctx, tile, { resourceClass: c.tile_resource_class });
-  if ('tile_on_river' in c) return tile.river === c.tile_on_river;
+    return !!tile && tileMatches(ctx, tile, { resourceClass: c.tile_resource_class });
+  if ('tile_has_improvement' in c) {
+    if (!tile) return false;
+    const imp = tile.improvement ?? null;
+    return c.tile_has_improvement === true ? imp !== null : oneOf(imp, c.tile_has_improvement);
+  }
+  if ('tile_on_river' in c) return !!tile && tile.river === c.tile_on_river;
   if ('tile_coastal' in c) {
-    const coastal = !isWater(ctx, tile) && ctx.neighbors.some((n) => isWater(ctx, n));
+    if (!tile) return false;
+    const coastal = !isWater(ctx, tile) && (ctx.neighbors ?? []).some((n) => isWater(ctx, n));
     return coastal === c.tile_coastal;
   }
-  if ('tile_owned_by_self' in c) return (tile.ownerId === ctx.playerId) === c.tile_owned_by_self;
+  if ('tile_owned_by_self' in c)
+    return !!tile && (tile.ownerId === ctx.playerId) === c.tile_owned_by_self;
   if ('tile_adjacent_to' in c) {
+    if (!tile) return false;
     const { min = 1, ...match } = c.tile_adjacent_to;
     return countAdjacent(ctx, match) >= min;
   }
+
+  if ('settlement_is_capital' in c)
+    return !!settlement && settlement.capital === c.settlement_is_capital;
+  if ('settlement_kind' in c) return !!settlement && settlement.kind === c.settlement_kind;
+  if ('settlement_population_at_least' in c)
+    return !!settlement && settlement.population >= c.settlement_population_at_least;
+  if ('settlement_has_building' in c) {
+    if (!settlement) return false;
+    const wanted = c.settlement_has_building;
+    return settlement.buildings.some((b) => oneOf(b, wanted));
+  }
+
+  if ('has_tech' in c) return !!player && player.techs.includes(c.has_tech);
+  if ('has_civic' in c) return !!player && player.civics.includes(c.has_civic);
+  if ('government_is' in c) return !!player && oneOf(player.government, c.government_is);
+  if ('celebrating' in c) return !!player && player.celebrating === c.celebrating;
+
   const unhandled: never = c;
   throw new Error(`Unhandled condition: ${JSON.stringify(unhandled)}`);
 }
 
-export function countAdjacent(ctx: TileContext, match: TileMatch): number {
-  return ctx.neighbors.filter((n) => tileMatches(ctx, n, match)).length;
+export function countAdjacent(ctx: ConditionContext, match: TileMatch): number {
+  return (ctx.neighbors ?? []).filter((n) => tileMatches(ctx, n, match)).length;
 }

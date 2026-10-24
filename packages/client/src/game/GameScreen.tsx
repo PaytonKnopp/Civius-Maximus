@@ -10,8 +10,14 @@ import {
   type GameSetup,
   type GameState,
   improvementsFor,
+  celebrationThreshold,
+  nodeCost,
+  playerEra,
+  policySlots,
   purchasableTiles,
+  SLOT_KINDS,
   tilePurchaseCost,
+  type TreeKind,
   unitIds,
   workableTiles,
 } from '@cx/engine';
@@ -30,11 +36,15 @@ import {
   perTurn,
   playerColors,
   settlementViews,
+  showTurns,
   territoryView,
+  turnsFor,
   unitViews,
   whole,
 } from './model';
+import { GovernmentScreen } from './GovernmentScreen';
 import { type PanelMode, SettlementPanel } from './SettlementPanel';
+import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
 
 const ME = 'p1';
@@ -72,6 +82,24 @@ function noticeFor(content: CompiledContent, state: GameState, e: GameEvent): st
         : undefined;
     case 'town_upgraded':
       return e.owner === ME ? `${name(e.settlement)} is now a city` : undefined;
+    case 'tech_researched':
+      return `Researched ${resolveText(content, content.entities.tech[e.tech]?.name ?? e.tech)}`;
+    case 'civic_completed':
+      return `${resolveText(content, content.entities.civic[e.civic]?.name ?? e.civic)} completed: change policies free this turn`;
+    case 'boost_earned': {
+      const node = e.kind === 'tech' ? content.entities.tech[e.id] : content.entities.civic[e.id];
+      return `Boost! ${resolveText(content, node?.name ?? e.id)} +${content.rules.progress.boostPercent}%`;
+    }
+    case 'celebration_started':
+      return `Your people celebrate! (${e.turns} turns)`;
+    case 'celebration_ended':
+      return 'The celebration is over';
+    case 'government_changed':
+      return e.player === ME
+        ? `New government: ${resolveText(content, content.entities.government[e.government]?.name ?? e.government)}`
+        : undefined;
+    case 'unit_disbanded':
+      return e.reason === 'no_gold' ? 'Out of gold: a unit was disbanded' : undefined;
     default:
       return undefined;
   }
@@ -96,6 +124,10 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
   const [panelMode, setPanelMode] = useState<PanelMode>('citizens');
   const [notices, setNotices] = useState<{ id: number; text: string }[]>([]);
   const [fps, setFps] = useState(0);
+  const [overlay, setOverlay] = useState<
+    { kind: 'tree'; tree: TreeKind } | { kind: 'government' } | null
+  >(null);
+  const [policiesSeen, setPoliciesSeen] = useState(0);
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<MapRenderer>(undefined);
   const pendingMoves = useRef<{ unit: string; path: number[] }[]>([]);
@@ -118,7 +150,19 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
   const empire = useMemo(() => empireSummary(ctx, state, ME), [ctx, state]);
   const unit = selection?.kind === 'unit' ? state.units[selection.id] : undefined;
   const settlement = selection?.kind === 'settlement' ? state.settlements[selection.id] : undefined;
-  const next = nextAction(state, ME, selection?.kind === 'unit' ? selection.id : null);
+  const next = nextAction(
+    ctx,
+    state,
+    ME,
+    selection?.kind === 'unit' ? selection.id : null,
+    policiesSeen,
+  );
+  const me = state.players[ME]!;
+  const era = playerEra(ctx, me);
+  const openGovernment = useCallback(() => {
+    setOverlay({ kind: 'government' });
+    setPoliciesSeen(game.state.turn);
+  }, [game]);
 
   // Renderer lifecycle (recreated when switching 2D/3D).
   useEffect(() => {
@@ -251,24 +295,33 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
   );
 
   const doNext = useCallback(() => {
-    const n = nextAction(game.state, ME, selection?.kind === 'unit' ? selection.id : null);
+    const n = nextAction(
+      ctx,
+      game.state,
+      ME,
+      selection?.kind === 'unit' ? selection.id : null,
+      policiesSeen,
+    );
     if (n.kind === 'unit') select({ kind: 'unit', id: n.id }, true);
     else if (n.kind === 'develop' || n.kind === 'production')
       select({ kind: 'settlement', id: n.id }, true);
+    else if (n.kind === 'research') setOverlay({ kind: 'tree', tree: 'tech' });
+    else if (n.kind === 'civic') setOverlay({ kind: 'tree', tree: 'civic' });
+    else if (n.kind === 'policies') openGovernment();
     else if (n.kind === 'end') {
       act({ type: 'end_turn', player: ME });
       select(null);
     }
-  }, [game, selection, select, act]);
+  }, [ctx, game, selection, select, act, policiesSeen, openGovernment]);
 
   /** After a unit is done for the turn: on to the next unit, like Civ's auto-cycling (D32). */
   const selectNextUnit = useCallback(
     (after: string) => {
-      const n = nextAction(game.state, ME, after);
+      const n = nextAction(ctx, game.state, ME, after);
       if (n.kind === 'unit') select({ kind: 'unit', id: n.id }, true);
       else select(null);
     },
-    [game, select],
+    [ctx, game, select],
   );
 
   const skip = useCallback(
@@ -368,7 +421,11 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement)?.closest?.('input, select, textarea')) return;
+      if (overlay) return; // the open screen handles its own keys
       if (e.key === 'Enter') doNext();
+      else if (e.key === 't') setOverlay({ kind: 'tree', tree: 'tech' });
+      else if (e.key === 'c') setOverlay({ kind: 'tree', tree: 'civic' });
+      else if (e.key === 'g') openGovernment();
       else if (e.key === 'Escape') select(null);
       else if (!unit || unit.owner !== ME) return;
       else if (e.key === ' ') {
@@ -380,7 +437,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [unit, act, doNext, select, skip, found]);
+  }, [unit, act, doNext, select, skip, found, overlay, openGovernment]);
 
   const icon = (y: string) => content.entities.yield[y]?.icon ?? '';
   const inspected = selection?.kind === 'settlement' ? undefined : (pathTarget ?? inspect);
@@ -413,7 +470,7 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
       <div className="turn-pill" aria-live="polite">
         <span className="turn-label">Turn</span>
         <span className="turn-number">{state.turn}</span>
-        <span className="era">Ancient Era</span>
+        <span className="era">{era ? `${resolveText(content, era.name)} Era` : ''}</span>
         <span className="fps">{fps} fps</span>
       </div>
 
@@ -428,6 +485,75 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
             {p === ME ? `You · ${civName(content, state, p)}` : civName(content, state, p)}
           </span>
         ))}
+      </div>
+
+      <div className="progress-chips">
+        {(['tech', 'civic'] as const).map((k) => {
+          const track = k === 'tech' ? me.techs : me.civics;
+          const id = track.current;
+          const def = id
+            ? k === 'tech'
+              ? content.entities.tech[id]
+              : content.entities.civic[id]
+            : undefined;
+          const cost = id ? nodeCost(ctx, k, id) : 0;
+          const progress = id ? (track.progress[id] ?? 0) : 0;
+          const perTurnAmount = k === 'tech' ? empire.science : empire.culture;
+          return (
+            <button
+              key={k}
+              type="button"
+              className={`progress-chip ${k} ${id ? '' : 'idle'}`}
+              onClick={() => setOverlay({ kind: 'tree', tree: k })}
+              title={k === 'tech' ? 'Technologies (T)' : 'Civics (C)'}
+            >
+              <span aria-hidden="true">{icon(k === 'tech' ? 'science' : 'culture')}</span>
+              <span className="chip-name">
+                {def
+                  ? resolveText(content, def.name)
+                  : k === 'tech'
+                    ? 'Choose research'
+                    : 'Choose a civic'}
+              </span>
+              {def && (
+                <span className="chip-turns mono">
+                  {showTurns(turnsFor(cost, progress, perTurnAmount))}
+                </span>
+              )}
+              {def && (
+                <span className="chip-bar">
+                  <span style={{ width: `${Math.min(100, (progress / cost) * 100)}%` }} />
+                </span>
+              )}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          className="progress-chip government"
+          onClick={openGovernment}
+          title="Government and policies (G)"
+        >
+          <span aria-hidden="true">⚖</span>
+          <span className="chip-name">
+            {resolveText(content, content.entities.government[me.government]?.name ?? '')}
+          </span>
+          <span className="chip-turns mono">
+            {SLOT_KINDS.reduce((n, k) => n + me.policies[k].length, 0)}/
+            {SLOT_KINDS.reduce((n, k) => n + policySlots(ctx, state, ME)[k], 0)}
+          </span>
+        </button>
+        <span
+          className={`progress-chip celebrate ${me.celebration.turnsLeft > 0 ? 'on' : ''}`}
+          title="Happiness surplus builds toward a celebration: a bonus wildcard policy slot and +10% production"
+        >
+          <span aria-hidden="true">{me.celebration.turnsLeft > 0 ? '🎉' : icon('happiness')}</span>
+          <span className="chip-turns mono">
+            {me.celebration.turnsLeft > 0
+              ? `${me.celebration.turnsLeft} turns`
+              : `${me.celebration.store}/${celebrationThreshold(ctx, me)}`}
+          </span>
+        </span>
       </div>
 
       <div className="notices" aria-live="polite">
@@ -491,6 +617,28 @@ export function GameScreen({ content, setup, mode, quality }: Props) {
         <span className="next-label">{next.label}</span>
         <kbd>Enter</kbd>
       </button>
+
+      {overlay?.kind === 'tree' && (
+        <TreeScreen
+          ctx={ctx}
+          state={state}
+          viewer={ME}
+          kind={overlay.tree}
+          perTurn={overlay.tree === 'tech' ? empire.science : empire.culture}
+          act={act}
+          onKind={(tree) => setOverlay({ kind: 'tree', tree })}
+          onClose={() => setOverlay(null)}
+        />
+      )}
+      {overlay?.kind === 'government' && (
+        <GovernmentScreen
+          ctx={ctx}
+          state={state}
+          viewer={ME}
+          act={act}
+          onClose={() => setOverlay(null)}
+        />
+      )}
     </div>
   );
 }

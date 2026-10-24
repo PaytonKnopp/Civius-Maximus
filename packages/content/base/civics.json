@@ -1,0 +1,368 @@
+[
+  {
+    "type": "civic",
+    "id": "civic_code_of_laws",
+    "name": "Code of Laws",
+    "era": "era_ancient",
+    "cost": 20,
+    "requires": [],
+    "row": 3,
+    "description": "The first written rules of your people."
+  },
+  {
+    "type": "civic",
+    "id": "civic_craftsmanship",
+    "name": "Craftsmanship",
+    "era": "era_ancient",
+    "cost": 40,
+    "requires": ["civic_code_of_laws"],
+    "row": 1,
+    "boost": {
+      "text": "Develop 3 tiles",
+      "goal": {
+        "kind": "improvements",
+        "count": 3
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_foreign_trade",
+    "name": "Foreign Trade",
+    "era": "era_ancient",
+    "cost": 40,
+    "requires": ["civic_code_of_laws"],
+    "row": 5,
+    "boost": {
+      "text": "Have 2 settlements",
+      "goal": {
+        "kind": "settlements",
+        "count": 2
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_military_tradition",
+    "name": "Military Tradition",
+    "era": "era_ancient",
+    "cost": 50,
+    "requires": ["civic_craftsmanship"],
+    "row": 0,
+    "boost": {
+      "text": "Have 4 military units",
+      "goal": {
+        "kind": "units",
+        "count": 4,
+        "unitClass": [
+          "class_melee",
+          "class_ranged",
+          "class_recon",
+          "class_anti_cavalry",
+          "class_light_cavalry",
+          "class_heavy_cavalry",
+          "class_siege"
+        ]
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_public_works",
+    "name": "Public Works",
+    "era": "era_ancient",
+    "cost": 70,
+    "requires": ["civic_craftsmanship"],
+    "row": 2,
+    "boost": {
+      "text": "Have 6 citizens across your settlements",
+      "goal": {
+        "kind": "population",
+        "count": 6
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_early_empire",
+    "name": "Early Empire",
+    "era": "era_ancient",
+    "cost": 70,
+    "requires": ["civic_foreign_trade"],
+    "row": 5,
+    "description": "+1 settlement limit.",
+    "boost": {
+      "text": "Own 20 tiles",
+      "goal": {
+        "kind": "tiles_owned",
+        "count": 20
+      }
+    },
+    "effects": [
+      {
+        "effect": "modify_settlement_limit",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "civic",
+    "id": "civic_mysticism",
+    "name": "Mysticism",
+    "era": "era_ancient",
+    "cost": 50,
+    "requires": ["civic_foreign_trade"],
+    "row": 7,
+    "boost": {
+      "text": "Build a Shrine",
+      "goal": {
+        "kind": "buildings",
+        "count": 1,
+        "building": "building_shrine"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_political_philosophy",
+    "name": "Political Philosophy",
+    "era": "era_ancient",
+    "cost": 110,
+    "requires": ["civic_public_works", "civic_early_empire"],
+    "row": 4,
+    "description": "+1 settlement limit. New governments.",
+    "boost": {
+      "text": "Have 3 settlements",
+      "goal": {
+        "kind": "settlements",
+        "count": 3
+      }
+    },
+    "effects": [
+      {
+        "effect": "modify_settlement_limit",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "civic",
+    "id": "civic_military_training",
+    "name": "Military Training",
+    "era": "era_classical",
+    "cost": 120,
+    "requires": ["civic_military_tradition"],
+    "row": 0,
+    "boost": {
+      "text": "Have 6 military units",
+      "goal": {
+        "kind": "units",
+        "count": 6,
+        "unitClass": [
+          "class_melee",
+          "class_ranged",
+          "class_recon",
+          "class_anti_cavalry",
+          "class_light_cavalry",
+          "class_heavy_cavalry",
+          "class_siege"
+        ]
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_drama_and_poetry",
+    "name": "Drama and Poetry",
+    "era": "era_classical",
+    "cost": 110,
+    "requires": ["civic_early_empire"],
+    "row": 6,
+    "boost": {
+      "text": "Build 2 Monuments",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_monument"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_games_and_recreation",
+    "name": "Games and Recreation",
+    "era": "era_classical",
+    "cost": 175,
+    "requires": ["civic_public_works"],
+    "row": 2,
+    "boost": {
+      "text": "Have 10 citizens across your settlements",
+      "goal": {
+        "kind": "population",
+        "count": 10
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_theology",
+    "name": "Theology",
+    "era": "era_classical",
+    "cost": 120,
+    "requires": ["civic_drama_and_poetry", "civic_mysticism"],
+    "row": 7,
+    "boost": {
+      "text": "Build 2 Shrines",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_shrine"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_defensive_tactics",
+    "name": "Defensive Tactics",
+    "era": "era_classical",
+    "cost": 175,
+    "requires": ["civic_games_and_recreation", "civic_political_philosophy"],
+    "row": 3,
+    "boost": {
+      "text": "Adopt a new government",
+      "goal": {
+        "kind": "government"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_recorded_history",
+    "name": "Recorded History",
+    "era": "era_classical",
+    "cost": 175,
+    "requires": ["civic_political_philosophy", "civic_drama_and_poetry"],
+    "row": 5,
+    "boost": {
+      "text": "Build 2 Libraries",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_library"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_feudalism",
+    "name": "Feudalism",
+    "era": "era_medieval",
+    "cost": 275,
+    "requires": ["civic_defensive_tactics"],
+    "row": 1,
+    "boost": {
+      "text": "Develop 6 Farms",
+      "goal": {
+        "kind": "improvements",
+        "count": 6,
+        "improvement": "improvement_farm"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_civil_service",
+    "name": "Civil Service",
+    "era": "era_medieval",
+    "cost": 275,
+    "requires": ["civic_defensive_tactics", "civic_recorded_history"],
+    "row": 4,
+    "description": "+1 settlement limit.",
+    "boost": {
+      "text": "Have 4 settlements",
+      "goal": {
+        "kind": "settlements",
+        "count": 4
+      }
+    },
+    "effects": [
+      {
+        "effect": "modify_settlement_limit",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "civic",
+    "id": "civic_mercenaries",
+    "name": "Mercenaries",
+    "era": "era_medieval",
+    "cost": 290,
+    "requires": ["civic_feudalism", "civic_military_training"],
+    "row": 0,
+    "boost": {
+      "text": "Have 8 military units",
+      "goal": {
+        "kind": "units",
+        "count": 8,
+        "unitClass": [
+          "class_melee",
+          "class_ranged",
+          "class_recon",
+          "class_anti_cavalry",
+          "class_light_cavalry",
+          "class_heavy_cavalry",
+          "class_siege"
+        ]
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_divine_right",
+    "name": "Divine Right",
+    "era": "era_medieval",
+    "cost": 290,
+    "requires": ["civic_civil_service", "civic_theology"],
+    "row": 6,
+    "boost": {
+      "text": "Build 3 Shrines",
+      "goal": {
+        "kind": "buildings",
+        "count": 3,
+        "building": "building_shrine"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_guilds",
+    "name": "Guilds",
+    "era": "era_medieval",
+    "cost": 330,
+    "requires": ["civic_feudalism", "civic_civil_service"],
+    "row": 2,
+    "boost": {
+      "text": "Hold 300 gold",
+      "goal": {
+        "kind": "gold",
+        "amount": 300
+      }
+    }
+  }
+]

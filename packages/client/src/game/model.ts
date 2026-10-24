@@ -1,5 +1,7 @@
 import { type CompiledContent, resolveText } from '@cx/content';
 import {
+  availableNodes,
+  availablePolicies,
   type BuildItem,
   type EngineContext,
   goldPerTurn,
@@ -12,6 +14,9 @@ import {
   type MapTile,
   type PlayerId,
   percentOf,
+  policySlots,
+  productionToward,
+  SLOT_KINDS,
   type SettlementState,
   type SettlementYields,
   settlementIds,
@@ -146,7 +151,7 @@ export function settlementSummary(
   s: SettlementState,
 ): SettlementSummary {
   const yields = settlementYields(ctx, state, s);
-  const growth = growthPerTurn(ctx, yields);
+  const growth = growthPerTurn(ctx, state, s, yields);
   const foodNeeded = growthThreshold(ctx, s.population);
   const production = yields.total.production ?? 0;
   const headItem = s.kind === 'city' ? s.queue[0] : undefined;
@@ -155,7 +160,11 @@ export function settlementSummary(
     name: itemName(ctx.content, headItem),
     cost: itemCost(ctx, headItem),
     progress: s.progress[itemKey(headItem)] ?? 0,
-    turns: turnsFor(itemCost(ctx, headItem), s.progress[itemKey(headItem)] ?? 0, production),
+    turns: turnsFor(
+      itemCost(ctx, headItem),
+      s.progress[itemKey(headItem)] ?? 0,
+      productionToward(ctx, state, s, headItem, production),
+    ),
   };
   return {
     yields,
@@ -244,12 +253,27 @@ export type NextAction =
   | { kind: 'unit'; id: string; label: string }
   | { kind: 'develop'; id: string; label: string }
   | { kind: 'production'; id: string; label: string }
+  | { kind: 'research'; label: string }
+  | { kind: 'civic'; label: string }
+  | { kind: 'policies'; label: string }
   | { kind: 'end'; label: string }
   | { kind: 'waiting'; label: string };
 
-/** What the Next Action button does now: units, then growth choices, then production, then End Turn. */
-export function nextAction(state: GameState, player: PlayerId, after: string | null): NextAction {
-  if (state.players[player]!.turnEnded) return { kind: 'waiting', label: 'Waiting for others' };
+/**
+ * What the Next Action button does now (docs/06-ui-ux.md, "End Turn"): units, growth choices,
+ * production, research, civics, then empty policy slots right after a civic, then End Turn.
+ * `policiesSeen` is the turn the player last opened the government screen (so empty slots they
+ * chose to leave don't block the turn).
+ */
+export function nextAction(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  after: string | null,
+  policiesSeen = 0,
+): NextAction {
+  const p = state.players[player]!;
+  if (p.turnEnded) return { kind: 'waiting', label: 'Waiting for others' };
   const units = unitsNeedingOrders(state, player);
   if (units.length > 0) {
     const id =
@@ -266,7 +290,28 @@ export function nextAction(state: GameState, player: PlayerId, after: string | n
   if (growing) return { kind: 'develop', id: growing.id, label: 'Choose a tile to develop' };
   const idle = mine.find((s) => s.kind === 'city' && s.queue.length === 0);
   if (idle) return { kind: 'production', id: idle.id, label: 'Choose production' };
+  if (mine.length > 0) {
+    if (!p.techs.current && availableNodes(ctx, p, 'tech').length > 0)
+      return { kind: 'research', label: 'Choose research' };
+    if (!p.civics.current && availableNodes(ctx, p, 'civic').length > 0)
+      return { kind: 'civic', label: 'Choose a civic' };
+    if (p.policyWindow && policiesSeen !== state.turn && hasEmptySlotToFill(ctx, state, player))
+      return { kind: 'policies', label: 'Choose policies' };
+  }
   return { kind: 'end', label: 'End turn' };
+}
+
+/** An empty slot that one of the unslotted cards could fill. */
+function hasEmptySlotToFill(ctx: EngineContext, state: GameState, player: PlayerId): boolean {
+  const p = state.players[player]!;
+  const slots = policySlots(ctx, state, player);
+  const slotted = new Set(SLOT_KINDS.flatMap((k) => p.policies[k]));
+  const free = availablePolicies(ctx, p).filter((id) => !slotted.has(id));
+  return SLOT_KINDS.some(
+    (k) =>
+      p.policies[k].length < slots[k] &&
+      free.some((id) => k === 'wildcard' || ctx.content.entities.policy[id]!.slot === k),
+  );
 }
 
 /** A fixed-point amount as whole units for display (rounded down), e.g. 1250 → "12". */
