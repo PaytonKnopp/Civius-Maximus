@@ -1,5 +1,6 @@
 import { peaceProblem } from '../combat/handlers';
 import { warKey } from '../context';
+import { denounceProblem, isSurpriseWar, opinionOf, warBlock } from '../diplomacy/rules';
 import { distance } from '../map/hex';
 import { warWeariness } from '../settlements/rules';
 import type { PlayerId } from '../state';
@@ -24,7 +25,7 @@ export function manageWar(t: Turn) {
   maybeDeclareWar(t);
 }
 
-function wantsPeace(t: Turn, enemy: PlayerId, accepting: boolean): boolean {
+export function wantsPeace(t: Turn, enemy: PlayerId, accepting: boolean): boolean {
   const mine = t.power(t.player);
   const theirs = t.power(enemy);
   const length = t.state.turn - (t.state.warStarted[warKey(t.player, enemy)] ?? t.state.turn);
@@ -60,6 +61,10 @@ function maybeDeclareWar(t: Turn) {
   for (const rival of t.metRivals()) {
     const r = t.state.players[rival]!;
     if (p.team !== null && p.team === r.team) continue;
+    if (warBlock(t.state, t.player, rival)) continue;
+    // Not on players it likes.
+    const opinion = opinionOf(t.ctx, t.state, t.player, rival).total;
+    if (opinion >= 10) continue;
     const near = t
       .knownSettlements()
       .filter((s) => s.owner === rival)
@@ -68,8 +73,18 @@ function maybeDeclareWar(t: Turn) {
     if (near === undefined || near > 12) continue;
     const theirs = t.power(rival);
     if (mine * 100 < theirs * (160 - me.aggression * 8)) continue;
-    const score = near * 10 + Math.floor((theirs * 100) / Math.max(1, mine));
+    const score = near * 10 + Math.floor((theirs * 100) / Math.max(1, mine)) + opinion * 3;
     if (!best || score < best.score) best = { id: rival, score };
   }
-  if (best) t.act({ type: 'declare_war', player: t.player, target: best.id });
+  if (!best) return;
+  // Diplomatic leaders denounce first, so the war isn't a surprise (they declare a few turns on).
+  if (
+    t.me.diplomacy >= 4 &&
+    isSurpriseWar(t.ctx, t.state, t.player, best.id) &&
+    !denounceProblem(t.ctx, t.state, t.player, best.id)
+  ) {
+    t.act({ type: 'denounce', player: t.player, target: best.id });
+    return;
+  }
+  t.act({ type: 'declare_war', player: t.player, target: best.id });
 }

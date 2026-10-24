@@ -8,6 +8,7 @@ import type { MapTile } from '../map/types';
 import { createRng } from '../rng';
 import type { GameState, UnitState } from '../state';
 import { newProgress } from '../progress/sources';
+import { emptyDiplomacy } from '../diplomacy/rules';
 import { MP } from '../units/movement';
 
 /** Test helpers: hand-drawn maps and shortcuts for driving the engine (tests only). */
@@ -74,6 +75,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     civ: id === 'p1' ? 'civ_rome' : 'civ_egypt',
     leader: id === 'p1' ? 'leader_caesar' : 'leader_cleopatra',
     gold: 0,
+    influence: 0,
     faith: 0,
     capital: null,
     settlementsFounded: 0,
@@ -111,6 +113,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     warSupport: {},
     camps: {},
     settlements: {},
+    diplomacy: emptyDiplomacy(),
   };
 }
 

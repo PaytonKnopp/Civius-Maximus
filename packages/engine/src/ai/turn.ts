@@ -6,6 +6,9 @@ import { distance } from '../map/hex';
 import { settlementIds } from '../settlements/rules';
 import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
 import { exploredBits, visibleTiles } from '../units/vision';
+import { militaryStrength, unitPower } from '../combat/strength';
+
+export { militaryStrength, unitPower };
 
 /**
  * One AI player's turn in progress (docs/01-architecture.md, "AI"): the latest state, a way to
@@ -184,27 +187,6 @@ export function roleOf(def: UnitDef, cls: UnitClassDef): Role {
 
 export function unitRole(ctx: EngineContext, unit: Pick<UnitState, 'type'>): Role {
   return roleOf(unitDef(ctx, unit), unitClassOf(ctx, unit));
-}
-
-/** A soldier's fighting weight: its best strength, scaled by health. */
-export function unitPower(ctx: EngineContext, unit: UnitState): number {
-  const def = unitDef(ctx, unit);
-  if (!unitClassOf(ctx, unit).combat) return 0;
-  const best = Math.max(def.strength, def.rangedStrength);
-  return Math.floor((best * unit.health) / ctx.content.rules.combat.maxHealth);
-}
-
-/**
- * A player's military strength: the sum of their soldiers' fighting weight. Public, like the army
- * size on a score screen, so the AI may use it and the player panel shows it.
- */
-export function militaryStrength(ctx: EngineContext, state: GameState, player: PlayerId): number {
-  let total = 0;
-  for (const id of unitIds(state)) {
-    const u = state.units[id]!;
-    if (u.owner === player) total += unitPower(ctx, u);
-  }
-  return total;
 }
 
 /** A small deterministic number for varying choices between players and turns (0–99). */

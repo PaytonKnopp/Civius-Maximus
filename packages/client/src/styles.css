@@ -2408,3 +2408,84 @@ kbd {
   margin: 4px 0 0;
   padding-left: 18px;
 }
+
+.pact-mark,
+.offer-mark {
+  margin-left: 4px;
+  font-size: 11px;
+}
+.offer-mark {
+  color: var(--accent, #e3b25a);
+}
+.opinion {
+  font-size: 12.5px;
+}
+.opinion summary {
+  cursor: pointer;
+}
+.opinion ul {
+  margin: 4px 0 0;
+  padding-left: 16px;
+  list-style: none;
+}
+.opinion .good,
+.player-panel .good {
+  color: #7fcf86;
+}
+.opinion .bad,
+.player-panel .bad {
+  color: #e08072;
+}
+.modal.deal {
+  width: min(560px, calc(100vw - 32px));
+}
+.deal-sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 520px) {
+  .deal-sides {
+    grid-template-columns: 1fr;
+  }
+}
+.deal-side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+.deal-side label,
+.deal-shared label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+.deal-side input[type='number'],
+.deal-shared input[type='number'] {
+  width: 84px;
+}
+.deal-side label.check,
+.deal-shared label.check {
+  justify-content: flex-start;
+}
+.deal-shared {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+.deal-verdict {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+.deal-verdict.yes {
+  color: #7fcf86;
+}
+.deal-verdict.no {
+  color: #e08072;
+}

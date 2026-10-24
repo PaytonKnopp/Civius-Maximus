@@ -318,6 +318,58 @@ export const RulesDef = z.strictObject({
     /** Per enemy unit destroyed. */
     perKill: z.int().min(0),
   }),
+  /** Diplomacy (docs/04-advanced-systems.md, "Diplomacy & deals"). */
+  diplomacy: z.strictObject({
+    /** Influence every player earns each turn, before buildings and policies. */
+    baseInfluence: z.int().min(0),
+    /** How long a declared friendship and an alliance last (they can be renewed). */
+    friendshipTurns: z.int().min(1),
+    allianceTurns: z.int().min(1),
+    /** Turns of enforced peace after a war ends. */
+    peaceTreatyTurns: z.int().min(0),
+    /** Influence each side pays to sign a friendship or an alliance, and to denounce. */
+    friendshipCost: z.int().min(0),
+    allianceCost: z.int().min(0),
+    denounceCost: z.int().min(0),
+    /** A war declared without denouncing the target within this many turns is a surprise war. */
+    denounceWarning: z.int().min(0),
+    /** The most turns a deal's per-turn payments can run. */
+    maxDealTurns: z.int().min(1),
+    /** Unanswered proposals expire after this many turns. */
+    proposalTurns: z.int().min(1),
+    /** How long surprise wars, broken deals and razed settlements are remembered, in turns. */
+    memoryTurns: z.int().min(1),
+    /** Opinion points: how an AI leader's view of a player is built up. */
+    opinion: z.strictObject({
+      teammate: z.int(),
+      friends: z.int(),
+      allies: z.int(),
+      atWar: z.int(),
+      sharedEnemy: z.int(),
+      /** Both have changed to the same government. */
+      sameGovernment: z.int(),
+      /** +1 for every this many turns since their last war (or the start), up to the max. */
+      longPeacePer: z.int().min(1),
+      longPeaceMax: z.int().min(0),
+      denouncedUs: z.int(),
+      weDenounced: z.int(),
+      /** A surprise war on us (fades over `memoryTurns`). */
+      surpriseWarOnUs: z.int(),
+      /** Each surprise war on anyone else (fades). */
+      surpriseWarOnOthers: z.int(),
+      brokeDeal: z.int(),
+      razed: z.int(),
+      /** Per settlement of theirs within `nearDistance` of ours, up to `nearMax` of them. */
+      settledNear: z.int(),
+      nearDistance: z.int().min(1),
+      nearMax: z.int().min(0),
+      /** Per deal with us still running. */
+      perDeal: z.int(),
+    }),
+    /** Opinion an AI needs before it agrees to a friendship or an alliance. */
+    friendshipOpinion: z.int(),
+    allianceOpinion: z.int(),
+  }),
   /** Hostile camps: raiders that belong to no one and attack everyone. */
   camps: z.strictObject({
     /** One camp per this many land tiles, at the start and at most (0 = no camps). */
@@ -917,6 +969,23 @@ export const Personality = z.strictObject({
 });
 export type Personality = z.infer<typeof Personality>;
 
+/**
+ * One line of an agenda: compare something about a player with the leader's own and adjust the
+ * leader's opinion of them. `more`: they have more than the leader; `less`: under half of the
+ * leader's; `any`: they have some (for `atPeace`: they're at peace with everyone); `none`: none.
+ */
+export const AgendaRule = z.strictObject({
+  metric: z.enum(['army', 'units', 'wonders', 'gold', 'captures', 'surpriseWars', 'atPeace']),
+  /** For `units`: which classes, or which domain, count. */
+  unitClass: z.union([Id, z.array(Id).min(1)]).optional(),
+  domain: z.enum(['land', 'sea', 'air']).optional(),
+  when: z.enum(['more', 'less', 'any', 'none']),
+  amount: z.int(),
+  /** Shown in the opinion breakdown ("Respects your army"). */
+  label: Text,
+});
+export type AgendaRule = z.infer<typeof AgendaRule>;
+
 /** A leader (docs/09-base-roster.md): who leads a civ, with an ability, an agenda and an AI personality. */
 export const LeaderDef = z.strictObject({
   type: z.literal('leader'),
@@ -931,7 +1000,12 @@ export const LeaderDef = z.strictObject({
     effects: z.array(Effect).default([]),
   }),
   /** What the AI leader cares about in other players (shown in diplomacy). */
-  agenda: z.strictObject({ name: Text, description: Text }),
+  agenda: z.strictObject({
+    name: Text,
+    description: Text,
+    /** How the agenda moves the leader's opinion of each player. */
+    rules: z.array(AgendaRule).default([]),
+  }),
   personality: Personality,
 });
 

@@ -1,11 +1,13 @@
 import type { EngineContext } from '../context';
 import type { GameState, PlayerId } from '../state';
 import { manageCaptures, manageProduction, manageTowns, strikeFromSettlements } from './cities';
+import { manageDiplomacy } from './diplomacy';
 import { manageProgress } from './economy';
 import { manageUnits } from './military';
 import { type Act, Turn } from './turn';
 import { manageWar } from './war';
 
+export { answerProposals, dealVerdict, type Verdict } from './diplomacy';
 export { type Act, militaryStrength, personalityOf } from './turn';
 
 /**
@@ -26,6 +28,7 @@ export function playAiTurn(
   const p = t.p;
   if (!p.alive || p.turnEnded || t.state.status !== 'playing') return t.state;
   manageCaptures(t);
+  manageDiplomacy(t);
   manageWar(t);
   manageProgress(t);
   strikeFromSettlements(t);

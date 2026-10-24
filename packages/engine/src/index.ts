@@ -88,6 +88,11 @@ export { fogOfWar, lineOfSight, sightOf, visibleTiles } from './units/vision';
 export type {
   BuildItem,
   CampState,
+  DealTerms,
+  DiplomacyState,
+  Incident,
+  Payment,
+  Proposal,
   CitizenFocus,
   GameSettings,
   GameState,
@@ -183,3 +188,19 @@ export {
 } from './progress/sources';
 export { type Act as AiAct, militaryStrength, personalityOf, playAiTurn } from './ai';
 export { baseOf, countsAs, replacementFor, uniqueProblem, uniquesOf } from './uniques';
+export { answerProposals, dealVerdict, type Verdict } from './ai';
+export {
+  areAllies,
+  areFriends,
+  dealProblem,
+  denounceProblem,
+  influencePerTurn,
+  isSurpriseWar,
+  NO_TERMS,
+  type OpinionLine,
+  opinionOf,
+  relation,
+  type Relation,
+  sameTeam,
+  warBlock,
+} from './diplomacy/rules';

@@ -7,6 +7,7 @@ import {
   districtYields,
   type EngineContext,
   goldPerTurn,
+  influencePerTurn,
   HOSTILE,
   growthPerTurn,
   growthThreshold,
@@ -309,6 +310,8 @@ export interface EmpireSummary {
   culture: number;
   faith: number;
   faithPerTurn: number;
+  influence: number;
+  influencePerTurn: number;
 }
 
 export function empireSummary(
@@ -331,6 +334,8 @@ export function empireSummary(
     culture: sum.culture,
     faith: p.faith,
     faithPerTurn: sum.faith,
+    influence: p.influence,
+    influencePerTurn: influencePerTurn(ctx, state, player),
   };
 }
 

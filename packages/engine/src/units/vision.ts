@@ -2,6 +2,7 @@ import { decodeBits, emptyBits, encodeBits, getBit, setBit } from '../bitset';
 import { type EngineContext, unitClassOf, unitDef } from '../context';
 import { distance, hexLine, neighbors, tilesWithin } from '../map/hex';
 import { extraSight } from './promotions';
+import { visionPartners } from '../diplomacy/rules';
 import type { GameState, PlayerId, UnitState } from '../state';
 import { isWater } from './movement';
 
@@ -47,7 +48,17 @@ export function sightOf(ctx: EngineContext, state: GameState, unit: UnitState): 
 
 /** Tiles a player can see right now (1 = visible): around their units, and their territory
  * plus one tile beyond it. */
+/** What a player sees now: their own sight, plus their teammates' and allies'. */
 export function visibleTiles(ctx: EngineContext, state: GameState, player: PlayerId): Uint8Array {
+  const vis = ownVisibleTiles(ctx, state, player);
+  for (const partner of visionPartners(state, player)) {
+    const theirs = ownVisibleTiles(ctx, state, partner);
+    for (let i = 0; i < vis.length; i++) if (theirs[i]) vis[i] = 1;
+  }
+  return vis;
+}
+
+function ownVisibleTiles(ctx: EngineContext, state: GameState, player: PlayerId): Uint8Array {
   const vis = new Uint8Array(state.map.tiles.length);
   const radius = ctx.content.rules.settlements.ownRadius;
   for (const s of Object.values(state.settlements)) {
