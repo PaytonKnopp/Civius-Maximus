@@ -3,7 +3,7 @@
 // Usage: node scripts/screenshot-game.mjs <out-dir>   (BASE_URL defaults to a vite preview)
 import { chromium } from 'playwright';
 const out = process.argv[2];
-const url = process.env.BASE_URL ?? 'http://localhost:4173/';
+const url = `${process.env.BASE_URL ?? 'http://localhost:4173/'}#play`;
 const TURNS = Number(process.env.TURNS ?? 14);
 const browser = await chromium.launch({
   executablePath:
@@ -117,6 +117,14 @@ for (let guard = 0; guard < TURNS * 15 && (await turn(page)) < TURNS; guard++) {
       ).join(', '),
     );
     await page.keyboard.press('Escape');
+  } else if (next === 'Rivals are moving…') {
+    // The AI plays in a background worker: wait for it (it doesn't count as a step).
+    await page.waitForFunction(
+      () => document.querySelector('.next-label')?.textContent !== 'Rivals are moving…',
+      null,
+      { timeout: 60000 },
+    );
+    guard--;
   } else if (/need/.test(next ?? '')) {
     await page.keyboard.press('Enter');
     await page.waitForSelector('.unit-panel');

@@ -11,7 +11,7 @@ import { diplomacyHandlers, diplomacyTurn } from './diplomacy/handlers';
 import { emptyDiplomacy } from './diplomacy/rules';
 import { emptyBits, encodeBits } from './bitset';
 import { createRng } from './rng';
-import { scoreVictory } from './victory';
+import { historyTurn, scoreVictory } from './victory';
 import { checkBoosts, progressHandlers } from './progress/handlers';
 import { newProgress } from './progress/sources';
 import { settlementHandlers, settlementsTurn } from './settlements/handlers';
@@ -125,6 +125,8 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       religion: null,
       envoys: 0,
       lifetimeCulture: 0,
+      scienceRate: 0,
+      cultureRate: 0,
       tourismRate: 0,
       spaceProjects: [],
       expeditionArrives: null,
@@ -163,6 +165,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     religions: {},
     cityStates: {},
     tourism: {},
+    history: [],
   };
   spawnStartingUnits(state, ctx);
   placeStartingCamps(state, ctx, random);
@@ -229,6 +232,7 @@ const turnSteps: TurnStep[] = [
   { id: 'religion', order: 125, run: religionTurn },
   { id: 'culture', order: 128, run: cultureTurn },
   { id: 'science', order: 129, run: scienceTurn },
+  { id: 'history', order: 140, run: (draft, ctx) => historyTurn(draft, ctx) },
 ];
 
 function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {

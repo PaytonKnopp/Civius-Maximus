@@ -32,7 +32,7 @@ Client checks: `pnpm build`, then `pnpm --filter @cx/client exec vite preview --
 size, plus console errors); `node packages/client/scripts/screenshot-3d.mjs <out-dir>` captures
 the 3D view at Medium, in fog view, and at High; `node packages/client/scripts/screenshot-game.mjs
 <out-dir>` plays the first turns of a local game (select, path preview, move, end turn, 2D view,
-phone size). The app opens into a game; `#lab` in the URL opens the Map Lab.
+phone size). The app opens on a home screen over a quick game; `#play` in the URL skips it (the game scripts use it) and `#lab` opens the Map Lab.
 `pnpm --filter @cx/client build:artifact <file.html>` builds the client as one self-contained
 HTML page for sharing.
 

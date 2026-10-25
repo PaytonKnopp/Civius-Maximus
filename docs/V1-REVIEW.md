@@ -189,6 +189,15 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
   and cheaper, stronger gunpowder units.
 - The AI researches into the new eras, upgrades its units, and races for space when it can.
 
+### Part 10: polish
+- **Home screen** when you open the game: Continue (your autosave), Quick game, New game, Load
+  game, Map Lab, over the live map.
+- **No more freezes at End Turn:** the turn and the rivals' moves run in a background worker
+  ("Rivals are moving…" on the turn button meanwhile).
+- 📈 **Graphs** (H, or from Victories): score, science, culture, tourism, military, citizens and
+  settlements over the game for every civ, with a hover readout. The end screen shows the
+  score graph.
+
 ## Known issues
 
 - Late game pace (AI-only games): the Modern era arrives around turns 200–300 and the first

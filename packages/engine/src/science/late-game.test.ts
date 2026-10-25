@@ -188,3 +188,16 @@ describe('later-era kits', () => {
     expect(lines.find((l) => l.label === 'The Demon King')?.amount).toBe(3);
   });
 });
+
+describe('history for the graphs', () => {
+  it('records every living civ’s numbers at the end of each turn', () => {
+    let { s } = world();
+    s = endTurn(endTurn(s));
+    expect(s.history.map((h) => h.turn)).toEqual([1, 2]);
+    const p1 = s.history[1]!.stats.p1!;
+    expect(p1.settlements).toBe(1);
+    expect(p1.citizens).toBeGreaterThan(0);
+    expect(p1.science).toBeGreaterThan(0);
+    expect(Object.keys(s.history[1]!.stats).sort()).toEqual(['p1', 'p2']);
+  });
+});

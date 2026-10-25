@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
   type Action,
   atWar,
@@ -428,10 +429,13 @@ interface GameOverProps {
   title: string;
   text: string;
   scores: { name: string; player: string; score: number; alive: boolean }[];
+  /** The score over the game (the recap). */
+  chart?: ReactNode;
+  onGraphs?: () => void;
   onClose: () => void;
 }
 
-export function GameOver({ won, title, text, scores, onClose }: GameOverProps) {
+export function GameOver({ won, title, text, scores, chart, onGraphs, onClose }: GameOverProps) {
   return (
     <div className="modal-backdrop">
       <div className={`modal game-over ${won ? 'won' : 'lost'}`} role="alertdialog">
@@ -449,7 +453,13 @@ export function GameOver({ won, title, text, scores, onClose }: GameOverProps) {
             ))}
           </tbody>
         </table>
+        {chart}
         <div className="modal-actions">
+          {onGraphs && (
+            <button type="button" onClick={onGraphs}>
+              All graphs
+            </button>
+          )}
           <button type="button" className="primary" onClick={onClose}>
             Look at the map
           </button>

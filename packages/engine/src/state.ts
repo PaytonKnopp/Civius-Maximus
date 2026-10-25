@@ -53,6 +53,8 @@ export interface GameState {
   cityStates: Record<PlayerId, CityStateState>;
   /** Tourism each player has sent toward each other player so far (culture victory). */
   tourism: Record<PlayerId, Record<PlayerId, number>>;
+  /** Each civ's numbers at the end of every turn, for graphs (docs/06-ui-ux.md, "Graphs"). */
+  history: HistoryEntry[];
   /** The great people race (docs/04-advanced-systems.md, "Great people"). */
   greatPeople: {
     /** Points per player, per great person class. */
@@ -60,6 +62,23 @@ export interface GameState {
     /** Great people already earned (or bought), and by whom. */
     claimed: Record<string, PlayerId>;
   };
+}
+
+/** One turn of the graphs: each living civ's numbers then. */
+export interface HistoryEntry {
+  turn: number;
+  stats: Record<PlayerId, TurnStats>;
+}
+
+/** Yields per turn are whole numbers here (not hundredths). */
+export interface TurnStats {
+  score: number;
+  science: number;
+  culture: number;
+  tourism: number;
+  military: number;
+  citizens: number;
+  settlements: number;
 }
 
 /** A city-state (docs/04-advanced-systems.md, "Independent powers"). */
@@ -342,7 +361,9 @@ export interface PlayerState {
   envoys: number;
   /** Culture earned over the whole game (their domestic tourists), in hundredths. */
   lifetimeCulture: number;
-  /** Tourism their settlements made last turn, in hundredths. */
+  /** Science, culture and tourism their settlements made last turn, in hundredths. */
+  scienceRate: number;
+  cultureRate: number;
   tourismRate: number;
   /** Space projects finished, in order (science victory). */
   spaceProjects: string[];

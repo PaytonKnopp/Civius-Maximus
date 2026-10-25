@@ -44,6 +44,7 @@ import {
   workableTiles,
 } from '@cx/engine';
 import { LocalGame, makeSave } from '@cx/host';
+import { createAiRunner } from './aiRunner';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TileCard } from '../components/TileCard';
 import { MapView } from '../map/MapView';
@@ -74,6 +75,7 @@ import { GreatPeopleScreen } from './GreatPeopleScreen';
 import { ReligionScreen } from './ReligionScreen';
 import { CityStatesScreen } from './CityStatesScreen';
 import { VictoriesScreen } from './VictoriesScreen';
+import { GraphsScreen, HistoryChart } from './GraphsScreen';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -352,10 +354,13 @@ interface Props {
 /** The main game view: the map, your units and settlements, and the controls to play a turn. */
 export function GameScreen({ content, start, mode, quality, onGame }: Props) {
   const ctx: EngineContext = useMemo(() => ({ content }), [content]);
+  // One background worker for the slow part of each turn (End Turn and the AI seats).
+  const runner = useMemo(() => createAiRunner(), []);
   const game = useMemo(
-    () => new LocalGame('state' in start ? start.state : start.setup, ctx),
-    [start, ctx],
+    () => new LocalGame('state' in start ? start.state : start.setup, ctx, runner),
+    [start, ctx, runner],
   );
+  const [busy, setBusy] = useState(game.busy);
   useEffect(() => onGame?.(game), [game, onGame]);
   // Whose eyes the screen shows: the only human, or (hotseat) whoever holds the device now.
   const [viewer, setViewer] = useState<PlayerId>(
@@ -370,6 +375,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
   const summaries = useRef<Record<PlayerId, string[]>>({});
   const [summary, setSummary] = useState<string[] | null>(null);
   const [state, setState] = useState<GameState>(game.state);
+  const busyRef = useRef(game.busy);
   const [selection, setSelection] = useState<Selection>(null);
   const selectionRef = useRef<Selection>(null);
   selectionRef.current = selection;
@@ -387,6 +393,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
     | { kind: 'religion'; prophet?: string }
     | { kind: 'cityStates' }
     | { kind: 'victories' }
+    | { kind: 'graphs' }
     | null
   >(null);
   const [policiesSeenBy, setPoliciesSeenBy] = useState<Record<PlayerId, number>>({});
@@ -508,59 +515,69 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
     };
   });
 
-  useEffect(
-    () =>
-      game.subscribe((s, events) => {
-        pendingMoves.current.push(
-          ...events.flatMap((e) =>
-            e.type === 'unit_moved' &&
-            (e.visibleTo === 'all' || e.visibleTo.includes(viewerRef.current))
-              ? [{ unit: e.unit, path: e.path }]
-              : [],
-          ),
-        );
-        const view = viewRef.current;
-        const viewer = viewerRef.current;
-        // Hotseat: everyone else gets what they could see for their turn summary. When the turn
-        // was just processed, the device is about to be passed, so the last player gets theirs
-        // in the summary too.
-        const newTurn = events.some((e) => e.type === 'turn_started');
-        for (const h of game.humans()) {
-          if (h === viewer && !(newTurn && game.humans().length > 1)) continue;
-          for (const e of events) {
-            if (e.type === 'turn_started') continue;
-            if (e.visibleTo !== 'all' && !e.visibleTo.includes(h)) continue;
-            const text = noticeFor(content, s, e, h);
-            if (text) (summaries.current[h] ??= []).push(text);
-          }
-        }
-        if (events.some((e) => e.type === 'turn_started')) {
-          void storeSave(AUTOSAVE, makeSave(s, `Autosave · turn ${s.turn}`)).catch(() => {});
-        }
+  useEffect(() => {
+    const off = game.subscribe((s, events) => {
+      pendingMoves.current.push(
+        ...events.flatMap((e) =>
+          e.type === 'unit_moved' &&
+          (e.visibleTo === 'all' || e.visibleTo.includes(viewerRef.current))
+            ? [{ unit: e.unit, path: e.path }]
+            : [],
+        ),
+      );
+      const view = viewRef.current;
+      const viewer = viewerRef.current;
+      // Hotseat: everyone else gets what they could see for their turn summary. When the turn
+      // was just processed, the device is about to be passed, so the last player gets theirs
+      // in the summary too.
+      const newTurn = events.some((e) => e.type === 'turn_started');
+      for (const h of game.humans()) {
+        if (h === viewer && !(newTurn && game.humans().length > 1)) continue;
         for (const e of events) {
-          if (e.visibleTo !== 'all' && !e.visibleTo.includes(viewer)) continue;
-          const text = noticeFor(content, s, e, viewerRef.current);
-          if (text) notify(text);
-          if (!view) continue;
-          if (e.type === 'combat') {
-            view.animateAttack(
-              e.attacker.kind === 'unit' ? e.attacker.unit : null,
-              e.from,
-              e.tile,
-              e.mode,
-            );
-            view.flash(e.tile, `−${e.dealt}`, 'damage');
-            if (e.taken > 0) view.flash(e.from, `−${e.taken}`, 'damage');
-          } else if (e.type === 'unit_killed') {
-            view.flash(e.tile, 'Destroyed', e.owner === viewer ? 'damage' : 'good');
-          } else if (e.type === 'civilian_captured' || e.type === 'settlement_captured') {
-            view.flash(e.tile, 'Captured!', e.by === viewer ? 'good' : 'damage');
-          }
+          if (e.type === 'turn_started') continue;
+          if (e.visibleTo !== 'all' && !e.visibleTo.includes(h)) continue;
+          const text = noticeFor(content, s, e, h);
+          if (text) (summaries.current[h] ??= []).push(text);
         }
-        setState(s);
-      }),
-    [game, content, notify],
-  );
+      }
+      if (events.some((e) => e.type === 'turn_started')) {
+        void storeSave(AUTOSAVE, makeSave(s, `Autosave · turn ${s.turn}`)).catch(() => {});
+      }
+      for (const e of events) {
+        if (e.visibleTo !== 'all' && !e.visibleTo.includes(viewer)) continue;
+        const text = noticeFor(content, s, e, viewerRef.current);
+        if (text) notify(text);
+        if (!view) continue;
+        if (e.type === 'combat') {
+          view.animateAttack(
+            e.attacker.kind === 'unit' ? e.attacker.unit : null,
+            e.from,
+            e.tile,
+            e.mode,
+          );
+          view.flash(e.tile, `−${e.dealt}`, 'damage');
+          if (e.taken > 0) view.flash(e.from, `−${e.taken}`, 'damage');
+        } else if (e.type === 'unit_killed') {
+          view.flash(e.tile, 'Destroyed', e.owner === viewer ? 'damage' : 'good');
+        } else if (e.type === 'civilian_captured' || e.type === 'settlement_captured') {
+          view.flash(e.tile, 'Captured!', e.by === viewer ? 'good' : 'damage');
+        }
+      }
+      setState(s);
+      // Rivals finished moving: hotseat passes the device to whoever plays first now.
+      if (busyRef.current && !game.busy && game.humans().length > 1) {
+        const first = game.nextHuman();
+        if (first) setPassTo(first);
+      }
+      busyRef.current = game.busy;
+      setBusy(game.busy);
+    });
+    // In case the rivals finished before this subscribed.
+    busyRef.current = game.busy;
+    setBusy(game.busy);
+    setState(game.state);
+    return off;
+  }, [game, content, notify]);
 
   useEffect(() => {
     viewRef.current?.setFog(fog);
@@ -796,6 +813,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
   );
 
   const doNext = useCallback(() => {
+    if (game.busy) return;
     const n = nextAction(
       ctx,
       game.state,
@@ -812,9 +830,10 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
     else if (n.kind === 'end') {
       act({ type: 'end_turn', player: viewer });
       select(null);
-      // Hotseat: the next human who hasn't played this turn (or the first one of a new turn).
+      // Hotseat: the next human who hasn't played this turn (or, once rivals have moved, the
+      // first one of the new turn).
       const next = game.nextHuman();
-      if (hotseat && next) setPassTo(next);
+      if (hotseat && next && !game.busy) setPassTo(next);
     }
   }, [ctx, game, selection, select, act, policiesSeen, openGovernment, viewer, hotseat]);
 
@@ -989,6 +1008,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
       else if (e.key === 'r') setOverlay({ kind: 'religion' });
       else if (e.key === 'i') setOverlay({ kind: 'cityStates' });
       else if (e.key === 'v') setOverlay({ kind: 'victories' });
+      else if (e.key === 'h') setOverlay({ kind: 'graphs' });
       else if (e.key === 'Escape') {
         if (placing) setPlacing(null);
         else if (striking) setStriking(false);
@@ -1306,11 +1326,11 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
 
       <button
         type="button"
-        className={`next-action ${next.kind === 'end' ? 'end' : ''}`}
+        className={`next-action ${next.kind === 'end' ? 'end' : ''} ${busy ? 'busy' : ''}`}
         onClick={doNext}
-        disabled={next.kind === 'waiting'}
+        disabled={next.kind === 'waiting' || busy}
       >
-        <span className="next-label">{next.label}</span>
+        <span className="next-label">{busy ? 'Rivals are moving…' : next.label}</span>
         <kbd>Enter</kbd>
       </button>
 
@@ -1350,7 +1370,16 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
         />
       )}
       {overlay?.kind === 'victories' && (
-        <VictoriesScreen ctx={ctx} state={state} viewer={viewer} onClose={() => setOverlay(null)} />
+        <VictoriesScreen
+          ctx={ctx}
+          state={state}
+          viewer={viewer}
+          onGraphs={() => setOverlay({ kind: 'graphs' })}
+          onClose={() => setOverlay(null)}
+        />
+      )}
+      {overlay?.kind === 'graphs' && (
+        <GraphsScreen ctx={ctx} state={state} viewer={viewer} onClose={() => setOverlay(null)} />
       )}
       {overlay?.kind === 'cityStates' && (
         <CityStatesScreen
@@ -1443,6 +1472,11 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
               alive: state.players[p]!.alive,
             }))
             .sort((a, b) => b.score - a.score)}
+          chart={<HistoryChart ctx={ctx} state={state} viewer={viewer} measure="score" />}
+          onGraphs={() => {
+            setGameOverSeen(true);
+            setOverlay({ kind: 'graphs' });
+          }}
           onClose={() => setGameOverSeen(true)}
         />
       )}

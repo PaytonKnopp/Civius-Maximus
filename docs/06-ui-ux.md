@@ -13,7 +13,7 @@ happened and what needs you".
 
 | Screen | Contents |
 |---|---|
-| **Home** | Single player, host multiplayer, join with code, hotseat, load game, mod manager, civ creator, settings, hall of fame, profile / log in |
+| **Home** | Single player, host multiplayer, join with code, hotseat, load game, mod manager, civ creator, settings, hall of fame, profile / log in (built so far: Continue the autosave, Quick game, New game, Load game, Map Lab, over the live map) |
 | **Lobby** | Join code, settings, seats, leader picks or draft, mods, chat, ready check |
 | **Map (main)** | The world view, plus the overlays below |
 | **Settlement** | Tiles (with yields and lock buttons), citizens, production queue (cities) or specialization (towns), upgrade to city, buy, districts and buildings, growth and happiness breakdown, religion |
@@ -102,6 +102,12 @@ Available any time for what you know about, and in full for everyone at the end 
 - **Summary cards** at the end: biggest empire, most wonders, deadliest war, fastest tech, longest
   golden age, and each player's best moment.
 - Graphs export as images, and stay in the hall of fame with the replay.
+
+**Built so far (V1 part 10):** the game keeps every civ's numbers each turn (score, science,
+culture and tourism per turn, military, citizens, settlements). The Graphs screen (H, or from
+Victories) shows one at a time as a line chart for every civ, with a legend, end labels for up to
+four civs, and a hover readout of every value that turn; the end-of-game screen shows the score
+graph. Series colors come from a palette checked for colorblind separation on the dark panel.
 
 ## Music and sound
 

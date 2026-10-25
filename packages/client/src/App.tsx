@@ -3,6 +3,7 @@ import type { EngineContext, GameSetup, GameState, MapSettings } from '@cx/engin
 import { type LocalGame, makeSave, readSave } from '@cx/host';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadContent } from './content';
+import { HomeScreen } from './HomeScreen';
 import { type GameStart, GameScreen } from './game/GameScreen';
 import {
   AUTOSAVE,
@@ -113,6 +114,8 @@ export function App() {
     setup: makeSetup(options),
   }));
   const [dialog, setDialog] = useState<'new' | 'saves' | null>(null);
+  // The title screen at startup (`#play` skips it, for scripts and links straight into a game).
+  const [home, setHome] = useState(() => location.hash !== '#play');
   const [mode, setMode] = useState<'3d' | '2d'>(() => (hasWebGL2() ? '3d' : '2d'));
   const [quality, setQuality] = useState<Quality>('medium');
   const game = useRef<LocalGame>(undefined);
@@ -132,6 +135,19 @@ export function App() {
         quality={quality}
         onGame={onGame}
       />
+      {home && !dialog && (
+        <HomeScreen
+          ctx={ctx}
+          onPlay={() => setHome(false)}
+          onNewGame={() => setDialog('new')}
+          onLoadGame={() => setDialog('saves')}
+          onContinue={(state) => {
+            setStart({ id: startId(), state });
+            setHome(false);
+          }}
+          onMapLab={() => setScreen('lab')}
+        />
+      )}
       <header className="game-bar">
         <span className="brand-name">Civius Maximus</span>
         <div className="bar-actions">
@@ -180,6 +196,7 @@ export function App() {
             setOptions(o);
             setStart({ id: startId(), setup: makeSetup(o) });
             setDialog(null);
+            setHome(false);
           }}
         />
       )}
@@ -191,6 +208,7 @@ export function App() {
           onLoad={(state) => {
             setStart({ id: startId(), state });
             setDialog(null);
+            setHome(false);
           }}
         />
       )}

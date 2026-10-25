@@ -2678,3 +2678,160 @@ label.belief-card {
   font-size: 12.5px;
   line-height: 1.5;
 }
+.next-action.busy .next-label {
+  opacity: 0.75;
+}
+
+/* The title screen, over the live map. */
+.home {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background:
+    radial-gradient(ellipse at center, rgb(11 22 32 / 0.55) 0%, rgb(11 22 32 / 0.92) 75%),
+    linear-gradient(to bottom, rgb(11 22 32 / 0.2), rgb(11 22 32 / 0.9));
+}
+.home-card {
+  width: min(520px, 100%);
+  text-align: center;
+}
+.home-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(34px, 9vw, 54px);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  color: var(--brass);
+  text-shadow: 0 2px 18px rgb(0 0 0 / 0.6);
+}
+.home-sub {
+  margin: 6px 0 24px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.home-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.home-actions {
+  width: min(380px, 100%);
+  margin: 0 auto;
+}
+.home-actions button {
+  padding: 12px 16px;
+  font-size: 16px;
+}
+.home-actions button:not(.primary) {
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  border: 1px solid var(--panel-edge);
+  color: var(--text);
+}
+.home-actions button:not(.primary):hover {
+  border-color: var(--brass);
+}
+.home-foot {
+  margin-top: 18px;
+  font-size: 12.5px;
+}
+
+/* Graphs */
+.segmented.graph-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 10px;
+}
+.segmented.graph-tabs button {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+}
+.graph-body {
+  padding: 12px 16px 16px;
+  overflow-y: auto;
+}
+.graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+.graph-legend li.mine {
+  font-weight: 600;
+}
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  border-radius: 2px;
+  vertical-align: baseline;
+}
+.graph-frame {
+  position: relative;
+}
+.graph-frame svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.graph-frame .grid {
+  stroke: color-mix(in srgb, var(--panel-edge) 70%, transparent);
+  stroke-width: 1;
+}
+.graph-frame .axis {
+  fill: var(--muted);
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+.graph-frame .series {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.graph-frame .end-label {
+  fill: var(--text);
+  font-size: 12px;
+}
+.graph-frame .crosshair {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.graph-frame .dot {
+  stroke: var(--panel);
+  stroke-width: 2;
+}
+.graph-frame .hit {
+  fill: transparent;
+  cursor: crosshair;
+}
+.graph-tip {
+  position: absolute;
+  top: 8px;
+  transform: translateX(12px);
+}
+.graph-tip.flip {
+  transform: translateX(calc(-100% - 12px));
+}
+.graph-tip {
+  min-width: 140px;
+  padding: 6px 8px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+  background: var(--panel);
+  font-size: 12px;
+  line-height: 1.5;
+  pointer-events: none;
+}
+.game-over .history-chart {
+  margin: 8px 0;
+}

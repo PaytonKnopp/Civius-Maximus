@@ -16,11 +16,12 @@ interface Props {
   ctx: EngineContext;
   state: GameState;
   viewer: PlayerId;
+  onGraphs: () => void;
   onClose: () => void;
 }
 
 /** Everyone's progress toward each way to win, side by side. */
-export function VictoriesScreen({ ctx, state, viewer, onClose }: Props) {
+export function VictoriesScreen({ ctx, state, viewer, onGraphs, onClose }: Props) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
@@ -39,6 +40,9 @@ export function VictoriesScreen({ ctx, state, viewer, onClose }: Props) {
             : 'No turn limit. '}
           The last civilization standing always wins.
         </p>
+        <button type="button" className="ghost small" onClick={onGraphs} title="Graphs (H)">
+          Graphs
+        </button>
         <button type="button" className="close" onClick={onClose} aria-label="Close">
           ✕
         </button>
