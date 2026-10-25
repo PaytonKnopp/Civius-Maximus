@@ -1,6 +1,7 @@
 import type { EngineContext } from '../context';
 import type { GameState, PlayerId } from '../state';
 import { manageCaptures, manageProduction, manageTowns, strikeFromSettlements } from './cities';
+import { manageCityStates } from './citystates';
 import { manageDiplomacy } from './diplomacy';
 import { manageProgress, recruitGreatPeople } from './economy';
 import { manageUnits } from './military';
@@ -30,6 +31,7 @@ export function playAiTurn(
   if (!p.alive || p.turnEnded || t.state.status !== 'playing') return t.state;
   manageCaptures(t);
   manageDiplomacy(t);
+  manageCityStates(t);
   manageWar(t);
   manageProgress(t);
   manageReligion(t);

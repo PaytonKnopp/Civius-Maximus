@@ -553,6 +553,9 @@ Barbarians and city-states are one system (from Civ 7). See
 With the module off, they act as classic barbarians: camps spawn in fog, send scouts, then raid,
 and clearing one gives gold and XP. Settings: off / normal / raging.
 
+**Built so far (V1 part 8): city-states** are placed at the start, by map size (see the
+table above and 04, "Built so far").
+
 **Built so far (M9): hostile camps.** One camp per 120 land tiles at the start, at least 6
 tiles from any start, each with a raider; a new camp may appear every 12 turns in land no
 player can see, up to the same number. A camp trains a raider every 7 turns while it has fewer

@@ -14,13 +14,19 @@ import type { GameState } from './state';
 
 const ctx: EngineContext = { content: compileFromDirs().content! };
 
-function setup(playerCount: number, turnLimit: number | null = null, camps = false): GameSetup {
+function setup(
+  playerCount: number,
+  turnLimit: number | null = null,
+  camps = false,
+  cityStates = camps,
+): GameSetup {
   return {
     gameId: 'test-game',
     settings: {
       seed: 'seed-1',
       turnLimit,
       camps,
+      cityStates,
       map: {
         script: 'continents',
         size:
@@ -281,8 +287,12 @@ describe('replays', () => {
     const a = runReplay(structuredClone(replay), ctx);
     expect(a.hash).toBe(stateHash(state));
     expect(a.state.status).toBe('ended');
-    expect(Object.keys(a.state.settlements)).toHaveLength(8);
-    expect(Object.values(a.state.settlements).every((x) => x.population > 1)).toBe(true);
+    const civs = Object.values(a.state.settlements).filter((x) =>
+      a.state.playerOrder.includes(x.owner),
+    );
+    expect(civs).toHaveLength(8);
+    expect(civs.every((x) => x.population > 1)).toBe(true);
+    expect(Object.keys(a.state.cityStates).length).toBeGreaterThan(0);
     const players = a.state.playerOrder.map((id) => a.state.players[id]!);
     expect(players.every((p) => p.techs.done.length >= 1)).toBe(true);
     expect(players.every((p) => p.civics.done.length >= 2)).toBe(true);
@@ -302,7 +312,7 @@ describe('replays', () => {
         readPackageDir(new URL('../test-fixtures/frozen-content', import.meta.url).pathname),
       ]).content!;
       expect(runReplay(played().replay, { content: frozen }).hash).toMatchInlineSnapshot(
-        `"bbedd8a199fd4c57cd0ee68e19"`,
+        `"be2de8a28d40df47118487afdb"`,
       );
     },
   );

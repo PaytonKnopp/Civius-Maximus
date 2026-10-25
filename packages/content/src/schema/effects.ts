@@ -53,6 +53,8 @@ export type Condition =
   | { settlement_kind: 'town' | 'city' }
   | { settlement_population_at_least: number }
   | { settlement_has_building: IdOrIds }
+  /** The settlement has one of these districts (or a unique one replacing it). */
+  | { settlement_has_district: IdOrIds }
   | { settlement_on_river: boolean }
   /** Fewer than this many soldiers trained there so far. */
   | { settlement_units_trained_below: number }
@@ -90,6 +92,7 @@ export const Condition: z.ZodType<Condition> = z.lazy(() =>
     z.strictObject({ settlement_kind: z.enum(['town', 'city']) }),
     z.strictObject({ settlement_population_at_least: z.int().min(1) }),
     z.strictObject({ settlement_has_building: IdOrIds }),
+    z.strictObject({ settlement_has_district: IdOrIds }),
     z.strictObject({ has_tech: Id }),
     z.strictObject({ has_civic: Id }),
     z.strictObject({ government_is: IdOrIds }),
@@ -434,6 +437,14 @@ const GreatPersonPointsPercent = z.strictObject({
   condition: Condition.optional(),
 });
 
+/** Envoys to send to city-states, once, when the civic or tech carrying it is finished. */
+const GrantEnvoys = z.strictObject({
+  effect: z.literal('grant_envoys'),
+  params: z.strictObject({ amount: z.int().min(1) }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
 /** For a religion's founder: yields in the holy city for every `per` settlements following it. */
 const YieldPerFollower = z.strictObject({
   effect: z.literal('yield_per_follower'),
@@ -481,6 +492,7 @@ export const Effect = z.discriminatedUnion('effect', [
   GreatPersonPoints,
   GreatPersonPointsPercent,
   YieldPerFollower,
+  GrantEnvoys,
 ]);
 export type Effect = z.infer<typeof Effect>;
 export const EFFECT_TYPES = Effect.options.map((o) => o.shape.effect.value);

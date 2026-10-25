@@ -58,6 +58,12 @@ export function playerColors(content: CompiledContent, state: GameState): Record
       ? { main: hex(civ.colors.primary), accent: hex(civ.colors.secondary) }
       : { main: 0x8d9db6, accent: 0x10161d };
   }
+  // City-states: their kind's color.
+  for (const [id, cs] of Object.entries(state.cityStates ?? {})) {
+    const def = content.entities.cityState[cs.def];
+    const type = def ? content.entities.cityStateType[def.cityStateType] : undefined;
+    out[id] = { main: type ? hex(type.color) : 0x9a9a9a, accent: 0x14181d };
+  }
   // Raiders: soot and ember.
   out[HOSTILE] = { main: 0x2b2420, accent: 0xe0503c };
   return out;

@@ -30,6 +30,7 @@ import {
   validateAction,
   wallsMax,
 } from '@cx/engine';
+import { CityStateCard } from './CityStatesScreen';
 import {
   itemName,
   settlementSummary,
@@ -236,6 +237,9 @@ export function SettlementPanel({
           </span>
         )}
       </p>
+      {state.cityStates[s.owner] && (
+        <CityStateCard ctx={ctx} state={state} viewer={viewer} id={s.owner} act={act} />
+      )}
       <p className="religion-line" title={religionTip}>
         <span aria-hidden="true">{icon('faith')}</span>{' '}
         {s.religion

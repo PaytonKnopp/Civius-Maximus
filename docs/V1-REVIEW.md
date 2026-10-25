@@ -65,6 +65,13 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
     a religion leaves the prophet race.
 41. **D70 Religious units:** missionaries only (no apostles, inquisitors, theological combat).
 42. **D71 Religion names:** you type yours; AIs use "<Civ> Faith". (Or a list to pick from.)
+43. **D72 City-states from the start** (Civ VI), camps stay raiders. (Or camps you befriend grow
+    into city-states, Civ VII.)
+44. **D73 City-state numbers:** 3–18 by map size, envoys 40 influence or free (5 civics,
+    quests, first to meet), bonuses at 1/3/6, suzerain at 3 and the most.
+45. **D74 War with city-states:** costs your envoys there; they always take peace; no levies.
+46. **D75 Suzerain bonuses:** see `packages/content/base/city-states.json`; tell me any that
+    feel off.
 28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
     expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 
@@ -145,6 +152,17 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
   settlements of every other civ.
 - Great people can now also be bought with **faith** (not prophets).
 - The AI picks pantheons, races for prophets, founds religions and sends missionaries.
+
+### Part 8: city-states
+- 🏛 **City-states** (top bar, or I): 3–18 on the map by size, six kinds (Scientific, Cultural,
+  Trade, Religious, Militaristic, Industrial), 18 named ones (Ugarit, Petra, Sparta, Delphi...).
+- Find one to meet it (the first to arrive gets a free envoy). **Send envoys** (free ones from
+  civics and quests, or 40 influence): 1, 3 and 6 unlock its kind's bonuses; the most (at
+  least 3) makes you **suzerain** with its own bonus.
+- Quests: build its kind's district, send it a trade route (+1 envoy each).
+- Click a city-state's settlement for the same card. Declaring war on one costs your envoys
+  there; free a captured one for 6 envoys.
+- The AI competes for envoys and suzerainties. New-game option to turn them off.
 
 ## Known issues
 

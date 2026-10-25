@@ -394,6 +394,25 @@ export const RulesDef = z.strictObject({
     friendshipOpinion: z.int(),
     allianceOpinion: z.int(),
   }),
+  /** City-states (docs/04-advanced-systems.md, "Independent powers"). */
+  cityStates: z.strictObject({
+    /** At least this many tiles from every start and from each other. */
+    minDistance: z.int().min(1),
+    /** Influence to send an envoy when you have none free. */
+    envoyInfluence: z.int().min(0),
+    /** Envoys a player needs (and more than anyone else) to be a city-state's suzerain. */
+    suzerainEnvoys: z.int().min(1),
+    /** Free envoys for the first player to meet a city-state. */
+    firstMeetEnvoys: z.int().min(0),
+    /** Envoys for finishing one of its quests. */
+    questEnvoys: z.int().min(0),
+    /** Envoys for whoever gives a captured city-state back its freedom. */
+    liberateEnvoys: z.int().min(0),
+    /** Soldiers a city-state keeps. */
+    maxUnits: z.int().min(0),
+    /** Its people at the start. */
+    startingPopulation: z.int().min(1),
+  }),
   /** Religion (docs/04-advanced-systems.md, "Religion"). */
   religion: z.strictObject({
     /** Faith to found a pantheon. */
@@ -598,6 +617,8 @@ export const MapSizeDef = z.strictObject({
   height: z.int().min(12).max(160),
   /** Recommended number of players. */
   players: z.int().min(1).max(16),
+  /** City-states placed at the start (docs/03-core-mechanics.md, "Map sizes"). */
+  cityStates: z.int().min(0).max(32).default(0),
   /** Display order in the lobby. */
   order: z.int().default(100),
 });
@@ -1153,6 +1174,36 @@ export const BeliefDef = z.strictObject({
   effects: z.array(Effect).default([]),
 });
 
+/** A kind of city-state (docs/04-advanced-systems.md, "Independent powers"): its envoy bonuses. */
+export const CityStateTypeDef = z.strictObject({
+  type: z.literal('cityStateType'),
+  id: Id,
+  name: Text,
+  icon: z.string().min(1).max(3),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #8e1b1b'),
+  /** Its quest: have a settlement with this district. */
+  district: Id.optional(),
+  /** For each player with at least `envoys` envoys in a city-state of this kind (they add up). */
+  tiers: z
+    .array(
+      z.strictObject({
+        envoys: z.int().min(1),
+        description: Text,
+        effects: z.array(Effect).default([]),
+      }),
+    )
+    .min(1),
+});
+
+/** A city-state: one settlement of its own, and a bonus for its suzerain. */
+export const CityStateDef = z.strictObject({
+  type: z.literal('cityState'),
+  id: Id,
+  name: Text,
+  cityStateType: Id,
+  suzerain: z.strictObject({ name: Text, description: Text, effects: z.array(Effect).default([]) }),
+});
+
 /** Schemas for entities that have an `id` and are stored in compiled content. */
 export const ENTITY_SCHEMAS = {
   yield: YieldDef,
@@ -1181,6 +1232,8 @@ export const ENTITY_SCHEMAS = {
   greatPersonClass: GreatPersonClassDef,
   greatPerson: GreatPersonDef,
   belief: BeliefDef,
+  cityStateType: CityStateTypeDef,
+  cityState: CityStateDef,
   rules: RulesDef,
 } as const;
 
@@ -1218,6 +1271,8 @@ export type PolicyDef = z.infer<typeof PolicyDef>;
 export type GreatPersonClassDef = z.infer<typeof GreatPersonClassDef>;
 export type GreatPersonDef = z.infer<typeof GreatPersonDef>;
 export type BeliefDef = z.infer<typeof BeliefDef>;
+export type CityStateTypeDef = z.infer<typeof CityStateTypeDef>;
+export type CityStateDef = z.infer<typeof CityStateDef>;
 export type StringsDef = z.infer<typeof StringsDef>;
 export type PatchDef = z.infer<typeof PatchDef>;
 
@@ -1248,6 +1303,8 @@ export interface EntityByType {
   greatPersonClass: GreatPersonClassDef;
   greatPerson: GreatPersonDef;
   belief: BeliefDef;
+  cityStateType: CityStateTypeDef;
+  cityState: CityStateDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

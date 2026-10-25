@@ -50,6 +50,12 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
     | { type: 'great_person_born'; person: string; player: PlayerId }
     | { type: 'great_person_activated'; person: string; player: PlayerId; settlement: SettlementId }
     | { type: 'pantheon_founded'; player: PlayerId; belief: string }
+    /** A player found a city-state (and got `envoys` free envoys there for being first). */
+    | { type: 'city_state_met'; cityState: PlayerId; player: PlayerId; envoys: number }
+    | { type: 'envoy_sent'; player: PlayerId; cityState: PlayerId }
+    | { type: 'suzerain_changed'; cityState: PlayerId; from: PlayerId | null; to: PlayerId | null }
+    /** A player did what a city-state asked (`quest` is its text) and got envoys. */
+    | { type: 'city_state_quest'; cityState: PlayerId; player: PlayerId; quest: string }
     | { type: 'religion_founded'; religion: string; player: PlayerId; settlement: SettlementId }
     /** A missionary preached in a settlement (it may convert too: `settlement_converted`). */
     | {

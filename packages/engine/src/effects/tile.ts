@@ -25,6 +25,7 @@ export interface SettlementFacts {
   capital: boolean;
   population: number;
   buildings: readonly string[];
+  districts?: readonly string[];
   /** A river runs along its center tile. */
   onRiver?: boolean;
   /** Soldiers trained there so far. */

@@ -72,6 +72,7 @@ import {
 import { GovernmentScreen } from './GovernmentScreen';
 import { GreatPeopleScreen } from './GreatPeopleScreen';
 import { ReligionScreen } from './ReligionScreen';
+import { CityStatesScreen } from './CityStatesScreen';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -223,6 +224,25 @@ function noticeFor(
     }
     case 'religion_preached':
       return undefined;
+    case 'city_state_met':
+      return e.player === ME
+        ? `You found the city-state ${civName(content, state, e.cityState)}${e.envoys > 0 ? `: first to arrive, +${e.envoys} envoy` : ''}`
+        : undefined;
+    case 'envoy_sent':
+      return undefined;
+    case 'suzerain_changed': {
+      const cs = civName(content, state, e.cityState);
+      if (e.to === ME) return `You are now the suzerain of ${cs}`;
+      if (e.from === ME)
+        return e.to
+          ? `${civName(content, state, e.to)} took over ${cs} from you`
+          : `You are no longer the suzerain of ${cs}`;
+      return undefined;
+    }
+    case 'city_state_quest':
+      return e.player === ME
+        ? `${civName(content, state, e.cityState)} thanks you: ${e.quest} (+${content.rules.cityStates.questEnvoys} envoy)`
+        : undefined;
     case 'commander_retreated':
       return e.owner === ME
         ? `Your commander fell back to a settlement (back in action on turn ${e.until})`
@@ -355,6 +375,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
     | { kind: 'government' }
     | { kind: 'greatPeople' }
     | { kind: 'religion'; prophet?: string }
+    | { kind: 'cityStates' }
     | null
   >(null);
   const [policiesSeenBy, setPoliciesSeenBy] = useState<Record<PlayerId, number>>({});
@@ -955,6 +976,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
       else if (e.key === 'g') openGovernment();
       else if (e.key === 'p') setOverlay({ kind: 'greatPeople' });
       else if (e.key === 'r') setOverlay({ kind: 'religion' });
+      else if (e.key === 'i') setOverlay({ kind: 'cityStates' });
       else if (e.key === 'Escape') {
         if (placing) setPlacing(null);
         else if (striking) setStriking(false);
@@ -1122,26 +1144,38 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
           className="progress-chip"
           onClick={() => setOverlay({ kind: 'greatPeople' })}
           title="Great people (P)"
+          aria-label="Great people"
         >
           <span aria-hidden="true">★</span>
-          <span className="chip-name">Great people</span>
         </button>
         <button
           type="button"
           className="progress-chip"
           onClick={() => setOverlay({ kind: 'religion' })}
-          title="Religion (R)"
-        >
-          <span aria-hidden="true">{icon('faith')}</span>
-          <span className="chip-name">
-            {me.religion
+          title={`${
+            me.religion
               ? (state.religions[me.religion]?.name ?? 'Religion')
               : pantheonOf(ctx, state, viewer)
                 ? 'Religion'
-                : 'Pantheon'}
-          </span>
+                : 'Pantheon'
+          } (R)`}
+          aria-label="Religion"
+        >
+          <span aria-hidden="true">{icon('faith')}</span>
           <span className="chip-turns mono">{whole(me.faith)}</span>
         </button>
+        {Object.keys(state.cityStates).length > 0 && (
+          <button
+            type="button"
+            className={`progress-chip ${me.envoys > 0 ? 'attention' : ''}`}
+            onClick={() => setOverlay({ kind: 'cityStates' })}
+            title={`City-states (I)${me.envoys > 0 ? `: ${me.envoys} envoys to send` : ''}`}
+            aria-label="City-states"
+          >
+            <span aria-hidden="true">🏛</span>
+            {me.envoys > 0 && <span className="chip-turns mono">{me.envoys}</span>}
+          </button>
+        )}
         <button
           type="button"
           className="progress-chip government"
@@ -1291,6 +1325,15 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
             return ok;
           }}
           prophet={overlay.prophet}
+          onClose={() => setOverlay(null)}
+        />
+      )}
+      {overlay?.kind === 'cityStates' && (
+        <CityStatesScreen
+          ctx={ctx}
+          state={state}
+          viewer={viewer}
+          act={act}
           onClose={() => setOverlay(null)}
         />
       )}

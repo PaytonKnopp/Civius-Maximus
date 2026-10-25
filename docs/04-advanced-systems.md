@@ -247,6 +247,33 @@ feel populated and give players something to compete over even when there's no w
   you.
 - With the module off, camps are always hostile and never become city-states (classic barbarians).
 
+### Built so far (V1 part 8)
+
+- **City-states from the start** (Civ VI's way for now): each map size places some (Duel 3,
+  Tiny 6, Small 9, Standard 12, Large 15, Huge 18) on open land at least 7 tiles from every
+  start and from each other. 18 in `city-states.json`, three of each kind: Scientific,
+  Cultural, Trade, Religious, Militaristic, Industrial. Hostile camps stay classic raiders;
+  befriending camps into city-states (Civ VII) comes later.
+- A city-state is a player outside the turn order with one settlement: it grows, builds up to
+  3 soldiers (the best its techs allow; it knows what at least half the civs know), then
+  buildings, and its soldiers fight enemies next to home but never take settlements.
+- **Meeting:** exploring its settlement meets it; the first to do so gets a free envoy.
+- **Envoys:** free ones from five civics (Mysticism, Political Philosophy, Military Training,
+  Theology, Guilds), quests and meeting first; otherwise 40 influence each. 1, 3 and 6 envoys
+  unlock its kind's bonuses (e.g. Scientific: +2 science in your capital, then +2 in every
+  settlement with a Campus, then +2 more). The most envoys, at least 3, makes you **suzerain**:
+  its own bonus (Ugarit: +1 trade route; Petra: +15% production toward wonders...). A tie keeps
+  the current suzerain.
+- **Quests:** build its kind's district, and send it a trade route: +1 envoy each, once.
+- **War:** declaring war on one costs every envoy you had there; it takes peace whenever
+  offered (after the minimum war). Taking it ends it; freeing it from its captor brings it back
+  and gives the liberator 6 envoys. Its capital doesn't count for domination.
+- The AI sends free envoys at once and buys more with spare influence, where they unlock a tier
+  or take (or keep) a suzerainty.
+- The City-states screen (I, or the 🏛 chip) and a card in a city-state's settlement panel;
+  a new-game option turns them off. Not yet: levies, luxuries for the suzerain, war support
+  for envoy holders, quests beyond the two.
+
 ---
 
 ## Eras & golden ages

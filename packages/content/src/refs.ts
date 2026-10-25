@@ -71,6 +71,8 @@ function condition(out: Refs, c: Condition, path: PathSegment[]) {
     ids(out, 'improvement', c.tile_has_improvement, [...path, 'tile_has_improvement']);
   else if ('settlement_has_building' in c)
     ids(out, 'building', c.settlement_has_building, [...path, 'settlement_has_building']);
+  else if ('settlement_has_district' in c)
+    ids(out, 'district', c.settlement_has_district, [...path, 'settlement_has_district']);
   else if ('has_tech' in c) ids(out, 'tech', c.has_tech, [...path, 'has_tech']);
   else if ('has_civic' in c) ids(out, 'civic', c.has_civic, [...path, 'has_civic']);
   else if ('government_is' in c)
@@ -316,6 +318,14 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'belief':
       effectList(out, entity.effects, ['effects']);
+      break;
+    case 'cityStateType':
+      ids(out, 'district', entity.district, ['district']);
+      entity.tiers.forEach((t, i) => effectList(out, t.effects, ['tiers', i, 'effects']));
+      break;
+    case 'cityState':
+      ids(out, 'cityStateType', entity.cityStateType, ['cityStateType']);
+      effectList(out, entity.suzerain.effects, ['suzerain', 'effects']);
       break;
     case 'greatPerson':
       ids(out, 'greatPersonClass', entity.class, ['class']);

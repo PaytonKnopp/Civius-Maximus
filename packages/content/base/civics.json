@@ -136,7 +136,18 @@
         "count": 1,
         "building": "building_shrine"
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "grant_envoys",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "civic",
@@ -157,6 +168,15 @@
     "effects": [
       {
         "effect": "modify_settlement_limit",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "grant_envoys",
         "params": {
           "amount": 1
         },
@@ -189,7 +209,18 @@
           "class_siege"
         ]
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "grant_envoys",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "civic",
@@ -239,7 +270,18 @@
         "count": 2,
         "building": "building_shrine"
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "grant_envoys",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "civic",
@@ -374,6 +416,17 @@
         "kind": "gold",
         "amount": 300
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "grant_envoys",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   }
 ]
