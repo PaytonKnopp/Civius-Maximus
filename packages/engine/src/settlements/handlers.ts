@@ -20,6 +20,8 @@ import { roadToCapital } from '../trade/handlers';
 import { countsAs } from '../uniques';
 import { ownedUnit, watchers } from '../units/handlers';
 import { canTraverse, hasForeignUnit, hasRoom } from '../units/movement';
+import { obsoletedBy } from '../units/upgrades';
+import { spaceStep } from '../science/space';
 import { exploreVisible } from '../units/vision';
 import {
   assignCitizens,
@@ -237,12 +239,16 @@ function projectReward(
   ctx: EngineContext,
   id: string,
   item: BuildItem,
+  emit: Emit,
 ): void {
   const s = draft.settlements[id]!;
   const def = ctx.content.entities.project[item.id]!;
-  const t = draft.map.tiles[item.tile!]!;
-  if (t.feature === null || !def.clears.includes(t.feature)) return;
-  t.feature = null;
+  if (def.clears) {
+    const t = draft.map.tiles[item.tile!]!;
+    if (t.feature === null || !def.clears.includes(t.feature)) return;
+    t.feature = null;
+  }
+  spaceStep(draft, ctx, s.owner, item.id, emit);
   const p = draft.players[s.owner]!;
   for (const [y, v] of Object.entries(def.reward).sort()) {
     const amount = toFixed(v);
@@ -311,7 +317,7 @@ function complete(
       });
       break;
     case 'project':
-      projectReward(draft, ctx, id, item);
+      projectReward(draft, ctx, id, item, emit);
       break;
   }
 }
@@ -711,6 +717,7 @@ function nearestCity(ctx: EngineContext, state: GameState, s: SettlementState): 
 interface SettlementTurn {
   science: number;
   culture: number;
+  tourism: number;
   happiness: number;
 }
 
@@ -766,6 +773,15 @@ export function processSettlement(
     }
     player.gold += percentOf(production - sent, rules.townGoldPercent);
   } else {
+    // A unit that's been replaced by a newer one becomes that one, keeping its progress.
+    for (const [i, q] of s.queue.entries()) {
+      const newer = q.kind === 'unit' ? obsoletedBy(ctx, snap, owner, q.id) : undefined;
+      if (!newer) continue;
+      const done = s.progress[itemKey(q)];
+      delete s.progress[itemKey(q)];
+      s.queue[i] = { kind: 'unit', id: newer };
+      if (done) s.progress[itemKey(s.queue[i]!)] = (s.progress[itemKey(s.queue[i]!)] ?? 0) + done;
+    }
     while (s.queue.length > 0 && itemProblem(ctx, snap, s, s.queue[0]!)) s.queue.shift();
     // A plain copy: events outlive the draft.
     const first = s.queue[0];
@@ -846,6 +862,7 @@ export function processSettlement(
   return {
     science: y.total.science ?? 0,
     culture: y.total.culture ?? 0,
+    tourism: y.total.tourism ?? 0,
     happiness: y.happiness.balance,
   };
 }
@@ -858,12 +875,13 @@ export function settlementsTurn(draft: Draft<GameState>, ctx: EngineContext, emi
   for (const player of draft.playerOrder) {
     const p = draft.players[player]!;
     if (!p.alive) continue;
-    const totals = { science: 0, culture: 0, happiness: 0 };
+    const totals = { science: 0, culture: 0, tourism: 0, happiness: 0 };
     for (const id of settlementIds(draft)) {
       if (draft.settlements[id]!.owner !== player) continue;
       const t = processSettlement(draft, ctx, id, emit);
       totals.science += t.science;
       totals.culture += t.culture;
+      totals.tourism += t.tourism;
       totals.happiness += t.happiness;
     }
     empireTurn(draft, ctx, player, totals, emit);

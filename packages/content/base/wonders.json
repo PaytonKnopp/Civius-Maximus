@@ -311,5 +311,158 @@
     },
     "model": "rock_city",
     "requiresTech": "tech_mathematics"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_st_basils",
+    "name": "St. Basil's Cathedral",
+    "description": "+4 faith and +2 tourism here. +2 faith in every settlement with a Temple.",
+    "icon": "SB",
+    "cost": 500,
+    "era": "era_renaissance",
+    "yields": {
+      "faith": 4,
+      "tourism": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_temple"
+        }
+      }
+    ],
+    "model": "temple",
+    "requiresCivic": "civic_reformed_church"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_taj_mahal",
+    "name": "Taj Mahal",
+    "description": "+4 culture and +3 tourism here. +1 happiness in every settlement.",
+    "icon": "TM",
+    "cost": 520,
+    "era": "era_renaissance",
+    "yields": {
+      "culture": 4,
+      "tourism": 3
+    },
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "model": "temple",
+    "requiresCivic": "civic_humanism"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_big_ben",
+    "name": "Big Ben",
+    "description": "+6 gold and +2 tourism here. +10% gold in every settlement.",
+    "icon": "BB",
+    "cost": 700,
+    "era": "era_industrial",
+    "yields": {
+      "gold": 6,
+      "tourism": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "model": "library",
+    "requiresTech": "tech_economics"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_eiffel_tower",
+    "name": "Eiffel Tower",
+    "description": "+2 culture and +4 tourism here. +1 tourism in every settlement.",
+    "icon": "ET",
+    "cost": 800,
+    "era": "era_industrial",
+    "yields": {
+      "culture": 2,
+      "tourism": 4
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "tourism",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "model": "statue",
+    "requiresTech": "tech_steel"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_statue_of_liberty",
+    "name": "Statue of Liberty",
+    "description": "+4 influence and +3 tourism here. +1 wildcard policy slot.",
+    "icon": "SL",
+    "cost": 900,
+    "era": "era_modern",
+    "yields": {
+      "influence": 4,
+      "tourism": 3
+    },
+    "effects": [
+      {
+        "effect": "extra_policy_slot",
+        "params": {
+          "slot": "wildcard",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "model": "statue",
+    "requiresCivic": "civic_suffrage"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_broadway",
+    "name": "Broadway",
+    "description": "+6 culture and +5 tourism here.",
+    "icon": "Br",
+    "cost": 950,
+    "era": "era_modern",
+    "yields": {
+      "culture": 6,
+      "tourism": 5
+    },
+    "effects": [],
+    "model": "arena",
+    "requiresCivic": "civic_mass_media"
   }
 ]

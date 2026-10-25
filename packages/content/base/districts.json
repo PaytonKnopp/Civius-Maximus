@@ -489,5 +489,20 @@
         }
       }
     ]
+  },
+  {
+    "type": "district",
+    "id": "district_spaceport",
+    "name": "Spaceport",
+    "description": "Launches the space projects of a science victory. Flat land. Doesn't count toward the district limit.",
+    "icon": "SP",
+    "cost": 180,
+    "requiresTech": "tech_rocketry",
+    "specialty": false,
+    "placement": {
+      "elevations": ["flat"]
+    },
+    "model": "generic",
+    "color": "#9ab0c8"
   }
 ]

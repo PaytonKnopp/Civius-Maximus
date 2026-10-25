@@ -10,6 +10,7 @@ import {
   followersOf,
   militaryStrength,
   playAiTurn,
+  playerEra,
   religionsOf,
   scoreOf,
   settlementsOf,
@@ -126,7 +127,9 @@ export function statusLine(ctx: EngineContext, state: GameState): string {
     const s = settlementsOf(state, id);
     const cities = s.filter((x) => x.kind === 'city').length;
     const pop = s.reduce((sum, x) => sum + x.population, 0);
-    return `${id} ${s.length}(${cities}c) pop${pop} t${p.techs.done.length} c${p.civics.done.length} army${militaryStrength(ctx, state, id)} score${scoreOf(ctx, state, id).total}`;
+    const era = playerEra(ctx, p)?.order ?? 0;
+    const late = `${p.spaceProjects.length ? ` space${p.spaceProjects.length}` : ''}${p.tourismRate ? ` tour${Math.floor(p.tourismRate / 100)}` : ''}`;
+    return `${id} ${s.length}(${cities}c) pop${pop} e${era} t${p.techs.done.length} c${p.civics.done.length} army${militaryStrength(ctx, state, id)} score${scoreOf(ctx, state, id).total}${late}`;
   });
   return `turn ${state.turn} wars ${state.wars.length} | ${parts.join(' | ')}`;
 }

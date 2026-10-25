@@ -94,5 +94,13 @@
     "domain": "land",
     "layer": "support",
     "combat": false
+  },
+  {
+    "type": "unitClass",
+    "id": "class_naval_ranged",
+    "name": "Naval Ranged",
+    "domain": "sea",
+    "layer": "military",
+    "combat": true
   }
 ]

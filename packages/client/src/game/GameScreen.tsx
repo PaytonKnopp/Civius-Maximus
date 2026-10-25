@@ -73,6 +73,7 @@ import { GovernmentScreen } from './GovernmentScreen';
 import { GreatPeopleScreen } from './GreatPeopleScreen';
 import { ReligionScreen } from './ReligionScreen';
 import { CityStatesScreen } from './CityStatesScreen';
+import { VictoriesScreen } from './VictoriesScreen';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -223,6 +224,15 @@ function noticeFor(
         : undefined;
     }
     case 'religion_preached':
+      return undefined;
+    case 'space_project': {
+      const project = resolveText(content, content.entities.project[e.project]?.name ?? e.project);
+      const who = e.player === ME ? 'You' : civName(content, state, e.player);
+      return e.arrives !== null
+        ? `${who} launched the ${project}: it arrives on turn ${e.arrives}`
+        : `${who} finished ${project}`;
+    }
+    case 'unit_upgraded':
       return undefined;
     case 'city_state_met':
       return e.player === ME
@@ -376,6 +386,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
     | { kind: 'greatPeople' }
     | { kind: 'religion'; prophet?: string }
     | { kind: 'cityStates' }
+    | { kind: 'victories' }
     | null
   >(null);
   const [policiesSeenBy, setPoliciesSeenBy] = useState<Record<PlayerId, number>>({});
@@ -977,6 +988,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
       else if (e.key === 'p') setOverlay({ kind: 'greatPeople' });
       else if (e.key === 'r') setOverlay({ kind: 'religion' });
       else if (e.key === 'i') setOverlay({ kind: 'cityStates' });
+      else if (e.key === 'v') setOverlay({ kind: 'victories' });
       else if (e.key === 'Escape') {
         if (placing) setPlacing(null);
         else if (striking) setStriking(false);
@@ -1178,6 +1190,15 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
         )}
         <button
           type="button"
+          className="progress-chip"
+          onClick={() => setOverlay({ kind: 'victories' })}
+          title="Victories (V)"
+          aria-label="Victories"
+        >
+          <span aria-hidden="true">🏆</span>
+        </button>
+        <button
+          type="button"
           className="progress-chip government"
           onClick={openGovernment}
           title="Government and policies (G)"
@@ -1328,6 +1349,9 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
           onClose={() => setOverlay(null)}
         />
       )}
+      {overlay?.kind === 'victories' && (
+        <VictoriesScreen ctx={ctx} state={state} viewer={viewer} onClose={() => setOverlay(null)} />
+      )}
       {overlay?.kind === 'cityStates' && (
         <CityStatesScreen
           ctx={ctx}
@@ -1401,11 +1425,15 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
               ? 'Your last settlement has fallen. Your civilization is no more.'
               : state.result?.reason === 'domination'
                 ? 'A domination victory: every rival original capital is held.'
-                : state.result?.reason === 'religion'
-                  ? `A religious victory: ${religionNameOf(state, state.result.winner ?? null)} is followed in most settlements of every other civilization.`
-                  : state.result?.reason === 'conquest'
-                    ? 'A conquest victory: the last civilization standing.'
-                    : 'A score victory: the highest score at the turn limit.'
+                : state.result?.reason === 'science'
+                  ? 'A science victory: their expedition reached another star.'
+                  : state.result?.reason === 'culture'
+                    ? 'A culture victory: their visitors outnumber every other civilization’s own tourists.'
+                    : state.result?.reason === 'religion'
+                      ? `A religious victory: ${religionNameOf(state, state.result.winner ?? null)} is followed in most settlements of every other civilization.`
+                      : state.result?.reason === 'conquest'
+                        ? 'A conquest victory: the last civilization standing.'
+                        : 'A score victory: the highest score at the turn limit.'
           }
           scores={state.playerOrder
             .map((p) => ({

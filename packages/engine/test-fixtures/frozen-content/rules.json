@@ -142,7 +142,9 @@
     "startingUnits": ["unit_settler", "unit_warrior", "unit_scout"],
     "embarkFromStart": false,
     "embarkedSight": 1,
-    "freeUpkeep": 3
+    "freeUpkeep": 3,
+    "upgradeGoldPerProduction": 2,
+    "upgradeMinGold": 20
   },
   "progress": {
     "boostPercent": 40,
@@ -305,6 +307,18 @@
       {
         "era": "era_medieval",
         "units": ["unit_swordsman", "unit_crossbowman", "unit_horseman"]
+      },
+      {
+        "era": "era_renaissance",
+        "units": ["unit_musketman", "unit_bombard", "unit_knight"]
+      },
+      {
+        "era": "era_industrial",
+        "units": ["unit_line_infantry", "unit_field_cannon", "unit_cavalry"]
+      },
+      {
+        "era": "era_modern",
+        "units": ["unit_infantry", "unit_machine_gun", "unit_cavalry"]
       }
     ]
   },
@@ -318,5 +332,21 @@
     "perDistrict": 2,
     "perEra": 10,
     "perKill": 1
+  },
+  "science": {
+    "projects": [
+      "project_satellite",
+      "project_moon_landing",
+      "project_mars_colony",
+      "project_exoplanet_expedition"
+    ],
+    "travelTurns": 10
+  },
+  "culture": {
+    "culturePerTourist": 100,
+    "tourismPerTourist": 150,
+    "tradeRoutePercent": 25,
+    "religionPercent": 25,
+    "friendsPercent": 25
   }
 }

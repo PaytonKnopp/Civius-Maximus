@@ -72,6 +72,12 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
 45. **D74 War with city-states:** costs your envoys there; they always take peace; no levies.
 46. **D75 Suzerain bonuses:** see `packages/content/base/city-states.json`; tell me any that
     feel off.
+47. **D76 Later eras stop at Modern** for V1 (no Atomic/Information eras, air units, nukes).
+48. **D77 Modern governments:** Democracy, Collectivism, Militarism; no ideology pressure yet.
+49. **D78 Unit upgrades:** 2 gold per production point of difference (min 20), in your territory.
+50. **D79 Science victory:** Spaceport + 4 projects, the last arrives after 10 turns.
+51. **D80 Culture victory:** culture/100 domestic tourists vs tourism/150 visitors, +25%
+    bonuses for trade routes, shared religion and friendship.
 28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
     expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 
@@ -164,6 +170,29 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
   there; free a captured one for 6 envoys.
 - The AI competes for envoys and suzerainties. New-game option to turn them off.
 
+### Part 9: later eras, science and culture victories
+- Three more eras: **Renaissance, Industrial, Modern** (47 techs and 37 civics in all), with
+  musketmen, frigates, cavalry, field cannons, ironclads, infantry, tanks, destroyers and
+  more; banks, museums, factories, stock exchanges, hospitals, power plants, research labs,
+  broadcast centers and stadiums; St. Basil's, the Taj Mahal, Big Ben, the Eiffel Tower, the
+  Statue of Liberty and Broadway; Democracy, Collectivism and Militarism; 13 new policies.
+- **Upgrades:** an older unit in your territory shows an Upgrade button (gold); old units drop
+  off the build list once their replacement is available.
+- 🏆 **Victories** (top bar, or V): everyone's progress toward each victory.
+- **Science victory:** research Rocketry, build a Spaceport, then the four space projects on
+  it; the last one arrives 10 turns later.
+- **Culture victory:** tourism (wonders, museums, broadcast centers...) draws visitors from
+  every civ you've met; win when they outnumber each civ's own tourists. Trade routes, a
+  shared religion and friendship help.
+- The rest of the kits: England's Privateer and extra trade routes, France's Imperial Guard and
+  Napoleon's commander bonus, America's Rough Rider and Film Studio, Japan's Electronics Works
+  and cheaper, stronger gunpowder units.
+- The AI researches into the new eras, upgrades its units, and races for space when it can.
+
 ## Known issues
+
+- Late game pace (AI-only games): the Modern era arrives around turns 200–300 and the first
+  science victory around turn 330 in a 6-player game. AIs make little tourism, so culture
+  victories mostly need a human going for them.
 
 (Added as found.)

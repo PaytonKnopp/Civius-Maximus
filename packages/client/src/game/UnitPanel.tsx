@@ -21,10 +21,14 @@ import {
   type UnitState,
   unitClassOf,
   unitDef,
+  obsoletedBy,
+  upgradeCost,
+  upgradeProblem,
+  upgradeTarget,
   validateAction,
 } from '@cx/engine';
 import { useState } from 'react';
-import { civName, type Colors, cssColor } from './model';
+import { civName, type Colors, cssColor, whole } from './model';
 
 const coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
 
@@ -88,6 +92,10 @@ export function UnitPanel({
         .filter((s) => distance(state.map, unit.tile, s.tile) <= 1)
         .sort((a, b) => (a.id < b.id ? -1 : 1))
     : [];
+  const upgradeTo = mine
+    ? (obsoletedBy(ctx, state, viewer, unit.type) ?? upgradeTarget(ctx, state, viewer, unit.type))
+    : undefined;
+  const upgradeBlocked = upgradeTo ? upgradeProblem(ctx, state, viewer, unit.id) : undefined;
   const recovering = (unit.recovering ?? 0) > state.turn;
   const room = command ? command.capacity - (unit.cargo?.length ?? 0) : 0;
   const packable = command ? packableUnits(ctx, state, unit).slice(0, Math.max(0, room)) : [];
@@ -349,6 +357,20 @@ export function UnitPanel({
       )}
       {mine && (
         <div className="unit-actions">
+          {upgradeTo && (
+            <button
+              type="button"
+              disabled={!!upgradeBlocked}
+              title={
+                upgradeBlocked?.message ??
+                `Upgrade to ${resolveText(ctx.content, unitDef(ctx, { type: upgradeTo }).name)}`
+              }
+              onClick={() => act({ type: 'upgrade_unit', player: viewer, unit: unit.id })}
+            >
+              ⇧ {resolveText(ctx.content, unitDef(ctx, { type: upgradeTo }).name)} 💰
+              {whole(upgradeCost(ctx, unit.type, upgradeTo))}
+            </button>
+          )}
           {command && (
             <>
               <button

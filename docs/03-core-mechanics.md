@@ -328,6 +328,11 @@ last player standing wins. Puppets wait for the loyalty and settlement-limit wor
 - Promoting **fully heals** the unit but uses up its turn (Civ 6 rule, which keeps promotion a real
   decision).
 - **Built so far (M9):** 32 promotions for the 8 combat classes, with original names (D47).
+- **Unit upgrades (V1 part 9):** each unit names what it becomes (Warrior → Swordsman →
+  Musketman → Line Infantry → Infantry; uniques follow the unit they replace). Once you can
+  build the newer one, the old one leaves the build list (one already queued becomes the new
+  one, keeping its progress), and units in your territory with moves left can **upgrade** for
+  2 gold per point of production between them (at least 20), keeping their experience.
   Each class has 2 starting choices, a middle tier that needs either of them, and a top tier.
   They add strength in situations (when attacking or defending, against some classes, against
   settlements or ranged attacks, fighting in woods), or movement, sight or range. XP: 4 per
@@ -439,6 +444,9 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
 - **Built so far (M7):** Ancient → Medieval, 24 techs. Choosing anything queues the path of
   prerequisites to it. Each citizen adds **+0.5 🔬** on top of buildings and tiles (D36).
   Boosts are paid the moment their goal is met (or at the end of the turn).
+- **Built so far (V1 part 9):** the Renaissance, Industrial and Modern eras: 47 techs in all,
+  up to Rocketry, Satellites and Space Flight (the space race). Astronomy and Radio carry
+  lasting bonuses (+1 science per University; +25% tourism).
 
 ### Civics tree
 
@@ -455,6 +463,9 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
 - **Built so far (M7):** 19 civics, 7 governments (Chiefdom → Merchant Republic) and 22 policy
   cards, all original names. Early Empire, Political Philosophy and Civil Service each raise the
   settlement limit by 1.
+- **Built so far (V1 part 9):** 37 civics through the Modern era, 10 governments (adding
+  Democracy, Collectivism and Militarism, our names for the three Modern ones; ideological
+  pressure isn't built) and 35 policy cards.
 - This is one of Civ 6's best systems. It's very moddable, and it creates lots of strategic
   choices, so we keep it as-is.
 

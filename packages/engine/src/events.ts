@@ -47,6 +47,9 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         from: SettlementId;
         to: SettlementId;
       }
+    | { type: 'unit_upgraded'; unit: UnitId; owner: PlayerId; from: string; to: string }
+    /** A step of a science victory; `arrives` is set when the last one is launched. */
+    | { type: 'space_project'; player: PlayerId; project: string; arrives: number | null }
     | { type: 'great_person_born'; person: string; player: PlayerId }
     | { type: 'great_person_activated'; person: string; player: PlayerId; settlement: SettlementId }
     | { type: 'pantheon_founded'; player: PlayerId; belief: string }
@@ -87,7 +90,7 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
     | { type: 'turn_started'; turn: number }
     | {
         type: 'game_ended';
-        reason: 'score' | 'conquest' | 'domination' | 'religion';
+        reason: 'score' | 'conquest' | 'domination' | 'religion' | 'science' | 'culture';
         winner: PlayerId | null;
       }
     /** `path` starts at the tile the unit left. */

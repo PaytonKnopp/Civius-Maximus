@@ -71,7 +71,7 @@ export function dominationProgress(
 /** Ends the game (teammates of the winner win with them). */
 export function endGame(
   draft: Draft<GameState>,
-  reason: 'domination' | 'conquest' | 'score' | 'religion',
+  reason: 'domination' | 'conquest' | 'score' | 'religion' | 'science' | 'culture',
   winner: PlayerId | null,
   emit: Emit,
 ) {

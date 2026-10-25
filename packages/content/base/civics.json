@@ -428,5 +428,338 @@
         }
       }
     ]
+  },
+  {
+    "type": "civic",
+    "id": "civic_exploration",
+    "name": "Exploration",
+    "era": "era_renaissance",
+    "cost": 420,
+    "requires": ["civic_mercenaries"],
+    "row": 0,
+    "boost": {
+      "text": "Have 2 Caravels",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_caravel"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_mercantilism",
+    "name": "Mercantilism",
+    "era": "era_renaissance",
+    "cost": 430,
+    "requires": ["civic_humanism"],
+    "row": 2,
+    "boost": {
+      "text": "Hold 800 gold",
+      "goal": {
+        "kind": "gold",
+        "amount": 800
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_diplomatic_service",
+    "name": "Diplomatic Service",
+    "era": "era_renaissance",
+    "cost": 390,
+    "requires": ["civic_guilds", "civic_civil_service"],
+    "row": 4,
+    "boost": {
+      "text": "Fill 6 policy slots",
+      "goal": {
+        "kind": "policies",
+        "count": 6
+      }
+    },
+    "effects": [
+      {
+        "effect": "grant_envoys",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "civic",
+    "id": "civic_humanism",
+    "name": "Humanism",
+    "era": "era_renaissance",
+    "cost": 390,
+    "requires": ["civic_guilds"],
+    "row": 6,
+    "boost": {
+      "text": "Build 2 Amphitheaters",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_amphitheater"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_reformed_church",
+    "name": "Reformed Church",
+    "era": "era_renaissance",
+    "cost": 420,
+    "requires": ["civic_divine_right"],
+    "row": 7,
+    "boost": {
+      "text": "Build 3 Temples",
+      "goal": {
+        "kind": "buildings",
+        "count": 3,
+        "building": "building_temple"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_nationalism",
+    "name": "Nationalism",
+    "era": "era_industrial",
+    "cost": 620,
+    "requires": ["civic_exploration", "civic_diplomatic_service"],
+    "row": 0,
+    "boost": {
+      "text": "Have 4 melee units",
+      "goal": {
+        "kind": "units",
+        "count": 4,
+        "unitClass": "class_melee"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_civil_engineering",
+    "name": "Civil Engineering",
+    "era": "era_industrial",
+    "cost": 620,
+    "requires": ["civic_mercantilism"],
+    "row": 2,
+    "boost": {
+      "text": "Have 10 settlements",
+      "goal": {
+        "kind": "settlements",
+        "count": 10
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_enlightenment",
+    "name": "Enlightenment",
+    "era": "era_industrial",
+    "cost": 620,
+    "requires": ["civic_humanism", "civic_diplomatic_service"],
+    "row": 5,
+    "boost": {
+      "text": "Build 2 Museums",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_museum"
+      }
+    },
+    "effects": [
+      {
+        "effect": "grant_envoys",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "civic",
+    "id": "civic_opera_and_ballet",
+    "name": "Opera and Ballet",
+    "era": "era_industrial",
+    "cost": 650,
+    "requires": ["civic_enlightenment"],
+    "row": 6,
+    "boost": {
+      "text": "Build 3 Amphitheaters",
+      "goal": {
+        "kind": "buildings",
+        "count": 3,
+        "building": "building_amphitheater"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_natural_history",
+    "name": "Natural History",
+    "era": "era_industrial",
+    "cost": 650,
+    "requires": ["civic_humanism", "civic_reformed_church"],
+    "row": 7,
+    "boost": {
+      "text": "Build a Museum",
+      "goal": {
+        "kind": "buildings",
+        "count": 1,
+        "building": "building_museum"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_mobilization",
+    "name": "Mobilization",
+    "era": "era_modern",
+    "cost": 940,
+    "requires": ["civic_nationalism"],
+    "row": 0,
+    "boost": {
+      "text": "Have 3 Line Infantry",
+      "goal": {
+        "kind": "units",
+        "count": 3,
+        "unit": "unit_line_infantry"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_militarism",
+    "name": "Militarism",
+    "era": "era_modern",
+    "cost": 910,
+    "requires": ["civic_ideology", "civic_nationalism"],
+    "row": 1,
+    "boost": {
+      "text": "Have 3 Cavalry",
+      "goal": {
+        "kind": "units",
+        "count": 3,
+        "unit": "unit_cavalry"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_collectivism",
+    "name": "Collectivism",
+    "era": "era_modern",
+    "cost": 910,
+    "requires": ["civic_ideology"],
+    "row": 2,
+    "boost": {
+      "text": "Build 3 Factories",
+      "goal": {
+        "kind": "buildings",
+        "count": 3,
+        "building": "building_factory"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_ideology",
+    "name": "Ideology",
+    "era": "era_modern",
+    "cost": 840,
+    "requires": ["civic_civil_engineering", "civic_enlightenment"],
+    "row": 3,
+    "boost": {
+      "text": "Fill 8 policy slots",
+      "goal": {
+        "kind": "policies",
+        "count": 8
+      }
+    },
+    "effects": [
+      {
+        "effect": "grant_envoys",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "civic",
+    "id": "civic_suffrage",
+    "name": "Suffrage",
+    "era": "era_modern",
+    "cost": 910,
+    "requires": ["civic_ideology"],
+    "row": 4,
+    "boost": {
+      "text": "Have 10 cities",
+      "goal": {
+        "kind": "cities",
+        "count": 10
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_urbanization",
+    "name": "Urbanization",
+    "era": "era_modern",
+    "cost": 880,
+    "requires": ["civic_civil_engineering"],
+    "row": 5,
+    "boost": {
+      "text": "Have 80 citizens",
+      "goal": {
+        "kind": "population",
+        "count": 80
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_mass_media",
+    "name": "Mass Media",
+    "era": "era_modern",
+    "cost": 940,
+    "requires": ["civic_opera_and_ballet"],
+    "row": 6,
+    "boost": {
+      "text": "Build 2 Broadcast Centers",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_broadcast_center"
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_conservation",
+    "name": "Conservation",
+    "era": "era_modern",
+    "cost": 940,
+    "requires": ["civic_natural_history", "civic_urbanization"],
+    "row": 7,
+    "boost": {
+      "text": "Build 3 Museums",
+      "goal": {
+        "kind": "buildings",
+        "count": 3,
+        "building": "building_museum"
+      }
+    }
   }
 ]

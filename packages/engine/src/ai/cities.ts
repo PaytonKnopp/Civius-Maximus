@@ -20,6 +20,7 @@ import {
 } from '../settlements/rules';
 import type { BuildItem, SettlementState } from '../state';
 import { routesOf, tradeCapacity } from '../trade/rules';
+import { obsoletedBy } from '../units/upgrades';
 import { hasSettleSite } from './settle';
 import { type Role, type Turn, unitPower, unitRole } from './turn';
 import { effectValue, fixedYieldsValue, happinessWeight, yieldsValue, yieldWeight } from './values';
@@ -124,7 +125,12 @@ export function manageProduction(t: Turn) {
     if (urgent) {
       if (head?.id === urgent.id) continue;
       if (head?.kind === 'unit' && urgent.kind === 'unit' && sameRole(t, head, urgent)) continue;
-      const queue = [urgent, ...s.queue.filter((i) => i.id !== urgent.id)].slice(0, 8);
+      // (Units replaced by newer ones since they were queued are dropped.)
+      const rest = s.queue.filter(
+        (i) =>
+          i.id !== urgent.id && !(i.kind === 'unit' && obsoletedBy(t.ctx, t.state, t.player, i.id)),
+      );
+      const queue = [urgent, ...rest].slice(0, 8);
       t.act({ type: 'set_queue', player: t.player, settlement: s.id, queue });
       continue;
     }
@@ -305,8 +311,14 @@ function improvementValue(t: Turn, s: SettlementState, item: BuildItem): number 
     }
     return v;
   }
+  if (item.kind === 'project') {
+    // The space race: worth more to scientific leaders, and more with each step done.
+    return 50 + me.science * 10 + t.p.spaceProjects.length * 30;
+  }
   if (item.kind === 'district') {
     const def = e.district[item.id]!;
+    // The Spaceport is worth what the space race is worth.
+    if (spaceDistricts(t).has(item.id)) return 60 + me.science * 10;
     let v = fixedYieldsValue(me, districtYields(t.ctx, t.state, item.tile!, item.id).total);
     v = Math.floor((v * (5 + me.districts)) / 10);
     // Buildings and specialists to come.
@@ -330,7 +342,7 @@ function bestImprovement(t: Turn, s: SettlementState): BuildItem | undefined {
   let best: { item: BuildItem; score: number } | undefined;
   const specialty = s.districts.filter((d) => e(t, d.id)?.specialty).length;
   for (const raw of items) {
-    if (raw.kind === 'unit' || raw.kind === 'project') continue;
+    if (raw.kind === 'unit' || (raw.kind === 'project' && !isSpaceProject(t, raw.id))) continue;
     const item = raw.kind === 'building' ? raw : withTile(t, s, raw);
     if (!item) continue;
     if (
@@ -349,6 +361,24 @@ function bestImprovement(t: Turn, s: SettlementState): BuildItem | undefined {
 }
 
 const e = (t: Turn, id: string) => t.ctx.content.entities.district[id];
+
+const isSpaceProject = (t: Turn, id: string) =>
+  t.state.settings.science !== false && t.ctx.content.rules.science.projects.includes(id);
+
+/** Districts space projects are done on (none once the race is off). */
+function spaceDistricts(t: Turn): Set<string> {
+  return t.turnMemo('spaceDistricts', () => {
+    if (t.state.settings.science === false) return new Set<string>();
+    const out = new Set<string>();
+    for (const id of t.ctx.content.rules.science.projects) {
+      const d = t.ctx.content.entities.project[id]?.onDistrict;
+      if (d) out.add(d);
+    }
+    // One is enough.
+    const have = t.mySettlements().some((s) => s.districts.some((d) => out.has(d.id)));
+    return have ? new Set<string>() : out;
+  });
+}
 
 /** A district or wonder with its best tile: districts where they yield most, wonders where the land is poorest. */
 function withTile(t: Turn, s: SettlementState, item: BuildItem): BuildItem | undefined {

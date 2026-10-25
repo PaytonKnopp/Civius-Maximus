@@ -291,6 +291,8 @@ const ModifyStrength = z.strictObject({
   params: StrengthBonus.extend({
     /** Only units of these classes. */
     unitClass: IdOrIds.optional(),
+    /** Only these units (e.g. gunpowder units). */
+    unit: IdOrIds.optional(),
     /** Only for this many turns after the player declares a war. */
     afterDeclaringWar: z.int().min(1).optional(),
   }),
@@ -437,6 +439,17 @@ const GreatPersonPointsPercent = z.strictObject({
   condition: Condition.optional(),
 });
 
+/** Commanders: more strength for the units in their radius, and XP faster. */
+const CommanderBonus = z.strictObject({
+  effect: z.literal('commander_bonus'),
+  params: z.strictObject({
+    strength: z.int().default(0),
+    xpPercent: z.int().min(-100).max(1000).default(0),
+  }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
 /** Envoys to send to city-states, once, when the civic or tech carrying it is finished. */
 const GrantEnvoys = z.strictObject({
   effect: z.literal('grant_envoys'),
@@ -493,6 +506,7 @@ export const Effect = z.discriminatedUnion('effect', [
   GreatPersonPointsPercent,
   YieldPerFollower,
   GrantEnvoys,
+  CommanderBonus,
 ]);
 export type Effect = z.infer<typeof Effect>;
 export const EFFECT_TYPES = Effect.options.map((o) => o.shape.effect.value);

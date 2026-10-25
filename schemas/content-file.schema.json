@@ -1560,6 +1560,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -2917,6 +2933,55 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -3239,6 +3304,10 @@
               "pattern": "^[a-z][a-z0-9_]*$"
             },
             "requiresCivic": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "upgradesTo": {
               "type": "string",
               "pattern": "^[a-z][a-z0-9_]*$"
             },
@@ -5057,6 +5126,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -6389,6 +6474,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -7516,6 +7650,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -8848,6 +8998,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -10057,6 +10256,22 @@
                                   }
                                 ]
                               },
+                              "unit": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  {
+                                    "minItems": 1,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    }
+                                  }
+                                ]
+                              },
                               "afterDeclaringWar": {
                                 "type": "integer",
                                 "minimum": 1,
@@ -11389,6 +11604,55 @@
                             "required": [
                               "amount"
                             ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "player"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "commander_bonus"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "strength": {
+                                "default": 0,
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "xpPercent": {
+                                "default": 0,
+                                "type": "integer",
+                                "minimum": -100,
+                                "maximum": 1000
+                              }
+                            },
                             "additionalProperties": false
                           },
                           "target": {
@@ -12564,6 +12828,22 @@
                                   }
                                 ]
                               },
+                              "unit": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  {
+                                    "minItems": 1,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    }
+                                  }
+                                ]
+                              },
                               "afterDeclaringWar": {
                                 "type": "integer",
                                 "minimum": 1,
@@ -13896,6 +14176,55 @@
                             "required": [
                               "amount"
                             ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "player"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "commander_bonus"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "strength": {
+                                "default": 0,
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "xpPercent": {
+                                "default": 0,
+                                "type": "integer",
+                                "minimum": -100,
+                                "maximum": 1000
+                              }
+                            },
                             "additionalProperties": false
                           },
                           "target": {
@@ -16390,6 +16719,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -17722,6 +18067,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -18849,6 +19243,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -20181,6 +20591,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -22158,6 +22617,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -23490,6 +23965,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -24617,6 +25141,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -25974,6 +26514,55 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -26050,6 +26639,10 @@
                 "pattern": "^[a-z][a-z0-9_]*$"
               }
             },
+            "onDistrict": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
             "reward": {
               "default": {},
               "type": "object",
@@ -26077,8 +26670,7 @@
             "name",
             "description",
             "icon",
-            "cost",
-            "clears"
+            "cost"
           ],
           "additionalProperties": false
         },
@@ -27204,6 +27796,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -28536,6 +29144,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -29663,6 +30320,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -30995,6 +31668,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -32752,6 +33474,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -34084,6 +34822,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -35596,6 +36383,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -36928,6 +37731,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -38116,6 +38968,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -39448,6 +40316,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -40622,6 +41539,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -41954,6 +42887,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -43252,6 +44234,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -44584,6 +45582,55 @@
                         "required": [
                           "amount"
                         ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
                         "additionalProperties": false
                       },
                       "target": {
@@ -45749,6 +46796,22 @@
                               }
                             ]
                           },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              }
+                            ]
+                          },
                           "afterDeclaringWar": {
                             "type": "integer",
                             "minimum": 1,
@@ -47106,6 +48169,55 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "commander_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "strength": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpPercent": {
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -48246,6 +49358,22 @@
                                   "additionalProperties": false
                                 },
                                 "unitClass": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    },
+                                    {
+                                      "minItems": 1,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]*$"
+                                      }
+                                    }
+                                  ]
+                                },
+                                "unit": {
                                   "anyOf": [
                                     {
                                       "type": "string",
@@ -49618,6 +50746,55 @@
                             "target"
                           ],
                           "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "commander_bonus"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "strength": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "xpPercent": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": -100,
+                                  "maximum": 1000
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
                         }
                       ]
                     }
@@ -50754,6 +51931,22 @@
                                 "additionalProperties": false
                               },
                               "unitClass": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  {
+                                    "minItems": 1,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    }
+                                  }
+                                ]
+                              },
+                              "unit": {
                                 "anyOf": [
                                   {
                                     "type": "string",
@@ -52101,6 +53294,55 @@
                             "required": [
                               "amount"
                             ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "player"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "commander_bonus"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "strength": {
+                                "default": 0,
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "xpPercent": {
+                                "default": 0,
+                                "type": "integer",
+                                "minimum": -100,
+                                "maximum": 1000
+                              }
+                            },
                             "additionalProperties": false
                           },
                           "target": {
@@ -53802,6 +55044,22 @@
                                       }
                                     ]
                                   },
+                                  "unit": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]*$"
+                                      },
+                                      {
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "pattern": "^[a-z][a-z0-9_]*$"
+                                        }
+                                      }
+                                    ]
+                                  },
                                   "afterDeclaringWar": {
                                     "type": "integer",
                                     "minimum": 1,
@@ -55159,6 +56417,55 @@
                               "target"
                             ],
                             "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "commander_bonus"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "strength": {
+                                    "default": 0,
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "xpPercent": {
+                                    "default": 0,
+                                    "type": "integer",
+                                    "minimum": -100,
+                                    "maximum": 1000
+                                  }
+                                },
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "player"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
                           }
                         ]
                       }
@@ -55230,6 +56537,15 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
+                },
+                "upgradeGoldPerProduction": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "upgradeMinGold": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
                 }
               },
               "required": [
@@ -55237,7 +56553,9 @@
                 "startingUnits",
                 "embarkFromStart",
                 "embarkedSight",
-                "freeUpkeep"
+                "freeUpkeep",
+                "upgradeGoldPerProduction",
+                "upgradeMinGold"
               ],
               "additionalProperties": false
             },
@@ -55897,6 +57215,67 @@
               ],
               "additionalProperties": false
             },
+            "science": {
+              "type": "object",
+              "properties": {
+                "projects": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "travelTurns": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "projects",
+                "travelTurns"
+              ],
+              "additionalProperties": false
+            },
+            "culture": {
+              "type": "object",
+              "properties": {
+                "culturePerTourist": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "tourismPerTourist": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "tradeRoutePercent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "religionPercent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "friendsPercent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "culturePerTourist",
+                "tourismPerTourist",
+                "tradeRoutePercent",
+                "religionPercent",
+                "friendsPercent"
+              ],
+              "additionalProperties": false
+            },
             "greatPeople": {
               "type": "object",
               "properties": {
@@ -56128,6 +57507,8 @@
             "diplomacy",
             "cityStates",
             "religion",
+            "science",
+            "culture",
             "greatPeople",
             "camps",
             "mapgen"
@@ -57826,6 +59207,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -59183,6 +60580,55 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -59505,6 +60951,10 @@
                 "pattern": "^[a-z][a-z0-9_]*$"
               },
               "requiresCivic": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "upgradesTo": {
                 "type": "string",
                 "pattern": "^[a-z][a-z0-9_]*$"
               },
@@ -61323,6 +62773,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -62655,6 +64121,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -63782,6 +65297,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -65114,6 +66645,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -66323,6 +67903,22 @@
                                     }
                                   ]
                                 },
+                                "unit": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    },
+                                    {
+                                      "minItems": 1,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]*$"
+                                      }
+                                    }
+                                  ]
+                                },
                                 "afterDeclaringWar": {
                                   "type": "integer",
                                   "minimum": 1,
@@ -67655,6 +69251,55 @@
                               "required": [
                                 "amount"
                               ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "commander_bonus"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "strength": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "xpPercent": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": -100,
+                                  "maximum": 1000
+                                }
+                              },
                               "additionalProperties": false
                             },
                             "target": {
@@ -68830,6 +70475,22 @@
                                     }
                                   ]
                                 },
+                                "unit": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    },
+                                    {
+                                      "minItems": 1,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]*$"
+                                      }
+                                    }
+                                  ]
+                                },
                                 "afterDeclaringWar": {
                                   "type": "integer",
                                   "minimum": 1,
@@ -70162,6 +71823,55 @@
                               "required": [
                                 "amount"
                               ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "commander_bonus"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "strength": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "xpPercent": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": -100,
+                                  "maximum": 1000
+                                }
+                              },
                               "additionalProperties": false
                             },
                             "target": {
@@ -72656,6 +74366,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -73988,6 +75714,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -75115,6 +76890,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -76447,6 +78238,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -78424,6 +80264,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -79756,6 +81612,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -80883,6 +82788,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -82240,6 +84161,55 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -82316,6 +84286,10 @@
                   "pattern": "^[a-z][a-z0-9_]*$"
                 }
               },
+              "onDistrict": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
               "reward": {
                 "default": {},
                 "type": "object",
@@ -82343,8 +84317,7 @@
               "name",
               "description",
               "icon",
-              "cost",
-              "clears"
+              "cost"
             ],
             "additionalProperties": false
           },
@@ -83470,6 +85443,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -84802,6 +86791,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -85929,6 +87967,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -87261,6 +89315,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -89018,6 +91121,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -90350,6 +92469,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -91862,6 +94030,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -93194,6 +95378,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -94382,6 +96615,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -95714,6 +97963,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -96888,6 +99186,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -98220,6 +100534,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -99518,6 +101881,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -100850,6 +103229,55 @@
                           "required": [
                             "amount"
                           ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
                           "additionalProperties": false
                         },
                         "target": {
@@ -102015,6 +104443,22 @@
                                 }
                               ]
                             },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                {
+                                  "minItems": 1,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  }
+                                }
+                              ]
+                            },
                             "afterDeclaringWar": {
                               "type": "integer",
                               "minimum": 1,
@@ -103372,6 +105816,55 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "commander_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "strength": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "xpPercent": {
+                              "default": 0,
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -104512,6 +107005,22 @@
                                     "additionalProperties": false
                                   },
                                   "unitClass": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]*$"
+                                      },
+                                      {
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "pattern": "^[a-z][a-z0-9_]*$"
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  "unit": {
                                     "anyOf": [
                                       {
                                         "type": "string",
@@ -105884,6 +108393,55 @@
                               "target"
                             ],
                             "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "commander_bonus"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "strength": {
+                                    "default": 0,
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "xpPercent": {
+                                    "default": 0,
+                                    "type": "integer",
+                                    "minimum": -100,
+                                    "maximum": 1000
+                                  }
+                                },
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "player"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
                           }
                         ]
                       }
@@ -107020,6 +109578,22 @@
                                   "additionalProperties": false
                                 },
                                 "unitClass": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    },
+                                    {
+                                      "minItems": 1,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]*$"
+                                      }
+                                    }
+                                  ]
+                                },
+                                "unit": {
                                   "anyOf": [
                                     {
                                       "type": "string",
@@ -108367,6 +110941,55 @@
                               "required": [
                                 "amount"
                               ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "commander_bonus"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "strength": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "xpPercent": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": -100,
+                                  "maximum": 1000
+                                }
+                              },
                               "additionalProperties": false
                             },
                             "target": {
@@ -110068,6 +112691,22 @@
                                         }
                                       ]
                                     },
+                                    "unit": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "pattern": "^[a-z][a-z0-9_]*$"
+                                        },
+                                        {
+                                          "minItems": 1,
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string",
+                                            "pattern": "^[a-z][a-z0-9_]*$"
+                                          }
+                                        }
+                                      ]
+                                    },
                                     "afterDeclaringWar": {
                                       "type": "integer",
                                       "minimum": 1,
@@ -111425,6 +114064,55 @@
                                 "target"
                               ],
                               "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "effect": {
+                                  "type": "string",
+                                  "const": "commander_bonus"
+                                },
+                                "params": {
+                                  "type": "object",
+                                  "properties": {
+                                    "strength": {
+                                      "default": 0,
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "xpPercent": {
+                                      "default": 0,
+                                      "type": "integer",
+                                      "minimum": -100,
+                                      "maximum": 1000
+                                    }
+                                  },
+                                  "additionalProperties": false
+                                },
+                                "target": {
+                                  "type": "object",
+                                  "properties": {
+                                    "scope": {
+                                      "type": "string",
+                                      "const": "player"
+                                    }
+                                  },
+                                  "required": [
+                                    "scope"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "condition": {
+                                  "$ref": "#/$defs/__schema0"
+                                }
+                              },
+                              "required": [
+                                "effect",
+                                "params",
+                                "target"
+                              ],
+                              "additionalProperties": false
                             }
                           ]
                         }
@@ -111496,6 +114184,15 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "upgradeGoldPerProduction": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "upgradeMinGold": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
                   }
                 },
                 "required": [
@@ -111503,7 +114200,9 @@
                   "startingUnits",
                   "embarkFromStart",
                   "embarkedSight",
-                  "freeUpkeep"
+                  "freeUpkeep",
+                  "upgradeGoldPerProduction",
+                  "upgradeMinGold"
                 ],
                 "additionalProperties": false
               },
@@ -112163,6 +114862,67 @@
                 ],
                 "additionalProperties": false
               },
+              "science": {
+                "type": "object",
+                "properties": {
+                  "projects": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                  },
+                  "travelTurns": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "projects",
+                  "travelTurns"
+                ],
+                "additionalProperties": false
+              },
+              "culture": {
+                "type": "object",
+                "properties": {
+                  "culturePerTourist": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "tourismPerTourist": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "tradeRoutePercent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "religionPercent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "friendsPercent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "culturePerTourist",
+                  "tourismPerTourist",
+                  "tradeRoutePercent",
+                  "religionPercent",
+                  "friendsPercent"
+                ],
+                "additionalProperties": false
+              },
               "greatPeople": {
                 "type": "object",
                 "properties": {
@@ -112394,6 +115154,8 @@
               "diplomacy",
               "cityStates",
               "religion",
+              "science",
+              "culture",
               "greatPeople",
               "camps",
               "mapgen"

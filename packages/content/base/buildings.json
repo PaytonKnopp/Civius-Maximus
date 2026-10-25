@@ -627,5 +627,253 @@
         }
       }
     ]
+  },
+  {
+    "type": "building",
+    "id": "building_bank",
+    "name": "Bank",
+    "description": "+5 gold.",
+    "icon": "Bk",
+    "cost": 290,
+    "maintenance": 2,
+    "yields": {
+      "gold": 5
+    },
+    "requiresBuilding": "building_marketplace",
+    "district": "district_commercial_hub",
+    "requiresTech": "tech_banking"
+  },
+  {
+    "type": "building",
+    "id": "building_museum",
+    "name": "Museum",
+    "description": "+3 culture and +2 tourism.",
+    "icon": "Mu",
+    "cost": 290,
+    "maintenance": 2,
+    "yields": {
+      "culture": 3,
+      "tourism": 2
+    },
+    "requiresBuilding": "building_amphitheater",
+    "district": "district_theater",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_writer",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "requiresCivic": "civic_humanism"
+  },
+  {
+    "type": "building",
+    "id": "building_star_fort",
+    "name": "Star Fort",
+    "description": "+100 more outer defense.",
+    "icon": "SF",
+    "cost": 250,
+    "maintenance": 0,
+    "requiresBuilding": "building_castle",
+    "walls": 100,
+    "requiresTech": "tech_metal_casting"
+  },
+  {
+    "type": "building",
+    "id": "building_factory",
+    "name": "Factory",
+    "description": "+4 production.",
+    "icon": "Fa",
+    "cost": 390,
+    "maintenance": 3,
+    "yields": {
+      "production": 4
+    },
+    "requiresBuilding": "building_workshop",
+    "district": "district_industrial_zone",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_engineer",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "requiresTech": "tech_industrialization"
+  },
+  {
+    "type": "building",
+    "id": "building_electronics_works",
+    "name": "Electronics Works",
+    "description": "+4 production; +4 culture from the Modern era.",
+    "icon": "EW",
+    "cost": 390,
+    "maintenance": 3,
+    "yields": {
+      "production": 4
+    },
+    "requiresBuilding": "building_workshop",
+    "district": "district_industrial_zone",
+    "civ": "civ_japan",
+    "replaces": "building_factory",
+    "localEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "amount": 4
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "era_at_least": "era_modern"
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_engineer",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "requiresTech": "tech_industrialization"
+  },
+  {
+    "type": "building",
+    "id": "building_stock_exchange",
+    "name": "Stock Exchange",
+    "description": "+7 gold.",
+    "icon": "SE",
+    "cost": 390,
+    "maintenance": 3,
+    "yields": {
+      "gold": 7
+    },
+    "requiresBuilding": "building_bank",
+    "district": "district_commercial_hub",
+    "requiresTech": "tech_economics"
+  },
+  {
+    "type": "building",
+    "id": "building_hospital",
+    "name": "Hospital",
+    "description": "+2 food and +1 happiness.",
+    "icon": "Ho",
+    "cost": 340,
+    "maintenance": 2,
+    "yields": {
+      "food": 2
+    },
+    "happiness": 1,
+    "cityOnly": true,
+    "requiresTech": "tech_sanitation"
+  },
+  {
+    "type": "building",
+    "id": "building_power_plant",
+    "name": "Power Plant",
+    "description": "+5 production.",
+    "icon": "PP",
+    "cost": 450,
+    "maintenance": 4,
+    "yields": {
+      "production": 5
+    },
+    "requiresBuilding": "building_factory",
+    "district": "district_industrial_zone",
+    "requiresTech": "tech_electricity"
+  },
+  {
+    "type": "building",
+    "id": "building_research_lab",
+    "name": "Research Lab",
+    "description": "+5 science.",
+    "icon": "RL",
+    "cost": 480,
+    "maintenance": 4,
+    "yields": {
+      "science": 5
+    },
+    "requiresBuilding": "building_university",
+    "district": "district_campus",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_scientist",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "requiresTech": "tech_chemistry"
+  },
+  {
+    "type": "building",
+    "id": "building_broadcast_center",
+    "name": "Broadcast Center",
+    "description": "+4 culture and +3 tourism.",
+    "icon": "BC",
+    "cost": 480,
+    "maintenance": 4,
+    "yields": {
+      "culture": 4,
+      "tourism": 3
+    },
+    "requiresBuilding": "building_museum",
+    "district": "district_theater",
+    "requiresTech": "tech_radio"
+  },
+  {
+    "type": "building",
+    "id": "building_film_studio",
+    "name": "Film Studio",
+    "description": "+4 culture and +6 tourism.",
+    "icon": "FS",
+    "cost": 480,
+    "maintenance": 4,
+    "yields": {
+      "culture": 4,
+      "tourism": 6
+    },
+    "requiresBuilding": "building_museum",
+    "district": "district_theater",
+    "civ": "civ_america",
+    "replaces": "building_broadcast_center",
+    "requiresTech": "tech_radio"
+  },
+  {
+    "type": "building",
+    "id": "building_stadium",
+    "name": "Stadium",
+    "description": "+2 happiness and +2 tourism.",
+    "icon": "St",
+    "cost": 450,
+    "maintenance": 3,
+    "yields": {
+      "tourism": 2
+    },
+    "requiresBuilding": "building_arena",
+    "district": "district_entertainment",
+    "happiness": 2,
+    "requiresCivic": "civic_urbanization"
   }
 ]

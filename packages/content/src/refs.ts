@@ -100,6 +100,7 @@ export function effectRefs(out: Refs, e: Effect, path: PathSegment[]) {
       break;
     case 'modify_strength':
       ids(out, 'unitClass', e.params.unitClass, [...at, 'unitClass']);
+      ids(out, 'unit', e.params.unit, [...at, 'unit']);
       ids(out, 'unitClass', e.params.vs?.classes, [...at, 'vs', 'classes']);
       ids(out, 'feature', e.params.on?.features, [...at, 'on', 'features']);
       break;
@@ -229,6 +230,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       requirements(out, entity);
       uniqueRefs(out, 'unit', entity);
       yieldKeys(out, entity.killYields, ['killYields']);
+      ids(out, 'unit', entity.upgradesTo, ['upgradesTo']);
       break;
     case 'improvement':
       requirements(out, entity);
@@ -270,6 +272,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'project':
       ids(out, 'feature', entity.clears, ['clears']);
+      ids(out, 'district', entity.onDistrict, ['onDistrict']);
       yieldKeys(out, entity.reward, ['reward']);
       requirements(out, entity);
       break;
@@ -353,6 +356,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       }
       ids(out, 'unit', entity.units.startingUnits, ['units', 'startingUnits']);
       out.push({ path: ['greatPeople', 'unit'], kind: 'unit', id: entity.greatPeople.unit });
+      ids(out, 'project', entity.science.projects, ['science', 'projects']);
       out.push({
         path: ['religion', 'holyDistrict'],
         kind: 'district',

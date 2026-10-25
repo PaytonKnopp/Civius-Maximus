@@ -15,7 +15,7 @@ export interface GameState {
   status: 'playing' | 'ended';
   /** How the game ended, once it has. */
   result: {
-    reason: 'score' | 'conquest' | 'domination' | 'religion';
+    reason: 'score' | 'conquest' | 'domination' | 'religion' | 'science' | 'culture';
     winner: PlayerId | null;
   } | null;
   /** Starts at 1. */
@@ -51,6 +51,8 @@ export interface GameState {
   religions: Record<string, Religion>;
   /** City-states, by the id of the player that is each one (outside the turn order). */
   cityStates: Record<PlayerId, CityStateState>;
+  /** Tourism each player has sent toward each other player so far (culture victory). */
+  tourism: Record<PlayerId, Record<PlayerId, number>>;
   /** The great people race (docs/04-advanced-systems.md, "Great people"). */
   greatPeople: {
     /** Points per player, per great person class. */
@@ -300,6 +302,9 @@ export interface GameSettings {
   religion?: boolean | undefined;
   /** City-states on the map (on unless false). */
   cityStates?: boolean | undefined;
+  /** Science and culture victories (on unless false). */
+  science?: boolean | undefined;
+  culture?: boolean | undefined;
 }
 
 export interface PlayerState {
@@ -335,6 +340,14 @@ export interface PlayerState {
   religion: string | null;
   /** Envoys they can send to city-states for free. */
   envoys: number;
+  /** Culture earned over the whole game (their domestic tourists), in hundredths. */
+  lifetimeCulture: number;
+  /** Tourism their settlements made last turn, in hundredths. */
+  tourismRate: number;
+  /** Space projects finished, in order (science victory). */
+  spaceProjects: string[];
+  /** The turn their last space project arrives (and they win), once it's launched. */
+  expeditionArrives: number | null;
   /** Faith stored, in hundredths (spent from M13). */
   faith: number;
   capital: SettlementId | null;
