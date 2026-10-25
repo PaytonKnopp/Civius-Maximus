@@ -188,8 +188,11 @@ Realtime messages per month, 5 GB egress, and 2 active projects.
   (`aggression`, `expansion`, `science`...), so modded leaders can have modded personalities.
 - It gets **the same redacted view** a human player would (no cheating), apart from optional
   difficulty bonuses that are declared openly in the lobby.
-- Runs in its own Web Worker, so AI thinking never freezes the UI. (For now it runs on the
-  page between turns: about 40 ms per AI on a Standard map, a few hundred ms at most.)
+- Runs in its own Web Worker, so AI thinking never freezes the UI. **Built (V1 part 10):**
+  End Turn (when it ends the round) and the AI seats' turns run in a background worker
+  (`client/src/game/ai.worker.ts`, using `runTurn` from the host); the page shows "Rivals are
+  moving…" and holds actions until it's back. Same engine, same result as on the page, which
+  it falls back to if workers aren't available.
 - It keeps **no memory between turns**: every turn is planned from the state, so saves, replays
   and host handoff need nothing extra, and the same state always gets the same moves.
 - What it can know: tiles it sees now, tiles it has explored, settlements on explored tiles, and

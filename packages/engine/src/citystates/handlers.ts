@@ -65,6 +65,8 @@ export function cityStatePlayer(
     religion: null,
     envoys: 0,
     lifetimeCulture: 0,
+    scienceRate: 0,
+    cultureRate: 0,
     tourismRate: 0,
     spaceProjects: [],
     expeditionArrives: null,

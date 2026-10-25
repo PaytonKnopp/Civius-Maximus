@@ -96,6 +96,8 @@ export type {
   TradeRoute,
   Religion,
   CityStateState,
+  HistoryEntry,
+  TurnStats,
   CitizenFocus,
   GameSettings,
   GameState,

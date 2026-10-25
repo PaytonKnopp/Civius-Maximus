@@ -3,7 +3,7 @@
 // Usage: node scripts/screenshot-districts.mjs <out-dir>   (BASE_URL defaults to a vite preview)
 import { chromium } from 'playwright';
 const out = process.argv[2];
-const url = `${process.env.BASE_URL ?? 'http://localhost:4173/'}?debug`;
+const url = `${process.env.BASE_URL ?? 'http://localhost:4173/'}?debug#play`;
 const browser = await chromium.launch({
   executablePath:
     process.env.CHROMIUM_PATH ??

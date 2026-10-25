@@ -2,7 +2,7 @@
 // loads it. Usage: node scripts/screenshot-hotseat.mjs <out-dir>   (BASE_URL: a vite preview)
 import { chromium } from 'playwright';
 const out = process.argv[2];
-const url = process.env.BASE_URL ?? 'http://localhost:4173/';
+const url = `${process.env.BASE_URL ?? 'http://localhost:4173/'}#play`;
 const TURNS = Number(process.env.TURNS ?? 4);
 const browser = await chromium.launch({
   executablePath:

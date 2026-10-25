@@ -274,6 +274,8 @@ export function empireTurn(
   const p = draft.players[player]!;
   // Domestic tourists come from all the culture ever earned; tourism goes out in the culture step.
   p.lifetimeCulture += totals.culture;
+  p.scienceRate = totals.science;
+  p.cultureRate = totals.culture;
   p.tourismRate = totals.tourism;
 
   // Upkeep. An empty treasury disbands a unit (the costliest, newest first), one per turn.

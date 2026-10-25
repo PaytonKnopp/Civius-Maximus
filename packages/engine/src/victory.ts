@@ -1,7 +1,8 @@
 import type { Draft } from 'immer';
 import type { EngineContext, Emit } from './context';
 import { playerEra } from './progress/rules';
-import type { GameState, PlayerId } from './state';
+import { militaryStrength } from './combat/strength';
+import type { GameState, PlayerId, TurnStats } from './state';
 
 /**
  * Score and victories (docs/03-core-mechanics.md section 11, docs/04-advanced-systems.md
@@ -110,4 +111,25 @@ export function scoreVictory(draft: Draft<GameState>, ctx: EngineContext, emit: 
     if (!best || score > best.score) best = { id, score };
   }
   endGame(draft, 'score', best?.id ?? null, emit);
+}
+
+/** End of each turn: every living civ's numbers, for the graphs. */
+export function historyTurn(draft: Draft<GameState>, ctx: EngineContext) {
+  const state = draft as GameState;
+  const stats: Record<PlayerId, TurnStats> = {};
+  for (const id of state.playerOrder) {
+    const p = state.players[id]!;
+    if (!p.alive) continue;
+    const mine = Object.values(state.settlements).filter((s) => s.owner === id);
+    stats[id] = {
+      score: scoreOf(ctx, state, id).total,
+      science: Math.floor(p.scienceRate / 100),
+      culture: Math.floor(p.cultureRate / 100),
+      tourism: Math.floor(p.tourismRate / 100),
+      military: militaryStrength(ctx, state, id),
+      citizens: mine.reduce((n, s) => n + s.population, 0),
+      settlements: mine.length,
+    };
+  }
+  draft.history.push({ turn: draft.turn, stats });
 }

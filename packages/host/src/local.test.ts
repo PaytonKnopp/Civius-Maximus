@@ -1,7 +1,7 @@
 import { compileFromDirs } from '@cx/content/node';
 import { describe, expect, it } from 'vitest';
 import { stateHash } from '@cx/engine';
-import { LocalGame } from './local';
+import { type AiRunner, LocalGame, runTurn } from './local';
 import { makeSave, readSave } from './saves';
 
 const ctx = { content: compileFromDirs().content! };
@@ -33,6 +33,39 @@ describe('LocalGame', () => {
     expect(game.state.turn).toBe(2);
     expect(game.state.players.p2!.turnEnded).toBe(true);
     expect(seen).toContain('turn_started');
+  });
+
+  it('can run End Turn and the AI turns in a runner, refusing actions meanwhile', async () => {
+    let calls = 0;
+    const runner: AiRunner = async (state, action) => {
+      calls++;
+      return runTurn(ctx, structuredClone(state), action);
+    };
+    const settled = (g: LocalGame) =>
+      new Promise<void>((done) => {
+        const off = g.subscribe(() => {
+          if (!g.busy) {
+            off();
+            done();
+          }
+        });
+      });
+    const sync = new LocalGame(setup(['human', 'ai']), ctx);
+    const game = new LocalGame(setup(['human', 'ai']), ctx, runner);
+    // The AI's first turn runs in the runner too.
+    expect(game.busy).toBe(true);
+    await settled(game);
+    expect(stateHash(game.state)).toBe(stateHash(sync.state));
+    expect(game.act({ type: 'end_turn', player: 'p1' }).ok).toBe(true);
+    expect(game.busy).toBe(true);
+    const refused = game.act({ type: 'unend_turn', player: 'p1' });
+    expect(!refused.ok && refused.error.code).toBe('busy');
+    await settled(game);
+    sync.act({ type: 'end_turn', player: 'p1' });
+    expect(game.state.turn).toBe(2);
+    expect(stateHash(game.state)).toBe(stateHash(sync.state));
+    expect(Object.isFrozen(game.state.players)).toBe(true);
+    expect(calls).toBe(2);
   });
 
   it('gives AI seats settlements that keep building', () => {
