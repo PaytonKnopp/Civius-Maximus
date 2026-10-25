@@ -262,7 +262,7 @@ feel populated and give players something to compete over even when there's no w
   Theology, Guilds), quests and meeting first; otherwise 40 influence each. 1, 3 and 6 envoys
   unlock its kind's bonuses (e.g. Scientific: +2 science in your capital, then +2 in every
   settlement with a Campus, then +2 more). The most envoys, at least 3, makes you **suzerain**:
-  its own bonus (Ugarit: +1 trade route; Petra: +15% production toward wonders...). A tie keeps
+  its own bonus (Ugarit: +1 trade route; Byblos: +15% production toward wonders...). A tie keeps
   the current suzerain.
 - **Quests:** build its kind's district, and send it a trade route: +1 envoy each, once.
 - **War:** declaring war on one costs every envoy you had there; it takes peace whenever

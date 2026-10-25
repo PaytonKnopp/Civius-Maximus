@@ -747,11 +747,11 @@
   },
   {
     "type": "cityState",
-    "id": "cs_petra",
-    "name": "Petra",
+    "id": "cs_byblos",
+    "name": "Byblos",
     "cityStateType": "cst_industrial",
     "suzerain": {
-      "name": "Rock-Cut Halls",
+      "name": "Temple Builders",
       "description": "+15% production toward wonders.",
       "effects": [
         {

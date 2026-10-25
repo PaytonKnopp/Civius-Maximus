@@ -155,7 +155,7 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
 
 ### Part 8: city-states
 - 🏛 **City-states** (top bar, or I): 3–18 on the map by size, six kinds (Scientific, Cultural,
-  Trade, Religious, Militaristic, Industrial), 18 named ones (Ugarit, Petra, Sparta, Delphi...).
+  Trade, Religious, Militaristic, Industrial), 18 named ones (Ugarit, Byblos, Sparta, Delphi...).
 - Find one to meet it (the first to arrive gets a free envoy). **Send envoys** (free ones from
   civics and quests, or 40 influence): 1, 3 and 6 unlock its kind's bonuses; the most (at
   least 3) makes you **suzerain** with its own bonus.
