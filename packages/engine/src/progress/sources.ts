@@ -1,4 +1,5 @@
 import { type Effect, resolveText, type SlotKind } from '@cx/content';
+import { cityStateSources } from '../citystates/rules';
 import type { EngineContext } from '../context';
 import { evaluateCondition } from '../effects/conditions';
 import type { PlayerFacts, SettlementFacts } from '../effects/tile';
@@ -74,6 +75,7 @@ export function settlementFacts(state: GameState, s: SettlementState): Settlemen
     capital: s.capital,
     population: s.population,
     buildings: s.buildings,
+    districts: s.districts.map((d) => d.id),
     onRiver: tileTouchesRiver(state.map, state.map.tiles, s.tile),
     unitsTrained: s.unitsTrained,
   };
@@ -222,8 +224,8 @@ export function religionSources(
 }
 
 /**
- * Every source that applies to a player's tiles and settlements (plus one settlement's own,
- * and its religion's follower beliefs).
+ * Every source that applies to a player's tiles and settlements (city-state bonuses included),
+ * plus one settlement's own and its religion's follower beliefs.
  */
 export function sourcesFor(
   ctx: EngineContext,
@@ -231,7 +233,11 @@ export function sourcesFor(
   player: PlayerId,
   settlement?: SettlementState,
 ): EffectSource[] {
-  const base = [...activeSources(ctx, state.players[player]!), ...builtSources(ctx, state, player)];
+  const base = [
+    ...activeSources(ctx, state.players[player]!),
+    ...builtSources(ctx, state, player),
+    ...cityStateSources(ctx, state, player),
+  ];
   return settlement
     ? [...base, ...localSources(ctx, settlement), ...religionSources(ctx, state, settlement)]
     : base;

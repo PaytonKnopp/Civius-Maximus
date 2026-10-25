@@ -714,7 +714,7 @@ interface SettlementTurn {
   happiness: number;
 }
 
-function processSettlement(
+export function processSettlement(
   draft: Draft<GameState>,
   ctx: EngineContext,
   id: string,

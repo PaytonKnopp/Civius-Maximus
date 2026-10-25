@@ -32,6 +32,7 @@ interface NewGameOptions {
   camps: boolean;
   domination: boolean;
   religion: boolean;
+  cityStates: boolean;
   turnLimit: number | null;
 }
 
@@ -43,6 +44,7 @@ function makeSetup(o: NewGameOptions): GameSetup {
       camps: o.camps,
       domination: o.domination,
       religion: o.religion,
+      cityStates: o.cityStates,
       turnLimit: o.turnLimit,
       map: {
         script: o.script,
@@ -97,6 +99,7 @@ export function App() {
     camps: true,
     domination: true,
     religion: true,
+    cityStates: true,
     turnLimit: null,
   });
   const [start, setStart] = useState<GameStart>(() => ({
@@ -365,6 +368,15 @@ function NewGameDialog({
             onChange={(e) => setO({ ...o, camps: e.target.checked })}
           />
           Hostile camps (raiders)
+        </label>
+        <label className="check" htmlFor="ng-city-states">
+          <input
+            id="ng-city-states"
+            type="checkbox"
+            checked={o.cityStates}
+            onChange={(e) => setO({ ...o, cityStates: e.target.checked })}
+          />
+          City-states (envoys, suzerains and their bonuses)
         </label>
         <label className="check" htmlFor="ng-domination">
           <input

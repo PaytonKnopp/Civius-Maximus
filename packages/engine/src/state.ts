@@ -49,6 +49,8 @@ export interface GameState {
   routes: TradeRoute[];
   /** Religions founded so far, by id. */
   religions: Record<string, Religion>;
+  /** City-states, by the id of the player that is each one (outside the turn order). */
+  cityStates: Record<PlayerId, CityStateState>;
   /** The great people race (docs/04-advanced-systems.md, "Great people"). */
   greatPeople: {
     /** Points per player, per great person class. */
@@ -56,6 +58,20 @@ export interface GameState {
     /** Great people already earned (or bought), and by whom. */
     claimed: Record<string, PlayerId>;
   };
+}
+
+/** A city-state (docs/04-advanced-systems.md, "Independent powers"). */
+export interface CityStateState {
+  /** Its `cityState` content id. */
+  def: string;
+  /** Envoys each player has there. */
+  envoys: Record<PlayerId, number>;
+  /** Who leads it: the most envoys, at least `suzerainEnvoys`. */
+  suzerain: PlayerId | null;
+  /** Players who have met it (seen its settlement), in the order they did. */
+  met: PlayerId[];
+  /** Quests each player has finished there. */
+  quests: Record<PlayerId, string[]>;
 }
 
 /** A religion (docs/04-advanced-systems.md, "Religion"). */
@@ -282,13 +298,16 @@ export interface GameSettings {
   domination?: boolean | undefined;
   /** Religious victory (on unless false). */
   religion?: boolean | undefined;
+  /** City-states on the map (on unless false). */
+  cityStates?: boolean | undefined;
 }
 
 export interface PlayerState {
   id: PlayerId;
   name: string;
   /** `hostile`: the owner of camp raiders, outside the turn order (see `HOSTILE`). */
-  kind: 'human' | 'ai' | 'hostile';
+  /** `cityState`: one of the city-states (outside the turn order, like `hostile`). */
+  kind: 'human' | 'ai' | 'hostile' | 'cityState';
   /** Team number; players on the same team share victory. `null` = no team. */
   team: number | null;
   alive: boolean;
@@ -314,6 +333,8 @@ export interface PlayerState {
   beliefs: string[];
   /** The religion they founded, if any. */
   religion: string | null;
+  /** Envoys they can send to city-states for free. */
+  envoys: number;
   /** Faith stored, in hundredths (spent from M13). */
   faith: number;
   capital: SettlementId | null;

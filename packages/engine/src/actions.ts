@@ -197,6 +197,10 @@ export const Action = z.discriminatedUnion('type', [
   /** Publicly denounce a player (costs influence; a war soon after isn't a surprise). */
   z.strictObject({ type: z.literal('denounce'), player: PlayerRef, target: PlayerRef }),
 
+  // City-states
+  /** Send an envoy to a city-state (a free one if you have it, otherwise for influence). */
+  z.strictObject({ type: z.literal('send_envoy'), player: PlayerRef, cityState: PlayerRef }),
+
   // Religion
   /** Take a pantheon belief for some faith (each one can only be taken once). */
   z.strictObject({ type: z.literal('found_pantheon'), player: PlayerRef, belief: ContentRef }),

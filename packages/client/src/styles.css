@@ -2637,3 +2637,34 @@ label.belief-card {
 .great-person button + button {
   margin-left: 8px;
 }
+
+.progress-chip.attention {
+  border-color: var(--accent, #e3b25a);
+}
+.cs-card {
+  border-top-width: 3px;
+}
+.settlement-panel .cs-card {
+  margin: 8px 0;
+}
+.cs-tiers,
+.cs-quests {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.cs-tiers li.on,
+.cs-quests li.on {
+  color: inherit;
+}
+.cs-tiers .mono {
+  display: inline-block;
+  min-width: 1.4em;
+  text-align: center;
+}
+.cs-unmet {
+  padding: 0 16px 16px;
+}

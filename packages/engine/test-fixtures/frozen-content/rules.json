@@ -257,6 +257,16 @@
     "friendshipOpinion": 6,
     "allianceOpinion": 14
   },
+  "cityStates": {
+    "minDistance": 7,
+    "envoyInfluence": 40,
+    "suzerainEnvoys": 3,
+    "firstMeetEnvoys": 1,
+    "questEnvoys": 1,
+    "liberateEnvoys": 6,
+    "maxUnits": 3,
+    "startingPopulation": 2
+  },
   "religion": {
     "pantheonFaith": 25,
     "extraReligions": 1,

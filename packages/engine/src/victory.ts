@@ -59,7 +59,9 @@ export function dominationProgress(
   let held = 0;
   let needed = 0;
   for (const s of Object.values(state.settlements)) {
-    if (!s.originalCapital || team.has(s.founder)) continue;
+    // City-states' capitals don't count: only civs'.
+    if (!s.originalCapital || team.has(s.founder) || !state.playerOrder.includes(s.founder))
+      continue;
     needed++;
     if (team.has(s.owner)) held++;
   }

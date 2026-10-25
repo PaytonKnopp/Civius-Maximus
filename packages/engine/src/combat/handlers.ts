@@ -13,6 +13,7 @@ import {
   warKey,
 } from '../context';
 import { view } from '../draft';
+import { addEnvoys } from '../citystates/handlers';
 import { forgetPlayer } from '../diplomacy/handlers';
 import { endRoutesBetween } from '../trade/handlers';
 import { isSurpriseWar, warBlock } from '../diplomacy/rules';
@@ -256,6 +257,11 @@ function checkDefeat(draft: Draft<GameState>, player: PlayerId, by: PlayerId | n
     if (k.split('|').includes(player)) delete draft.warSupport[k];
   }
   forgetPlayer(draft, player);
+  const cs = draft.cityStates[player];
+  if (cs) {
+    cs.envoys = {};
+    cs.suzerain = null;
+  }
   emit({ type: 'player_defeated', player, by, visibleTo: 'all' });
 }
 
@@ -368,6 +374,9 @@ function liberate(draft: Draft<GameState>, ctx: EngineContext, id: string, emit:
   const s = draft.settlements[id]!;
   const by = s.owner;
   const to = s.founder;
+  // A freed city-state comes back, and owes its liberator.
+  const cityState = draft.players[to]!.kind === 'cityState';
+  if (cityState) draft.players[to]!.alive = true;
   s.owner = to;
   s.capturedFrom = null;
   s.captureChoice = false;
@@ -376,6 +385,8 @@ function liberate(draft: Draft<GameState>, ctx: EngineContext, id: string, emit:
   refreshCitizens(draft, ctx, id);
   refreshExplored(draft, ctx, to);
   emit({ type: 'settlement_liberated', settlement: id, name: s.name, by, to, visibleTo: 'all' });
+  if (cityState && draft.cityStates[to])
+    addEnvoys(draft, ctx, to, by, ctx.content.rules.cityStates.liberateEnvoys, emit);
 }
 
 /** Why a just-captured settlement can't be razed, or undefined. */
@@ -392,7 +403,9 @@ export function liberateProblem(state: GameState, s: SettlementState): RuleError
   if (s.founder === s.owner) return { code: 'own_founder', message: 'You founded it' };
   if (s.founder === s.capturedFrom)
     return { code: 'founder_is_enemy', message: 'It was taken from its founder' };
-  if (!state.players[s.founder]?.alive)
+  // A conquered city-state can always be freed.
+  const founder = state.players[s.founder];
+  if (!founder?.alive && founder?.kind !== 'cityState')
     return { code: 'founder_gone', message: 'Its founder is no longer in the game' };
   return undefined;
 }
@@ -401,7 +414,11 @@ export function liberateProblem(state: GameState, s: SettlementState): RuleError
 function warProblem(state: GameState, player: PlayerId, target: PlayerId): RuleError | undefined {
   const p = state.players[player]!;
   const t = state.players[target];
-  if (!t?.alive || target === player || !state.playerOrder.includes(target))
+  if (
+    !t?.alive ||
+    target === player ||
+    (!state.playerOrder.includes(target) && t.kind !== 'cityState')
+  )
     return { code: 'bad_target', message: 'No such player in the game' };
   if (p.team !== null && p.team === t.team)
     return { code: 'teammate', message: `${t.name} is on your team` };
@@ -653,7 +670,13 @@ export const combatHandlers = {
     },
     apply(draft, action, ctx, emit) {
       const key = warKey(action.player, action.target);
-      const surprise = isSurpriseWar(ctx, view(draft), action.player, action.target);
+      const cityState = draft.players[action.target]!.kind === 'cityState';
+      const surprise = !cityState && isSurpriseWar(ctx, view(draft), action.player, action.target);
+      // A war on a city-state costs every envoy you had there.
+      if (cityState) {
+        const envoys = draft.cityStates[action.target]?.envoys[action.player] ?? 0;
+        if (envoys > 0) addEnvoys(draft, ctx, action.target, action.player, -envoys, emit);
+      }
       draft.wars = [...draft.wars, key].sort();
       draft.warStarted[key] = draft.turn;
       draft.diplomacy.lastWar[key] = draft.turn;
@@ -692,8 +715,11 @@ export const combatHandlers = {
       );
     },
     apply(draft, action, ctx, emit) {
-      // If they already offered peace, offering back makes it.
-      if (draft.peaceOffers.includes(`${action.target}>${action.player}`)) {
+      // If they already offered peace, offering back makes it. City-states always take it.
+      if (
+        draft.peaceOffers.includes(`${action.target}>${action.player}`) ||
+        draft.players[action.target]!.kind === 'cityState'
+      ) {
         endWar(draft, ctx, action.player, action.target);
         emit({ type: 'peace_made', players: [action.player, action.target], visibleTo: 'all' });
         return;

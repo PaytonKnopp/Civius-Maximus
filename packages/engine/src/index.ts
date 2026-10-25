@@ -95,6 +95,7 @@ export type {
   Proposal,
   TradeRoute,
   Religion,
+  CityStateState,
   CitizenFocus,
   GameSettings,
   GameState,
@@ -253,3 +254,15 @@ export {
   religiousProgress,
   spreadProblem,
 } from './religion/rules';
+export {
+  bonusesFrom,
+  cityStateDef,
+  cityStateIds,
+  cityStateSettlement,
+  cityStateType,
+  envoyProblem,
+  envoysOf,
+  isCityState,
+  type Quest,
+  questsOf,
+} from './citystates/rules';

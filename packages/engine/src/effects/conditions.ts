@@ -109,6 +109,12 @@ export function evaluateCondition(ctx: ConditionContext, c: Condition): boolean 
     );
   }
 
+  if ('settlement_has_district' in c) {
+    const wanted = c.settlement_has_district;
+    return (settlement?.districts ?? []).some(
+      (d) => oneOf(d, wanted) || oneOf(baseOf({ content: ctx.content }, 'district', d), wanted),
+    );
+  }
   if ('has_tech' in c) return !!player && player.techs.includes(c.has_tech);
   if ('has_civic' in c) return !!player && player.civics.includes(c.has_civic);
   if ('government_is' in c) return !!player && oneOf(player.government, c.government_is);

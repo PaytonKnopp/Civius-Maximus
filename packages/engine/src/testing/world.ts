@@ -79,6 +79,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     greatPeople: [],
     beliefs: [],
     religion: null,
+    envoys: 0,
     faith: 0,
     capital: null,
     settlementsFounded: 0,
@@ -121,6 +122,7 @@ export function testState(rows: string[], opts: { explored?: boolean } = {}): Ga
     routes: [],
     greatPeople: { points: {}, claimed: {} },
     religions: {},
+    cityStates: {},
   };
 }
 

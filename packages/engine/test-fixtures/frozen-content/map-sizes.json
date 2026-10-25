@@ -6,7 +6,8 @@
     "width": 44,
     "height": 26,
     "players": 2,
-    "order": 10
+    "order": 10,
+    "cityStates": 3
   },
   {
     "type": "mapSize",
@@ -15,7 +16,8 @@
     "width": 60,
     "height": 38,
     "players": 4,
-    "order": 20
+    "order": 20,
+    "cityStates": 6
   },
   {
     "type": "mapSize",
@@ -24,7 +26,8 @@
     "width": 74,
     "height": 46,
     "players": 6,
-    "order": 30
+    "order": 30,
+    "cityStates": 9
   },
   {
     "type": "mapSize",
@@ -33,7 +36,8 @@
     "width": 84,
     "height": 54,
     "players": 8,
-    "order": 40
+    "order": 40,
+    "cityStates": 12
   },
   {
     "type": "mapSize",
@@ -42,7 +46,8 @@
     "width": 96,
     "height": 60,
     "players": 10,
-    "order": 50
+    "order": 50,
+    "cityStates": 15
   },
   {
     "type": "mapSize",
@@ -51,6 +56,7 @@
     "width": 106,
     "height": 66,
     "players": 12,
-    "order": 60
+    "order": 60,
+    "cityStates": 18
   }
 ]

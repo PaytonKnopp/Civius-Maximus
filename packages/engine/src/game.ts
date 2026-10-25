@@ -1,4 +1,4 @@
-import { type Draft, freeze, produce } from 'immer';
+import { castDraft, type Draft, freeze, produce } from 'immer';
 import { placeStartingCamps, raidersTurn } from './combat/camps';
 import { combatHandlers, combatTurn, healUnits } from './combat/handlers';
 import type { Action, ActionType } from './actions';
@@ -19,6 +19,7 @@ import { commanderHandlers } from './units/commanders';
 import { tradeHandlers, tradeTurn } from './trade/handlers';
 import { greatPeopleHandlers, greatPeopleTurn } from './greatpeople/greatpeople';
 import { religionHandlers, religionTurn } from './religion/handlers';
+import { cityStateHandlers, cityStatesTurn, placeCityStates } from './citystates/handlers';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
 
@@ -119,6 +120,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       greatPeople: [],
       beliefs: [],
       religion: null,
+      envoys: 0,
       faith: 0,
       capital: null,
       settlementsFounded: 0,
@@ -152,13 +154,17 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     routes: [],
     greatPeople: { points: {}, claimed: {} },
     religions: {},
+    cityStates: {},
   };
   spawnStartingUnits(state, ctx);
   placeStartingCamps(state, ctx, random);
-  state.rng = random.state();
+  const placed = produce(state, (draft) => {
+    placeCityStates(draft, ctx, random);
+    draft.rng = castDraft(random.state());
+  });
   // Frozen like every later state: Immer then shares the untouched parts instead of copying
   // them (snapshots during turn processing would otherwise copy the whole map each time).
-  return freeze(state, true);
+  return freeze(placed, true);
 }
 
 const handlers: Handlers = {
@@ -171,6 +177,7 @@ const handlers: Handlers = {
   ...tradeHandlers,
   ...greatPeopleHandlers,
   ...religionHandlers,
+  ...cityStateHandlers,
   end_turn: {
     validate(state, action) {
       const p = state.players[action.player];
@@ -206,6 +213,7 @@ const handlers: Handlers = {
 const turnSteps: TurnStep[] = [
   { id: 'combat', order: 90, run: combatTurn },
   { id: 'settlements', order: 100, run: settlementsTurn },
+  { id: 'cityStates', order: 105, run: cityStatesTurn },
   { id: 'diplomacy', order: 110, run: diplomacyTurn },
   { id: 'trade', order: 120, run: tradeTurn },
   { id: 'greatPeople', order: 115, run: greatPeopleTurn },

@@ -244,6 +244,10 @@ export function advance(
   const overflow = track.progress[id]! - cost;
   delete track.progress[id];
   track.done.push(id);
+  // One-off rewards for finishing it: envoys.
+  const node = kind === 'tech' ? ctx.content.entities.tech[id] : ctx.content.entities.civic[id];
+  for (const e of node?.effects ?? [])
+    if (e.effect === 'grant_envoys') draft.players[player]!.envoys += e.params.amount;
   track.current = track.queue.shift() ?? null;
   if (track.current)
     track.progress[track.current] = (track.progress[track.current] ?? 0) + overflow;
