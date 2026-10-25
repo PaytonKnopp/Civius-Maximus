@@ -16,8 +16,11 @@ execSync('pnpm exec vite build', {
 });
 const dist = join(root, 'dist-artifact');
 const assets = readdirSync(join(dist, 'assets'));
-const js = assets.filter((f) => f.endsWith('.js'));
+// The page's bundle, and the AI worker's (inlined below as a blob URL the page picks up).
+const worker = assets.filter((f) => f.startsWith('ai.worker') && f.endsWith('.js'));
+const js = assets.filter((f) => f.endsWith('.js') && !worker.includes(f));
 if (js.length !== 1) throw new Error(`Expected one JS bundle, got: ${js.join(', ')}`);
+const workerSource = worker.map((f) => readFileSync(join(dist, 'assets', f), 'utf8'))[0];
 const css = assets
   .filter((f) => f.endsWith('.css'))
   .map((f) => readFileSync(join(dist, 'assets', f), 'utf8'));
@@ -31,6 +34,7 @@ const fonts = head.match(/<link[^>]+fonts\.googleapis\.com\/css2[^>]+>/)?.[0] ??
 const title = head.match(/<title>.*<\/title>/)[0];
 
 const page = [
+  '<meta charset="utf-8">',
   title,
   '<meta name="claude:viewport-fit-sides" content="cover">',
   '<link rel="preconnect" href="https://fonts.googleapis.com">',
@@ -38,6 +42,13 @@ const page = [
   fonts.replace(/\s+/g, ' '),
   `<style>\n${css.join('\n')}\n</style>`,
   '<div id="root"></div>',
+  ...(workerSource
+    ? [
+        `<script>window.cxAiWorker = URL.createObjectURL(new Blob([${JSON.stringify(
+          workerSource,
+        ).replaceAll('</script', '<\\/script')}], { type: 'text/javascript' }));</script>`,
+      ]
+    : []),
   `<script type="module">\n${script}\n</script>`,
   '',
 ].join('\n');

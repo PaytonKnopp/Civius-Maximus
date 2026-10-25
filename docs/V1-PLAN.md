@@ -22,7 +22,7 @@ Milestone numbers refer to [07-roadmap.md](07-roadmap.md). Each part ends with a
 | 9 | **Later eras**: Renaissance → Modern techs, civics, units, buildings, governments; science and culture victories | M21 | ✅ (up to Modern; air units, nukes, ideologies and great works later) |
 | 10 | **Polish**: home screen, first-game guidance, lenses, graphs and end-of-game recap, phone layout, AI in a background worker, visual pass | M21b, M21e, M29 | ✅ |
 | 11 | **Online play**: host in the browser, join by code | M12–M13 | ✅ (no accounts yet, D82) |
-| 12 | **Master review**: [V1-REVIEW.md](V1-REVIEW.md), every decision listed for one sitting | — | |
+| 12 | **Master review**: [V1-REVIEW.md](V1-REVIEW.md), every decision listed for one sitting | — | ✅ |
 
 Working rules (from CLAUDE.md): the design docs stay the source of truth (update them with each
 part); taste calls become DECISIONS.md rows with a recommended default and also get listed in

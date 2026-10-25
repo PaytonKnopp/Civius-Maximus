@@ -96,7 +96,7 @@ This keeps the core small, lets us ship systems one at a time, and gives players
 |---|---|---|---|
 | **Single player** (vs AI) | Your browser (a Web Worker) | No | No (optional, for cloud saves) |
 | **Hotseat** | Your browser | No | No |
-| **Multiplayer** | The **host's** browser or desktop app. Other players connect by **join code** | Yes | Yes |
+| **Multiplayer** | The **host's** browser or desktop app. Other players connect by **join code** | Yes | Not in V1 (D82); with Supabase later |
 
 All three use the same **host** package. Single player is just a game where the host has one
 human and several AI seats, all on your machine.
