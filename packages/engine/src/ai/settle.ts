@@ -87,6 +87,14 @@ function candidateSites(t: Turn): number[] {
   });
 }
 
+/** The best places a player knows of to found a settlement, with scores (the settler lens). */
+export function bestSites(t: Turn, count: number): { tile: number; score: number }[] {
+  return candidateSites(t)
+    .map((tile) => ({ tile, score: siteScore(t, tile) }))
+    .sort((a, b) => b.score - a.score || a.tile - b.tile)
+    .slice(0, count);
+}
+
 /** Sites that are still free, safe, and not already picked by another of our settlers. */
 function openSites(t: Turn, except?: UnitState): number[] {
   const map = t.state.map;

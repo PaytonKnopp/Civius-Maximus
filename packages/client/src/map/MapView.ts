@@ -210,6 +210,7 @@ export class MapView implements MapRenderer {
         place: 0x7fc3e8,
         planned: 0xb49ce0,
         attack: 0xe0503c,
+        lens: 0xc9d0d4,
       };
       for (const h of highlights) {
         const node = new Container();
@@ -219,7 +220,7 @@ export class MapView implements MapRenderer {
         );
         const g = new Graphics();
         if (h.tone === 'worked') g.circle(0, -12, 4).fill(tones.worked);
-        else g.poly(hexPoints(0, 0, HEX - 3)).stroke({ width: 3, color: tones[h.tone] });
+        else g.poly(hexPoints(0, 0, HEX - 3)).stroke({ width: 3, color: h.color ?? tones[h.tone] });
         node.addChild(g);
         if (h.label && h.tone !== 'worked') {
           const t = new Text({

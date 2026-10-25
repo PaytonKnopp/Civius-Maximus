@@ -3409,6 +3409,13 @@
                 "archer",
                 "cavalry",
                 "ship",
+                "rifle",
+                "siege",
+                "cannon",
+                "tank",
+                "steamship",
+                "commander",
+                "robed",
                 "generic"
               ]
             }
@@ -61056,6 +61063,13 @@
                   "archer",
                   "cavalry",
                   "ship",
+                  "rifle",
+                  "siege",
+                  "cannon",
+                  "tank",
+                  "steamship",
+                  "commander",
+                  "robed",
                   "generic"
                 ]
               }

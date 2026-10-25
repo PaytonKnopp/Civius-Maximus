@@ -7,6 +7,7 @@ import {
   MapGenerationError,
   type MapState,
   scoreStarts,
+  tilesWithin,
 } from '@cx/engine';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { TileCard } from '../components/TileCard';
@@ -16,6 +17,7 @@ import {
   type MapViewOptions,
   PLAYER_COLORS,
   type Quality,
+  type UnitView,
 } from '../map/renderer';
 import { World3D } from '../map3d/World3D';
 
@@ -70,6 +72,7 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
   const [hover, setHover] = useState<number>();
   const [selected, setSelected] = useState<number>();
   const [fps, setFps] = useState(0);
+  const [showModels, setShowModels] = useState(false);
   // Phones open on the map; the controls are one tap away.
   const [panelOpen, setPanelOpen] = useState(() => window.innerWidth > 640);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -125,6 +128,14 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
     void viewRef.current?.setOptions(options);
   }, [options]);
 
+  // One unit of every 3D model family on the land around the first start, to look at the art.
+  useEffect(() => {
+    if (!generated) return;
+    viewRef.current?.setUnits(
+      showModels ? modelShowcase(content, generated.map, generated.starts.p1 ?? 0) : [],
+    );
+  }, [generated, mode, showModels, content]);
+
   const inspected = selected ?? hover;
   const scores = useMemo(
     () => (generated ? scoreStarts(generated.map, content, generated.starts) : {}),
@@ -158,7 +169,11 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
             Back to game
           </button>
         )}
-        <button type="button" className="panel-toggle" onClick={() => setPanelOpen((o) => !o)}>
+        <button
+          type="button"
+          className="panel-toggle controls-toggle"
+          onClick={() => setPanelOpen((o) => !o)}
+        >
           {panelOpen ? 'Hide controls' : 'Controls'}
         </button>
       </header>
@@ -321,6 +336,15 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
             />
             Yield lens{mode === '3d' ? ' (2D view for now)' : ''}
           </label>
+          <label className="check" htmlFor="models">
+            <input
+              id="models"
+              type="checkbox"
+              checked={showModels}
+              onChange={(e) => setShowModels(e.target.checked)}
+            />
+            Unit models
+          </label>
           <label htmlFor="viewer">See the map as</label>
           <select
             id="viewer"
@@ -375,4 +399,44 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
       )}
     </div>
   );
+}
+
+/** A unit view per model family (named after the first unit that uses it) on nearby land. */
+function modelShowcase(content: CompiledContent, map: MapState, start: number): UnitView[] {
+  const firstOf = new Map<string, { name: string; icon: string; civilian: boolean }>();
+  for (const id of Object.keys(content.entities.unit).sort()) {
+    const def = content.entities.unit[id]!;
+    if (firstOf.has(def.model)) continue;
+    const civilian = content.entities.unitClass[def.class]?.layer === 'civilian';
+    firstOf.set(def.model, { name: resolveText(content, def.name), icon: def.icon, civilian });
+  }
+  const land = tilesWithin(map, start, 4).filter(
+    (t) => !content.entities.terrain[map.tiles[t]!.terrain]?.water,
+  );
+  const water = tilesWithin(map, start, 6).filter(
+    (t) => content.entities.terrain[map.tiles[t]!.terrain]?.water,
+  );
+  return [...firstOf].flatMap(([model, u], i) => {
+    const naval = model === 'ship' || model === 'steamship';
+    const tile = naval ? water.shift() : land.shift();
+    if (tile === undefined) return [];
+    const color = PLAYER_COLORS[i % PLAYER_COLORS.length]!;
+    return [
+      {
+        id: `model-${model}`,
+        owner: 'p1',
+        color,
+        accent: 0xf2e6c8,
+        name: `${u.name} (${model})`,
+        icon: u.icon,
+        model,
+        layer: u.civilian ? ('civilian' as const) : ('military' as const),
+        tile,
+        mine: true,
+        needsOrders: false,
+        health: 100,
+        promotable: false,
+      },
+    ];
+  });
 }

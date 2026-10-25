@@ -6,6 +6,7 @@ import { manageDiplomacy } from './diplomacy';
 import { manageProgress, recruitGreatPeople, upgradeUnits } from './economy';
 import { manageUnits } from './military';
 import { manageReligion } from './religion';
+import { bestSites } from './settle';
 import { type Act, Turn } from './turn';
 import { manageWar } from './war';
 
@@ -43,4 +44,14 @@ export function playAiTurn(
   recruitGreatPeople(t);
   t.act({ type: 'end_turn', player });
   return t.state;
+}
+
+/** Where a player could settle next: the best sites they know of, scored as the AI would. */
+export function settleSites(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  count = 12,
+): { tile: number; score: number }[] {
+  return bestSites(new Turn(ctx, state, player, () => undefined), count);
 }

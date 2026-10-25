@@ -609,7 +609,22 @@ export const UnitDef = z.strictObject({
   icon: z.string().min(1).max(3),
   /** Which 3D model family the renderer uses. */
   model: z
-    .enum(['settler', 'warrior', 'scout', 'archer', 'cavalry', 'ship', 'generic'])
+    .enum([
+      'settler',
+      'warrior',
+      'scout',
+      'archer',
+      'cavalry',
+      'ship',
+      'rifle',
+      'siege',
+      'cannon',
+      'tank',
+      'steamship',
+      'commander',
+      'robed',
+      'generic',
+    ])
     .default('generic'),
 });
 

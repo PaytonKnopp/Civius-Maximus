@@ -19,30 +19,41 @@ await page.waitForFunction(
   { timeout: 30000 },
 );
 await page.waitForTimeout(2500);
-await page.click('.panel-toggle');
+await page.click('.controls-toggle');
 await page.screenshot({ path: `${out}/3d-medium.png` });
 
-await page.click('.panel-toggle');
+await page.click('.controls-toggle');
 await page.selectOption('#viewer', 'p1');
 await page.waitForTimeout(2500);
-await page.click('.panel-toggle');
+await page.click('.controls-toggle');
 await page.screenshot({ path: `${out}/3d-fog.png` });
-await page.click('.panel-toggle');
+await page.click('.controls-toggle');
 await page.selectOption('#viewer', '');
 await page.selectOption('#quality', 'high');
 await page.waitForTimeout(4000);
-await page.click('.panel-toggle');
+await page.click('.controls-toggle');
 await page.mouse.move(640, 400);
 await page.mouse.wheel(0, -500);
 await page.waitForTimeout(2500);
 await page.screenshot({ path: `${out}/3d-high.png` });
-await page.click('.panel-toggle');
+await page.click('.controls-toggle');
 await page.selectOption('#quality', 'medium');
 await page.waitForTimeout(3000);
-await page.click('.panel-toggle');
+await page.click('.controls-toggle');
 await page.mouse.move(640, 400);
 for (let i = 0; i < 6; i++) await page.mouse.wheel(0, 900);
 await page.waitForTimeout(2500);
 await page.screenshot({ path: `${out}/3d-far.png` });
+
+// Every unit model family, close up around the first start.
+await page.click('.controls-toggle');
+await page.check('#models');
+await page.click('.starts li:first-child button');
+await page.waitForTimeout(1500);
+await page.click('.controls-toggle');
+await page.mouse.move(640, 400);
+for (let i = 0; i < 2; i++) await page.mouse.wheel(0, -250);
+await page.waitForTimeout(2500);
+await page.screenshot({ path: `${out}/3d-units.png` });
 console.log('errors:', errors.length ? errors : 'none');
 await browser.close();

@@ -141,6 +141,21 @@ await page.mouse.move(640, 400);
 await page.waitForTimeout(500);
 await page.screenshot({ path: `${out}/game-later.png` });
 
+// Map lenses: L cycles yields, settling, resources, religion, then back to none.
+for (const lens of ['yields', 'settler', 'resources']) {
+  await page.keyboard.press('l');
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: `${out}/game-lens-${lens}.png` });
+}
+await page.keyboard.press('l');
+await page.keyboard.press('l');
+
+// The help screen (?), with every shortcut.
+await page.keyboard.press('?');
+await page.waitForSelector('.help-body');
+await page.screenshot({ path: `${out}/game-help.png` });
+await page.keyboard.press('Escape');
+
 // 2D view of the same game.
 await page.click('.segmented.compact button:nth-child(2)');
 await page.waitForTimeout(1500);
@@ -156,6 +171,7 @@ await phone.goto(url, { waitUntil: 'networkidle' });
 await phone.waitForSelector('canvas');
 await rendering(phone);
 await phone.waitForTimeout(800);
+await phone.screenshot({ path: `${out}/game-phone-start.png` });
 await phone.click('.next-action');
 await phone.waitForSelector('.unit-panel');
 await phone.click('.unit-actions .found');

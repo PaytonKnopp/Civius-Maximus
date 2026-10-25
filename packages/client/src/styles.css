@@ -2835,3 +2835,94 @@ label.belief-card {
 .game-over .history-chart {
   margin: 8px 0;
 }
+.lens-chip select {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+.lens-chip select option {
+  background: var(--panel);
+}
+
+/* First-game hints (top right, under the civ chips) */
+.hint-card {
+  position: absolute;
+  top: 142px;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  width: min(340px, calc(100% - 32px));
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  border: 1px solid var(--panel-edge);
+  border-left: 3px solid var(--brass);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
+  z-index: 5;
+}
+.hint-card p {
+  margin: 0 0 10px;
+}
+.hint-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Help screen */
+.help-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 16px 24px 24px;
+  overflow: auto;
+}
+.help-body h3 {
+  margin: 0 0 10px;
+}
+.help-body h3 + .toggle,
+.help-body .keys + h3 {
+  margin-top: 20px;
+}
+.keys {
+  margin: 0;
+}
+.keys div {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--panel-edge) 60%, transparent);
+}
+.keys dt {
+  color: var(--muted);
+}
+.keys dd {
+  margin: 0;
+}
+kbd {
+  display: inline-block;
+  min-width: 22px;
+  padding: 1px 6px;
+  border: 1px solid var(--panel-edge);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  font: 12px/1.4 var(--mono, ui-monospace, monospace);
+  text-align: center;
+  color: var(--text);
+}
+@media (max-width: 640px) {
+  /* Phones: above the Next button, and out of the way of an open panel. */
+  .hint-card {
+    top: auto;
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    left: max(16px, env(safe-area-inset-left, 0px));
+    width: auto;
+  }
+  .hint-card.behind-panel {
+    display: none;
+  }
+}

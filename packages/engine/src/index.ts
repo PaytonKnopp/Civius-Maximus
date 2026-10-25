@@ -191,7 +191,7 @@ export {
   SLOT_KINDS,
   sourcesFor,
 } from './progress/sources';
-export { type Act as AiAct, militaryStrength, personalityOf, playAiTurn } from './ai';
+export { type Act as AiAct, militaryStrength, personalityOf, playAiTurn, settleSites } from './ai';
 export { baseOf, countsAs, replacementFor, uniqueProblem, uniquesOf } from './uniques';
 export { answerProposals, dealVerdict, type Verdict } from './ai';
 export {
