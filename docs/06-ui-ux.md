@@ -68,6 +68,17 @@ Plus **filters** (show or hide resource icons, yield icons, units, grid, clouds)
 with notes (shared with your team), **planning ghosts** to sketch districts and wonders before you
 can build them, and the **strategic view** (flat 2D map) for fast late-game play.
 
+**Built so far (V1 part 10):** four lenses, cycled with L or picked from the lens chip: Yields
+(what each of your tiles gives), Settler (the twelve best known sites, ranked by the same scoring
+the AI uses, the top three in gold), Resources (by name, colored bonus / luxury / strategic) and
+Religion (each known settlement's territory in its religion's color, named on the center). The
+rest of the table comes later. District adjacency already shows while placing a district.
+
+**First-game hints (D81):** players know Civ, so there's no tutorial, but the first time
+something this game does its own way comes up (growth develops a tile, towns, free policy swaps
+after a civic, commanders, envoys...) a short note says so, once. One click turns them off; the
+Help screen (?) lists every shortcut and turns hints back on.
+
 ## Explainability features
 
 - **"Why?" tooltips** on every number, shown as a tree of contributors (see

@@ -70,6 +70,24 @@ const geo = {
   mast: new CylinderGeometry(0.008, 0.008, 0.3, 4).translate(0, 0.2, 0),
   sail: new PlaneGeometry(0.16, 0.15).translate(0, 0.22, 0),
   base: new RingGeometry(0.2, 0.24, 24).rotateX(-Math.PI / 2),
+  // Later eras.
+  rifle: new CylinderGeometry(0.006, 0.006, 0.2, 4).rotateZ(0.45).translate(0.045, 0.13, 0),
+  frame: new BoxGeometry(0.22, 0.035, 0.12).translate(0, 0.06, 0),
+  arm: new BoxGeometry(0.2, 0.018, 0.018).rotateZ(0.7).translate(-0.02, 0.13, 0),
+  barrel: new CylinderGeometry(0.022, 0.03, 0.24, 8)
+    .rotateZ(Math.PI / 2 - 0.25)
+    .translate(0.03, 0.1, 0),
+  carriage: new BoxGeometry(0.14, 0.04, 0.07).translate(-0.02, 0.06, 0),
+  bigWheel: new CylinderGeometry(0.055, 0.055, 0.016, 12).rotateX(Math.PI / 2),
+  tankHull: new BoxGeometry(0.26, 0.06, 0.13).translate(0, 0.065, 0),
+  track: new BoxGeometry(0.28, 0.05, 0.035).translate(0, 0.025, 0),
+  turret: new BoxGeometry(0.11, 0.05, 0.09).translate(-0.02, 0.12, 0),
+  gun: new CylinderGeometry(0.01, 0.01, 0.17, 6).rotateZ(Math.PI / 2).translate(0.11, 0.125, 0),
+  deck: new BoxGeometry(0.12, 0.05, 0.07).translate(-0.02, 0.09, 0),
+  funnel: new CylinderGeometry(0.018, 0.022, 0.1, 8).translate(0.04, 0.15, 0),
+  pole: new CylinderGeometry(0.007, 0.007, 0.3, 4).translate(-0.09, 0.15, 0),
+  banner: new PlaneGeometry(0.1, 0.075).translate(-0.035, 0.25, 0),
+  robe: new ConeGeometry(0.06, 0.2, 6).translate(0, 0.1, 0),
 };
 
 const solid = (color: number) =>
@@ -81,6 +99,8 @@ const mats = {
   canvas: solid(0xc9bfa3),
   horse: solid(0x6b4b33),
   metal: new MeshStandardMaterial({ color: 0x9a8f7a, roughness: 0.45, metalness: 0.7 }),
+  steel: new MeshStandardMaterial({ color: 0x4d5459, roughness: 0.5, metalness: 0.6 }),
+  robe: solid(0xd8cfb6),
 };
 const clothCache = new Map<number, MeshStandardMaterial>();
 const cloth = (color: number) => {
@@ -107,12 +127,13 @@ function part(g: BufferGeometry, m: MeshStandardMaterial, x = 0, z = 0, y = 0) {
   return mesh;
 }
 
-function figure(color: number, x: number, z: number, extra?: 'shield' | 'stick' | 'bow') {
+function figure(color: number, x: number, z: number, extra?: 'shield' | 'stick' | 'bow' | 'rifle') {
   const g = new Group();
   g.add(part(geo.body, cloth(color)), part(geo.head, mats.skin));
   if (extra === 'shield') g.add(part(geo.shield, cloth(color)), part(geo.stick, mats.wood));
   if (extra === 'stick') g.add(part(geo.stick, mats.wood));
   if (extra === 'bow') g.add(part(geo.bow, mats.wood));
+  if (extra === 'rifle') g.add(part(geo.rifle, mats.dark));
   g.position.set(x, 0, z);
   return g;
 }
@@ -172,6 +193,45 @@ function buildModel(view: UnitView): Group {
         part(geo.mast, mats.wood),
         part(geo.sail, cloth(color), 0, 0),
       );
+      break;
+    case 'rifle':
+      g.add(
+        figure(color, -0.07, 0.04, 'rifle'),
+        figure(color, 0.07, 0.04, 'rifle'),
+        figure(color, 0, -0.07, 'rifle'),
+      );
+      break;
+    case 'siege':
+      g.add(part(geo.frame, mats.wood), part(geo.arm, mats.wood));
+      for (const x of [-0.08, 0.08])
+        for (const z of [0.065, -0.065]) g.add(part(geo.wheel, mats.dark, x, z, 0.04));
+      g.add(figure(color, -0.16, 0.06));
+      break;
+    case 'cannon':
+      g.add(part(geo.carriage, mats.wood), part(geo.barrel, mats.steel));
+      for (const z of [0.05, -0.05]) g.add(part(geo.bigWheel, mats.dark, -0.02, z, 0.055));
+      g.add(figure(color, -0.15, 0.06), figure(color, -0.15, -0.07));
+      break;
+    case 'tank':
+      g.add(
+        part(geo.tankHull, cloth(color)),
+        part(geo.track, mats.dark, 0, 0.07),
+        part(geo.track, mats.dark, 0, -0.07),
+        part(geo.turret, cloth(color)),
+        part(geo.gun, mats.steel),
+      );
+      break;
+    case 'steamship':
+      g.add(part(geo.hull, mats.steel), part(geo.deck, cloth(color)), part(geo.funnel, mats.dark));
+      break;
+    case 'commander': {
+      const leader = figure(color, 0.04, 0.02);
+      leader.scale.setScalar(1.2);
+      g.add(leader, part(geo.pole, mats.wood), part(geo.banner, cloth(color)));
+      break;
+    }
+    case 'robed':
+      g.add(part(geo.robe, mats.robe), part(geo.head, mats.skin), part(geo.stick, mats.wood));
       break;
     default:
       g.add(figure(color, -0.05, 0), figure(color, 0.05, 0));

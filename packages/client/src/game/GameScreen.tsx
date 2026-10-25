@@ -76,6 +76,9 @@ import { ReligionScreen } from './ReligionScreen';
 import { CityStatesScreen } from './CityStatesScreen';
 import { VictoriesScreen } from './VictoriesScreen';
 import { GraphsScreen, HistoryChart } from './GraphsScreen';
+import { HelpScreen } from './HelpScreen';
+import { HINTS, hintFor, hintsOn, markSeen, seenHints, setHints } from './hints';
+import { type Lens, LENS_NAMES, LENSES, lensFor } from './lenses';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -394,8 +397,12 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
     | { kind: 'cityStates' }
     | { kind: 'victories' }
     | { kind: 'graphs' }
+    | { kind: 'help' }
     | null
   >(null);
+  // First-game hints (hints.ts): kept in this browser, re-read when the help screen closes.
+  const [hintsSeen, setHintsSeen] = useState(seenHints);
+  const [hintsEnabled, setHintsEnabled] = useState(hintsOn);
   const [policiesSeenBy, setPoliciesSeenBy] = useState<Record<PlayerId, number>>({});
   const policiesSeen = policiesSeenBy[viewer] ?? 0;
   const setPoliciesSeen = (turn: number) =>
@@ -466,6 +473,22 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
   );
   const me = state.players[viewer]!;
   const era = playerEra(ctx, me);
+  // A hint counts as seen when it first shows, and stays up until dismissed or the turn ends.
+  const [hintNow, setHintNow] = useState<{ id: string; turn: number } | null>(null);
+  const hintsFree =
+    hintsEnabled && !busy && !passTo && overlay === null && state.status === 'playing';
+  const nextHint =
+    hintsFree && hintNow === null ? hintFor({ ctx, state, viewer, next }, hintsSeen) : undefined;
+  useEffect(() => {
+    if (!nextHint) return;
+    markSeen(nextHint.id);
+    setHintsSeen(seenHints());
+    setHintNow({ id: nextHint.id, turn: state.turn });
+  }, [nextHint, state.turn]);
+  useEffect(() => {
+    if (hintNow && state.turn > hintNow.turn) setHintNow(null);
+  }, [hintNow, state.turn]);
+  const hint = hintsFree && hintNow ? HINTS.find((h) => h.id === hintNow.id) : undefined;
   const captured = Object.values(state.settlements).find(
     (x) => x.owner === viewer && x.captureChoice,
   );
@@ -693,7 +716,13 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
 
   // Tiles to mark for the selected settlement: placement or growth choices, tiles to buy, worked
   // tiles and planned districts.
-  const highlights = useMemo((): TileHighlight[] => {
+  // Map lenses (L cycles them): what each tile yields, where to settle, who follows what.
+  const [lens, setLens] = useState<Lens>('none');
+  const lensHighlights = useMemo(
+    () => lensFor(ctx, state, viewer, fog, lens),
+    [ctx, state, viewer, fog, lens],
+  );
+  const choiceHighlights = useMemo((): TileHighlight[] => {
     if (myUnit) {
       return targets.map((tile) => {
         const p = previewAttack(ctx, state, myUnit, tile);
@@ -761,6 +790,10 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
     strikes,
     viewer,
   ]);
+  const highlights = useMemo(
+    () => [...lensHighlights, ...choiceHighlights],
+    [lensHighlights, choiceHighlights],
+  );
   useEffect(() => {
     viewRef.current?.setHighlights(highlights);
   }, [highlights]);
@@ -1009,6 +1042,8 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
       else if (e.key === 'i') setOverlay({ kind: 'cityStates' });
       else if (e.key === 'v') setOverlay({ kind: 'victories' });
       else if (e.key === 'h') setOverlay({ kind: 'graphs' });
+      else if (e.key === '?') setOverlay({ kind: 'help' });
+      else if (e.key === 'l') setLens((l) => LENSES[(LENSES.indexOf(l) + 1) % LENSES.length]!);
       else if (e.key === 'Escape') {
         if (placing) setPlacing(null);
         else if (striking) setStriking(false);
@@ -1217,6 +1252,32 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
         >
           <span aria-hidden="true">🏆</span>
         </button>
+        <label
+          className={`progress-chip lens-chip ${lens !== 'none' ? 'attention' : ''}`}
+          title="Map lens (L)"
+        >
+          <span aria-hidden="true">🔍</span>
+          <select
+            aria-label="Map lens"
+            value={lens}
+            onChange={(e) => setLens(e.target.value as Lens)}
+          >
+            {LENSES.map((l) => (
+              <option key={l} value={l}>
+                {LENS_NAMES[l]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="button"
+          className="progress-chip"
+          onClick={() => setOverlay({ kind: 'help' })}
+          title="Help and shortcuts (?)"
+          aria-label="Help"
+        >
+          <span aria-hidden="true">?</span>
+        </button>
         <button
           type="button"
           className="progress-chip government"
@@ -1244,6 +1305,28 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
           </span>
         </span>
       </div>
+
+      {hint && (
+        <aside className={`hint-card ${selection ? 'behind-panel' : ''}`} aria-label="Hint">
+          <p>{hint.text(ctx)}</p>
+          <div className="hint-actions">
+            <button type="button" className="small" onClick={() => setHintNow(null)}>
+              Got it
+            </button>
+            <button
+              type="button"
+              className="ghost small"
+              onClick={() => {
+                setHints(false);
+                setHintsEnabled(false);
+                setHintNow(null);
+              }}
+            >
+              No more hints
+            </button>
+          </div>
+        </aside>
+      )}
 
       <div className="notices" aria-live="polite">
         {notices.map((n) => (
@@ -1376,6 +1459,15 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
           viewer={viewer}
           onGraphs={() => setOverlay({ kind: 'graphs' })}
           onClose={() => setOverlay(null)}
+        />
+      )}
+      {overlay?.kind === 'help' && (
+        <HelpScreen
+          onClose={() => {
+            setOverlay(null);
+            setHintsEnabled(hintsOn());
+            setHintsSeen(seenHints());
+          }}
         />
       )}
       {overlay?.kind === 'graphs' && (

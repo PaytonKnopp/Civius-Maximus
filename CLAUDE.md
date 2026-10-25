@@ -30,9 +30,9 @@
 Client checks: `pnpm build`, then `pnpm --filter @cx/client exec vite preview --port 4173` and
 `pnpm --filter @cx/client screenshot <out-dir>` (Map Lab screenshots at desktop and phone
 size, plus console errors); `node packages/client/scripts/screenshot-3d.mjs <out-dir>` captures
-the 3D view at Medium, in fog view, and at High; `node packages/client/scripts/screenshot-game.mjs
-<out-dir>` plays the first turns of a local game (select, path preview, move, end turn, 2D view,
-phone size). The app opens on a home screen over a quick game; `#play` in the URL skips it (the game scripts use it) and `#lab` opens the Map Lab.
+the 3D view at Medium, in fog view, at High, and every unit model close up; `node packages/client/scripts/screenshot-game.mjs
+<out-dir>` plays the first turns of a local game (select, path preview, move, end turn, lenses,
+help, 2D view, phone size). The app opens on a home screen over a quick game; `#play` in the URL skips it (the game scripts use it) and `#lab` opens the Map Lab.
 `pnpm --filter @cx/client build:artifact <file.html>` builds the client as one self-contained
 HTML page for sharing.
 

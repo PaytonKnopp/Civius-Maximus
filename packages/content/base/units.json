@@ -35,7 +35,7 @@
     "cost": 90,
     "upkeep": 1,
     "icon": "AC",
-    "model": "generic",
+    "model": "commander",
     "requiresCivic": "civic_military_tradition",
     "commander": {
       "capacity": 4,
@@ -68,7 +68,7 @@
     "cost": 0,
     "upkeep": 0,
     "icon": "GP",
-    "model": "settler"
+    "model": "robed"
   },
   {
     "type": "unit",
@@ -81,7 +81,7 @@
     "faithCost": 100,
     "upkeep": 0,
     "icon": "Mi",
-    "model": "settler"
+    "model": "robed"
   },
   {
     "type": "unit",
@@ -193,7 +193,7 @@
     "strength": 23,
     "cost": 120,
     "icon": "Ca",
-    "model": "generic",
+    "model": "siege",
     "requiresTech": "tech_engineering",
     "rangedStrength": 35,
     "range": 2,
@@ -318,7 +318,7 @@
     "range": 1,
     "cost": 170,
     "icon": "FL",
-    "model": "archer",
+    "model": "cannon",
     "requiresTech": "tech_machinery",
     "civ": "civ_china",
     "replaces": "unit_crossbowman"
@@ -367,7 +367,7 @@
     "strength": 55,
     "cost": 240,
     "icon": "Mu",
-    "model": "warrior",
+    "model": "rifle",
     "requiresTech": "tech_gunpowder",
     "upgradesTo": "unit_line_infantry"
   },
@@ -397,7 +397,7 @@
     "range": 2,
     "cost": 280,
     "icon": "Bo",
-    "model": "generic",
+    "model": "cannon",
     "requiresTech": "tech_metal_casting",
     "upgradesTo": "unit_artillery"
   },
@@ -463,7 +463,7 @@
     "strength": 65,
     "cost": 330,
     "icon": "LI",
-    "model": "warrior",
+    "model": "rifle",
     "requiresTech": "tech_military_science",
     "upgradesTo": "unit_infantry"
   },
@@ -477,7 +477,7 @@
     "strength": 70,
     "cost": 330,
     "icon": "IG",
-    "model": "warrior",
+    "model": "rifle",
     "requiresTech": "tech_military_science",
     "civ": "civ_france",
     "replaces": "unit_line_infantry"
@@ -525,7 +525,7 @@
     "range": 2,
     "cost": 330,
     "icon": "FC",
-    "model": "archer",
+    "model": "cannon",
     "requiresTech": "tech_ballistics",
     "upgradesTo": "unit_machine_gun"
   },
@@ -539,7 +539,7 @@
     "strength": 60,
     "cost": 380,
     "icon": "Ic",
-    "model": "ship",
+    "model": "steamship",
     "requiresTech": "tech_steam_power",
     "deepWater": true,
     "upgradesTo": "unit_destroyer"
@@ -554,7 +554,7 @@
     "strength": 70,
     "cost": 430,
     "icon": "In",
-    "model": "warrior",
+    "model": "rifle",
     "requiresTech": "tech_replaceable_parts"
   },
   {
@@ -569,7 +569,7 @@
     "range": 1,
     "cost": 430,
     "icon": "MG",
-    "model": "archer",
+    "model": "rifle",
     "requiresTech": "tech_replaceable_parts"
   },
   {
@@ -584,7 +584,7 @@
     "range": 2,
     "cost": 450,
     "icon": "Ar",
-    "model": "generic",
+    "model": "cannon",
     "requiresTech": "tech_steel"
   },
   {
@@ -597,7 +597,7 @@
     "strength": 70,
     "cost": 430,
     "icon": "AT",
-    "model": "warrior",
+    "model": "rifle",
     "requiresTech": "tech_combustion"
   },
   {
@@ -610,7 +610,7 @@
     "strength": 80,
     "cost": 480,
     "icon": "Tk",
-    "model": "cavalry",
+    "model": "tank",
     "requiresTech": "tech_combustion"
   },
   {
@@ -623,7 +623,7 @@
     "strength": 80,
     "cost": 430,
     "icon": "De",
-    "model": "ship",
+    "model": "steamship",
     "requiresTech": "tech_combustion",
     "deepWater": true
   }

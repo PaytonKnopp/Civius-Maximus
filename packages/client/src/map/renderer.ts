@@ -80,8 +80,10 @@ export interface TerritoryView {
 /** A tile marked for a choice: developing it, buying it... `label` is drawn on the tile. */
 export interface TileHighlight {
   tile: number;
-  tone: 'develop' | 'buy' | 'worked' | 'selected' | 'place' | 'planned' | 'attack';
+  tone: 'develop' | 'buy' | 'worked' | 'selected' | 'place' | 'planned' | 'attack' | 'lens';
   label?: string;
+  /** Overrides the tone's color (lenses color tiles by what they show). */
+  color?: number;
 }
 
 export type FlashTone = 'damage' | 'good' | 'info';

@@ -349,11 +349,12 @@ const TONES: Record<TileHighlight['tone'], number> = {
   place: 0x7fc3e8,
   planned: 0xb49ce0,
   attack: 0xe0503c,
+  lens: 0xc9d0d4,
 };
 
 const labelCache = new Map<string, SpriteMaterial>();
-function labelMaterial(text: string, tone: TileHighlight['tone']): SpriteMaterial {
-  const key = `${tone}:${text}`;
+function labelMaterial(text: string, color: number): SpriteMaterial {
+  const key = `${color}:${text}`;
   const cached = labelCache.get(key);
   if (cached) return cached;
   const canvas = document.createElement('canvas');
@@ -366,7 +367,7 @@ function labelMaterial(text: string, tone: TileHighlight['tone']): SpriteMateria
   ctx.fillStyle = 'rgba(14, 20, 27, 0.88)';
   ctx.fill();
   ctx.lineWidth = 3;
-  ctx.strokeStyle = css(TONES[tone]);
+  ctx.strokeStyle = css(color);
   ctx.stroke();
   ctx.font = '600 34px "IBM Plex Sans", sans-serif';
   ctx.fillStyle = '#f0e6cc';
@@ -744,7 +745,7 @@ export class SettlementLayer {
       const [cx, cz] = this.world.center(h.tile);
       const pos: number[] = [];
       const col: number[] = [];
-      const color = new Color(TONES[h.tone]);
+      const color = new Color(h.color ?? TONES[h.tone]);
       if (h.tone !== 'worked') {
         for (const n of this.world.neighbors(h.tile)) {
           const { c, a, b } = this.edge(h.tile, n);
@@ -753,7 +754,7 @@ export class SettlementLayer {
         holder.add(ribbonMesh(pos, col));
       }
       if (h.label) {
-        const m = labelMaterial(h.label, h.tone);
+        const m = labelMaterial(h.label, h.color ?? TONES[h.tone]);
         const sprite = new Sprite(m);
         const s = h.tone === 'worked' ? 0.18 : 0.2;
         sprite.scale.set(s * (m.userData as { aspect: number }).aspect, s, 1);

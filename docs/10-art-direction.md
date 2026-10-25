@@ -69,3 +69,8 @@ dim, cold slate.
    Until then, generated silhouette placeholders.
 
 All art is referenced from content files, so swapping a placeholder for real art never touches code.
+
+**Built so far (V1 part 10):** units are procedural low-poly squads, one model family per unit
+(`model` in its content): settler, scout, warrior, archer, cavalry, ship, rifle, siege (catapult),
+cannon, tank, steamship, commander (with a banner) and robed (missionaries, great people). The
+Map Lab's "Unit models" switch puts one of each on the map, for checking new art.

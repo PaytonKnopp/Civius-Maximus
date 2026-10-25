@@ -78,6 +78,8 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
 50. **D79 Science victory:** Spaceport + 4 projects, the last arrives after 10 turns.
 51. **D80 Culture victory:** culture/100 domestic tourists vs tourism/150 visitors, +25%
     bonuses for trade routes, shared religion and friendship.
+52. **D81 First-game hints:** ten one-time notes on what this game does differently from Civ,
+    on by default, off with one click. Or none at all (doc 06 says no hand-holding)?
 28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
     expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 
@@ -197,6 +199,14 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
 - 📈 **Graphs** (H, or from Victories): score, science, culture, tourism, military, citizens and
   settlements over the game for every civ, with a hover readout. The end screen shows the
   score graph.
+- 🔍 **Map lenses** (L, or the chip at the top): tile yields across your land, the best places
+  to settle (ranked, the top three in gold), resources colored by kind, and which religion each
+  settlement follows.
+- ❓ **Help** (?): every keyboard and mouse shortcut on one screen. **First-game hints** (D81):
+  a short note the first time something this game does its own way comes up.
+- 🎨 **Unit models for the later eras:** riflemen, cannon, a catapult, tanks, steamships, a
+  commander with a banner, robed missionaries and great people (until now they reused ancient
+  models). The Map Lab's "Unit models" switch shows one of each.
 
 ## Known issues
 
