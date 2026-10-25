@@ -421,5 +421,420 @@
         "unit": "unit_horseman"
       }
     }
+  },
+  {
+    "type": "tech",
+    "id": "tech_banking",
+    "name": "Banking",
+    "era": "era_renaissance",
+    "cost": 350,
+    "requires": ["tech_education", "tech_apprenticeship"],
+    "row": 0,
+    "boost": {
+      "text": "Hold 500 gold",
+      "goal": {
+        "kind": "gold",
+        "amount": 500
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_printing",
+    "name": "Printing",
+    "era": "era_renaissance",
+    "cost": 350,
+    "requires": ["tech_education"],
+    "row": 1,
+    "boost": {
+      "text": "Build a University",
+      "goal": {
+        "kind": "buildings",
+        "count": 1,
+        "building": "building_university"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_astronomy",
+    "name": "Astronomy",
+    "era": "era_renaissance",
+    "cost": 390,
+    "requires": ["tech_education"],
+    "row": 2,
+    "boost": {
+      "text": "Have 30 citizens",
+      "goal": {
+        "kind": "population",
+        "count": 30
+      }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_university"
+        }
+      }
+    ]
+  },
+  {
+    "type": "tech",
+    "id": "tech_gunpowder",
+    "name": "Gunpowder",
+    "era": "era_renaissance",
+    "cost": 390,
+    "requires": ["tech_military_tactics", "tech_apprenticeship"],
+    "row": 4,
+    "boost": {
+      "text": "Have 2 Crossbowmen",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_crossbowman"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_metal_casting",
+    "name": "Metal Casting",
+    "era": "era_renaissance",
+    "cost": 430,
+    "requires": ["tech_gunpowder", "tech_machinery"],
+    "row": 5,
+    "boost": {
+      "text": "Have 2 siege units",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unitClass": "class_siege"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_cartography",
+    "name": "Cartography",
+    "era": "era_renaissance",
+    "cost": 350,
+    "requires": ["tech_shipbuilding", "tech_education"],
+    "row": 7,
+    "boost": {
+      "text": "Have 2 ships",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unitClass": "class_naval_melee"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_square_rigging",
+    "name": "Square Rigging",
+    "era": "era_renaissance",
+    "cost": 430,
+    "requires": ["tech_cartography", "tech_gunpowder"],
+    "row": 8,
+    "boost": {
+      "text": "Have 2 Musketmen",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_musketman"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_industrialization",
+    "name": "Industrialization",
+    "era": "era_industrial",
+    "cost": 580,
+    "requires": ["tech_banking", "tech_printing"],
+    "row": 0,
+    "boost": {
+      "text": "Build 3 Workshops",
+      "goal": {
+        "kind": "buildings",
+        "count": 3,
+        "building": "building_workshop"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_scientific_theory",
+    "name": "Scientific Theory",
+    "era": "era_industrial",
+    "cost": 580,
+    "requires": ["tech_astronomy", "tech_printing"],
+    "row": 1,
+    "boost": {
+      "text": "Build 3 Universities",
+      "goal": {
+        "kind": "buildings",
+        "count": 3,
+        "building": "building_university"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_economics",
+    "name": "Economics",
+    "era": "era_industrial",
+    "cost": 620,
+    "requires": ["tech_banking", "tech_scientific_theory"],
+    "row": 2,
+    "boost": {
+      "text": "Build 2 Banks",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_bank"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_sanitation",
+    "name": "Sanitation",
+    "era": "era_industrial",
+    "cost": 650,
+    "requires": ["tech_scientific_theory"],
+    "row": 3,
+    "boost": {
+      "text": "Have 60 citizens",
+      "goal": {
+        "kind": "population",
+        "count": 60
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_military_science",
+    "name": "Military Science",
+    "era": "era_industrial",
+    "cost": 620,
+    "requires": ["tech_gunpowder", "tech_printing"],
+    "row": 4,
+    "boost": {
+      "text": "Have 2 Knights",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_knight"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_ballistics",
+    "name": "Ballistics",
+    "era": "era_industrial",
+    "cost": 620,
+    "requires": ["tech_metal_casting"],
+    "row": 5,
+    "boost": {
+      "text": "Have 2 Bombards",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_bombard"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_steam_power",
+    "name": "Steam Power",
+    "era": "era_industrial",
+    "cost": 650,
+    "requires": ["tech_square_rigging", "tech_industrialization"],
+    "row": 7,
+    "boost": {
+      "text": "Have 2 Frigates",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_frigate"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_electricity",
+    "name": "Electricity",
+    "era": "era_modern",
+    "cost": 840,
+    "requires": ["tech_industrialization", "tech_scientific_theory"],
+    "row": 0,
+    "boost": {
+      "text": "Build 2 Factories",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_factory"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_radio",
+    "name": "Radio",
+    "era": "era_modern",
+    "cost": 910,
+    "requires": ["tech_electricity"],
+    "row": 1,
+    "boost": {
+      "text": "Build 2 Museums",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_museum"
+      }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "tourism",
+          "percent": 25
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "tech",
+    "id": "tech_chemistry",
+    "name": "Chemistry",
+    "era": "era_modern",
+    "cost": 840,
+    "requires": ["tech_sanitation", "tech_economics"],
+    "row": 2,
+    "boost": {
+      "text": "Build 4 Universities",
+      "goal": {
+        "kind": "buildings",
+        "count": 4,
+        "building": "building_university"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_replaceable_parts",
+    "name": "Replaceable Parts",
+    "era": "era_modern",
+    "cost": 880,
+    "requires": ["tech_military_science", "tech_economics"],
+    "row": 4,
+    "boost": {
+      "text": "Have 3 Line Infantry",
+      "goal": {
+        "kind": "units",
+        "count": 3,
+        "unit": "unit_line_infantry"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_steel",
+    "name": "Steel",
+    "era": "era_modern",
+    "cost": 880,
+    "requires": ["tech_ballistics", "tech_industrialization"],
+    "row": 5,
+    "boost": {
+      "text": "Have 2 Field Cannons",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_field_cannon"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_combustion",
+    "name": "Combustion",
+    "era": "era_modern",
+    "cost": 940,
+    "requires": ["tech_steel", "tech_steam_power"],
+    "row": 6,
+    "boost": {
+      "text": "Have 2 Ironclads",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_ironclad"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_rocketry",
+    "name": "Rocketry",
+    "era": "era_modern",
+    "cost": 980,
+    "requires": ["tech_chemistry", "tech_radio"],
+    "row": 3,
+    "boost": {
+      "text": "Build 2 Research Labs",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_research_lab"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_satellites",
+    "name": "Satellites",
+    "era": "era_modern",
+    "cost": 1040,
+    "requires": ["tech_rocketry"],
+    "row": 2,
+    "boost": {
+      "text": "Build 3 Research Labs",
+      "goal": {
+        "kind": "buildings",
+        "count": 3,
+        "building": "building_research_lab"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_space_flight",
+    "name": "Space Flight",
+    "era": "era_modern",
+    "cost": 1100,
+    "requires": ["tech_satellites", "tech_combustion"],
+    "row": 4,
+    "boost": {
+      "text": "Build 2 Power Plants",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_power_plant"
+      }
+    }
   }
 ]

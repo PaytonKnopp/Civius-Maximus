@@ -33,6 +33,8 @@ interface NewGameOptions {
   domination: boolean;
   religion: boolean;
   cityStates: boolean;
+  science: boolean;
+  culture: boolean;
   turnLimit: number | null;
 }
 
@@ -45,6 +47,8 @@ function makeSetup(o: NewGameOptions): GameSetup {
       domination: o.domination,
       religion: o.religion,
       cityStates: o.cityStates,
+      science: o.science,
+      culture: o.culture,
       turnLimit: o.turnLimit,
       map: {
         script: o.script,
@@ -100,6 +104,8 @@ export function App() {
     domination: true,
     religion: true,
     cityStates: true,
+    science: true,
+    culture: true,
     turnLimit: null,
   });
   const [start, setStart] = useState<GameStart>(() => ({
@@ -395,6 +401,24 @@ function NewGameDialog({
             onChange={(e) => setO({ ...o, religion: e.target.checked })}
           />
           Religious victory (your religion followed in most of every rival&apos;s settlements)
+        </label>
+        <label className="check" htmlFor="ng-science">
+          <input
+            id="ng-science"
+            type="checkbox"
+            checked={o.science}
+            onChange={(e) => setO({ ...o, science: e.target.checked })}
+          />
+          Science victory (the space projects)
+        </label>
+        <label className="check" htmlFor="ng-culture">
+          <input
+            id="ng-culture"
+            type="checkbox"
+            checked={o.culture}
+            onChange={(e) => setO({ ...o, culture: e.target.checked })}
+          />
+          Culture victory (tourism)
         </label>
         <p className="hint">
           The last civilization standing always wins. With a turn limit, the highest score wins when

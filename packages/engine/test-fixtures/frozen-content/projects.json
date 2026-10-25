@@ -35,5 +35,54 @@
     "reward": {
       "food": 20
     }
+  },
+  {
+    "type": "project",
+    "id": "project_satellite",
+    "name": "Launch a Satellite",
+    "description": "The first step of a science victory (on a Spaceport): +150 science.",
+    "icon": "S1",
+    "cost": 600,
+    "onDistrict": "district_spaceport",
+    "reward": {
+      "science": 150
+    },
+    "requiresTech": "tech_rocketry"
+  },
+  {
+    "type": "project",
+    "id": "project_moon_landing",
+    "name": "Moon Landing",
+    "description": "The second step of a science victory: +300 culture.",
+    "icon": "S2",
+    "cost": 840,
+    "onDistrict": "district_spaceport",
+    "reward": {
+      "culture": 300
+    },
+    "requiresTech": "tech_satellites"
+  },
+  {
+    "type": "project",
+    "id": "project_mars_colony",
+    "name": "Mars Colony",
+    "description": "The third step of a science victory: +400 science.",
+    "icon": "S3",
+    "cost": 1080,
+    "onDistrict": "district_spaceport",
+    "reward": {
+      "science": 400
+    },
+    "requiresTech": "tech_space_flight"
+  },
+  {
+    "type": "project",
+    "id": "project_exoplanet_expedition",
+    "name": "Exoplanet Expedition",
+    "description": "The last step: a ship to another star. When it arrives, its builder wins.",
+    "icon": "S4",
+    "cost": 1320,
+    "onDistrict": "district_spaceport",
+    "requiresTech": "tech_space_flight"
   }
 ]

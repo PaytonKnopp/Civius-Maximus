@@ -12,7 +12,7 @@ import { isUnlocked } from '../settlements/rules';
 import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
 import { canTraverse, isWater, riverBits, unitsOn } from '../units/movement';
 import { playerEffects } from '../progress/sources';
-import { uniqueProblem } from '../uniques';
+import { baseOf, uniqueProblem } from '../uniques';
 import { commandersAround } from '../units/commanders';
 import { tradePartners } from '../trade/rules';
 import { promotionsOf, unitRange } from '../units/promotions';
@@ -223,14 +223,21 @@ function bonusLines(
     const extra = role === 'attack' ? c.command.attack : c.command.defense;
     command = Math.max(command, c.command.strength + extra);
   }
-  if (command > 0) out.push({ label: 'Commander', amount: command });
+  if (command > 0) {
+    out.push({ label: 'Commander', amount: command });
+    // Abilities that make commanders stronger (Napoleon).
+    for (const { source, effect } of playerEffects(ctx, state, unit.owner, 'commander_bonus'))
+      if (effect.params.strength !== 0)
+        out.push({ label: source.label, amount: effect.params.strength });
+  }
   const owner = state.players[unit.owner];
   if (!owner) return out;
   const cls = unitDef(ctx, unit).class;
+  const oneOf = (x: string, list: string | string[] | undefined) =>
+    list === undefined || (Array.isArray(list) ? list : [list]).includes(x);
   for (const { source, effect } of playerEffects(ctx, state, unit.owner, 'modify_strength')) {
     const b = effect.params;
-    if (b.unitClass && !(Array.isArray(b.unitClass) ? b.unitClass : [b.unitClass]).includes(cls))
-      continue;
+    if (!oneOf(cls, b.unitClass) || !oneOf(baseOf(ctx, 'unit', unit.type), b.unit)) continue;
     if (
       b.afterDeclaringWar !== undefined &&
       (owner.declaredWarTurn === null || state.turn - owner.declaredWarTurn >= b.afterDeclaringWar)

@@ -3,7 +3,7 @@ import type { GameState, PlayerId } from '../state';
 import { manageCaptures, manageProduction, manageTowns, strikeFromSettlements } from './cities';
 import { manageCityStates } from './citystates';
 import { manageDiplomacy } from './diplomacy';
-import { manageProgress, recruitGreatPeople } from './economy';
+import { manageProgress, recruitGreatPeople, upgradeUnits } from './economy';
 import { manageUnits } from './military';
 import { manageReligion } from './religion';
 import { type Act, Turn } from './turn';
@@ -36,6 +36,7 @@ export function playAiTurn(
   manageProgress(t);
   manageReligion(t);
   strikeFromSettlements(t);
+  upgradeUnits(t);
   manageUnits(t);
   manageTowns(t);
   manageProduction(t);

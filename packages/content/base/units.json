@@ -93,7 +93,8 @@
     "strength": 20,
     "cost": 40,
     "icon": "W",
-    "model": "warrior"
+    "model": "warrior",
+    "upgradesTo": "unit_swordsman"
   },
   {
     "type": "unit",
@@ -107,7 +108,8 @@
     "range": 1,
     "cost": 35,
     "icon": "Sl",
-    "model": "archer"
+    "model": "archer",
+    "upgradesTo": "unit_archer"
   },
   {
     "type": "unit",
@@ -120,7 +122,8 @@
     "cost": 65,
     "icon": "G",
     "model": "ship",
-    "requiresTech": "tech_sailing"
+    "requiresTech": "tech_sailing",
+    "upgradesTo": "unit_caravel"
   },
   {
     "type": "unit",
@@ -135,7 +138,8 @@
     "model": "archer",
     "requiresTech": "tech_archery",
     "rangedStrength": 25,
-    "range": 2
+    "range": 2,
+    "upgradesTo": "unit_crossbowman"
   },
   {
     "type": "unit",
@@ -148,7 +152,8 @@
     "cost": 65,
     "icon": "Sp",
     "model": "warrior",
-    "requiresTech": "tech_bronze_working"
+    "requiresTech": "tech_bronze_working",
+    "upgradesTo": "unit_pikeman"
   },
   {
     "type": "unit",
@@ -161,7 +166,8 @@
     "cost": 80,
     "icon": "Ho",
     "model": "cavalry",
-    "requiresTech": "tech_horseback_riding"
+    "requiresTech": "tech_horseback_riding",
+    "upgradesTo": "unit_cavalry"
   },
   {
     "type": "unit",
@@ -174,7 +180,8 @@
     "cost": 90,
     "icon": "Sw",
     "model": "warrior",
-    "requiresTech": "tech_iron_working"
+    "requiresTech": "tech_iron_working",
+    "upgradesTo": "unit_musketman"
   },
   {
     "type": "unit",
@@ -189,7 +196,8 @@
     "model": "generic",
     "requiresTech": "tech_engineering",
     "rangedStrength": 35,
-    "range": 2
+    "range": 2,
+    "upgradesTo": "unit_bombard"
   },
   {
     "type": "unit",
@@ -202,7 +210,8 @@
     "cost": 180,
     "icon": "Pk",
     "model": "warrior",
-    "requiresTech": "tech_military_tactics"
+    "requiresTech": "tech_military_tactics",
+    "upgradesTo": "unit_pike_and_shot"
   },
   {
     "type": "unit",
@@ -217,7 +226,8 @@
     "model": "archer",
     "requiresTech": "tech_machinery",
     "rangedStrength": 40,
-    "range": 2
+    "range": 2,
+    "upgradesTo": "unit_field_cannon"
   },
   {
     "type": "unit",
@@ -230,7 +240,8 @@
     "cost": 180,
     "icon": "Kn",
     "model": "cavalry",
-    "requiresTech": "tech_stirrups"
+    "requiresTech": "tech_stirrups",
+    "upgradesTo": "unit_tank"
   },
   {
     "type": "unit",
@@ -345,5 +356,275 @@
     "ignoresWounds": true,
     "civ": "civ_japan",
     "replaces": "unit_swordsman"
+  },
+  {
+    "type": "unit",
+    "id": "unit_musketman",
+    "name": "Musketman",
+    "class": "class_melee",
+    "movement": 2,
+    "sight": 2,
+    "strength": 55,
+    "cost": 240,
+    "icon": "Mu",
+    "model": "warrior",
+    "requiresTech": "tech_gunpowder",
+    "upgradesTo": "unit_line_infantry"
+  },
+  {
+    "type": "unit",
+    "id": "unit_pike_and_shot",
+    "name": "Pike and Shot",
+    "class": "class_anti_cavalry",
+    "movement": 2,
+    "sight": 2,
+    "strength": 55,
+    "cost": 250,
+    "icon": "PS",
+    "model": "warrior",
+    "requiresTech": "tech_metal_casting",
+    "upgradesTo": "unit_at_crew"
+  },
+  {
+    "type": "unit",
+    "id": "unit_bombard",
+    "name": "Bombard",
+    "class": "class_siege",
+    "movement": 2,
+    "sight": 2,
+    "strength": 43,
+    "rangedStrength": 55,
+    "range": 2,
+    "cost": 280,
+    "icon": "Bo",
+    "model": "generic",
+    "requiresTech": "tech_metal_casting",
+    "upgradesTo": "unit_artillery"
+  },
+  {
+    "type": "unit",
+    "id": "unit_caravel",
+    "name": "Caravel",
+    "class": "class_naval_melee",
+    "movement": 4,
+    "sight": 2,
+    "strength": 55,
+    "cost": 240,
+    "icon": "Ca",
+    "model": "ship",
+    "requiresTech": "tech_cartography",
+    "deepWater": true,
+    "upgradesTo": "unit_ironclad"
+  },
+  {
+    "type": "unit",
+    "id": "unit_frigate",
+    "name": "Frigate",
+    "class": "class_naval_ranged",
+    "movement": 4,
+    "sight": 2,
+    "strength": 45,
+    "rangedStrength": 55,
+    "range": 2,
+    "cost": 280,
+    "icon": "Fr",
+    "model": "ship",
+    "requiresTech": "tech_square_rigging",
+    "deepWater": true
+  },
+  {
+    "type": "unit",
+    "id": "unit_privateer",
+    "name": "Privateer",
+    "class": "class_naval_ranged",
+    "movement": 5,
+    "sight": 2,
+    "strength": 40,
+    "rangedStrength": 55,
+    "range": 2,
+    "cost": 280,
+    "icon": "Pv",
+    "model": "ship",
+    "requiresTech": "tech_square_rigging",
+    "deepWater": true,
+    "civ": "civ_england",
+    "replaces": "unit_frigate",
+    "killYields": {
+      "gold": 25
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_line_infantry",
+    "name": "Line Infantry",
+    "class": "class_melee",
+    "movement": 2,
+    "sight": 2,
+    "strength": 65,
+    "cost": 330,
+    "icon": "LI",
+    "model": "warrior",
+    "requiresTech": "tech_military_science",
+    "upgradesTo": "unit_infantry"
+  },
+  {
+    "type": "unit",
+    "id": "unit_imperial_guard",
+    "name": "Imperial Guard",
+    "class": "class_melee",
+    "movement": 2,
+    "sight": 2,
+    "strength": 70,
+    "cost": 330,
+    "icon": "IG",
+    "model": "warrior",
+    "requiresTech": "tech_military_science",
+    "civ": "civ_france",
+    "replaces": "unit_line_infantry"
+  },
+  {
+    "type": "unit",
+    "id": "unit_cavalry",
+    "name": "Cavalry",
+    "class": "class_light_cavalry",
+    "movement": 5,
+    "sight": 2,
+    "strength": 62,
+    "cost": 330,
+    "icon": "Cv",
+    "model": "cavalry",
+    "requiresTech": "tech_military_science"
+  },
+  {
+    "type": "unit",
+    "id": "unit_rough_rider",
+    "name": "Rough Rider",
+    "class": "class_light_cavalry",
+    "movement": 5,
+    "sight": 2,
+    "strength": 67,
+    "cost": 330,
+    "icon": "RR",
+    "model": "cavalry",
+    "requiresTech": "tech_military_science",
+    "civ": "civ_america",
+    "replaces": "unit_cavalry",
+    "killYields": {
+      "culture": 10
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_field_cannon",
+    "name": "Field Cannon",
+    "class": "class_ranged",
+    "movement": 2,
+    "sight": 2,
+    "strength": 50,
+    "rangedStrength": 60,
+    "range": 2,
+    "cost": 330,
+    "icon": "FC",
+    "model": "archer",
+    "requiresTech": "tech_ballistics",
+    "upgradesTo": "unit_machine_gun"
+  },
+  {
+    "type": "unit",
+    "id": "unit_ironclad",
+    "name": "Ironclad",
+    "class": "class_naval_melee",
+    "movement": 5,
+    "sight": 2,
+    "strength": 60,
+    "cost": 380,
+    "icon": "Ic",
+    "model": "ship",
+    "requiresTech": "tech_steam_power",
+    "deepWater": true,
+    "upgradesTo": "unit_destroyer"
+  },
+  {
+    "type": "unit",
+    "id": "unit_infantry",
+    "name": "Infantry",
+    "class": "class_melee",
+    "movement": 2,
+    "sight": 2,
+    "strength": 70,
+    "cost": 430,
+    "icon": "In",
+    "model": "warrior",
+    "requiresTech": "tech_replaceable_parts"
+  },
+  {
+    "type": "unit",
+    "id": "unit_machine_gun",
+    "name": "Machine Gun",
+    "class": "class_ranged",
+    "movement": 2,
+    "sight": 2,
+    "strength": 60,
+    "rangedStrength": 75,
+    "range": 1,
+    "cost": 430,
+    "icon": "MG",
+    "model": "archer",
+    "requiresTech": "tech_replaceable_parts"
+  },
+  {
+    "type": "unit",
+    "id": "unit_artillery",
+    "name": "Artillery",
+    "class": "class_siege",
+    "movement": 2,
+    "sight": 2,
+    "strength": 60,
+    "rangedStrength": 80,
+    "range": 2,
+    "cost": 450,
+    "icon": "Ar",
+    "model": "generic",
+    "requiresTech": "tech_steel"
+  },
+  {
+    "type": "unit",
+    "id": "unit_at_crew",
+    "name": "Anti-Tank Crew",
+    "class": "class_anti_cavalry",
+    "movement": 2,
+    "sight": 2,
+    "strength": 70,
+    "cost": 430,
+    "icon": "AT",
+    "model": "warrior",
+    "requiresTech": "tech_combustion"
+  },
+  {
+    "type": "unit",
+    "id": "unit_tank",
+    "name": "Tank",
+    "class": "class_heavy_cavalry",
+    "movement": 4,
+    "sight": 2,
+    "strength": 80,
+    "cost": 480,
+    "icon": "Tk",
+    "model": "cavalry",
+    "requiresTech": "tech_combustion"
+  },
+  {
+    "type": "unit",
+    "id": "unit_destroyer",
+    "name": "Destroyer",
+    "class": "class_naval_melee",
+    "movement": 6,
+    "sight": 2,
+    "strength": 80,
+    "cost": 430,
+    "icon": "De",
+    "model": "ship",
+    "requiresTech": "tech_combustion",
+    "deepWater": true
   }
 ]

@@ -266,3 +266,12 @@ export {
   type Quest,
   questsOf,
 } from './citystates/rules';
+export { obsoletedBy, upgradeCost, upgradeProblem, upgradeTarget } from './units/upgrades';
+export {
+  cultureProgress,
+  domesticTourists,
+  hasCultureVictory,
+  tourismBonus,
+  visitingTourists,
+} from './culture/tourism';
+export { spaceProblem, spaceProgress } from './science/space';

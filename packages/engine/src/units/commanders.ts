@@ -11,6 +11,7 @@ import {
 } from '../context';
 import { distance, neighbors } from '../map/hex';
 import type { GameState, PlayerId, UnitState } from '../state';
+import { playerEffects } from '../progress/sources';
 import { ownedUnit, watchers } from './handlers';
 import { canTraverse, fullMoves, hasForeignUnit, hasRoom } from './movement';
 import { promotionsOf } from './promotions';
@@ -215,9 +216,12 @@ export function commanderXp(
   owner: PlayerId,
   tile: number,
 ) {
-  const xp = ctx.content.rules.combat.xp.commander;
-  for (const { unit } of commandersAround(ctx, current(draft), owner, tile))
-    draft.units[unit.id]!.xp += xp;
+  const snap = current(draft);
+  let percent = 100;
+  for (const { effect } of playerEffects(ctx, snap, owner, 'commander_bonus'))
+    percent += effect.params.xpPercent;
+  const xp = Math.floor((ctx.content.rules.combat.xp.commander * Math.max(0, percent)) / 100);
+  for (const { unit } of commandersAround(ctx, snap, owner, tile)) draft.units[unit.id]!.xp += xp;
 }
 
 type A<T extends Action['type']> = Extract<Action, { type: T }>;

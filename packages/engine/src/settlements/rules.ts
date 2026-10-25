@@ -23,6 +23,8 @@ import {
   sourcesFor,
 } from '../progress/sources';
 import { followersOf, founderSeat } from '../religion/rules';
+import { obsoletedBy } from '../units/upgrades';
+import { spaceProblem } from '../science/space';
 import { routeLines } from '../trade/rules';
 import { baseOf, countsAs, uniqueProblem } from '../uniques';
 import { isWater } from '../units/movement';
@@ -793,6 +795,10 @@ export function itemProblem(
     const unique = uniqueProblem(ctx, state, s.owner, item.kind, item.id);
     if (unique) return { code: 'unique', message: unique };
   }
+  if (item.kind === 'project') {
+    const step = spaceProblem(ctx, state, s.owner, item.id);
+    if (step) return step;
+  }
   if (needsTile(item)) {
     if (s.kind === 'town')
       return { code: 'city_only', message: 'Only cities build districts, wonders and projects' };
@@ -803,6 +809,12 @@ export function itemProblem(
   }
   if (item.kind === 'unit') {
     const u = def as UnitDef;
+    const newer = obsoletedBy(ctx, state, s.owner, u.id);
+    if (newer)
+      return {
+        code: 'obsolete',
+        message: `Replaced by ${resolveText(ctx.content, ctx.content.entities.unit[newer]!.name)}`,
+      };
     const domain = ctx.content.entities.unitClass[u.class]!.domain;
     if (domain === 'sea' && !isCoastal(ctx, state, s.tile))
       return { code: 'needs_coast', message: 'Ships need a settlement on the coast' };

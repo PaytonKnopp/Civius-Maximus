@@ -2668,3 +2668,13 @@ label.belief-card {
 .cs-unmet {
   padding: 0 16px 16px;
 }
+.victory-body {
+  padding: 12px 16px 16px;
+  overflow-y: auto;
+}
+.victory-notes {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}

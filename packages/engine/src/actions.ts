@@ -147,6 +147,8 @@ export const Action = z.discriminatedUnion('type', [
   }),
   /** Use a great person in one of your settlements (it's used up). */
   z.strictObject({ type: z.literal('activate_great_person'), player: PlayerRef, unit: UnitRef }),
+  /** Upgrade a unit to its newer version, for gold, in your own territory. */
+  z.strictObject({ type: z.literal('upgrade_unit'), player: PlayerRef, unit: UnitRef }),
   /** A trader in one of your settlements starts a trade route to another settlement. */
   z.strictObject({
     type: z.literal('start_trade_route'),

@@ -252,6 +252,10 @@ export const RulesDef = z.strictObject({
     embarkedSight: z.int().min(0),
     /** Gold of unit upkeep each player gets for free every turn. */
     freeUpkeep: z.int().min(0),
+    /** Upgrading a unit costs this much gold per point of production between the two... */
+    upgradeGoldPerProduction: z.number().min(0),
+    /** ...and at least this much. */
+    upgradeMinGold: z.int().min(0),
   }),
   /** Combat (docs/03-core-mechanics.md, section 5). */
   combat: z.strictObject({
@@ -436,6 +440,24 @@ export const RulesDef = z.strictObject({
     missionaryPressure: z.int().min(1),
     missionaryCharges: z.int().min(1),
   }),
+  /** Science victory: the space projects in order, and the last one's journey. */
+  science: z.strictObject({
+    projects: z.array(Id).min(1),
+    /** Turns from the last project to arrival (and victory). */
+    travelTurns: z.int().min(0),
+  }),
+  /** Culture victory (docs/04-advanced-systems.md, "Tourism & great works"). */
+  culture: z.strictObject({
+    /** Lifetime culture per domestic tourist. */
+    culturePerTourist: z.int().min(1),
+    /** Tourism toward a civ per visiting tourist from it. */
+    tourismPerTourist: z.int().min(1),
+    /** More tourism toward a civ you have a trade route with, share a religion with, or are
+     * friends or allies with (percent each). */
+    tradeRoutePercent: z.int().min(0),
+    religionPercent: z.int().min(0),
+    friendsPercent: z.int().min(0),
+  }),
   /** Great people: buying the one you're racing for. */
   greatPeople: z.strictObject({
     /** Gold per point still missing, to recruit a great person now. */
@@ -548,6 +570,11 @@ export const UnitDef = z.strictObject({
   /** Can be bought with this much faith (missionaries); 0 = not with faith. */
   faithCost: z.int().min(0).default(0),
   ...requires,
+  /**
+   * What it upgrades to (for gold, in your territory). Once that unit is available, this one
+   * can't be built any more. Unique units upgrade like the unit they replace.
+   */
+  upgradesTo: Id.optional(),
   /** Special actions this unit can take. */
   actions: z.array(z.enum(['found_settlement', 'trade_route'])).default([]),
   /** Sea units: can enter deep ocean. */
@@ -851,19 +878,25 @@ export const WonderDef = z.strictObject({
 });
 
 /** A one-off city project on a tile (e.g. clearing woods for a burst of production). */
-export const ProjectDef = z.strictObject({
-  type: z.literal('project'),
-  id: Id,
-  name: Text,
-  description: Text,
-  icon: z.string().min(1).max(3),
-  cost: z.int().min(1),
-  /** Removes any of these features from the chosen tile. */
-  clears: z.array(Id).min(1),
-  /** One-time reward: food to the settlement's store, production to its next item, gold... */
-  reward: YieldMap.default({}),
-  ...requires,
-});
+export const ProjectDef = z
+  .strictObject({
+    type: z.literal('project'),
+    id: Id,
+    name: Text,
+    description: Text,
+    icon: z.string().min(1).max(3),
+    cost: z.int().min(1),
+    /** Removes any of these features from the chosen tile. */
+    clears: z.array(Id).min(1).optional(),
+    /** Done on a tile with this district instead (e.g. space projects on a Spaceport). */
+    onDistrict: Id.optional(),
+    /** One-time reward: food to the settlement's store, production to its next item, gold... */
+    reward: YieldMap.default({}),
+    ...requires,
+  })
+  .refine((p) => (p.clears === undefined) !== (p.onDistrict === undefined), {
+    message: 'a project either clears features or goes on a district',
+  });
 
 /** A town specialization (docs/03, "Towns vs Cities"): one at a time, from a minimum size. */
 export const SpecializationDef = z.strictObject({

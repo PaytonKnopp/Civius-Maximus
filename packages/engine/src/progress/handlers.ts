@@ -268,10 +268,13 @@ export function empireTurn(
   draft: Draft<GameState>,
   ctx: EngineContext,
   player: PlayerId,
-  totals: { science: number; culture: number; happiness: number },
+  totals: { science: number; culture: number; tourism: number; happiness: number },
   emit: Emit,
 ) {
   const p = draft.players[player]!;
+  // Domestic tourists come from all the culture ever earned; tourism goes out in the culture step.
+  p.lifetimeCulture += totals.culture;
+  p.tourismRate = totals.tourism;
 
   // Upkeep. An empty treasury disbands a unit (the costliest, newest first), one per turn.
   p.gold -= unitUpkeep(ctx, view(draft), player);

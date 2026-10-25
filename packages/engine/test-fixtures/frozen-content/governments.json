@@ -247,5 +247,107 @@
         }
       }
     ]
+  },
+  {
+    "type": "government",
+    "id": "government_democracy",
+    "name": "Democracy",
+    "description": "+2 gold in every settlement with a Commercial Hub; buying things costs 15% less.",
+    "slots": {
+      "military": 1,
+      "economic": 3,
+      "diplomatic": 2,
+      "wildcard": 2
+    },
+    "requiresCivic": "civic_suffrage",
+    "order": 8,
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_district": "district_commercial_hub"
+        }
+      },
+      {
+        "effect": "modify_purchase_cost",
+        "params": {
+          "percent": -15
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "government",
+    "id": "government_collectivism",
+    "name": "Collectivism",
+    "description": "+15% production in every settlement.",
+    "slots": {
+      "military": 3,
+      "economic": 3,
+      "diplomatic": 1,
+      "wildcard": 1
+    },
+    "requiresCivic": "civic_collectivism",
+    "order": 9,
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "government",
+    "id": "government_militarism",
+    "name": "Militarism",
+    "description": "+5 strength for all soldiers; +50% production toward soldiers.",
+    "slots": {
+      "military": 4,
+      "economic": 2,
+      "diplomatic": 1,
+      "wildcard": 1
+    },
+    "requiresCivic": "civic_militarism",
+    "order": 10,
+    "effects": [
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": 5
+        },
+        "target": {
+          "scope": "units"
+        }
+      },
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "kind": "unit",
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   }
 ]

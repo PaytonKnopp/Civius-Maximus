@@ -497,5 +497,304 @@
         }
       }
     ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_press_gangs",
+    "name": "Press Gangs",
+    "description": "+50% production toward ships.",
+    "slot": "military",
+    "requiresCivic": "civic_exploration",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "kind": "unit",
+            "unitClass": ["class_naval_melee", "class_naval_ranged"]
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_drill_manuals",
+    "name": "Drill Manuals",
+    "description": "+25% production toward soldiers.",
+    "slot": "military",
+    "requiresCivic": "civic_nationalism",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 25,
+          "toward": {
+            "kind": "unit",
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_general_staff",
+    "name": "General Staff",
+    "description": "+2 strength for all soldiers.",
+    "slot": "military",
+    "requiresCivic": "civic_mobilization",
+    "effects": [
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": 2
+        },
+        "target": {
+          "scope": "units"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_joint_stock_companies",
+    "name": "Joint-Stock Companies",
+    "description": "+2 gold in every settlement with a Commercial Hub.",
+    "slot": "economic",
+    "requiresCivic": "civic_mercantilism",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_district": "district_commercial_hub"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_rational_inquiry",
+    "name": "Rational Inquiry",
+    "description": "+2 science in every settlement with a Campus.",
+    "slot": "economic",
+    "requiresCivic": "civic_enlightenment",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_district": "district_campus"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_factory_towns",
+    "name": "Factory Towns",
+    "description": "+2 production in every settlement with an Industrial Zone.",
+    "slot": "economic",
+    "requiresCivic": "civic_civil_engineering",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_district": "district_industrial_zone"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_grand_opera",
+    "name": "Grand Opera",
+    "description": "+2 culture in every settlement with a Theater Square.",
+    "slot": "economic",
+    "requiresCivic": "civic_opera_and_ballet",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_district": "district_theater"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_grand_tours",
+    "name": "Grand Tours",
+    "description": "+25% tourism.",
+    "slot": "economic",
+    "requiresCivic": "civic_natural_history",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "tourism",
+          "percent": 25
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_public_broadcasting",
+    "name": "Public Broadcasting",
+    "description": "+2 tourism in every settlement with a Broadcast Center.",
+    "slot": "economic",
+    "requiresCivic": "civic_mass_media",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "tourism",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_broadcast_center"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_national_parks",
+    "name": "National Parks",
+    "description": "+1 tourism in every settlement.",
+    "slot": "economic",
+    "requiresCivic": "civic_conservation",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "tourism",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_resident_embassies",
+    "name": "Resident Embassies",
+    "description": "+3 influence in your capital.",
+    "slot": "diplomatic",
+    "requiresCivic": "civic_diplomatic_service",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "influence",
+          "amount": 3
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_is_capital": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_cultural_exchanges",
+    "name": "Cultural Exchanges",
+    "description": "+1 influence and +1 tourism in every city.",
+    "slot": "diplomatic",
+    "requiresCivic": "civic_enlightenment",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "influence",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_kind": "city"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "tourism",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_kind": "city"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_patent_offices",
+    "name": "Patent Offices",
+    "description": "+10% science in every settlement.",
+    "slot": "wildcard",
+    "requiresCivic": "civic_civil_engineering",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   }
 ]

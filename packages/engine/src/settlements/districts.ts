@@ -9,7 +9,7 @@ import { isWater } from '../units/movement';
 import type { Line } from './rules';
 import { tileFacts } from './rules';
 import { playerEffects } from '../progress/sources';
-import { baseOf } from '../uniques';
+import { baseOf, countsAs } from '../uniques';
 
 /**
  * Districts, wonders and tile projects (docs/03-core-mechanics.md, section 9): where they can go,
@@ -103,18 +103,25 @@ export function placementProblem(
   if (tile === s.tile) return bad("Not on the settlement's center");
   if (distance(state.map, s.tile, tile) > ctx.content.rules.settlements.workRadius)
     return bad('Too far from the settlement');
-  if (t.district !== null || t.wonder !== null) return bad('Something is already built there');
   const others = queue.filter((q) => q !== item);
-  if (others.some((q) => q.tile === tile && q.kind !== 'project'))
-    return bad('Something else is planned there');
-
   if (item.kind === 'project') {
     const def = ctx.content.entities.project[item.id];
     if (!def) return bad(`Unknown project "${item.id}"`);
-    if (t.feature === null || !def.clears.includes(t.feature))
+    // Projects done in a district (space projects on a Spaceport).
+    if (def.onDistrict) {
+      if (t.district !== null && countsAs(ctx, 'district', t.district, def.onDistrict))
+        return undefined;
+      const name = ctx.content.entities.district[def.onDistrict]?.name ?? def.onDistrict;
+      return bad(`Do it on a ${resolveText(ctx.content, name)}`);
+    }
+    if (t.district !== null || t.wonder !== null) return bad('Something is already built there');
+    if (t.feature === null || !(def.clears ?? []).includes(t.feature))
       return bad(`Nothing on that tile for ${resolveText(ctx.content, def.name)}`);
     return undefined;
   }
+  if (t.district !== null || t.wonder !== null) return bad('Something is already built there');
+  if (others.some((q) => q.tile === tile && q.kind !== 'project'))
+    return bad('Something else is planned there');
   if (reservedTiles(state, s.owner, s.id).has(tile))
     return bad('Another settlement has planned something there');
 

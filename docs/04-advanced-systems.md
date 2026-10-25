@@ -333,6 +333,17 @@ forces new crisis policies. Off by default, for groups that like chaos.
   Sharing an ideology gives a small happiness bonus instead. This creates great late-game tension
   between friends.
 
+### Built so far (V1 part 9)
+
+- **Tourism** is a yield: from wonders (each later wonder has some), Museums, Broadcast
+  Centers, Stadiums, a few policies, and Radio (+25%). There are no great works yet.
+- **Domestic tourists:** every 100 culture a civ ever earns. **Visiting tourists:** every 150
+  tourism a civ has sent toward another; tourism goes each turn to every civ whose settlement
+  you've seen, +25% each with a trade route between you, a shared religion (both capitals
+  follow it) or a friendship or alliance.
+- **Culture victory:** your visitors from each other civ outnumber its domestic tourists.
+- Not yet: ideologies and their pressure, great works, national parks and seaside resorts.
+
 ---
 
 ## More modules (all in v1 as toggles)
@@ -371,3 +382,10 @@ score victory).
 **Built so far (M10):** domination (a setup toggle, on by default), conquest (the last team
 standing always wins) and score (at the turn limit: none, 60, 100, 150, 200 or 250 turns).
 The end screen names the winner and how, with everyone's score.
+
+**Built so far (V1 parts 7 and 9):** religious, science and culture victories, each a
+new-game toggle (on by default), and a Victories screen (V) with everyone's progress.
+- **Science:** a Spaceport (after Rocketry, flat land, outside the district limit) and four
+  projects done on it in order: Launch a Satellite, Moon Landing, Mars Colony, then the
+  Exoplanet Expedition, which arrives 10 turns later and wins.
+- **Culture:** see "Tourism & great works".

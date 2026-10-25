@@ -21,6 +21,7 @@ import {
 import { maxReligions, pantheonOf } from '../religion/rules';
 import { countsAs } from '../uniques';
 import { isCoastal } from '../settlements/rules';
+import { obsoletedBy, upgradeCost, upgradeProblem } from '../units/upgrades';
 import { roleOf, type Turn } from './turn';
 import { effectValue, happinessWeight, yieldsValue } from './values';
 
@@ -104,6 +105,17 @@ function wantsProphet(t: Turn, cls: string): boolean {
   return t
     .mySettlements()
     .some((s) => s.districts.some((d) => countsAs(t.ctx, 'district', d.id, holy)));
+}
+
+/** Upgrades units standing in our territory while there's gold to spare (soldiers first). */
+export function upgradeUnits(t: Turn) {
+  const reserve = toFixed(150 + 20 * t.mySettlements().length);
+  for (const u of t.myUnits()) {
+    if (upgradeProblem(t.ctx, t.state, t.player, u.id)) continue;
+    const to = obsoletedBy(t.ctx, t.state, t.player, u.type)!;
+    if (t.p.gold - upgradeCost(t.ctx, u.type, to) < reserve) return;
+    t.act({ type: 'upgrade_unit', player: t.player, unit: u.id });
+  }
 }
 
 /** The available node with the most value for its remaining cost. */

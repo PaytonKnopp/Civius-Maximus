@@ -180,7 +180,7 @@ The order inside this phase can change based on playtest feedback.
 | M21c · Espionage, world congress, loyalty | Spies and missions, congress votes and diplomatic victory, loyalty pressure and city flipping |
 | M21d · Climate, disasters, corporations, Ages mode, crises | All as setup toggles |
 | M21e · Graphs and statistics | The full graphs screen from doc 06 |
-| M21 · Full trees & late game | Renaissance → Information eras, air units, nukes (toggleable), ideologies, science victory, tourism & culture victory |
+| M21 · Full trees & late game | Renaissance → Information eras, air units, nukes (toggleable), ideologies, science victory, tourism & culture victory (Renaissance → Modern, unit upgrades, science and culture victories built in the V1 build) |
 
 🎮 Playtest after every 1–2 milestones.
 

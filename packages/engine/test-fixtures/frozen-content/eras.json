@@ -16,5 +16,23 @@
     "id": "era_medieval",
     "name": "Medieval",
     "order": 3
+  },
+  {
+    "type": "era",
+    "id": "era_renaissance",
+    "name": "Renaissance",
+    "order": 4
+  },
+  {
+    "type": "era",
+    "id": "era_industrial",
+    "name": "Industrial",
+    "order": 5
+  },
+  {
+    "type": "era",
+    "id": "era_modern",
+    "name": "Modern",
+    "order": 6
   }
 ]

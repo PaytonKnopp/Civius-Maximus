@@ -248,7 +248,7 @@
     "civ": "civ_england",
     "ability": {
       "name": "Gloriana",
-      "description": "+100% great admiral points. Naval units +1 movement. (+1 trade route per era after the Medieval arrives with later eras.)",
+      "description": "+100% great admiral points. Naval units +1 movement. +1 trade route in each era after the Medieval.",
       "effects": [
         {
           "effect": "grant_promotion",
@@ -268,6 +268,42 @@
           },
           "target": {
             "scope": "player"
+          }
+        },
+        {
+          "effect": "extra_trade_route",
+          "params": {
+            "amount": 1
+          },
+          "target": {
+            "scope": "player"
+          },
+          "condition": {
+            "era_at_least": "era_renaissance"
+          }
+        },
+        {
+          "effect": "extra_trade_route",
+          "params": {
+            "amount": 1
+          },
+          "target": {
+            "scope": "player"
+          },
+          "condition": {
+            "era_at_least": "era_industrial"
+          }
+        },
+        {
+          "effect": "extra_trade_route",
+          "params": {
+            "amount": 1
+          },
+          "target": {
+            "scope": "player"
+          },
+          "condition": {
+            "era_at_least": "era_modern"
           }
         }
       ]
@@ -313,7 +349,18 @@
     "ability": {
       "name": "Emperor of the French",
       "description": "Commanders gain XP 50% faster. Units within a commander's radius get +2 strength.",
-      "effects": []
+      "effects": [
+        {
+          "effect": "commander_bonus",
+          "params": {
+            "strength": 2,
+            "xpPercent": 50
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
     },
     "agenda": {
       "name": "Grand Strategist",
@@ -543,7 +590,7 @@
     "civ": "civ_japan",
     "ability": {
       "name": "The Demon King",
-      "description": "Melee units +5 strength when attacking a damaged unit. Gunpowder units cost 25% less.",
+      "description": "Melee units +5 strength when attacking a damaged unit. Gunpowder units cost 25% less and get +3 strength.",
       "effects": [
         {
           "effect": "modify_strength",
@@ -554,6 +601,45 @@
               "wounded": true
             },
             "unitClass": "class_melee"
+          },
+          "target": {
+            "scope": "units"
+          }
+        },
+        {
+          "effect": "modify_item_cost",
+          "params": {
+            "percent": -25,
+            "toward": {
+              "kind": "unit",
+              "unit": [
+                "unit_musketman",
+                "unit_pike_and_shot",
+                "unit_line_infantry",
+                "unit_field_cannon",
+                "unit_infantry",
+                "unit_machine_gun",
+                "unit_at_crew"
+              ]
+            }
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        },
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 3,
+            "unit": [
+              "unit_musketman",
+              "unit_pike_and_shot",
+              "unit_line_infantry",
+              "unit_field_cannon",
+              "unit_infantry",
+              "unit_machine_gun",
+              "unit_at_crew"
+            ]
           },
           "target": {
             "scope": "units"

@@ -20,6 +20,9 @@ import { tradeHandlers, tradeTurn } from './trade/handlers';
 import { greatPeopleHandlers, greatPeopleTurn } from './greatpeople/greatpeople';
 import { religionHandlers, religionTurn } from './religion/handlers';
 import { cityStateHandlers, cityStatesTurn, placeCityStates } from './citystates/handlers';
+import { upgradeHandlers } from './units/upgrades';
+import { cultureTurn } from './culture/tourism';
+import { scienceTurn } from './science/space';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
 
@@ -121,6 +124,10 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       beliefs: [],
       religion: null,
       envoys: 0,
+      lifetimeCulture: 0,
+      tourismRate: 0,
+      spaceProjects: [],
+      expeditionArrives: null,
       faith: 0,
       capital: null,
       settlementsFounded: 0,
@@ -155,6 +162,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     greatPeople: { points: {}, claimed: {} },
     religions: {},
     cityStates: {},
+    tourism: {},
   };
   spawnStartingUnits(state, ctx);
   placeStartingCamps(state, ctx, random);
@@ -178,6 +186,7 @@ const handlers: Handlers = {
   ...greatPeopleHandlers,
   ...religionHandlers,
   ...cityStateHandlers,
+  ...upgradeHandlers,
   end_turn: {
     validate(state, action) {
       const p = state.players[action.player];
@@ -218,6 +227,8 @@ const turnSteps: TurnStep[] = [
   { id: 'trade', order: 120, run: tradeTurn },
   { id: 'greatPeople', order: 115, run: greatPeopleTurn },
   { id: 'religion', order: 125, run: religionTurn },
+  { id: 'culture', order: 128, run: cultureTurn },
+  { id: 'science', order: 129, run: scienceTurn },
 ];
 
 function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
