@@ -143,6 +143,7 @@ features on top.
 - 🎮 **Checkpoint:** play single player games against the AI.
 
 ### M12 · Accounts and lobby (Supabase)
+(The V1 build has a lobby without accounts: host or join by code, see 02, "Lobby". D82.)
 - Supabase project setup (free tier), SQL migrations, row-level security policies, and the
   keep-alive scheduled job.
 - In-game sign up / log in with username + password, remembered login, profiles.
@@ -158,9 +159,15 @@ features on top.
 - **Done when:** a test proves no hidden information reaches a client, and a 4-player online game
   survives a host refresh and dropped connections.
 - 🎮 **Checkpoint:** first online game between you two, then a 4–8 player game with more friends.
+- **Built in the V1 build:** hosting in the browser, join by code over WebRTC, per-player views
+  (with the test), simultaneous turns, rejoining a seat, ending an absent player's turn, the
+  host's autosave and hosting it again. Not yet: Supabase, un-end, dynamic turns, timers, AI
+  takeover, cloud saves, host handoff, chat, pings, notifications (see 01, "Built so far").
+
 
 ### M14 · Deploy
 - Client on Cloudflare Pages (free), auto-deploys from `main`. Desktop builds come later (M27).
+  (For now it's GitHub Pages, also free and deployed from `main`.)
 - **Done when:** your friends can open a link, make an account, and join your game by code.
 
 ## Phase D — Depth (modules)
@@ -176,10 +183,10 @@ The order inside this phase can change based on playtest feedback.
 | M19 · Independent powers | Camps with dispositions, befriending, city-states, envoys, suzerains, quests, levies (city-states, envoys, suzerains and two quests built in the V1 build: see 04, "Built so far") |
 | M20 · Eras, golden ages, governors | Historic moments, legacy goals, ages, dedications, governor trees |
 | M21a · Map breadth | 12+ map types (small continents, island plates, inland sea, lakes, highlands, seven seas, Terra old/new world, shuffle, duel arena, Earth with true starts...), world settings (world age, temperature, rainfall, sea level), natural wonders |
-| M21b · Lenses and filters | Every lens in [06-ui-ux.md](06-ui-ux.md), map pins with notes, planning ghosts for districts and wonders |
+| M21b · Lenses and filters | Every lens in [06-ui-ux.md](06-ui-ux.md), map pins with notes, planning ghosts for districts and wonders (yields, settler, resources and religion lenses built in the V1 build) |
 | M21c · Espionage, world congress, loyalty | Spies and missions, congress votes and diplomatic victory, loyalty pressure and city flipping |
 | M21d · Climate, disasters, corporations, Ages mode, crises | All as setup toggles |
-| M21e · Graphs and statistics | The full graphs screen from doc 06 |
+| M21e · Graphs and statistics | The full graphs screen from doc 06 (seven measures per civ per turn built in the V1 build; event markers and summary cards later) |
 | M21 · Full trees & late game | Renaissance → Information eras, air units, nukes (toggleable), ideologies, science victory, tourism & culture victory (Renaissance → Modern, unit upgrades, science and culture victories built in the V1 build) |
 
 🎮 Playtest after every 1–2 milestones.
@@ -225,7 +232,7 @@ The order inside this phase can change based on playtest feedback.
 
 ### M29 · UX polish and replays
 - Replays with timeline, stats graphs, hall of fame, Civilopedia, accessibility options, and a
-  tutorial or first-game hints.
+  tutorial or first-game hints (hints, a help screen and the home screen built in the V1 build).
 
 ### 🏁 v1.0
 - Everything in [00-vision.md](00-vision.md#what-finished-v10-means).

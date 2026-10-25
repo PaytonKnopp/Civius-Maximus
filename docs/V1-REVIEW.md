@@ -1,12 +1,68 @@
-# V1 review (collected during the build)
+# V1 review
 
-Everything for Payton to go through in one sitting once V1 is done: what was built, how to try
-it, known issues, and every decision with a recommended answer. Filled in as each part of
-[V1-PLAN.md](V1-PLAN.md) lands; finished at the end.
+V1 is done. This page is everything for Payton in one sitting: what V1 is and how to try it,
+what's next, every decision with the default now in the game, and what was built part by part
+(the plan was [V1-PLAN.md](V1-PLAN.md)).
+
+## V1 at a glance
+
+**Play it:** https://paytonknopp.github.io/Civius-Maximus/ (it updates itself from `main`).
+
+- **Three ways to play:** single player against AI leaders, hotseat on one device (up to 8
+  people), or **online with friends**: host from your browser, they join with a code. Nothing to
+  sign up for, nothing to pay.
+- **10 leaders and civs** with full kits (abilities, unique units, buildings, improvements, a
+  district), each played by an AI with its own personality.
+- **Six eras** (Ancient → Modern): 47 techs, 37 civics, 42 units (with upgrades), 34 buildings,
+  12 districts, 15 wonders, 10 governments and 35 policy cards.
+- **The systems:** towns and cities, growth that develops your land, districts and adjacency,
+  happiness and celebrations, combat with a full preview, promotions and commanders,
+  diplomacy (opinions, deals, friendships, alliances, denouncing, surprise wars), trade routes
+  and roads, 26 great people, religion (pantheons, 22 beliefs, missionaries), 18 city-states
+  with envoys and suzerains, hostile camps.
+- **Six ways to win** (each can be turned off): score, conquest, domination, science (space
+  race), culture (tourism), religion.
+- **The screen:** painterly 3D or a flat 2D map, phone-friendly; a "why?" breakdown on every
+  number; lenses, graphs, a help screen and first-game hints; saves in the browser.
+- **For building more:** every rule number lives in content files, there's a Map Lab, and
+  `pnpm cx simulate` plays whole AI games to check balance.
+
+**A ten-minute tour:**
+
+1. Open the link and press **Quick game** (you and three rivals on a small map). The big button
+   at the bottom right (or Enter) always does the next thing; **?** lists every shortcut.
+2. Found your capital (**B**), pick research (**T**) and a civic (**C**), and Enter through the
+   turns. Growth asks you which tile to develop.
+3. Try the lenses (**L**), graphs (**H**), victories (**V**), city-states (**I**), religion
+   (**R**) and great people (**P**). Click a civ in the top bar for diplomacy.
+4. Online: **Play online…** → host → send your friend the code or invite link. To try it alone,
+   open `…/Civius-Maximus/?net=local` in two tabs and host in one, join in the other.
+
+## What's next (recommended order)
+
+1. **Play it, ideally online with friends** (the playtest checkpoint), and answer the decisions
+   below. I'll turn your answers and your notes into a tuning pass.
+2. **Balance from play and simulation:** late-game pace, AI tourism, kit strengths, city-state
+   bonuses (see Known issues).
+3. **Accounts and cloud saves** (roadmap M12–M13): Supabase sign-in, saves in the cloud, chat,
+   turn timers, an AI that takes over an absent seat, host handoff, and a relay server for
+   strict networks. This is the one step that needs something from you: a free Supabase project
+   (I'll give you the exact clicks when we get there).
+4. **AI v2** (M22): AI deal-making with humans, smarter wars with commanders, religion and
+   city-state play, difficulty levels.
+5. **Art and audio** (M28): leader portraits, real models for units and buildings, the painted
+   icon set, music and sound.
+6. **More content** (M25–M26, M21): leaders 11–30, more wonders and units, the Atomic and
+   Information eras (air units, nukes as a toggle), great works.
+7. **The remaining depth modules:** governors and golden ages (M20), more map types and world
+   settings (M21a), more lenses (M21b), espionage, world congress and loyalty (M21c), climate
+   and the other setup toggles (M21d).
+8. **Replays, hall of fame, Civilopedia** (M29) and **desktop apps** (M27).
 
 ## Decisions for you
 
-Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
+Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now; anything you
+don't answer stays as it is.
 
 ### Already in the game before the V1 build (D31–D52, details in DECISIONS.md)
 
@@ -41,6 +97,8 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
 25. **D55 AI peace:** accepts unless clearly winning; offers when losing or tired of the war.
 26. **D56 Army strength is public** (shown in the rival panel). (Or hidden.)
 27. **D57 AI keeps captured settlements** (never razes or liberates).
+28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
+    expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 29. **D58 Kit numbers** (abilities and uniques, first pass): see the table in
     `docs/09-base-roster.md`, "In the game now". Tell me any that feel too strong or weak.
 30. **D59 What uniques replace** while the planned base items don't exist (War Chariot →
@@ -84,10 +142,21 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
     no accounts, nothing to set up. Supabase accounts and cloud saves later (needs a free
     project of yours when you want them).
 54. **D83 Absent players:** the game waits and the host can end their turn; no AI takeover yet.
-28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
-    expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 
 ## What was built
+
+### Before the V1 build (M0–M10): the core game
+- The engine: deterministic rules (same seed, same game; replays and saves rely on it), every
+  rule number in content files, mods as folders, a validator.
+- World generation: continents, Pangaea, archipelago and fractal maps in six sizes, rivers,
+  resources and balanced starts; the Map Lab to look at them.
+- The painterly 3D map (and 2D), fog of war, units and movement with path previews, towns and
+  cities, growth that develops a tile, citizens and focus, buying tiles, borders.
+- Technology and civic trees, governments and policy cards, happiness and celebrations.
+- Improvements, districts with adjacency, wonders with a race for each.
+- Combat with a full preview, ranged attacks, settlement strikes and walls, capturing and
+  razing, promotions, hostile camps and raiders, war support, score and domination victories.
+- Hotseat for up to 8 people, saves in the browser and as files.
 
 ### Part 1: the AI (M11)
 - **Single player works:** New game → add AI rivals. Each AI has a leader (Caesar, Cleopatra,
@@ -142,7 +211,7 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
   likes). The trade parts of the Mongol, Egyptian, Malian and Roman kits now work.
 
 ### Part 6: great people
-- ★ **Great people** (top bar, or P): seven kinds, 22 named people (Euclid, Hypatia, Imhotep,
+- ★ **Great people** (top bar, or P): seven kinds, 26 named people (Euclid, Hypatia, Imhotep,
   Marco Polo, Sun Tzu, Homer, Zheng He...). Districts and buildings earn points; the first to
   the cost earns the person, or **Recruit** them with gold for the points you're missing.
 - A great person appears at your capital: select it and **Activate** in a settlement for its
