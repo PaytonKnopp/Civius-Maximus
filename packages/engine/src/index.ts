@@ -85,6 +85,7 @@ export {
 } from './units/movement';
 export { findPath, type PathStep } from './units/pathfind';
 export { fogOfWar, lineOfSight, sightOf, visibleTiles } from './units/vision';
+export { eventsFor, playerView } from './view';
 export type {
   BuildItem,
   CampState,

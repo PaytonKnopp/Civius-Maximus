@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@cx/engine": "workspace:*"
+    "@cx/engine": "workspace:*",
+    "@cx/protocol": "workspace:*"
   },
   "devDependencies": {
     "@cx/content": "workspace:*"
