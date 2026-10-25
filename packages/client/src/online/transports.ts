@@ -144,18 +144,21 @@ async function localHost(code: string): Promise<HostLine> {
       messages.forEach((h) => h(data.from, data.body));
     }
   };
-  const gone = () => post({ kind: 'host-gone' });
+  let open = true;
+  const gone = () => open && post({ kind: 'host-gone' });
   addEventListener('pagehide', gone);
   return {
-    send: (to, body) => clients.has(to) && post({ kind: 'to-client', to, body }),
+    send: (to, body) => open && clients.has(to) && post({ kind: 'to-client', to, body }),
     onMessage: (h) => (messages.add(h), () => messages.delete(h)),
     onPeer: (h) => (peers.add(h), () => peers.delete(h)),
     kick: (to) => {
+      if (!open) return;
       post({ kind: 'kick', to });
       if (clients.delete(to)) peers.forEach((h) => h(to, false));
     },
     close: () => {
       gone();
+      open = false;
       removeEventListener('pagehide', gone);
       channel.close();
     },

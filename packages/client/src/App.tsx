@@ -159,10 +159,11 @@ export function App() {
     setHome(false);
   }, []);
   const backHome = useCallback(() => {
-    game.current?.online?.leave();
     setStart({ id: startId(), setup: makeSetup({ ...options, seed: randomSeed() }) });
     setHome(true);
   }, [options]);
+  // Leaving an online game any way (a new game, a load, the menu) closes its connections.
+  useEffect(() => () => ('handle' in start ? start.handle.online?.leave() : undefined), [start]);
 
   if (screen === 'lab') return <MapLab content={content} onBack={() => setScreen('game')} />;
 
