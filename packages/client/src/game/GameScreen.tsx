@@ -43,7 +43,8 @@ import {
   warKey,
   workableTiles,
 } from '@cx/engine';
-import { LocalGame, makeSave } from '@cx/host';
+import { type GameHandle, LocalGame, makeSave, RemoteGame } from '@cx/host';
+import type { SeatInfo } from '@cx/protocol';
 import { createAiRunner } from './aiRunner';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TileCard } from '../components/TileCard';
@@ -52,7 +53,7 @@ import type { MapRenderer, PathView, Quality, TileHighlight } from '../map/rende
 import { World3D } from '../map3d/World3D';
 import { CombatPreview, type Side } from './CombatPreview';
 import { CaptureDialog, GameOver, PlayerPanel, WarPrompt } from './Diplomacy';
-import { AUTOSAVE, storeSave } from './storage';
+import { AUTOSAVE, ONLINE_AUTOSAVE, storeSave } from './storage';
 import {
   civName,
   cssColor,
@@ -343,7 +344,11 @@ function targetSide(ctx: EngineContext, state: GameState, p: Preview, viewer: Pl
 }
 
 /** A game to start: a new one from a setup, or a saved one from its state. */
-export type GameStart = { id: string; setup: GameSetup } | { id: string; state: GameState };
+export type GameStart =
+  | { id: string; setup: GameSetup }
+  | { id: string; state: GameState }
+  /** An online game: hosted here (`OnlineHost.handle()`) or joined (`RemoteGame`). */
+  | { id: string; handle: GameHandle };
 
 interface Props {
   content: CompiledContent;
@@ -351,16 +356,21 @@ interface Props {
   mode: '3d' | '2d';
   quality: Quality;
   /** Called once the game exists (the app saves it from there). */
-  onGame?: (game: LocalGame) => void;
+  onGame?: (game: GameHandle) => void;
+  /** Leaves the game for the home screen (an online game that ended or lost its host). */
+  onExit?: () => void;
 }
 
 /** The main game view: the map, your units and settlements, and the controls to play a turn. */
-export function GameScreen({ content, start, mode, quality, onGame }: Props) {
+export function GameScreen({ content, start, mode, quality, onGame, onExit }: Props) {
   const ctx: EngineContext = useMemo(() => ({ content }), [content]);
   // One background worker for the slow part of each turn (End Turn and the AI seats).
   const runner = useMemo(() => createAiRunner(), []);
-  const game = useMemo(
-    () => new LocalGame('state' in start ? start.state : start.setup, ctx, runner),
+  const game: GameHandle = useMemo(
+    () =>
+      'handle' in start
+        ? start.handle
+        : new LocalGame('state' in start ? start.state : start.setup, ctx, runner),
     [start, ctx, runner],
   );
   const [busy, setBusy] = useState(game.busy);
@@ -448,6 +458,41 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
     const id = ++noticeId.current;
     setNotices((n) => [...n.slice(-2), { id, text }]);
     setTimeout(() => setNotices((n) => n.filter((x) => x.id !== id)), 2600);
+  }, []);
+
+  // Online: who's connected, refusals from the host, and a lost connection.
+  const online = game.online;
+  const [seats, setSeats] = useState<SeatInfo[]>(() => online?.seats() ?? []);
+  const [cutOff, setCutOff] = useState<string | null>(null);
+  useEffect(() => {
+    if (!online) return;
+    if (game instanceof RemoteGame) game.onRefused = notify;
+    const update = () => {
+      setSeats(online.seats());
+      if (game instanceof RemoteGame && game.ended) setCutOff(game.ended);
+    };
+    update();
+    return online.onChange(update);
+  }, [game, online, notify]);
+  const away = seats.filter(
+    (x) =>
+      !x.online &&
+      x.player &&
+      state.players[x.player]?.alive &&
+      !state.players[x.player]!.turnEnded,
+  );
+
+  // The chip row on the left stops where the civ chips on the right begin.
+  const playersRef = useRef<HTMLDivElement>(null);
+  const [playersWidth, setPlayersWidth] = useState(0);
+  useEffect(() => {
+    const el = playersRef.current;
+    if (!el) return;
+    const fit = () => setPlayersWidth(el.offsetWidth);
+    fit();
+    const watch = new ResizeObserver(fit);
+    watch.observe(el);
+    return () => watch.disconnect();
   }, []);
 
   const colors = useMemo(() => playerColors(content, state), [content, state.playerOrder]);
@@ -564,7 +609,12 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
         }
       }
       if (events.some((e) => e.type === 'turn_started')) {
-        void storeSave(AUTOSAVE, makeSave(s, `Autosave · turn ${s.turn}`)).catch(() => {});
+        // An online game's host keeps its own autosave (resumed online); clients only see a view.
+        if (game.saves)
+          void storeSave(
+            game.online ? ONLINE_AUTOSAVE : AUTOSAVE,
+            makeSave(s, `${game.online ? 'Online autosave' : 'Autosave'} · turn ${s.turn}`),
+          ).catch(() => {});
       }
       for (const e of events) {
         if (e.visibleTo !== 'all' && !e.visibleTo.includes(viewer)) continue;
@@ -1112,7 +1162,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
         <span className="fps">{fps} fps</span>
       </div>
 
-      <div className="players">
+      <div className="players" ref={playersRef}>
         {state.playerOrder.map((p) => {
           const pl = state.players[p]!;
           const war = atWar(state, viewer, p);
@@ -1129,7 +1179,7 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
               onClick={() => setPlayerPanel(playerPanel === p ? null : p)}
             >
               <span className="swatch" style={{ background: cssColor(colors[p]!.main) }} />
-              {hotseat && pl.kind === 'human'
+              {(hotseat || online) && pl.kind === 'human'
                 ? `${p === viewer ? '▸ ' : ''}${pl.name} · ${civName(content, state, p)}`
                 : p === viewer
                   ? `You · ${civName(content, state, p)}`
@@ -1149,10 +1199,44 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
                   ✉
                 </span>
               )}
+              {online && seats.some((x) => x.player === p && !x.online) && (
+                <span className="away-mark" aria-label="away">
+                  ⏸
+                </span>
+              )}
             </button>
           );
         })}
       </div>
+      {online && (away.length > 0 || cutOff) && (
+        <div className="online-bar" role="status">
+          {cutOff ? (
+            <>
+              {cutOff}
+              {onExit && (
+                <button type="button" className="small" onClick={onExit}>
+                  Main menu
+                </button>
+              )}
+            </>
+          ) : (
+            away.map((x) => (
+              <span key={x.player}>
+                {x.name} is away
+                {online.endTurnFor && (
+                  <button
+                    type="button"
+                    className="ghost small"
+                    onClick={() => online.endTurnFor!(x.player!)}
+                  >
+                    End their turn
+                  </button>
+                )}
+              </span>
+            ))
+          )}
+        </div>
+      )}
       {playerPanel && (
         <PlayerPanel
           ctx={ctx}
@@ -1165,7 +1249,10 @@ export function GameScreen({ content, start, mode, quality, onGame }: Props) {
         />
       )}
 
-      <div className="progress-chips">
+      <div
+        className="progress-chips"
+        style={{ '--players-w': `${playersWidth}px` } as React.CSSProperties}
+      >
         {(['tech', 'civic'] as const).map((k) => {
           const track = k === 'tech' ? me.techs : me.civics;
           const id = track.current;

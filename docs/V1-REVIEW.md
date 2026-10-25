@@ -80,6 +80,10 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
     bonuses for trade routes, shared religion and friendship.
 52. **D81 First-game hints:** ten one-time notes on what this game does differently from Civ,
     on by default, off with one click. Or none at all (doc 06 says no hand-holding)?
+53. **D82 Online games connect** browser to browser (WebRTC) through PeerJS's free public broker:
+    no accounts, nothing to set up. Supabase accounts and cloud saves later (needs a free
+    project of yours when you want them).
+54. **D83 Absent players:** the game waits and the host can end their turn; no AI takeover yet.
 28. **Leader personalities:** the numbers in `packages/content/base/leaders.json` (aggression,
     expansion, science... 0–10). Tweak any that feel wrong once you've played them.
 
@@ -208,10 +212,30 @@ Answer by number ("1 yes, 2 b..."). Each has the default that's in the game now.
   commander with a banner, robed missionaries and great people (until now they reused ancient
   models). The Map Lab's "Unit models" switch shows one of each.
 
+### Part 11: online play
+- 🌐 **Play online…** on the home screen: host a game (your name, how many friends, AI rivals,
+  map) and get a six-character code, or join a friend's with their code. **Copy invite link**
+  makes a link that opens the join screen with the code filled in.
+- Your browser hosts: it runs the real game, and each friend's browser is only ever sent what
+  their civ can see (no peeking through the fog in their dev tools; a test checks it). Moves
+  show at once on each player's screen and the host confirms them.
+- Everyone plays at the same time; the turn ends when all humans have ended theirs. A friend
+  who drops shows as away (⏸): rejoin with the same code and name to get the seat back, or the
+  host can **End their turn**.
+- The host's game autosaves; **Host your online game again** on the home screen re-opens it
+  with a new code, and friends get their seats back by name.
+- Nothing to sign up for and nothing to pay (D82). Try it alone with two tabs:
+  `…/?net=local`, host in one tab, join in the other.
+
 ## Known issues
 
 - Late game pace (AI-only games): the Modern era arrives around turns 200–300 and the first
   science victory around turn 330 in a 6-player game. AIs make little tourism, so culture
   victories mostly need a human going for them.
+- Online: on a few strict networks (some offices and mobile carriers) browsers can't connect
+  directly; that needs a relay server, which isn't set up. The host's tab must stay open. Land
+  you explored but can't see right now shows what's there now, not what you last saw. Other
+  civs' scores on the score chips and the Victories screen count only what you can see of them
+  (the Graphs screen has the real numbers).
 
 (Added as found.)

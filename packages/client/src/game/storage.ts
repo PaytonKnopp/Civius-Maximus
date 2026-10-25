@@ -9,6 +9,8 @@ import type { SaveFile } from '@cx/host';
 const DB = 'civius-maximus';
 const STORE = 'saves';
 export const AUTOSAVE = 'autosave';
+/** The autosave of the online game this browser hosts (resumed online, not as hotseat). */
+export const ONLINE_AUTOSAVE = 'autosave-online';
 
 export interface SaveSummary {
   id: string;

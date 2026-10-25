@@ -1,7 +1,7 @@
 import type { EngineContext, GameState } from '@cx/engine';
 import { readSave, type SaveFile } from '@cx/host';
 import { useEffect, useState } from 'react';
-import { AUTOSAVE, loadSave } from './game/storage';
+import { AUTOSAVE, loadSave, ONLINE_AUTOSAVE } from './game/storage';
 
 interface Props {
   ctx: EngineContext;
@@ -11,20 +11,28 @@ interface Props {
   onLoadGame: () => void;
   onContinue: (state: GameState) => void;
   onMapLab: () => void;
+  onOnline: () => void;
+  /** Host the online game this browser hosted last (from its autosave). */
+  onResumeOnline: (state: GameState) => void;
 }
 
 /** The title screen, over the live map: continue, a quick game, a new game, load, Map Lab. */
-export function HomeScreen({ ctx, onPlay, onNewGame, onLoadGame, onContinue, onMapLab }: Props) {
+export function HomeScreen(props: Props) {
+  const { ctx, onPlay, onNewGame, onLoadGame, onContinue, onMapLab, onOnline } = props;
   const [autosave, setAutosave] = useState<SaveFile | null>(null);
+  const [onlineSave, setOnlineSave] = useState<SaveFile | null>(null);
   useEffect(() => {
     let live = true;
-    loadSave(AUTOSAVE)
-      .then((save) => {
-        if (!live || !save) return;
-        const read = readSave(JSON.stringify(save), ctx);
-        if (read.ok) setAutosave(read.save);
-      })
-      .catch(() => {});
+    const read = (id: string, set: (s: SaveFile) => void) =>
+      loadSave(id)
+        .then((save) => {
+          if (!live || !save) return;
+          const r = readSave(JSON.stringify(save), ctx);
+          if (r.ok && r.save.state.status === 'playing') set(r.save);
+        })
+        .catch(() => {});
+    void read(AUTOSAVE, setAutosave);
+    void read(ONLINE_AUTOSAVE, setOnlineSave);
     return () => {
       live = false;
     };
@@ -47,6 +55,14 @@ export function HomeScreen({ ctx, onPlay, onNewGame, onLoadGame, onContinue, onM
           <button type="button" onClick={onNewGame}>
             New game…
           </button>
+          <button type="button" onClick={onOnline}>
+            Play online…
+          </button>
+          {onlineSave && (
+            <button type="button" onClick={() => props.onResumeOnline(onlineSave.state)}>
+              Host your online game again <span className="muted">· turn {onlineSave.turn}</span>
+            </button>
+          )}
           <button type="button" onClick={onLoadGame}>
             Load game…
           </button>

@@ -1,6 +1,6 @@
 import type { CompiledContent } from '@cx/content';
 import type { EngineContext, GameSetup, GameState, MapSettings } from '@cx/engine';
-import { type LocalGame, makeSave, readSave } from '@cx/host';
+import { type GameHandle, makeSave, readSave } from '@cx/host';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadContent } from './content';
 import { HomeScreen } from './HomeScreen';
@@ -16,6 +16,8 @@ import {
 } from './game/storage';
 import { MapLab } from './lab/MapLab';
 import type { Quality } from './map/renderer';
+import { inviteLink, OnlineDialog, type OnlineOptions } from './online/OnlineDialog';
+import { networkFromUrl } from './online/transports';
 
 const randomSeed = () => Math.random().toString(36).slice(2, 8);
 let nextStart = 0;
@@ -74,6 +76,29 @@ function makeSetup(o: NewGameOptions): GameSetup {
   };
 }
 
+/** A new online game: the humans (host first) and AI rivals, every rule on. */
+function makeOnlineSetup(names: string[], o: OnlineOptions): GameSetup {
+  return makeSetup({
+    script: o.script,
+    size: o.size,
+    humans: names,
+    rivals: o.rivals,
+    seed: randomSeed(),
+    wrapX: true,
+    resources: 'standard',
+    camps: true,
+    domination: true,
+    religion: true,
+    cityStates: true,
+    science: true,
+    culture: true,
+    turnLimit: null,
+  });
+}
+
+/** `#join=ABC123` (an invite link) opens the Join screen with the code. */
+const joinCodeFromUrl = () => /^#join=(\w+)$/.exec(location.hash)?.[1];
+
 function hasWebGL2() {
   try {
     return !!document.createElement('canvas').getContext('webgl2');
@@ -114,14 +139,31 @@ export function App() {
     setup: makeSetup(options),
   }));
   const [dialog, setDialog] = useState<'new' | 'saves' | null>(null);
+  // Online play: the host/join dialog, opened from the home screen or an invite link.
+  const [online, setOnline] = useState<{ joinCode?: string; resume?: GameState } | null>(() => {
+    const code = joinCodeFromUrl();
+    return code ? { joinCode: code } : null;
+  });
   // The title screen at startup (`#play` skips it, for scripts and links straight into a game).
-  const [home, setHome] = useState(() => location.hash !== '#play');
+  const [home, setHome] = useState(() => location.hash !== '#play' && !joinCodeFromUrl());
   const [mode, setMode] = useState<'3d' | '2d'>(() => (hasWebGL2() ? '3d' : '2d'));
   const [quality, setQuality] = useState<Quality>('medium');
-  const game = useRef<LocalGame>(undefined);
-  const onGame = useCallback((g: LocalGame) => {
+  const game = useRef<GameHandle>(undefined);
+  const onGame = useCallback((g: GameHandle) => {
     game.current = g;
   }, []);
+  const onOnlineGame = useCallback((handle: GameHandle) => {
+    history.replaceState(null, '', location.pathname + location.search);
+    setStart({ id: startId(), handle });
+    setOnline(null);
+    setHome(false);
+  }, []);
+  const backHome = useCallback(() => {
+    setStart({ id: startId(), setup: makeSetup({ ...options, seed: randomSeed() }) });
+    setHome(true);
+  }, [options]);
+  // Leaving an online game any way (a new game, a load, the menu) closes its connections.
+  useEffect(() => () => ('handle' in start ? start.handle.online?.leave() : undefined), [start]);
 
   if (screen === 'lab') return <MapLab content={content} onBack={() => setScreen('game')} />;
 
@@ -134,8 +176,9 @@ export function App() {
         mode={mode}
         quality={quality}
         onGame={onGame}
+        onExit={backHome}
       />
-      {home && !dialog && (
+      {home && !dialog && !online && (
         <HomeScreen
           ctx={ctx}
           onPlay={() => setHome(false)}
@@ -146,11 +189,32 @@ export function App() {
             setHome(false);
           }}
           onMapLab={() => setScreen('lab')}
+          onOnline={() => setOnline({})}
+          onResumeOnline={(state) => setOnline({ resume: state })}
+        />
+      )}
+      {online && (
+        <OnlineDialog
+          content={content}
+          ctx={ctx}
+          net={networkFromUrl()}
+          {...(online.joinCode ? { joinCode: online.joinCode } : {})}
+          {...(online.resume ? { resume: online.resume } : {})}
+          makeSetup={makeOnlineSetup}
+          onGame={onOnlineGame}
+          onCancel={() => {
+            history.replaceState(null, '', location.pathname + location.search);
+            setOnline(null);
+            setHome(true);
+          }}
         />
       )}
       <header className="game-bar">
         <span className="brand-name">Civius Maximus</span>
         <div className="bar-actions">
+          {'handle' in start && start.handle.online && (
+            <OnlineCode code={start.handle.online.code} />
+          )}
           <button type="button" className="ghost small" onClick={() => setDialog('new')}>
             New game
           </button>
@@ -203,7 +267,7 @@ export function App() {
       {dialog === 'saves' && (
         <SavesDialog
           ctx={ctx}
-          current={() => game.current?.state}
+          current={() => (game.current?.saves ? game.current.state : undefined)}
           onClose={() => setDialog(null)}
           onLoad={(state) => {
             setStart({ id: startId(), state });
@@ -213,6 +277,26 @@ export function App() {
         />
       )}
     </div>
+  );
+}
+
+/** The online game's join code; a click copies the invite link. */
+function OnlineCode({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      className="ghost small online-chip"
+      title="Online game: copy the invite link"
+      onClick={() => {
+        void navigator.clipboard
+          ?.writeText(inviteLink(code, networkFromUrl()))
+          .then(() => setCopied(true))
+          .catch(() => {});
+      }}
+    >
+      {copied ? 'Link copied' : `🌐 ${code}`}
+    </button>
   );
 }
 

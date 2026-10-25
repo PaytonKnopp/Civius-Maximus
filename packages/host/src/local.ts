@@ -12,6 +12,7 @@ import {
   type PlayerId,
   validateAction,
 } from '@cx/engine';
+import type { GameHandle } from './handle';
 
 export type GameListener = (state: GameState, events: GameEvent[]) => void;
 
@@ -74,8 +75,9 @@ const aiWaiting = (state: GameState) =>
  * as it starts (the engine's AI, `playAiTurn`). With an `AiRunner`, End Turn and the AI turns run
  * off the page (`busy` meanwhile, and actions wait), so the page never freezes.
  */
-export class LocalGame {
+export class LocalGame implements GameHandle {
   state: GameState;
+  readonly saves = true;
   /** Rivals are moving (in the runner): actions are refused until they're done. */
   busy = false;
   private listeners = new Set<GameListener>();

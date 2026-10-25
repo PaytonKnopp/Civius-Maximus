@@ -128,6 +128,25 @@ human and several AI seats, all on your machine.
    hosting to another seated player, who loads the latest snapshot. This works because the engine
    is deterministic.
 
+**Built so far (V1 part 11), without Supabase yet (D82):** online play needs no account and
+no setup. The host's tab runs the game (`OnlineHost` in the host package) and friends join with
+a six-character code. Browsers connect directly over **WebRTC** data channels; PeerJS's free
+public broker only introduces them (a second network, BroadcastChannel, links tabs of one
+browser for trying it alone and for the test scripts: `?net=local`). Each client gets only
+`playerView` (engine `view.ts`): unexplored tiles read as empty water, other players' units out
+of sight are left out (and the orders of those in sight), as are settlements whose land it never
+saw, other players' build queues and exploration, deals between others, and the seed and dice.
+Events go only to those in their `visibleTo`. After the first whole view, the host sends only
+what changed (changed tiles by index, changed top-level fields, new graph history), since a
+whole view is about 600 KB, mostly tiles. Clients play their own actions ahead on their view
+(`RemoteGame`) so the screen answers at once, except combat, ending the turn and deals; the
+host's next view replaces the guess. The host autosaves the real game; hosting it again later
+gives the same seats back to friends who rejoin with their name. A test in
+`packages/host/src/online.test.ts` checks that every client holds exactly its own view.
+Not yet: accounts, cloud saves, chat, turn timers, AI taking over an absent seat (the host can
+end an absent player's turn instead, D83), host handoff, and a relay (TURN) server for the few
+networks where browsers can't connect directly.
+
 ### Trade-offs of a player-hosted game (honest)
 
 - **The game runs while the host is online.** That fits simultaneous-turn sessions, which are live

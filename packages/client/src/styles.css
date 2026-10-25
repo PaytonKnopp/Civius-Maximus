@@ -2926,3 +2926,97 @@ kbd {
     display: none;
   }
 }
+
+/* Online play */
+.online-dialog {
+  width: min(460px, calc(100% - 32px));
+}
+.online-dialog .segmented {
+  margin-bottom: 12px;
+}
+.code-input {
+  font: 600 22px/1.2 var(--mono, ui-monospace, monospace);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.lobby {
+  text-align: center;
+}
+.lobby-label {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.join-code {
+  margin: 2px 0 8px;
+  color: var(--brass);
+  font: 600 40px/1.1 var(--mono, ui-monospace, monospace);
+  letter-spacing: 0.25em;
+}
+.lobby .seats {
+  margin: 14px 0 8px;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+.lobby .seats li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--panel-edge) 60%, transparent);
+}
+.lobby .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--panel-edge);
+}
+.lobby .dot.on {
+  background: #6fbf73;
+}
+.online-bar {
+  position: absolute;
+  top: 142px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100% - 32px);
+  padding: 8px 14px;
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+  font-size: 13px;
+  z-index: 4;
+}
+.online-bar span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.away-mark {
+  margin-left: 4px;
+  opacity: 0.8;
+}
+.online-chip {
+  font-family: var(--mono, ui-monospace, monospace);
+  letter-spacing: 0.08em;
+}
+@media (min-width: 641px) {
+  /* Stop short of the civ chips on the right; the rest scrolls (like on phones). */
+  .progress-chips {
+    max-width: calc(100% - 44px - var(--players-w, 540px));
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .progress-chips .progress-chip {
+    flex: none;
+  }
+}

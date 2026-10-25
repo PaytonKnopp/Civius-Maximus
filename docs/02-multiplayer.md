@@ -75,6 +75,16 @@ defines.
 
 ### Lobby
 
+**Built so far (V1 part 11):** Home → **Play online…** → host (your name, friends, AI rivals,
+map type and size; every rule on) or join with a code. The lobby shows the code big, a button
+that copies an invite link (`…#join=CODE`, which opens Join with the code filled in), and who's
+in. The host starts whenever ready: seats nobody took are left out. No accounts, leader picks,
+presets or ready check yet. A friend who drops can rejoin with the same code and name and gets
+their seat back; until then the top of the host's screen says they're away, with **End their
+turn** so the others aren't stuck (D83). Closing the host's tab ends the game for everyone; the
+host's browser keeps an online autosave, and the home screen offers **Host your online game
+again** (with a new code).
+
 - The **join code** is shown big at the top with a copy button. The host can regenerate it or lock
   the lobby.
 - **Seats (up to 8):** open, claimed (human), AI (with difficulty), or closed.
