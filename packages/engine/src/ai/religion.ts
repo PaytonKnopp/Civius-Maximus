@@ -1,12 +1,12 @@
 import { type BeliefDef, type Effect, resolveText } from '@cx/content';
 import { atWar } from '../context';
 import { evaluateCondition } from '../effects/conditions';
-import { toFixed } from '../fixed';
 import { distance, neighbors } from '../map/hex';
 import {
   faithUnitProblem,
   religionFoundingProblem,
   freeBeliefs,
+  pantheonCost,
   pantheonOf,
   religionsOf,
   spreadProblem,
@@ -26,7 +26,7 @@ export function manageReligion(t: Turn) {
 
 function choosePantheon(t: Turn) {
   if (pantheonOf(t.ctx, t.state, t.player)) return;
-  if (t.p.faith < toFixed(t.ctx.content.rules.religion.pantheonFaith)) return;
+  if (t.p.faith < pantheonCost(t.ctx, t.state)) return;
   const best = bestBelief(t, freeBeliefs(t.ctx, t.state, 'pantheon'));
   if (best) t.act({ type: 'found_pantheon', player: t.player, belief: best.id });
 }

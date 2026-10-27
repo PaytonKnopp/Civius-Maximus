@@ -19,6 +19,7 @@ import { itemKey } from '../settlements/rules';
 import { spawnUnit } from '../settlements/handlers';
 import type { GameState, PlayerId } from '../state';
 import { ownedUnit } from '../units/handlers';
+import { scaleCost } from '../speed';
 
 /**
  * Great people (docs/04-advanced-systems.md, "Great people"): districts and buildings earn
@@ -67,7 +68,7 @@ export function inRace(ctx: EngineContext, state: GameState, player: PlayerId, c
 export function greatPersonCost(ctx: EngineContext, state: GameState, cls: string): number {
   const def = ctx.content.entities.greatPersonClass[cls]!;
   const taken = lineup(ctx, cls).filter((p) => state.greatPeople.claimed[p.id]).length;
-  return def.baseCost + def.costStep * taken;
+  return scaleCost(ctx, state, def.baseCost + def.costStep * taken);
 }
 
 /** Points a player earns each turn, per class. */

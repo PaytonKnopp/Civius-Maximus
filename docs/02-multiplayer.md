@@ -48,6 +48,14 @@ A full Civ VI-style setup screen, with **Basic** and **Advanced** tabs. Everythi
 | Turn mode | Simultaneous (default) / Dynamic (players at war alternate) |
 | Leaders | Any leader with any civ (default) / Historical pairs only. Duplicates allowed or not. Random pick, draft mode (bans + picks) |
 
+**Built so far (V1 final, F1):** game speeds (`gameSpeed` content: Online 50%, Quick 67%,
+Standard, Epic 150%, Marathon 300%) scale research, civics, production, growth, border growth,
+tile purchases, great people, faith costs and unit upgrades. Difficulty levels (`difficulty`
+content, D53): Settler, Chieftain and Warlord give AI rivals less; Prince is fair; King, Emperor,
+Immortal and Deity give them more yields (+10% to +50% science, culture, gold, production and
+faith), more strength (+1 to +4) and extra starting units. The bonuses are ordinary effects, so
+they show in every "why?" breakdown. A seat can have its own difficulty in the setup.
+
 **Rules (toggles)**
 
 Religion, theological combat, great people, independent powers (city-states and barbarians),

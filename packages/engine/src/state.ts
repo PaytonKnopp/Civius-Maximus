@@ -264,6 +264,8 @@ export interface SettlementState {
   capturedFrom: PlayerId | null;
   /** Just captured: the new owner chooses keep, raze or liberate (keep, if they end the turn). */
   captureChoice: boolean;
+  /** Being razed: it loses a citizen each turn, and produces nothing, until it's gone. */
+  razing?: boolean;
   /** Soldiers trained here (some abilities count them). */
   unitsTrained: number;
   /** The religion most of its people follow, if any. */
@@ -324,6 +326,10 @@ export interface GameSettings {
   /** Science and culture victories (on unless false). */
   science?: boolean | undefined;
   culture?: boolean | undefined;
+  /** A `gameSpeed` content id (standard when absent): scales every cost. */
+  speed?: string | undefined;
+  /** A `difficulty` content id for AI players (no bonuses when absent). */
+  difficulty?: string | undefined;
 }
 
 export interface PlayerState {
@@ -332,6 +338,8 @@ export interface PlayerState {
   /** `hostile`: the owner of camp raiders, outside the turn order (see `HOSTILE`). */
   /** `cityState`: one of the city-states (outside the turn order, like `hostile`). */
   kind: 'human' | 'ai' | 'hostile' | 'cityState';
+  /** AI players: the `difficulty` whose bonuses they get (D53). */
+  handicap?: string;
   /** Team number; players on the same team share victory. `null` = no team. */
   team: number | null;
   alive: boolean;

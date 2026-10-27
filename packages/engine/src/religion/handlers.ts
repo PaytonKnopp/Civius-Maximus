@@ -2,7 +2,6 @@ import type { Draft } from 'immer';
 import type { Action } from '../actions';
 import type { ActionHandler, EngineContext, Emit } from '../context';
 import { view } from '../draft';
-import { toFixed } from '../fixed';
 import { settlementAt } from '../combat/strength';
 import { spawnUnit } from '../settlements/handlers';
 import type { GameState, SettlementState } from '../state';
@@ -14,6 +13,8 @@ import {
   hasReligiousVictory,
   incomingPressure,
   leadingReligion,
+  faithUnitCost,
+  pantheonCost,
   pantheonProblem,
   religionsOf,
   spreadProblem,
@@ -47,7 +48,7 @@ export const religionHandlers = {
     },
     apply(draft, action, ctx, emit) {
       const p = draft.players[action.player]!;
-      p.faith -= toFixed(ctx.content.rules.religion.pantheonFaith);
+      p.faith -= pantheonCost(ctx, view(draft));
       p.beliefs = [...p.beliefs, action.belief];
       emit({
         type: 'pantheon_founded',
@@ -140,7 +141,7 @@ export const religionHandlers = {
       const religion = faithUnitReligion(view(draft), s)!;
       const id = spawnUnit(draft, ctx, action.player, action.unit, s.tile);
       if (!id) return;
-      draft.players[action.player]!.faith -= toFixed(def.faithCost);
+      draft.players[action.player]!.faith -= faithUnitCost(ctx, view(draft), def.faithCost);
       draft.units[id]!.religion = religion;
       draft.units[id]!.charges = ctx.content.rules.religion.missionaryCharges;
       emit({

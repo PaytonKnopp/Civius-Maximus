@@ -249,8 +249,9 @@ Captured settlements lose 25% of their population and some buildings (configurab
 **Built so far (M9):** Keep, Raze and Liberate. A settlement falls when a melee unit (melee,
 anti-cavalry, cavalry, naval melee) attacks it at 0 health. It loses 25% of its citizens
 (rounded up, at least 1 stays), its queue and walls, and comes back at a quarter of its health;
-the defenders inside die and civilians are taken. Razing is immediate (D44) and impossible for
-original capitals and settlements with a wonder. Liberating returns it to its founder (not if
+the defenders inside die and civilians are taken. Razing (D44, like Civ VI/VII) burns it down
+over turns: it produces nothing and loses a citizen each turn until it's gone, unless someone
+takes it back first; original capitals and settlements with a wonder can't be razed. Liberating returns it to its founder (not if
 you took it from them). Not answering by the end of the turn keeps it. Losing the capital moves
 it to the biggest remaining settlement; losing the last settlement knocks a player out, and the
 last player standing wins. Puppets wait for the loyalty and settlement-limit work.

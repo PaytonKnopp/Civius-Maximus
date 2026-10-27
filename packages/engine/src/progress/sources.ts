@@ -116,6 +116,10 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
     if (b && b.effects.length > 0)
       out.push({ id, label: resolveText(content, b.name), effects: b.effects });
   }
+  // An AI seat's difficulty bonuses (D53), declared openly in the setup screen.
+  const level = p.handicap ? content.entities.difficulty?.[p.handicap] : undefined;
+  if (level && level.aiEffects.length > 0)
+    out.push({ id: level.id, label: resolveText(content, level.name), effects: level.aiEffects });
   const gov = content.entities.government[p.government];
   if (gov && gov.effects.length > 0)
     out.push({ id: gov.id, label: resolveText(content, gov.name), effects: gov.effects });

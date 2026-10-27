@@ -244,7 +244,7 @@ export function settlementSummary(
 ): SettlementSummary {
   const yields = settlementYields(ctx, state, s);
   const growth = growthPerTurn(ctx, state, s, yields);
-  const foodNeeded = growthThreshold(ctx, s.population);
+  const foodNeeded = growthThreshold(ctx, state, s.population);
   const production = yields.total.production ?? 0;
   const headItem = s.kind === 'city' ? s.queue[0] : undefined;
   const head = headItem && {
@@ -282,7 +282,8 @@ export function settlementViews(
     .filter((s) => known.has(s.id))
     .map((s) => {
       let status: string | undefined;
-      if (s.owner === viewer) {
+      if (s.razing) status = `Burning · ${s.population} turn${s.population === 1 ? '' : 's'}`;
+      else if (s.owner === viewer) {
         const sum = settlementSummary(ctx, state, s);
         status = s.captureChoice
           ? 'Captured: decide its fate'

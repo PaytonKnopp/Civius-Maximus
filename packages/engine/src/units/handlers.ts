@@ -232,7 +232,9 @@ export function spawnStartingUnits(state: GameState, ctx: EngineContext) {
     const near = tilesWithin(state.map, start, 3).sort(
       (a, b) => distance(state.map, start, a) - distance(state.map, start, b) || a - b,
     );
-    for (const type of ctx.content.rules.units.startingUnits) {
+    const handicap = state.players[player]!.handicap;
+    const extra = handicap ? (ctx.content.entities.difficulty?.[handicap]?.aiStartUnits ?? []) : [];
+    for (const type of [...ctx.content.rules.units.startingUnits, ...extra]) {
       const id = `u${state.nextEntityId}`;
       const probe = { id, owner: player, type };
       const tile = near.find(

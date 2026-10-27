@@ -181,7 +181,9 @@ export function SettlementPanel({
             {s.name}
           </h3>
           <p className="unit-sub">
-            {s.kind === 'city' ? 'City' : 'Town'} · {growthText}
+            {s.razing
+              ? `Being razed: gone in ${s.population} turn${s.population === 1 ? '' : 's'}`
+              : `${s.kind === 'city' ? 'City' : 'Town'} · ${growthText}`}
           </p>
         </div>
         <button type="button" className="close" onClick={onClose} aria-label="Close">

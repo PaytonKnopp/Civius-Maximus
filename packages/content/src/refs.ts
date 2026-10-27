@@ -221,6 +221,11 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'mapScript':
     case 'mapSize':
+    case 'gameSpeed':
+      break;
+    case 'difficulty':
+      effectList(out, entity.aiEffects, ['aiEffects']);
+      ids(out, 'unit', entity.aiStartUnits, ['aiStartUnits']);
       break;
     case 'unitClass':
       entity.bonuses.forEach((b, i) => ids(out, 'unitClass', b.vs, ['bonuses', i, 'vs']));

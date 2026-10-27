@@ -169,7 +169,7 @@ export function checkBoosts(
       if (!goalMet(ctx, facts, node.boost.goal)) continue;
       const track = trackOf(draft.players[player]!, kind);
       track.boosted.push(id);
-      const bonus = percentOf(nodeCost(ctx, kind, id), boostPercent(ctx, snap, player));
+      const bonus = percentOf(nodeCost(ctx, snap, kind, id), boostPercent(ctx, snap, player));
       track.progress[id] = (track.progress[id] ?? 0) + bonus;
       emit({ type: 'boost_earned', player, kind, id, visibleTo: [player] });
     }
@@ -204,7 +204,7 @@ export function grantBoost(
     const track = trackOf(p, kind);
     for (const id of availableNodes(ctx, p, kind)) {
       if (track.boosted.includes(id)) continue;
-      const cost = nodeCost(ctx, kind, id);
+      const cost = nodeCost(ctx, snap, kind, id);
       if (!best || cost < best.cost || (cost === best.cost && id < best.id))
         best = { kind, id, cost };
     }
@@ -239,7 +239,7 @@ export function advance(
   }
   const id = track.current;
   track.progress[id] = (track.progress[id] ?? 0) + amount;
-  const cost = nodeCost(ctx, kind, id);
+  const cost = nodeCost(ctx, draft, kind, id);
   if (track.progress[id]! < cost) return undefined;
   const overflow = track.progress[id]! - cost;
   delete track.progress[id];

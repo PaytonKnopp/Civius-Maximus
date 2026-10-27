@@ -665,6 +665,35 @@ export const MapSizeDef = z.strictObject({
   order: z.int().default(100),
 });
 
+/**
+ * A game speed (docs/02-multiplayer.md, "Game setup"): every cost in the game (research, civics,
+ * production, growth, borders, great people, faith) is scaled by `costPercent`.
+ */
+export const GameSpeedDef = z.strictObject({
+  type: z.literal('gameSpeed'),
+  id: Id,
+  name: Text,
+  description: Text.optional(),
+  costPercent: z.int().min(10).max(1000),
+  /** The turn limit this speed suggests for a score victory. */
+  turnLimit: z.int().min(10).max(5000),
+  order: z.int().default(100),
+});
+
+/**
+ * A difficulty level: openly declared bonuses for AI players (D53). `aiEffects` apply to every
+ * AI's empire like a civ ability; `aiStartUnits` are extra units they start with.
+ */
+export const DifficultyDef = z.strictObject({
+  type: z.literal('difficulty'),
+  id: Id,
+  name: Text,
+  description: Text.optional(),
+  aiEffects: z.array(Effect).default([]),
+  aiStartUnits: z.array(Id).default([]),
+  order: z.int().default(100),
+});
+
 /** Display text for one locale. Strings have no ID; keys are global across packages. */
 export const StringsDef = z.strictObject({
   type: z.literal('strings'),
@@ -1261,6 +1290,8 @@ export const ENTITY_SCHEMAS = {
   ability: AbilityDef,
   mapScript: MapScriptDef,
   mapSize: MapSizeDef,
+  gameSpeed: GameSpeedDef,
+  difficulty: DifficultyDef,
   unitClass: UnitClassDef,
   unit: UnitDef,
   improvement: ImprovementDef,
@@ -1300,6 +1331,8 @@ export type AbilityDef = z.infer<typeof AbilityDef>;
 export type RulesDef = z.infer<typeof RulesDef>;
 export type MapScriptDef = z.infer<typeof MapScriptDef>;
 export type MapSizeDef = z.infer<typeof MapSizeDef>;
+export type GameSpeedDef = z.infer<typeof GameSpeedDef>;
+export type DifficultyDef = z.infer<typeof DifficultyDef>;
 export type UnitClassDef = z.infer<typeof UnitClassDef>;
 export type UnitDef = z.infer<typeof UnitDef>;
 export type ImprovementDef = z.infer<typeof ImprovementDef>;
@@ -1332,6 +1365,8 @@ export interface EntityByType {
   ability: AbilityDef;
   mapScript: MapScriptDef;
   mapSize: MapSizeDef;
+  gameSpeed: GameSpeedDef;
+  difficulty: DifficultyDef;
   unitClass: UnitClassDef;
   unit: UnitDef;
   improvement: ImprovementDef;
