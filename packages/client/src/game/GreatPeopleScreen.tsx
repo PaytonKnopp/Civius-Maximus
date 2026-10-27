@@ -16,6 +16,7 @@ import {
 } from '@cx/engine';
 import { useEffect } from 'react';
 import { civName, whole } from './model';
+import { Icon } from '../ui/Icon';
 
 interface Props {
   ctx: EngineContext;
@@ -40,7 +41,10 @@ export function GreatPeopleScreen({ ctx, state, viewer, act, onClose }: Props) {
   return (
     <div className="screen" role="dialog" aria-label="Great people">
       <header className="screen-head">
-        <h2>Great People</h2>
+        <h2>
+          <Icon name="greatPeople" size={30} />
+          Great People
+        </h2>
         <p className="screen-sub">
           Districts and buildings earn points toward each kind. The first to reach the next one's
           cost earns them; or buy them now, with gold or faith, for the points you're missing.

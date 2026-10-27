@@ -134,7 +134,7 @@ for (let guard = 0; guard < TURNS * 15 && (await turn(page)) < TURNS; guard++) {
   }
 }
 console.log('turn reached:', await turn(page));
-console.log('empire:', (await page.textContent('.resource-bar'))?.replace(/\s+/g, ' '));
+console.log('empire:', (await page.textContent('.empire-yields'))?.replace(/\s+/g, ' '));
 // Open the capital to look at it.
 await page.keyboard.press('Escape');
 await page.mouse.move(640, 400);

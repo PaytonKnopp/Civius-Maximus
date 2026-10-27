@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { hintsOn, setHints } from './hints';
+import { Icon } from '../ui/Icon';
 
 const KEYS: [string, string][] = [
   ['Enter', 'The next thing that needs you (then End turn)'],
@@ -42,7 +43,10 @@ export function HelpScreen({ onClose }: { onClose: () => void }) {
   return (
     <div className="screen" role="dialog" aria-label="Help">
       <header className="screen-head">
-        <h2>Help</h2>
+        <h2>
+          <Icon name="help" size={30} />
+          Help
+        </h2>
         <p className="screen-sub">Every number has a breakdown: hover it to see why.</p>
         <button type="button" className="close" onClick={onClose} aria-label="Close">
           ✕

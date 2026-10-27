@@ -14,6 +14,7 @@ import {
 } from '@cx/engine';
 import { useEffect, useState } from 'react';
 import { civName, whole } from './model';
+import { Icon } from '../ui/Icon';
 
 interface Props {
   ctx: EngineContext;
@@ -49,7 +50,10 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
   return (
     <div className="screen" role="dialog" aria-label="Religion">
       <header className="screen-head">
-        <h2>Religion</h2>
+        <h2>
+          <Icon name="religion" size={30} />
+          Religion
+        </h2>
         <p className="screen-sub">
           🙏 {whole(me.faith)} faith. A pantheon costs {rules.pantheonFaith} faith. A Great Prophet
           used in a settlement with a {t(content.entities.district[rules.holyDistrict]?.name ?? '')}{' '}

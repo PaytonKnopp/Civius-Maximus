@@ -7,6 +7,7 @@ import {
   type MapState,
   neighbors,
 } from '@cx/engine';
+import { Icon, Rich } from '../ui/Icon';
 
 /** Tile inspector: what's on a tile and its yields, with the "why?" breakdown. */
 export function TileCard({
@@ -70,7 +71,7 @@ export function TileCard({
           <>
             <dt>Resource</dt>
             <dd>
-              {name(resource.name)}{' '}
+              <Icon name={t.resource!} size={18} /> {name(resource.name)}{' '}
               <span className={`chip ${resource.class}`}>{resource.class}</span>
             </dd>
           </>
@@ -92,7 +93,7 @@ export function TileCard({
         <ul className="yields">
           {lines.map((l) => (
             <li key={l} className="mono">
-              {l}
+              <Rich text={l} />
             </li>
           ))}
         </ul>
@@ -102,9 +103,11 @@ export function TileCard({
         </p>
       )}
       <p className="hint total">
-        {Object.entries(breakdown.total)
-          .map(([id, v]) => `${content.entities.yield[id]?.icon ?? ''} ${formatFixed(v)}`)
-          .join('   ')}
+        {Object.entries(breakdown.total).map(([id, v]) => (
+          <span key={id} className="total-yield">
+            <Icon name={id} size={18} /> {formatFixed(v)}
+          </span>
+        ))}
       </p>
     </aside>
   );

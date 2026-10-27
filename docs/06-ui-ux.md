@@ -43,6 +43,16 @@ happened and what needs you".
 - **Minimap**, with a lens selector.
 - **Chat**, collapsible, with an unread badge.
 
+**Built so far (V1 final, F2):** a full-width top bar: empire yields on the left (science,
+culture, gold and faith with their per-turn change, influence, happiness), round screen buttons
+on the right (research T, civics C, government G, great people P, religion R, city-states I,
+victories V, graphs H, help ?) with badges for empty policy slots and spare envoys, then the
+turn and era, the ☰ game menu (new game, save/load, Map Lab, title screen) and the 3D/2D
+switch. Under it, research and civic trackers with a progress ring; the civs' turn chips sit top
+right. The next-action button sits over a clickable minimap (terrain, borders, fog, settlements,
+your units) with the lens picker on its frame. Every panel and full screen shares one frame:
+sea-blue lacquer, a brass edge and corner flourishes; titles are gold Cinzel.
+
 ## Map lenses and filters (lots of them, by design)
 
 | Lens | Shows |

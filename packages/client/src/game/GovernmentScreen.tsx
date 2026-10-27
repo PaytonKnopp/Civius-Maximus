@@ -14,6 +14,7 @@ import {
 } from '@cx/engine';
 import { useEffect, useState } from 'react';
 import { whole } from './model';
+import { Icon } from '../ui/Icon';
 
 const SLOT_NAMES: Record<SlotKind, string> = {
   military: 'Military',
@@ -86,7 +87,10 @@ export function GovernmentScreen({ ctx, state, viewer, act, onClose }: Props) {
   return (
     <div className="screen" role="dialog" aria-label="Government">
       <header className="screen-head">
-        <h2>Government</h2>
+        <h2>
+          <Icon name="government" size={30} />
+          Government
+        </h2>
         <p className="screen-sub">
           {p.policyWindow
             ? 'You just finished a civic: changing cards and government is free this turn.'

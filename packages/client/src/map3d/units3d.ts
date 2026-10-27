@@ -25,6 +25,7 @@ import {
   Vector3,
 } from 'three';
 import type { PathView, UnitView } from '../map/renderer';
+import { drawIcon } from '../ui/drawIcon';
 
 /**
  * Units in the 3D world: small low-poly squads (oversized against the terrain so they read at
@@ -245,7 +246,7 @@ const badgeCache = new Map<string, SpriteMaterial>();
 function badge(view: UnitView): SpriteMaterial {
   // Health in steps of 5%, so a badge is drawn once per look, not once per HP.
   const health = Math.max(0, Math.min(100, Math.ceil(view.health / 5) * 5));
-  const key = `${view.color}:${view.accent}:${view.icon}:${view.mine}:${view.needsOrders}:${health}:${view.promotable}`;
+  const key = `${view.color}:${view.accent}:${view.model}:${view.icon}:${view.mine}:${view.needsOrders}:${health}:${view.promotable}`;
   const cached = badgeCache.get(key);
   if (cached) return cached;
   const size = 128;
@@ -270,11 +271,14 @@ function badge(view: UnitView): SpriteMaterial {
   ctx.arc(64, 60, 30, 0, Math.PI * 2);
   ctx.fillStyle = color;
   ctx.fill();
-  ctx.fillStyle = `#${view.accent.toString(16).padStart(6, '0')}`;
-  ctx.font = '700 34px "IBM Plex Sans", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(view.icon, 64, 62);
+  const accent = `#${view.accent.toString(16).padStart(6, '0')}`;
+  if (!drawIcon(ctx, view.model, 64, 60, 50, 'glyph', accent)) {
+    ctx.fillStyle = accent;
+    ctx.font = '700 34px "IBM Plex Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(view.icon, 64, 62);
+  }
   if (view.needsOrders) {
     ctx.beginPath();
     ctx.arc(104, 22, 15, 0, Math.PI * 2);

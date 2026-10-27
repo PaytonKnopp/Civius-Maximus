@@ -1,6 +1,7 @@
 import type { EngineContext, GameState, PlayerId, TurnStats } from '@cx/engine';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { civName } from './model';
+import { Icon } from '../ui/Icon';
 
 /**
  * Series colors for the graphs: a categorical palette validated for colorblind separation on
@@ -46,7 +47,10 @@ export function GraphsScreen({ ctx, state, viewer, onClose }: Props) {
   return (
     <div className="screen" role="dialog" aria-label="Graphs">
       <header className="screen-head">
-        <h2>Graphs</h2>
+        <h2>
+          <Icon name="graphs" size={30} />
+          Graphs
+        </h2>
         <button type="button" className="close" onClick={onClose} aria-label="Close">
           ✕
         </button>

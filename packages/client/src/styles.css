@@ -451,30 +451,6 @@ input:focus-visible {
   inset: 0;
 }
 
-.game-bar {
-  position: absolute;
-  inset: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding-block: 10px 18px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  background: linear-gradient(var(--ink), color-mix(in srgb, var(--ink) 0%, transparent));
-  pointer-events: none;
-}
-
-.game-bar > * {
-  pointer-events: auto;
-}
-
-.bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-}
-
 .segmented.compact button {
   padding: 3px 10px;
   font-size: 12px;
@@ -487,44 +463,6 @@ input:focus-visible {
 }
 
 /* Turn and era (top right, under the bar) */
-.turn-pill {
-  position: absolute;
-  top: 54px;
-  right: max(16px, env(safe-area-inset-right, 0px));
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 6px 12px;
-  background: color-mix(in srgb, var(--panel) 92%, transparent);
-  border: 1px solid var(--panel-edge);
-  border-radius: 999px;
-  font-variant-numeric: tabular-nums;
-}
-
-.turn-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-}
-
-.turn-number {
-  font-family: var(--font-display);
-  font-size: 18px;
-  line-height: 1;
-  color: var(--brass);
-}
-
-.era {
-  font-size: 12px;
-  color: var(--text);
-}
-
-.turn-pill .fps {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--muted);
-}
 
 /* Players (right, under the turn) */
 .players {
@@ -539,38 +477,6 @@ input:focus-visible {
 }
 
 /* Empire resources (top left, under the bar) */
-.resource-bar {
-  position: absolute;
-  top: 54px;
-  left: max(16px, env(safe-area-inset-left, 0px));
-  display: flex;
-  gap: 4px;
-  margin: 0;
-  padding: 4px;
-  list-style: none;
-  background: color-mix(in srgb, var(--panel) 92%, transparent);
-  border: 1px solid var(--panel-edge);
-  border-radius: 999px;
-}
-
-.resource-bar li {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-  padding: 3px 10px;
-  font-size: 14px;
-  color: var(--text);
-  white-space: nowrap;
-}
-
-.resource-bar li + li {
-  border-left: 1px solid var(--panel-edge);
-}
-
-.resource-bar .delta {
-  font-size: 11px;
-  color: var(--muted);
-}
 
 .notices {
   position: absolute;
@@ -637,83 +543,10 @@ input:focus-visible {
   color: var(--brass);
 }
 
-/* Research, civic, government and celebration (under the empire bar) */
-.progress-chips {
-  position: absolute;
-  top: 96px;
-  left: max(16px, env(safe-area-inset-left, 0px));
-  max-width: calc(100% - 32px);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.progress-chip {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px 7px;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--panel) 94%, transparent);
-  border: 1px solid var(--panel-edge);
-  border-radius: 6px;
-  color: var(--text);
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-button.progress-chip:hover {
-  border-color: var(--brass);
-}
-
-.progress-chip.idle {
-  border-color: var(--brass);
-  color: var(--brass);
-  animation: pulse 1.6s ease-in-out infinite;
-}
-
 @keyframes pulse {
   50% {
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--brass) 30%, transparent);
   }
-}
-
-.progress-chip.celebrate.on {
-  border-color: #9fd36a;
-  color: #b9e08c;
-}
-
-.chip-name {
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.chip-turns {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.chip-bar {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 3px;
-  background: var(--ink);
-}
-
-.chip-bar span {
-  display: block;
-  height: 100%;
-  background: var(--brass);
-}
-
-.progress-chip.tech .chip-bar span {
-  background: #5fb8f0;
-}
-
-.progress-chip.civic .chip-bar span {
-  background: #d47ae0;
 }
 
 /* Full-screen screens (tech tree, civics, government) */
@@ -1634,56 +1467,6 @@ kbd {
   color: var(--muted);
 }
 
-/* Tile inspector sits above the next-action button */
-.game-tile .tile-card {
-  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
-}
-
-/* Next action / End turn (bottom right) */
-.next-action {
-  position: absolute;
-  right: max(16px, env(safe-area-inset-right, 0px));
-  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  min-width: 220px;
-  min-height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 10px 18px;
-  border: 1px solid var(--brass);
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--panel) 96%, transparent);
-  color: var(--brass);
-  box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 70%, transparent);
-}
-
-.next-label {
-  font-family: var(--font-display);
-  font-size: 17px;
-  letter-spacing: 0.05em;
-}
-
-.next-action.end {
-  background: linear-gradient(#e2bb64, var(--brass) 55%, #a87c2c);
-  color: var(--brass-ink);
-}
-
-.next-action.end kbd {
-  border-color: color-mix(in srgb, var(--brass-ink) 40%, transparent);
-  color: var(--brass-ink);
-}
-
-.next-action:hover:not(:disabled) {
-  filter: brightness(1.08);
-}
-
-.next-action:disabled {
-  cursor: default;
-  border-color: var(--panel-edge);
-  color: var(--muted);
-}
-
 /* New game dialog */
 .dialog-backdrop {
   position: fixed;
@@ -1743,44 +1526,12 @@ kbd {
 }
 
 @media (max-width: 640px) {
-  .game-bar .brand-name {
-    font-size: 18px;
-    white-space: nowrap;
-  }
-
-  .bar-actions {
-    gap: 6px;
-  }
-
-  .resource-bar {
-    top: 96px;
-  }
-
-  .progress-chips {
-    top: 134px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
-
-  .progress-chip {
-    flex: none;
-  }
-
   .gov-body {
     grid-template-columns: 1fr;
   }
 
   .policy-card {
     width: calc(50% - 4px);
-  }
-
-  .resource-bar li {
-    padding: 2px 7px;
-    font-size: 12px;
-  }
-
-  .resource-bar .delta {
-    display: none;
   }
 
   .players {
@@ -1814,25 +1565,7 @@ kbd {
     padding: 12px 14px;
   }
 
-  .next-action {
-    left: max(16px, env(safe-area-inset-left, 0px));
-    min-height: 54px;
-  }
-
-  .game-tile .tile-card {
-    top: 132px;
-    bottom: auto;
-    max-height: calc(100% - 340px);
-    overflow-y: auto;
-  }
-
   kbd {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .game-bar .brand-name {
     display: none;
   }
 }
@@ -2638,9 +2371,6 @@ label.belief-card {
   margin-left: 8px;
 }
 
-.progress-chip.attention {
-  border-color: var(--accent, #e3b25a);
-}
 .cs-card {
   border-top-width: 3px;
 }
@@ -2677,9 +2407,6 @@ label.belief-card {
   padding-left: 18px;
   font-size: 12.5px;
   line-height: 1.5;
-}
-.next-action.busy .next-label {
-  opacity: 0.75;
 }
 
 /* The title screen, over the live map. */
@@ -2834,18 +2561,6 @@ label.belief-card {
 }
 .game-over .history-chart {
   margin: 8px 0;
-}
-.lens-chip select {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  color: inherit;
-  font: inherit;
-  padding: 0;
-  cursor: pointer;
-}
-.lens-chip select option {
-  background: var(--panel);
 }
 
 /* First-game hints (top right, under the civ chips) */
@@ -3010,13 +2725,4 @@ kbd {
 }
 @media (min-width: 641px) {
   /* Stop short of the civ chips on the right; the rest scrolls (like on phones). */
-  .progress-chips {
-    max-width: calc(100% - 44px - var(--players-w, 540px));
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: thin;
-  }
-  .progress-chips .progress-chip {
-    flex: none;
-  }
 }

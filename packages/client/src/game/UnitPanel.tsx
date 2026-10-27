@@ -27,6 +27,8 @@ import {
   upgradeTarget,
   validateAction,
 } from '@cx/engine';
+import { Icon } from '../ui/Icon';
+import { ICONS } from '../ui/icons';
 import { useState } from 'react';
 import { civName, type Colors, cssColor, whole } from './model';
 
@@ -121,7 +123,7 @@ export function UnitPanel({
           className="unit-icon"
           style={{ background: cssColor(colors.main), color: cssColor(colors.accent) }}
         >
-          {def.icon}
+          {ICONS[def.model] ? <Icon name={def.model} variant="glyph" size={30} /> : def.icon}
         </span>
         <div>
           <h3>{resolveText(ctx.content, def.name)}</h3>
@@ -154,36 +156,48 @@ export function UnitPanel({
       </div>
       <dl className="unit-stats">
         <div>
-          <dt>Moves</dt>
+          <dt>
+            <Icon name="movement" size={16} /> Moves
+          </dt>
           <dd>
             {unit.moves / MP}/{def.movement}
           </dd>
         </div>
         <div>
-          <dt>Strength</dt>
+          <dt>
+            <Icon name="strength" size={16} /> Strength
+          </dt>
           <dd>{def.strength || '—'}</dd>
         </div>
         {def.rangedStrength > 0 && (
           <div>
-            <dt>Ranged</dt>
+            <dt>
+              <Icon name="ranged" size={16} /> Ranged
+            </dt>
             <dd title={`Range ${def.range}`}>
               {def.rangedStrength} · {def.range}
             </dd>
           </div>
         )}
         <div>
-          <dt>Sight</dt>
+          <dt>
+            <Icon name="scout" size={16} /> Sight
+          </dt>
           <dd>{def.sight}</dd>
         </div>
         <div>
-          <dt>Health</dt>
+          <dt>
+            <Icon name="health" size={16} /> Health
+          </dt>
           <dd className={unit.health < maxHealth ? 'hurt' : ''}>
             {unit.health}/{maxHealth}
           </dd>
         </div>
         {cls.combat && (
           <div>
-            <dt>XP</dt>
+            <dt>
+              <Icon name="promote" size={16} /> XP
+            </dt>
             <dd title="Experience toward the next promotion">
               {unit.xp}/{nextPromotionXp(ctx, unit)}
             </dd>
@@ -367,7 +381,9 @@ export function UnitPanel({
               }
               onClick={() => act({ type: 'upgrade_unit', player: viewer, unit: unit.id })}
             >
-              ⇧ {resolveText(ctx.content, unitDef(ctx, { type: upgradeTo }).name)} 💰
+              <Icon name="upgrade" size={18} />{' '}
+              {resolveText(ctx.content, unitDef(ctx, { type: upgradeTo }).name)}{' '}
+              <Icon name="gold" size={16} />
               {whole(upgradeCost(ctx, state, unit.type, upgradeTo))}
             </button>
           )}
@@ -407,11 +423,11 @@ export function UnitPanel({
               title={foundBlocked ?? 'Found a settlement here'}
               onClick={() => act(found)}
             >
-              Found settlement <kbd>B</kbd>
+              <Icon name="found" size={18} /> Found settlement <kbd>B</kbd>
             </button>
           )}
           <button type="button" onClick={onSkip}>
-            Skip <kbd>Space</kbd>
+            <Icon name="skip" size={18} /> Skip <kbd>Space</kbd>
           </button>
           {unit.orders ? (
             <button type="button" onClick={() => act({ type: 'wake_unit', ...ref })}>
@@ -420,11 +436,11 @@ export function UnitPanel({
           ) : (
             <>
               <button type="button" onClick={() => act({ type: 'sleep_unit', ...ref })}>
-                Sleep <kbd>Z</kbd>
+                <Icon name="sleep" size={18} /> Sleep <kbd>Z</kbd>
               </button>
               {cls.combat && (
                 <button type="button" onClick={() => act({ type: 'fortify_unit', ...ref })}>
-                  Fortify <kbd>F</kbd>
+                  <Icon name="fortify" size={18} /> Fortify <kbd>F</kbd>
                 </button>
               )}
             </>

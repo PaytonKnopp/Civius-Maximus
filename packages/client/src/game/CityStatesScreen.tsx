@@ -14,6 +14,7 @@ import {
 } from '@cx/engine';
 import { useEffect } from 'react';
 import { civName, whole } from './model';
+import { Icon } from '../ui/Icon';
 
 interface Props {
   ctx: EngineContext;
@@ -37,7 +38,10 @@ export function CityStatesScreen({ ctx, state, viewer, act, onClose }: Props) {
   return (
     <div className="screen" role="dialog" aria-label="City-states">
       <header className="screen-head">
-        <h2>City-states</h2>
+        <h2>
+          <Icon name="cityStates" size={30} />
+          City-states
+        </h2>
         <p className="screen-sub">
           {me.envoys > 0
             ? `You have ${me.envoys} free envoy${me.envoys === 1 ? '' : 's'} to send. `

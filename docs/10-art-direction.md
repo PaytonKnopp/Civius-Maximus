@@ -74,3 +74,11 @@ All art is referenced from content files, so swapping a placeholder for real art
 (`model` in its content): settler, scout, warrior, archer, cavalry, ship, rifle, siege (catapult),
 cannon, tank, steamship, commander (with a banner) and robed (missionaries, great people). The
 Map Lab's "Unit models" switch puts one of each on the map, for checking new art.
+
+**Built so far (V1 final, F2): the icon set.** About 140 icons drawn as vector paths on a 24×24
+grid (`packages/client/src/ui/icons.ts`): the yields, all 24 resources, every unit model, the
+districts, improvements, great person classes, key buildings, and the UI verbs (fortify, sleep,
+found, upgrade...). Each is a colored disc with a white glyph, so they read at 14px. The same
+path data draws as SVG in the interface, on a canvas for 3D labels, and as textures in the 2D
+map, so one set looks the same everywhere. Text that mentions a yield ("+2🔬") shows the icon in
+its place.
