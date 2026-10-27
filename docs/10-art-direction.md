@@ -75,6 +75,24 @@ All art is referenced from content files, so swapping a placeholder for real art
 cannon, tank, steamship, commander (with a banner) and robed (missionaries, great people). The
 Map Lab's "Unit models" switch puts one of each on the map, for checking new art.
 
+**Built so far (V1 final, F3): units, cities and effects.** Every unit is a squad of chunky
+figures with gear by era: bronze helmets, round shields and spears; crested helmets, tower shields
+and swords; plumed knights on barded horses; tricorns and muskets; shakos and rifles; steel
+helmets. There are horses, chariots, a pack mule for traders, a covered wagon with an ox for
+settlers, catapults, cannon, field guns, tanks, galleys with oars, three-masted frigates,
+ironclads, destroyers, and planes, bombers and helicopters ready for the Atomic era. Each unit is
+two merged meshes (`map3d/unitModels.ts`). Cities are built in their civ's architecture
+(`civ.architecture`: Mediterranean, European, Northern, East Asian, South Asian, Middle Eastern,
+African, American, steppe), each with its own palace (a domed temple hall, a castle keep, a
+three-tier hall, a great dome with minarets, an adobe hall with buttress towers, a step
+pyramid, a great tent). Cities change with their owner's era: huts, round houses and tents;
+stone towns in the civ's style; taller Renaissance streets; brick rows, chimneys and a factory;
+concrete blocks and glass towers. Walls ring a city that has them and lose stretches when
+damaged. Particle effects (`map3d/effects3d.ts`, two draw calls): chimney and factory smoke,
+fire and black smoke over burning or badly damaged cities, dust and sparks where a blow lands.
+The Map Lab's "Buildings" switch shows every style and age side by side. Wonder landmarks grow
+with the wonder list (F17); natural wonders come with the map work (F7).
+
 **Built so far (V1 final, F2): the icon set.** About 140 icons drawn as vector paths on a 24×24
 grid (`packages/client/src/ui/icons.ts`): the yields, all 24 resources, every unit model, the
 districts, improvements, great person classes, key buildings, and the UI verbs (fortify, sleep,

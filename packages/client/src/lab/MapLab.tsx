@@ -6,6 +6,7 @@ import {
   makeRandom,
   MapGenerationError,
   type MapState,
+  distance,
   scoreStarts,
   tilesWithin,
 } from '@cx/engine';
@@ -17,6 +18,8 @@ import {
   type MapViewOptions,
   PLAYER_COLORS,
   type Quality,
+  type SettlementView,
+  type TerritoryView,
   type UnitView,
 } from '../map/renderer';
 import { World3D } from '../map3d/World3D';
@@ -73,6 +76,7 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
   const [selected, setSelected] = useState<number>();
   const [fps, setFps] = useState(0);
   const [showModels, setShowModels] = useState(false);
+  const [showTowns, setShowTowns] = useState(false);
   // Phones open on the map; the controls are one tap away.
   const [panelOpen, setPanelOpen] = useState(() => window.innerWidth > 640);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -135,6 +139,13 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
       showModels ? modelShowcase(content, generated.map, generated.starts.p1 ?? 0) : [],
     );
   }, [generated, mode, showModels, content]);
+
+  // A capital in every architecture, and one style through every age, to look at the art.
+  useEffect(() => {
+    if (!generated) return;
+    const { views, territory } = townShowcase(content, generated.map, generated.starts.p1 ?? 0);
+    viewRef.current?.setSettlements(showTowns ? views : [], territory);
+  }, [generated, mode, showTowns, content]);
 
   const inspected = selected ?? hover;
   const scores = useMemo(
@@ -345,6 +356,15 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
             />
             Unit models
           </label>
+          <label className="check" htmlFor="towns">
+            <input
+              id="towns"
+              type="checkbox"
+              checked={showTowns}
+              onChange={(e) => setShowTowns(e.target.checked)}
+            />
+            Buildings (every style and age)
+          </label>
           <label htmlFor="viewer">See the map as</label>
           <select
             id="viewer"
@@ -399,6 +419,85 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
       )}
     </div>
   );
+}
+
+const STYLES = [
+  'mediterranean',
+  'european',
+  'northern',
+  'east_asian',
+  'south_asian',
+  'middle_eastern',
+  'african',
+  'american',
+  'steppe',
+];
+
+/** European cities through the ages, a burning city, then a capital in every architecture. */
+function townShowcase(
+  content: CompiledContent,
+  map: MapState,
+  start: number,
+): { views: SettlementView[]; territory: TerritoryView } {
+  const n = map.tiles.length;
+  const territory: TerritoryView = {
+    settlement: Array<string | null>(n).fill(null),
+    improvements: Array<string | null>(n).fill(null),
+    districts: Array(n).fill(null),
+    wonders: Array(n).fill(null),
+    features: map.tiles.map((t) => t.feature ?? null),
+    camps: Array<boolean>(n).fill(false),
+    roads: Array<boolean>(n).fill(false),
+  };
+  const land = tilesWithin(map, start, 14).filter((t) => {
+    const tile = map.tiles[t]!;
+    return !content.entities.terrain[tile.terrain]?.water && tile.elevation !== 'mountain';
+  });
+  const spots: number[] = [];
+  for (const t of land) {
+    if (spots.every((s) => distance(map, s, t) >= 3)) spots.push(t);
+    if (spots.length === STYLES.length + 6) break;
+  }
+  const looks = [
+    ...[1, 2, 4, 5, 6].map((era) => ({
+      style: 'european',
+      era,
+      capital: false,
+      pop: 10,
+      razing: false,
+    })),
+    { style: 'east_asian', era: 2, capital: false, pop: 6, razing: true },
+    ...STYLES.map((style) => ({ style, era: 2, capital: true, pop: 7, razing: false })),
+  ];
+  const views = looks.flatMap((look, i) => {
+    const tile = spots[i];
+    if (tile === undefined) return [];
+    const id = `town-${i}`;
+    for (const t of [tile, ...tilesWithin(map, tile, 1)]) territory.settlement[t] ??= id;
+    territory.roads[tile] = true;
+    return [
+      {
+        id,
+        owner: `p${i}`,
+        color: PLAYER_COLORS[i % PLAYER_COLORS.length]!,
+        accent: 0xf2e6c8,
+        name: `${look.style} · era ${look.era}${look.razing ? ' · burning' : ''}`,
+        population: look.pop,
+        tile,
+        kind: 'city' as const,
+        capital: look.capital,
+        mine: false,
+        health: look.razing ? 50 : 200,
+        maxHealth: 200,
+        walls: look.capital ? 0 : 100,
+        wallsMax: look.capital ? 0 : 100,
+        architecture: look.style,
+        era: look.era,
+        razing: look.razing,
+      },
+    ];
+  });
+  return { views, territory };
 }
 
 /** A unit view per model family (named after the first unit that uses it) on nearby land. */

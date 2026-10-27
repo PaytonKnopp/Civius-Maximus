@@ -439,6 +439,17 @@ export class World3D implements MapRenderer {
     if (!this.data) return;
     if (mode === 'ranged') this.floats.shot(from, tile);
     else if (unit) this.units.lunge(unit, tile);
+    // Dust and sparks where the blow lands (after the lunge or the shot gets there).
+    const w = this.data.map.width;
+    const [x, z] = center3(tile % w, Math.floor(tile / w));
+    const y = Math.max(0, this.heightAt(x, z)) + 0.2;
+    window.setTimeout(
+      () => {
+        this.settlements.effects.burst('dust', [x, y - 0.1, z], 10);
+        this.settlements.effects.burst('spark', [x, y, z], 8);
+      },
+      mode === 'ranged' ? 450 : 200,
+    );
   }
 
   setHighlights(highlights: TileHighlight[]) {
@@ -883,6 +894,7 @@ export class World3D implements MapRenderer {
     const pr = this.renderer.getPixelRatio();
     this.post.target.setSize(Math.floor(w * pr), Math.floor(h * pr));
     this.post.material.uniforms.uTexel!.value.set(1 / (w * pr), 1 / (h * pr));
+    this.settlements.effects.setViewport(h * pr);
   }
 
   private maxDist() {
@@ -940,7 +952,7 @@ export class World3D implements MapRenderer {
       this.updateCamera();
       this.uniforms.uTime.value = frameStart / 1000;
       this.units.update(dt, this.target.x, frameStart / 1000);
-      this.settlements.update(this.target.x);
+      this.settlements.update(this.target.x, dt);
       this.floats.update(dt, this.target.x);
       if (QUALITY[this.options.quality].post) {
         this.renderer.setRenderTarget(this.post.target);
