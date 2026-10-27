@@ -127,7 +127,7 @@ describe('yields and growth', () => {
     const start = founded();
     const id = start.id;
     let s = start.s;
-    const need = growthThreshold(ctx, 1);
+    const need = growthThreshold(ctx, s, 1);
     expect(need).toBe(1500);
     let turns = 0;
     while (s.settlements[id]!.population === 1 && turns < 30) {
@@ -202,7 +202,7 @@ describe('yields and growth', () => {
     const start = founded();
     const id = start.id;
     let s = start.s;
-    expect(borderThreshold(ctx, 0)).toBe(1000);
+    expect(borderThreshold(ctx, s, 0)).toBe(1000);
     const owned = () => s.map.tiles.filter((t) => t.settlement === id).length;
     const before = owned();
     // The palace makes 3 culture a turn: the first tile comes on turn 4.

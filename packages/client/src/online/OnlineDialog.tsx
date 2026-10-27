@@ -1,4 +1,4 @@
-import type { CompiledContent } from '@cx/content';
+import { type CompiledContent, resolveText } from '@cx/content';
 import type { EngineContext, GameSetup, GameState } from '@cx/engine';
 import { type GameHandle, OnlineHost, RemoteGame } from '@cx/host';
 import { isJoinCode, normalizeCode, type SeatInfo } from '@cx/protocol';
@@ -11,6 +11,8 @@ export interface OnlineOptions {
   script: string;
   size: string;
   rivals: number;
+  speed: string;
+  difficulty: string;
 }
 
 interface Props {
@@ -55,7 +57,13 @@ export function OnlineDialog(props: Props) {
   const [mode, setMode] = useState<'host' | 'join'>(joinCode ? 'join' : 'host');
   const [name, setName] = useState(savedName);
   const [code, setCode] = useState(joinCode ?? '');
-  const [o, setO] = useState<OnlineOptions>({ script: 'continents', size: 'small', rivals: 2 });
+  const [o, setO] = useState<OnlineOptions>({
+    script: 'continents',
+    size: 'small',
+    rivals: 2,
+    speed: 'speed_standard',
+    difficulty: 'difficulty_prince',
+  });
   const [friends, setFriends] = useState(1);
   const [error, setError] = useState<string>();
   const [connecting, setConnecting] = useState(false);
@@ -220,6 +228,40 @@ export function OnlineDialog(props: Props) {
                       {content.entities.mapSize[id]!.players})
                     </option>
                   ))}
+                </select>
+              </div>
+            </div>
+            <div className="row">
+              <div>
+                <label htmlFor="online-speed">Game speed</label>
+                <select
+                  id="online-speed"
+                  value={o.speed}
+                  onChange={(e) => setO({ ...o, speed: e.target.value })}
+                >
+                  {Object.values(content.entities.gameSpeed)
+                    .sort((a, b) => a.order - b.order)
+                    .map((x) => (
+                      <option key={x.id} value={x.id}>
+                        {resolveText(content, x.name)}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="online-difficulty">AI difficulty</label>
+                <select
+                  id="online-difficulty"
+                  value={o.difficulty}
+                  onChange={(e) => setO({ ...o, difficulty: e.target.value })}
+                >
+                  {Object.values(content.entities.difficulty)
+                    .sort((a, b) => a.order - b.order)
+                    .map((x) => (
+                      <option key={x.id} value={x.id}>
+                        {resolveText(content, x.name)}
+                      </option>
+                    ))}
                 </select>
               </div>
             </div>

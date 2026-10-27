@@ -45,6 +45,8 @@ export interface GameSetup {
     leader?: string;
     /** From the player's civ (later); influences where they start. */
     startBias?: StartBias[];
+    /** AI seats: a `difficulty` for this seat only (otherwise the game's). */
+    difficulty?: string;
   }[];
 }
 
@@ -85,6 +87,9 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
   );
 
   // Civs: as chosen, then the unpicked ones shuffled (repeating if there are more players).
+  for (const level of [setup.settings.difficulty, ...setup.players.map((p) => p.difficulty)])
+    if (level !== undefined && !ctx.content.entities.difficulty?.[level])
+      throw new Error(`Unknown difficulty "${level}"`);
   for (const p of setup.players) {
     if (p.civ !== undefined && !ctx.content.entities.civ[p.civ])
       throw new Error(`Unknown civ "${p.civ}" for ${p.id}`);
@@ -137,6 +142,9 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       declaredWarTurn: null,
       ...newProgress(ctx),
     };
+    // AI seats get their difficulty's bonuses (D53).
+    const level = p.difficulty ?? setup.settings.difficulty;
+    if (p.kind === 'ai' && level !== undefined) players[id]!.handicap = level;
   }
   const state: GameState = {
     stateVersion: 1,

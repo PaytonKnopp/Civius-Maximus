@@ -73,7 +73,7 @@ describe('unit upgrades', () => {
     s.units[home.id]!.xp = 7;
     const up = (unit: string): Action => ({ type: 'upgrade_unit', player: 'p1', unit });
     expect(err(s, up(home.id))).toBe('no_gold');
-    const cost = upgradeCost(ctx, 'unit_warrior', 'unit_legionary');
+    const cost = upgradeCost(ctx, s, 'unit_warrior', 'unit_legionary');
     expect(cost).toBe(toFixed((90 - 40) * ctx.content.rules.units.upgradeGoldPerProduction));
     s = produce(s, (d) => {
       d.players.p1!.gold = cost * 3;

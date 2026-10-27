@@ -1,0 +1,539 @@
+[
+  {
+    "type": "gameSpeed",
+    "id": "speed_online",
+    "name": "Online",
+    "description": "Everything costs half: a game in an evening.",
+    "costPercent": 50,
+    "turnLimit": 250,
+    "order": 0
+  },
+  {
+    "type": "gameSpeed",
+    "id": "speed_quick",
+    "name": "Quick",
+    "description": "Two thirds of standard costs.",
+    "costPercent": 67,
+    "turnLimit": 330,
+    "order": 10
+  },
+  {
+    "type": "gameSpeed",
+    "id": "speed_standard",
+    "name": "Standard",
+    "description": "The usual pace.",
+    "costPercent": 100,
+    "turnLimit": 500,
+    "order": 20
+  },
+  {
+    "type": "gameSpeed",
+    "id": "speed_epic",
+    "name": "Epic",
+    "description": "Half again as long: more turns in every era.",
+    "costPercent": 150,
+    "turnLimit": 750,
+    "order": 30
+  },
+  {
+    "type": "gameSpeed",
+    "id": "speed_marathon",
+    "name": "Marathon",
+    "description": "Three times the costs: wars and wonders take ages.",
+    "costPercent": 300,
+    "turnLimit": 1500,
+    "order": 40
+  },
+  {
+    "type": "difficulty",
+    "id": "difficulty_settler",
+    "name": "Settler",
+    "description": "For learning the game: AI rivals produce 30% less and fight 3 weaker.",
+    "aiEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": -30
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": -30
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": -30
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "percent": -30
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": -30
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": -3
+        },
+        "target": {
+          "scope": "units"
+        }
+      }
+    ],
+    "aiStartUnits": [],
+    "order": 0
+  },
+  {
+    "type": "difficulty",
+    "id": "difficulty_chieftain",
+    "name": "Chieftain",
+    "description": "AI rivals produce 20% less and fight 2 weaker.",
+    "aiEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": -20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": -20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": -20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "percent": -20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": -20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": -2
+        },
+        "target": {
+          "scope": "units"
+        }
+      }
+    ],
+    "aiStartUnits": [],
+    "order": 10
+  },
+  {
+    "type": "difficulty",
+    "id": "difficulty_warlord",
+    "name": "Warlord",
+    "description": "AI rivals produce 10% less and fight 1 weaker.",
+    "aiEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": -10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": -10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": -10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "percent": -10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": -10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": -1
+        },
+        "target": {
+          "scope": "units"
+        }
+      }
+    ],
+    "aiStartUnits": [],
+    "order": 20
+  },
+  {
+    "type": "difficulty",
+    "id": "difficulty_prince",
+    "name": "Prince",
+    "description": "A fair game: AI rivals play by your rules, with no bonuses.",
+    "aiEffects": [],
+    "aiStartUnits": [],
+    "order": 30
+  },
+  {
+    "type": "difficulty",
+    "id": "difficulty_king",
+    "name": "King",
+    "description": "AI rivals get +10% yields, +1 strength and an extra warrior.",
+    "aiEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "units"
+        }
+      }
+    ],
+    "aiStartUnits": ["unit_warrior"],
+    "order": 40
+  },
+  {
+    "type": "difficulty",
+    "id": "difficulty_emperor",
+    "name": "Emperor",
+    "description": "AI rivals get +20% yields, +2 strength, an extra warrior and settler.",
+    "aiEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "percent": 20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": 2
+        },
+        "target": {
+          "scope": "units"
+        }
+      }
+    ],
+    "aiStartUnits": ["unit_warrior", "unit_settler"],
+    "order": 50
+  },
+  {
+    "type": "difficulty",
+    "id": "difficulty_immortal",
+    "name": "Immortal",
+    "description": "AI rivals get +35% yields, +3 strength, two extra warriors and a settler.",
+    "aiEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 35
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 35
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 35
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "percent": 35
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 35
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": 3
+        },
+        "target": {
+          "scope": "units"
+        }
+      }
+    ],
+    "aiStartUnits": ["unit_warrior", "unit_warrior", "unit_settler"],
+    "order": 60
+  },
+  {
+    "type": "difficulty",
+    "id": "difficulty_deity",
+    "name": "Deity",
+    "description": "AI rivals get +50% yields, +4 strength and a head start of five units.",
+    "aiEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 50
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 50
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 50
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "percent": 50
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 50
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": 4
+        },
+        "target": {
+          "scope": "units"
+        }
+      }
+    ],
+    "aiStartUnits": ["unit_warrior", "unit_warrior", "unit_settler", "unit_settler", "unit_scout"],
+    "order": 70
+  }
+]

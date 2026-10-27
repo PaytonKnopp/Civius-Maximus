@@ -18,7 +18,7 @@ import {
   pointsOf,
   recruitCost,
 } from '../greatpeople/greatpeople';
-import { maxReligions, pantheonOf } from '../religion/rules';
+import { faithUnitCost, maxReligions, pantheonCost, pantheonOf } from '../religion/rules';
 import { countsAs } from '../uniques';
 import { isCoastal } from '../settlements/rules';
 import { obsoletedBy, upgradeCost, upgradeProblem } from '../units/upgrades';
@@ -58,13 +58,12 @@ export function recruitGreatPeople(t: Turn) {
 
 /** Faith kept for a pantheon, or for missionaries once there's a religion. */
 function faithReserve(t: Turn): number {
-  const r = t.ctx.content.rules.religion;
-  if (!pantheonOf(t.ctx, t.state, t.player)) return toFixed(r.pantheonFaith);
+  if (!pantheonOf(t.ctx, t.state, t.player)) return pantheonCost(t.ctx, t.state);
   if (t.p.religion === null) return 0;
   const missionary = t.ctx.content.ids.unit
     .map((id) => t.ctx.content.entities.unit[id]!.faithCost)
     .find((c) => c > 0);
-  return toFixed((missionary ?? 0) * 2);
+  return faithUnitCost(t.ctx, t.state, (missionary ?? 0) * 2);
 }
 
 function recruitWith(t: Turn, currency: Currency, spare: number) {
@@ -113,7 +112,7 @@ export function upgradeUnits(t: Turn) {
   for (const u of t.myUnits()) {
     if (upgradeProblem(t.ctx, t.state, t.player, u.id)) continue;
     const to = obsoletedBy(t.ctx, t.state, t.player, u.type)!;
-    if (t.p.gold - upgradeCost(t.ctx, u.type, to) < reserve) return;
+    if (t.p.gold - upgradeCost(t.ctx, t.state, u.type, to) < reserve) return;
     t.act({ type: 'upgrade_unit', player: t.player, unit: u.id });
   }
 }
@@ -123,7 +122,10 @@ function bestNode(t: Turn, kind: TreeKind): string | undefined {
   const track = trackOf(t.p, kind);
   let best: { id: string; score: number } | undefined;
   for (const id of availableNodes(t.ctx, t.p, kind)) {
-    const left = Math.max(toFixed(1), nodeCost(t.ctx, kind, id) - (track.progress[id] ?? 0));
+    const left = Math.max(
+      toFixed(1),
+      nodeCost(t.ctx, t.state, kind, id) - (track.progress[id] ?? 0),
+    );
     // What it unlocks, plus a little of what the nodes after it unlock (so paths get followed).
     const later = followers(t, kind, id).reduce((sum, next) => sum + nodeValue(t, kind, next), 0);
     const value = 30 + nodeValue(t, kind, id) + Math.floor(later / 4);

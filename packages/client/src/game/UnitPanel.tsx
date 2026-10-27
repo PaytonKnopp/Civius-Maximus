@@ -368,7 +368,7 @@ export function UnitPanel({
               onClick={() => act({ type: 'upgrade_unit', player: viewer, unit: unit.id })}
             >
               ⇧ {resolveText(ctx.content, unitDef(ctx, { type: upgradeTo }).name)} 💰
-              {whole(upgradeCost(ctx, unit.type, upgradeTo))}
+              {whole(upgradeCost(ctx, state, unit.type, upgradeTo))}
             </button>
           )}
           {command && (

@@ -817,7 +817,7 @@ export function processSettlement(
   const foodSent = spec?.send?.yield === 'food' ? sendShare(growth) : 0;
   if (foodSent > 0 && city) draft.settlements[city]!.food += foodSent;
   s.food += growth - foodSent;
-  const needed = growthThreshold(ctx, s.population);
+  const needed = growthThreshold(ctx, draft, s.population);
   if (s.food >= needed) {
     s.food -= needed;
     s.population++;
@@ -846,7 +846,7 @@ export function processSettlement(
 
   // Culture: borders grow by one tile each time the store fills.
   s.culture += borderCulture(ctx, snap, snap.settlements[id]!, y.total.culture ?? 0);
-  const threshold = borderThreshold(ctx, s.tilesAcquired);
+  const threshold = borderThreshold(ctx, draft, s.tilesAcquired);
   if (s.culture >= threshold) {
     const after = view(draft);
     const tile = nextBorderTile(ctx, after, after.settlements[id]!);
@@ -867,6 +867,31 @@ export function processSettlement(
   };
 }
 
+/** A settlement being razed loses a citizen; at none, it's gone and its land is free. */
+function burnDown(draft: Draft<GameState>, ctx: EngineContext, id: string, emit: Emit) {
+  const s = draft.settlements[id]!;
+  s.population -= 1;
+  if (s.population > 0) {
+    refreshCitizens(draft, ctx, id);
+    return;
+  }
+  for (const t of draft.map.tiles) {
+    if (t.settlement !== id) continue;
+    t.settlement = null;
+    t.owner = null;
+    t.district = null;
+  }
+  delete draft.settlements[id];
+  emit({
+    type: 'settlement_razed',
+    settlement: id,
+    name: s.name,
+    by: s.owner,
+    tile: s.tile,
+    visibleTo: 'all',
+  });
+}
+
 /**
  * Each player in turn: every settlement's turn (founding order), then the empire's: upkeep,
  * research, civics, celebrations and boosts.
@@ -878,6 +903,10 @@ export function settlementsTurn(draft: Draft<GameState>, ctx: EngineContext, emi
     const totals = { science: 0, culture: 0, tourism: 0, happiness: 0 };
     for (const id of settlementIds(draft)) {
       if (draft.settlements[id]!.owner !== player) continue;
+      if (draft.settlements[id]!.razing) {
+        burnDown(draft, ctx, id, emit);
+        continue;
+      }
       const t = processSettlement(draft, ctx, id, emit);
       totals.science += t.science;
       totals.culture += t.culture;

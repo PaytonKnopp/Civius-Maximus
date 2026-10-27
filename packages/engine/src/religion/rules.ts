@@ -1,12 +1,13 @@
 import { type BeliefDef, resolveText } from '@cx/content';
 import type { EngineContext, RuleError } from '../context';
-import { toFixed } from '../fixed';
+import { type Fixed, toFixed } from '../fixed';
 import { distance } from '../map/hex';
 import { settlementAt } from '../combat/strength';
 import type { GameState, PlayerId, Religion, SettlementState } from '../state';
 import { countsAs } from '../uniques';
 import { ownedUnit } from '../units/handlers';
 import { teamOf } from '../victory';
+import { scaleCost } from '../speed';
 
 /**
  * Religion (docs/04-advanced-systems.md, "Religion"): a pantheon belief for some faith; a great
@@ -180,6 +181,20 @@ export function hasReligiousVictory(state: GameState, religion: string): boolean
   return progress.length > 0 && progress.every((p) => p.following >= p.needed);
 }
 
+/** Faith a pantheon costs at this game's speed. */
+export function pantheonCost(ctx: EngineContext, state: Pick<GameState, 'settings'>): Fixed {
+  return scaleCost(ctx, state, toFixed(ctx.content.rules.religion.pantheonFaith));
+}
+
+/** Faith a faith-bought unit costs at this game's speed (`faithCost` from its content). */
+export function faithUnitCost(
+  ctx: EngineContext,
+  state: Pick<GameState, 'settings'>,
+  faithCost: number,
+): Fixed {
+  return scaleCost(ctx, state, toFixed(faithCost));
+}
+
 export function pantheonProblem(
   ctx: EngineContext,
   state: GameState,
@@ -194,7 +209,7 @@ export function pantheonProblem(
   if (def?.kind !== 'pantheon') return { code: 'unknown', message: 'No such pantheon belief' };
   if (takenBeliefs(state).has(belief))
     return { code: 'belief_taken', message: 'Someone already follows that belief' };
-  const cost = toFixed(ctx.content.rules.religion.pantheonFaith);
+  const cost = pantheonCost(ctx, state);
   if (p.faith < cost) return { code: 'no_faith', message: `Needs ${Math.ceil(cost / 100)} faith` };
   return undefined;
 }
@@ -276,7 +291,7 @@ export function faithUnitProblem(
     return { code: 'not_faith_unit', message: "That can't be bought with faith" };
   if (faithUnitReligion(state, s) === null)
     return { code: 'no_religion', message: `${s.name} doesn't follow a religion yet` };
-  const cost = toFixed(def.faithCost);
+  const cost = faithUnitCost(ctx, state, def.faithCost);
   if (p.faith < cost) return { code: 'no_faith', message: `Needs ${Math.ceil(cost / 100)} faith` };
   return undefined;
 }

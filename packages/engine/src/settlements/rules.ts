@@ -36,6 +36,7 @@ import {
   placementTiles,
   specialistSlots,
 } from './districts';
+import { scaleCost } from '../speed';
 
 /**
  * Settlement rules as pure functions of the game state (docs/03-core-mechanics.md, section 3).
@@ -488,10 +489,14 @@ export function settlementYields(
 }
 
 /** Food needed for the next citizen: `base + perPop × (pop − 1) + (pop − 1)^exponent`. */
-export function growthThreshold(ctx: EngineContext, population: number): Fixed {
+export function growthThreshold(
+  ctx: EngineContext,
+  state: Pick<GameState, 'settings'>,
+  population: number,
+): Fixed {
   const g = ctx.content.rules.settlements.growth;
   const n = population - 1;
-  return toFixed(g.base + g.perPop * n) + toFixed(powFloor(n, g.exponent));
+  return scaleCost(ctx, state, toFixed(g.base + g.perPop * n) + toFixed(powFloor(n, g.exponent)));
 }
 
 /** Food added to the store this turn: the surplus, adjusted by mood and effects when growing. */
@@ -525,9 +530,17 @@ export function borderCulture(
 }
 
 /** Culture needed for the next border tile: `base + (perTile × acquired)^exponent`. */
-export function borderThreshold(ctx: EngineContext, acquired: number): Fixed {
+export function borderThreshold(
+  ctx: EngineContext,
+  state: Pick<GameState, 'settings'>,
+  acquired: number,
+): Fixed {
   const b = ctx.content.rules.settlements.borderGrowth;
-  return toFixed(b.base) + toFixed(powFloor(Math.round(b.perTile * acquired), b.exponent));
+  return scaleCost(
+    ctx,
+    state,
+    toFixed(b.base) + toFixed(powFloor(Math.round(b.perTile * acquired), b.exponent)),
+  );
 }
 
 // --- Citizens --------------------------------------------------------------------------------
@@ -623,7 +636,11 @@ export function tilePurchaseCost(
 ): Fixed {
   const p = ctx.content.rules.settlements.purchase;
   const d = distance(state.map, s.tile, tile);
-  return toFixed(p.tileBase + p.tilePerAcquired * s.tilesAcquired + p.tilePerDistance * d);
+  return scaleCost(
+    ctx,
+    state,
+    toFixed(p.tileBase + p.tilePerAcquired * s.tilesAcquired + p.tilePerDistance * d),
+  );
 }
 
 /** Tiles a settlement could buy: unclaimed, within the own radius, touching its territory. */
@@ -676,10 +693,13 @@ export function itemCost(
   item: BuildItem,
   s?: SettlementState,
 ): Fixed {
-  const base =
+  const base = scaleCost(
+    ctx,
+    state,
     item.kind === 'district'
       ? districtCost(ctx, state, player, item.id)
-      : toFixed(itemDef(ctx, item)?.cost ?? 0);
+      : toFixed(itemDef(ctx, item)?.cost ?? 0),
+  );
   if (!s) return base;
   let percent = 0;
   for (const { effect } of playerEffects(ctx, state, player, 'modify_item_cost', s)) {

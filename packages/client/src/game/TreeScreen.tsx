@@ -107,7 +107,7 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
           {track.current
             ? `${name(track.current)} · ${showTurns(
                 turnsFor(
-                  nodeCost(ctx, kind, track.current),
+                  nodeCost(ctx, state, kind, track.current),
                   track.progress[track.current] ?? 0,
                   perTurn,
                 ),
@@ -153,7 +153,7 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
           {ids.map((id) => {
             const node = treeNode(ctx, kind, id)!;
             const { x, y } = pos(id);
-            const cost = nodeCost(ctx, kind, id);
+            const cost = nodeCost(ctx, state, kind, id);
             const progress = track.progress[id] ?? 0;
             const isDone = done.has(id);
             const order = queue.indexOf(id);
@@ -161,7 +161,7 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
             const boosted = track.boosted.includes(id);
             const goal = node.boost ? goalProgress(ctx, facts, node.boost.goal) : undefined;
             const unlocks = unlocksOf(ctx, kind, id);
-            const state = isDone
+            const status = isDone
               ? 'done'
               : order === 0
                 ? 'current'
@@ -176,7 +176,7 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
               <button
                 key={id}
                 type="button"
-                className={`tree-node ${state}`}
+                className={`tree-node ${status}`}
                 style={{ left: x, top: y, width: NODE_W, height: NODE_H }}
                 disabled={isDone}
                 onClick={() => choose(id)}

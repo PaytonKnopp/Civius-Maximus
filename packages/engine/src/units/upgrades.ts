@@ -7,6 +7,7 @@ import { lockedReason } from '../settlements/rules';
 import type { GameState, PlayerId } from '../state';
 import { replacementFor, uniqueProblem } from '../uniques';
 import { ownedUnit } from './handlers';
+import { scaleCost } from '../speed';
 
 /**
  * Unit upgrades (docs/03-core-mechanics.md, "Units"): each unit names what it becomes
@@ -57,11 +58,20 @@ export function obsoletedBy(
 }
 
 /** Gold to upgrade a unit now. */
-export function upgradeCost(ctx: EngineContext, from: string, to: string): Fixed {
+export function upgradeCost(
+  ctx: EngineContext,
+  state: Pick<GameState, 'settings'>,
+  from: string,
+  to: string,
+): Fixed {
   const r = ctx.content.rules.units;
   const e = ctx.content.entities.unit;
   const gap = Math.max(0, (e[to]?.cost ?? 0) - (e[from]?.cost ?? 0));
-  return toFixed(Math.max(r.upgradeMinGold, Math.ceil(gap * r.upgradeGoldPerProduction)));
+  return scaleCost(
+    ctx,
+    state,
+    toFixed(Math.max(r.upgradeMinGold, Math.ceil(gap * r.upgradeGoldPerProduction))),
+  );
 }
 
 /** Why a unit can't be upgraded now, or undefined. */
@@ -85,7 +95,7 @@ export function upgradeProblem(
     return { code: 'not_home', message: 'Upgrade it in your own territory' };
   if (u.moves <= 0) return { code: 'no_moves', message: 'No moves left this turn' };
   if ((u.cargo?.length ?? 0) > 0) return { code: 'packed', message: 'Unpack its units first' };
-  const cost = upgradeCost(ctx, u.type, to);
+  const cost = upgradeCost(ctx, state, u.type, to);
   if (state.players[player]!.gold < cost)
     return { code: 'no_gold', message: `Needs ${Math.ceil(cost / 100)} gold` };
   return undefined;
@@ -102,7 +112,7 @@ export const upgradeHandlers = {
       const u = draft.units[action.unit]!;
       const from = u.type;
       const to = obsoletedBy(ctx, view(draft), action.player, from)!;
-      draft.players[action.player]!.gold -= upgradeCost(ctx, from, to);
+      draft.players[action.player]!.gold -= upgradeCost(ctx, draft, from, to);
       u.type = to;
       u.moves = 0;
       u.orders = null;

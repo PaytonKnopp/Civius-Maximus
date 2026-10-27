@@ -194,17 +194,23 @@ describe('settlements at war', () => {
     expect(event(r.events, 'game_ended')).toMatchObject({ reason: 'domination', winner: 'p1' });
   });
 
-  it('can be razed if it was never a capital', () => {
+  it('can be razed if it was never a capital: a citizen a turn, then it is gone', () => {
     const { s, town } = siege(true);
     s.settlements[town!]!.health = 1;
+    s.settlements[town!]!.population = 3;
     const a = addUnit(s, 'p1', 'unit_swordsman', at(s, 8, 2));
     let next = act(s, { type: 'attack', player: 'p1', unit: a.id, tile: at(s, 9, 2) }).state;
+    const population = next.settlements[town!]!.population;
     next = act(next, {
       type: 'capture_choice',
       player: 'p1',
       settlement: town!,
       choice: 'raze',
     }).state;
+    expect(next.settlements[town!]).toMatchObject({ razing: true, captureChoice: false });
+    next = endTurn(next);
+    expect(next.settlements[town!]!.population).toBe(population - 1);
+    for (let i = 1; i < population; i++) next = endTurn(next);
     expect(next.settlements[town!]).toBeUndefined();
     expect(next.map.tiles[at(s, 9, 2)]!.owner).toBeNull();
   });

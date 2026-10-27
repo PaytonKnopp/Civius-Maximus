@@ -193,6 +193,15 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         tile: number;
       }
     | {
+        type: 'settlement_razing';
+        settlement: SettlementId;
+        name: string;
+        by: PlayerId;
+        tile: number;
+        /** Turns until it's gone. */
+        turns: number;
+      }
+    | {
         type: 'settlement_liberated';
         settlement: SettlementId;
         name: string;

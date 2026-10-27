@@ -13,6 +13,7 @@ import { tilesWithin } from '../map/hex';
 import { isCoastal, settlementsOf } from '../settlements/rules';
 import type { GameState, PlayerId, PlayerState, Track } from '../state';
 import { policySlots, SLOT_KINDS } from './sources';
+import { scaleCost } from '../speed';
 
 /**
  * The tech and civics trees, boosts, governments and policy cards
@@ -38,8 +39,13 @@ export function treeIds(ctx: EngineContext, kind: TreeKind): string[] {
 }
 
 /** Science or culture to finish a node (hundredths). */
-export function nodeCost(ctx: EngineContext, kind: TreeKind, id: string): Fixed {
-  return toFixed(treeNode(ctx, kind, id)?.cost ?? 0);
+export function nodeCost(
+  ctx: EngineContext,
+  state: Pick<GameState, 'settings'>,
+  kind: TreeKind,
+  id: string,
+): Fixed {
+  return scaleCost(ctx, state, toFixed(treeNode(ctx, kind, id)?.cost ?? 0));
 }
 
 /** Nodes that can be worked on now: not finished, every prerequisite finished. */

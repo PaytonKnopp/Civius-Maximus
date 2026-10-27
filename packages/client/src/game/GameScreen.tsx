@@ -299,6 +299,8 @@ function noticeFor(
           : `${civName(content, state, e.by)} took ${e.name}`;
     case 'settlement_razed':
       return `${e.name} was razed`;
+    case 'settlement_razing':
+      return `${e.name} is being razed: gone in ${e.turns} turn${e.turns === 1 ? '' : 's'}`;
     case 'settlement_liberated':
       return `${e.name} was liberated and returned to ${civName(content, state, e.to)}`;
     case 'capital_moved':
@@ -1261,7 +1263,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
               ? content.entities.tech[id]
               : content.entities.civic[id]
             : undefined;
-          const cost = id ? nodeCost(ctx, k, id) : 0;
+          const cost = id ? nodeCost(ctx, state, k, id) : 0;
           const progress = id ? (track.progress[id] ?? 0) : 0;
           const perTurnAmount = k === 'tech' ? empire.science : empire.culture;
           return (

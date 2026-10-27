@@ -296,6 +296,8 @@ export function captureSettlement(
   s.pendingDevelop = 0;
   s.capturedFrom = from;
   s.captureChoice = true;
+  // Taking it back stops whoever was burning it down.
+  delete s.razing;
   s.struckTurn = draft.turn;
   const wasCapital = s.capital;
   if (wasCapital) {
@@ -344,6 +346,7 @@ function captureRewards(
   }
 }
 
+/** Razing takes time (D44): the settlement loses a citizen each turn until it's gone. */
 function raze(draft: Draft<GameState>, id: string, emit: Emit) {
   const s = draft.settlements[id]!;
   if (s.capturedFrom && s.capturedFrom !== HOSTILE)
@@ -353,19 +356,16 @@ function raze(draft: Draft<GameState>, id: string, emit: Emit) {
       against: s.capturedFrom,
       turn: draft.turn,
     });
-  for (const t of draft.map.tiles) {
-    if (t.settlement !== id) continue;
-    t.settlement = null;
-    t.owner = null;
-    t.district = null;
-  }
-  delete draft.settlements[id];
+  s.razing = true;
+  s.captureChoice = false;
+  s.queue = [];
   emit({
-    type: 'settlement_razed',
+    type: 'settlement_razing',
     settlement: id,
     name: s.name,
     by: s.owner,
     tile: s.tile,
+    turns: s.population,
     visibleTo: 'all',
   });
 }

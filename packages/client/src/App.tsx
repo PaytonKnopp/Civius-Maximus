@@ -1,4 +1,4 @@
-import type { CompiledContent } from '@cx/content';
+import { type CompiledContent, resolveText } from '@cx/content';
 import type { EngineContext, GameSetup, GameState, MapSettings } from '@cx/engine';
 import { type GameHandle, makeSave, readSave } from '@cx/host';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -39,6 +39,8 @@ interface NewGameOptions {
   science: boolean;
   culture: boolean;
   turnLimit: number | null;
+  speed: string;
+  difficulty: string;
 }
 
 function makeSetup(o: NewGameOptions): GameSetup {
@@ -53,6 +55,8 @@ function makeSetup(o: NewGameOptions): GameSetup {
       science: o.science,
       culture: o.culture,
       turnLimit: o.turnLimit,
+      speed: o.speed,
+      difficulty: o.difficulty,
       map: {
         script: o.script,
         size: o.size,
@@ -93,11 +97,18 @@ function makeOnlineSetup(names: string[], o: OnlineOptions): GameSetup {
     science: true,
     culture: true,
     turnLimit: null,
+    speed: o.speed,
+    difficulty: o.difficulty,
   });
 }
 
 /** `#join=ABC123` (an invite link) opens the Join screen with the code. */
 const joinCodeFromUrl = () => /^#join=(\w+)$/.exec(location.hash)?.[1];
+
+/** Content entries in their display order. */
+function byOrder<T extends { id: string; order: number }>(map: Record<string, T>): T[] {
+  return Object.values(map).sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : 1));
+}
 
 function hasWebGL2() {
   try {
@@ -133,6 +144,8 @@ export function App() {
     science: true,
     culture: true,
     turnLimit: null,
+    speed: 'speed_standard',
+    difficulty: 'difficulty_prince',
   });
   const [start, setStart] = useState<GameStart>(() => ({
     id: startId(),
@@ -452,6 +465,44 @@ function NewGameDialog({
             </select>
           </div>
         </div>
+        <div className="row">
+          <div>
+            <label htmlFor="ng-speed">Game speed</label>
+            <select
+              id="ng-speed"
+              value={o.speed}
+              title={resolveText(content, content.entities.gameSpeed[o.speed]?.description ?? '')}
+              onChange={(e) => setO({ ...o, speed: e.target.value })}
+            >
+              {byOrder(content.entities.gameSpeed).map((s) => (
+                <option key={s.id} value={s.id}>
+                  {resolveText(content, s.name)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="ng-difficulty">Difficulty</label>
+            <select
+              id="ng-difficulty"
+              value={o.difficulty}
+              title={resolveText(
+                content,
+                content.entities.difficulty[o.difficulty]?.description ?? '',
+              )}
+              onChange={(e) => setO({ ...o, difficulty: e.target.value })}
+            >
+              {byOrder(content.entities.difficulty).map((d) => (
+                <option key={d.id} value={d.id}>
+                  {resolveText(content, d.name)}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <p className="hint">
+          {resolveText(content, content.entities.difficulty[o.difficulty]?.description ?? '')}
+        </p>
         <label htmlFor="ng-seed">Seed</label>
         <input
           id="ng-seed"
