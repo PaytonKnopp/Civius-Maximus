@@ -11,6 +11,7 @@ import {
 } from '@cx/engine';
 import { useEffect } from 'react';
 import { civName, perTurn } from './model';
+import { Icon } from '../ui/Icon';
 
 interface Props {
   ctx: EngineContext;
@@ -33,7 +34,10 @@ export function VictoriesScreen({ ctx, state, viewer, onGraphs, onClose }: Props
   return (
     <div className="screen" role="dialog" aria-label="Victories">
       <header className="screen-head">
-        <h2>Victories</h2>
+        <h2>
+          <Icon name="victory" size={30} />
+          Victories
+        </h2>
         <p className="screen-sub">
           {s.turnLimit !== null
             ? `At turn ${s.turnLimit} the highest score wins. `

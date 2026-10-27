@@ -1,6 +1,7 @@
 import { resolveText } from '@cx/content';
 import { computeTileYields, isOnRiver, neighbor, NO_TILE, tilesWithin } from '@cx/engine';
-import { Application, Container, Graphics, Text } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, Text } from 'pixi.js';
+import { ICON_TEXTURE_SCALE, iconTexture, labelTexture } from './iconTextures';
 import {
   corner,
   EDGE_CORNERS,
@@ -223,21 +224,11 @@ export class MapView implements MapRenderer {
         else g.poly(hexPoints(0, 0, HEX - 3)).stroke({ width: 3, color: h.color ?? tones[h.tone] });
         node.addChild(g);
         if (h.label && h.tone !== 'worked') {
-          const t = new Text({
-            text: h.label,
-            style: {
-              fontFamily: 'IBM Plex Sans, sans-serif',
-              fontSize: 10,
-              fontWeight: '600',
-              fill: 0xf0e6cc,
-            },
-          });
-          t.anchor.set(0.5);
-          t.position.set(0, -2);
-          const bg = new Graphics()
-            .roundRect(-t.width / 2 - 4, -10, t.width + 8, 16, 4)
-            .fill({ color: 0x0e141b, alpha: 0.88 });
-          node.addChild(bg, t);
+          const label = new Sprite(labelTexture(h.label, 10));
+          label.anchor.set(0.5);
+          label.scale.set(ICON_TEXTURE_SCALE);
+          label.position.set(0, -2);
+          node.addChild(label);
         }
         node.position.set(cx, cy);
         this.overlay.addChild(node);
@@ -464,16 +455,25 @@ export class MapView implements MapRenderer {
           g.rect(-11, 14, 22, 5).fill(0x0b1620);
           g.rect(-10, 15, 20 * hp, 3).fill(hp > 0.6 ? 0x7fc35a : hp > 0.3 ? 0xe0b040 : 0xe0503c);
         }
-        const label = new Text({
-          text: view.icon,
-          style: {
-            fontFamily: 'IBM Plex Sans, sans-serif',
-            fontSize: 11,
-            fontWeight: '700',
-            fill: view.accent,
-          },
-        });
+        const glyph = iconTexture(
+          view.model,
+          18,
+          'glyph',
+          `#${view.accent.toString(16).padStart(6, '0')}`,
+        );
+        const label = glyph
+          ? new Sprite(glyph)
+          : new Text({
+              text: view.icon,
+              style: {
+                fontFamily: 'IBM Plex Sans, sans-serif',
+                fontSize: 11,
+                fontWeight: '700',
+                fill: view.accent,
+              },
+            });
         label.anchor.set(0.5);
+        if (glyph) label.scale.set(ICON_TEXTURE_SCALE);
         node.addChild(g, label);
         const [cx, cy] = tileCenter(
           view.tile % this.data.map.width,
@@ -792,7 +792,14 @@ export class MapView implements MapRenderer {
       if (this.options.grid)
         g.poly(hexPoints(cx, cy)).stroke({ width: 1, color: 0x000000, alpha: 0.18 });
 
-      if (t.resource !== null) {
+      const resourceIcon = t.resource === null ? null : iconTexture(t.resource, 20);
+      if (resourceIcon) {
+        const sprite = new Sprite(resourceIcon);
+        sprite.anchor.set(0.5);
+        sprite.scale.set(ICON_TEXTURE_SCALE);
+        sprite.position.set(cx + 14, cy + 14);
+        chunk.labels.addChild(sprite);
+      } else if (t.resource !== null) {
         const r = content.entities.resource[t.resource]!;
         g.circle(cx + 14, cy + 14, 9)
           .fill(0x0b1620)

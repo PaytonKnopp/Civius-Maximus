@@ -30,8 +30,10 @@ import {
   validateAction,
   wallsMax,
 } from '@cx/engine';
+import { Icon, Rich } from '../ui/Icon';
 import { CityStateCard } from './CityStatesScreen';
 import {
+  itemIcon,
   itemName,
   settlementSummary,
   showTurns,
@@ -128,7 +130,8 @@ export function SettlementPanel({
   const faithUnits = content.ids.unit
     .map((u) => content.entities.unit[u]!)
     .filter((u) => u.faithCost > 0);
-  const icon = (y: string) => content.entities.yield[y]?.icon ?? '';
+  const icon = (y: string) => <Icon name={y} />;
+  const emoji = (y: string) => content.entities.yield[y]?.icon ?? '';
   const name = (y: string) => resolveText(content, content.entities.yield[y]?.name ?? y);
   const production = sum.yields.total.production ?? 0;
   const gold = state.players[viewer]!.gold;
@@ -271,7 +274,7 @@ export function SettlementPanel({
                 const def = content.entities.improvement[imp]!;
                 const terrain = tileName(content, state.map.tiles[tile]!);
                 const gain = Object.entries(def.yields)
-                  .map(([y, v]) => `+${v}${icon(y)}`)
+                  .map(([y, v]) => `+${v}${emoji(y)}`)
                   .join(' ');
                 return (
                   <li key={`${tile}:${imp}`}>
@@ -291,7 +294,9 @@ export function SettlementPanel({
                       <span>
                         {resolveText(content, def.name)} <span className="muted">on {terrain}</span>
                       </span>
-                      <span className="mono">{gain}</span>
+                      <span className="mono">
+                        <Rich text={gain} />
+                      </span>
                     </button>
                   </li>
                 );
@@ -360,11 +365,15 @@ export function SettlementPanel({
           </button>
           <h4>Specialization</h4>
           <p className="hint">
-            {s.population < spec.minPopulation
-              ? `At ${spec.minPopulation} citizens a town can specialize.`
-              : s.specializationChanges > 0
-                ? `Changing it costs ${icon('gold')} ${spec.changeCost}.`
-                : 'The first choice is free.'}
+            <Rich
+              text={
+                s.population < spec.minPopulation
+                  ? `At ${spec.minPopulation} citizens a town can specialize.`
+                  : s.specializationChanges > 0
+                    ? `Changing it costs ${emoji('gold')} ${spec.changeCost}.`
+                    : 'The first choice is free.'
+              }
+            />
           </p>
           <ul className="choices specs">
             {content.ids.specialization.map((sid) => {
@@ -467,11 +476,13 @@ export function SettlementPanel({
                         title={def?.description ? resolveText(content, def.description) : undefined}
                       >
                         <span className="item-name">
+                          <Icon name={itemIcon(content, item)} size={20} />{' '}
                           {itemName(content, item)}
                           {s.kind === 'city' && (
                             <span className="muted mono">
                               {' '}
-                              {whole(cost)}⚙ ·{' '}
+                              {whole(cost)}
+                              <Icon name="production" size={14} /> ·{' '}
                               {showTurns(
                                 turnsFor(
                                   cost,
@@ -546,7 +557,9 @@ export function SettlementPanel({
                   };
                   return (
                     <li key={u.id}>
-                      <span className="item-name">{resolveText(content, u.name)}</span>
+                      <span className="item-name">
+                        <Icon name={u.model} size={20} /> {resolveText(content, u.name)}
+                      </span>
                       <button
                         type="button"
                         disabled={!can(buy)}
@@ -623,7 +636,9 @@ export function SettlementPanel({
                   >
                     {resolveText(content, def.name)}{' '}
                     <span className="mono">
-                      {yieldLabel(content, districtYields(ctx, state, d.tile, d.id).total)}
+                      <Rich
+                        text={yieldLabel(content, districtYields(ctx, state, d.tile, d.id).total)}
+                      />
                     </span>
                   </li>
                 );

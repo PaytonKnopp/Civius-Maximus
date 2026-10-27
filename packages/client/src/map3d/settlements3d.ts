@@ -18,6 +18,7 @@ import {
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { SettlementView, TerritoryView, TileHighlight } from '../map/renderer';
+import { drawRichText, measureRichText } from '../ui/drawIcon';
 import { campParts, districtParts, wonderParts } from './districts3d';
 import { G, house, part, scaled, seeded } from './parts';
 
@@ -360,7 +361,7 @@ function labelMaterial(text: string, color: number): SpriteMaterial {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
   ctx.font = '600 34px "IBM Plex Sans", sans-serif';
-  const w = Math.ceil(ctx.measureText(text).width + 36);
+  const w = Math.ceil(measureRichText(ctx, text, 38) + 36);
   canvas.width = w;
   canvas.height = 60;
   roundRect(ctx, 2, 2, w - 4, 56, 12);
@@ -371,9 +372,8 @@ function labelMaterial(text: string, color: number): SpriteMaterial {
   ctx.stroke();
   ctx.font = '600 34px "IBM Plex Sans", sans-serif';
   ctx.fillStyle = '#f0e6cc';
-  ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, w / 2, 31);
+  drawRichText(ctx, text, 18, 31, 38);
   const tex = new CanvasTexture(canvas);
   tex.colorSpace = SRGBColorSpace;
   const m = new SpriteMaterial({ map: tex, toneMapped: false, depthTest: false });

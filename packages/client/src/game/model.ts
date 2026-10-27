@@ -1,4 +1,5 @@
 import { type CompiledContent, resolveText } from '@cx/content';
+import { buildingIcon } from '../ui/icons';
 import {
   availableNodes,
   availablePolicies,
@@ -434,4 +435,20 @@ export function perTurn(n: number): string {
 export function religionNameOf(state: GameState, player: PlayerId | null): string {
   const id = player === null ? null : (state.players[player]?.religion ?? null);
   return (id !== null ? state.religions[id]?.name : undefined) ?? 'Their religion';
+}
+
+/** The icon for anything a settlement builds (docs/10-art-direction.md, "Icons"). */
+export function itemIcon(content: CompiledContent, item: BuildItem): string {
+  switch (item.kind) {
+    case 'unit':
+      return content.entities.unit[item.id]?.model ?? 'generic';
+    case 'building':
+      return buildingIcon(item.id, content.entities.building[item.id]?.district);
+    case 'district':
+      return item.id;
+    case 'wonder':
+      return 'wonder';
+    case 'project':
+      return content.entities.project[item.id]?.onDistrict ? 'rocket' : 'improvement_woodcutter';
+  }
 }

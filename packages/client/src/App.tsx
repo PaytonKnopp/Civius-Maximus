@@ -15,6 +15,7 @@ import {
   storeSave,
 } from './game/storage';
 import { MapLab } from './lab/MapLab';
+import { Icon } from './ui/Icon';
 import type { Quality } from './map/renderer';
 import { inviteLink, OnlineDialog, type OnlineOptions } from './online/OnlineDialog';
 import { networkFromUrl } from './online/transports';
@@ -223,20 +224,16 @@ export function App() {
         />
       )}
       <header className="game-bar">
-        <span className="brand-name">Civius Maximus</span>
         <div className="bar-actions">
           {'handle' in start && start.handle.online && (
             <OnlineCode code={start.handle.online.code} />
           )}
-          <button type="button" className="ghost small" onClick={() => setDialog('new')}>
-            New game
-          </button>
-          <button type="button" className="ghost small" onClick={() => setDialog('saves')}>
-            Save / Load
-          </button>
-          <button type="button" className="ghost small" onClick={() => setScreen('lab')}>
-            Map Lab
-          </button>
+          <GameMenu
+            onNewGame={() => setDialog('new')}
+            onSaves={() => setDialog('saves')}
+            onMapLab={() => setScreen('lab')}
+            onHome={() => setHome(true)}
+          />
           <div className="segmented compact" role="group" aria-label="View">
             {(['3d', '2d'] as const).map((m) => (
               <button
@@ -288,6 +285,56 @@ export function App() {
             setHome(false);
           }}
         />
+      )}
+    </div>
+  );
+}
+
+/** The ☰ menu at the top right: new game, saves, Map Lab, the title screen. */
+function GameMenu(props: {
+  onNewGame: () => void;
+  onSaves: () => void;
+  onMapLab: () => void;
+  onHome: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, [open]);
+  const pick = (fn: () => void) => () => {
+    setOpen(false);
+    fn();
+  };
+  return (
+    <div className="game-menu">
+      <button
+        type="button"
+        className="menu-button"
+        aria-expanded={open}
+        aria-label="Menu"
+        title="Menu"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <Icon name="menu" size={30} />
+      </button>
+      {open && (
+        <div className="menu-pop" role="menu">
+          <button type="button" role="menuitem" onClick={pick(props.onNewGame)}>
+            New game…
+          </button>
+          <button type="button" role="menuitem" onClick={pick(props.onSaves)}>
+            Save / Load…
+          </button>
+          <button type="button" role="menuitem" onClick={pick(props.onMapLab)}>
+            Map Lab
+          </button>
+          <button type="button" role="menuitem" onClick={pick(props.onHome)}>
+            Title screen
+          </button>
+        </div>
       )}
     </div>
   );

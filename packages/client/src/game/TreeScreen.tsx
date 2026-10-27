@@ -15,6 +15,8 @@ import {
   treeNode,
   unlocksOf,
 } from '@cx/engine';
+import { Icon } from '../ui/Icon';
+import { buildingIcon, ICONS } from '../ui/icons';
 import { useEffect, useMemo, useRef } from 'react';
 import { showTurns, turnsFor, whole } from './model';
 
@@ -65,7 +67,19 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
   const queue = [track.current, ...track.queue].filter((x): x is string => x !== null);
   const done = new Set(track.done);
   const name = (id: string) => resolveText(content, treeNode(ctx, kind, id)!.name);
-  const icon = content.entities.yield[kind === 'tech' ? 'science' : 'culture']?.icon ?? '';
+  const icon = <Icon name={kind === 'tech' ? 'science' : 'culture'} />;
+  const unlockIcon = (u: { kind: string; id: string }) =>
+    u.kind === 'unit'
+      ? (content.entities.unit[u.id]?.model ?? 'generic')
+      : u.kind === 'building'
+        ? buildingIcon(u.id, content.entities.building[u.id]?.district)
+        : u.kind === 'improvement'
+          ? ICONS[u.id]
+            ? u.id
+            : 'improvement_farm'
+          : u.kind === 'government'
+            ? 'government'
+            : 'civic';
 
   // Start scrolled to the current choice (or the last thing finished).
   useEffect(() => {
@@ -194,13 +208,18 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
                 <span className="node-top">
                   <span className="node-name">{name(id)}</span>
                   <span className="node-meta mono">
-                    {isDone
-                      ? '✓'
-                      : order >= 0
-                        ? `${order + 1} · ${showTurns(turns)}t`
-                        : steps > 1
-                          ? `${whole(cost)}${icon}`
-                          : `${showTurns(turns)}t`}
+                    {isDone ? (
+                      '✓'
+                    ) : order >= 0 ? (
+                      `${order + 1} · ${showTurns(turns)}t`
+                    ) : steps > 1 ? (
+                      <>
+                        {whole(cost)}
+                        {icon}
+                      </>
+                    ) : (
+                      `${showTurns(turns)}t`
+                    )}
                   </span>
                 </span>
                 {!isDone && progress > 0 && (
@@ -223,6 +242,7 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
                   <span className="node-unlocks">
                     {unlocks.slice(0, 4).map((u) => (
                       <span key={u.id} className={`unlock ${u.kind}`}>
+                        <Icon name={unlockIcon(u)} size={14} />
                         {u.name}
                       </span>
                     ))}

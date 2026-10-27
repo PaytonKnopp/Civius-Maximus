@@ -44,6 +44,8 @@ import {
   workableTiles,
 } from '@cx/engine';
 import { type GameHandle, LocalGame, makeSave, RemoteGame } from '@cx/host';
+import { Icon, Rich } from '../ui/Icon';
+import { ScreenButton } from '../ui/ScreenButton';
 import type { SeatInfo } from '@cx/protocol';
 import { createAiRunner } from './aiRunner';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -79,7 +81,8 @@ import { VictoriesScreen } from './VictoriesScreen';
 import { GraphsScreen, HistoryChart } from './GraphsScreen';
 import { HelpScreen } from './HelpScreen';
 import { HINTS, hintFor, hintsOn, markSeen, seenHints, setHints } from './hints';
-import { type Lens, LENS_NAMES, LENSES, lensFor } from './lenses';
+import { type Lens, LENSES, lensFor } from './lenses';
+import { Minimap } from './Minimap';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -483,19 +486,6 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
       state.players[x.player]?.alive &&
       !state.players[x.player]!.turnEnded,
   );
-
-  // The chip row on the left stops where the civ chips on the right begin.
-  const playersRef = useRef<HTMLDivElement>(null);
-  const [playersWidth, setPlayersWidth] = useState(0);
-  useEffect(() => {
-    const el = playersRef.current;
-    if (!el) return;
-    const fit = () => setPlayersWidth(el.offsetWidth);
-    fit();
-    const watch = new ResizeObserver(fit);
-    watch.observe(el);
-    return () => watch.disconnect();
-  }, []);
 
   const colors = useMemo(() => playerColors(content, state), [content, state.playerOrder]);
   const fog = useMemo(() => fogOfWar(ctx, state, viewer), [ctx, state, viewer]);
@@ -1125,7 +1115,6 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
     passTo,
   ]);
 
-  const icon = (y: string) => content.entities.yield[y]?.icon ?? '';
   const inspected = selection?.kind === 'settlement' ? undefined : (pathTarget ?? inspect);
 
   return (
@@ -1136,35 +1125,118 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
         aria-label="Map. Drag to pan, scroll or pinch to zoom."
       />
 
-      <ul className="resource-bar" aria-label="Your empire">
-        <li title="Gold (per turn)">
-          {icon('gold')} <span className="mono">{whole(empire.gold)}</span>
-          <span className="delta mono">({perTurn(empire.goldPerTurn)})</span>
-        </li>
-        <li title="Science per turn">
-          {icon('science')} <span className="mono">{perTurn(empire.science)}</span>
-        </li>
-        <li title="Culture per turn">
-          {icon('culture')} <span className="mono">{perTurn(empire.culture)}</span>
-        </li>
-        <li title="Faith (per turn)">
-          {icon('faith')} <span className="mono">{whole(empire.faith)}</span>
-          <span className="delta mono">({perTurn(empire.faithPerTurn)})</span>
-        </li>
-        <li title="Influence (per turn): spent on friendships, alliances and denouncing">
-          {icon('influence')} <span className="mono">{whole(empire.influence)}</span>
-          <span className="delta mono">({perTurn(empire.influencePerTurn)})</span>
-        </li>
-      </ul>
+      <header className="topbar">
+        <ul className="empire-yields" aria-label="Your empire">
+          <li title="Science per turn">
+            <Icon name="science" size={22} />
+            <span className="mono val science">{perTurn(empire.science)}</span>
+          </li>
+          <li title="Culture per turn">
+            <Icon name="culture" size={22} />
+            <span className="mono val culture">{perTurn(empire.culture)}</span>
+          </li>
+          <li title="Gold (per turn)">
+            <Icon name="gold" size={22} />
+            <span className="mono val gold">{whole(empire.gold)}</span>
+            <span className="delta mono">({perTurn(empire.goldPerTurn)})</span>
+          </li>
+          <li title="Faith (per turn)">
+            <Icon name="faith" size={22} />
+            <span className="mono val faith">{whole(empire.faith)}</span>
+            <span className="delta mono">({perTurn(empire.faithPerTurn)})</span>
+          </li>
+          <li title="Influence (per turn): spent on friendships, alliances and denouncing">
+            <Icon name="influence" size={22} />
+            <span className="mono val">{whole(empire.influence)}</span>
+            <span className="delta mono">({perTurn(empire.influencePerTurn)})</span>
+          </li>
+          <li
+            className={me.celebration.turnsLeft > 0 ? 'celebrating' : ''}
+            title="Happiness surplus builds toward a celebration: a bonus wildcard policy slot and +10% production"
+          >
+            <Icon name="happiness" size={22} />
+            <span className="mono val">
+              {me.celebration.turnsLeft > 0
+                ? `Celebrating · ${me.celebration.turnsLeft}`
+                : `${me.celebration.store}/${celebrationThreshold(ctx, me)}`}
+            </span>
+          </li>
+        </ul>
+        <div className="topbar-right">
+          <nav className="screen-buttons" aria-label="Screens">
+            <ScreenButton
+              icon="research"
+              label="Technologies (T)"
+              onClick={() => setOverlay({ kind: 'tree', tree: 'tech' })}
+            />
+            <ScreenButton
+              icon="civic"
+              label="Civics (C)"
+              onClick={() => setOverlay({ kind: 'tree', tree: 'civic' })}
+            />
+            <ScreenButton
+              icon="government"
+              label={`${resolveText(content, content.entities.government[me.government]?.name ?? 'Government')} (G)`}
+              badge={(() => {
+                const filled = SLOT_KINDS.reduce((n, k) => n + me.policies[k].length, 0);
+                const slots = SLOT_KINDS.reduce(
+                  (n, k) => n + policySlots(ctx, state, viewer)[k],
+                  0,
+                );
+                return filled < slots ? `${filled}/${slots}` : undefined;
+              })()}
+              onClick={openGovernment}
+            />
+            <ScreenButton
+              icon="greatPeople"
+              label="Great people (P)"
+              onClick={() => setOverlay({ kind: 'greatPeople' })}
+            />
+            <ScreenButton
+              icon="religion"
+              label={`${
+                me.religion
+                  ? (state.religions[me.religion]?.name ?? 'Religion')
+                  : pantheonOf(ctx, state, viewer)
+                    ? 'Religion'
+                    : 'Pantheon'
+              } (R)`}
+              onClick={() => setOverlay({ kind: 'religion' })}
+            />
+            {Object.keys(state.cityStates).length > 0 && (
+              <ScreenButton
+                icon="cityStates"
+                label={`City-states (I)${me.envoys > 0 ? `: ${me.envoys} envoys to send` : ''}`}
+                badge={me.envoys > 0 ? String(me.envoys) : undefined}
+                onClick={() => setOverlay({ kind: 'cityStates' })}
+              />
+            )}
+            <ScreenButton
+              icon="victory"
+              label="Victories (V)"
+              onClick={() => setOverlay({ kind: 'victories' })}
+            />
+            <ScreenButton
+              icon="graphs"
+              label="Graphs (H)"
+              onClick={() => setOverlay({ kind: 'graphs' })}
+            />
+            <ScreenButton
+              icon="help"
+              label="Help and shortcuts (?)"
+              onClick={() => setOverlay({ kind: 'help' })}
+            />
+          </nav>
+          <div className="turn-pill" aria-live="polite">
+            <span className="turn-label">Turn</span>
+            <span className="turn-number">{state.turn}</span>
+            <span className="era">{era ? `${resolveText(content, era.name)} Era` : ''}</span>
+            <span className="fps">{fps} fps</span>
+          </div>
+        </div>
+      </header>
 
-      <div className="turn-pill" aria-live="polite">
-        <span className="turn-label">Turn</span>
-        <span className="turn-number">{state.turn}</span>
-        <span className="era">{era ? `${resolveText(content, era.name)} Era` : ''}</span>
-        <span className="fps">{fps} fps</span>
-      </div>
-
-      <div className="players" ref={playersRef}>
+      <div className="players">
         {state.playerOrder.map((p) => {
           const pl = state.players[p]!;
           const war = atWar(state, viewer, p);
@@ -1251,10 +1323,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
         />
       )}
 
-      <div
-        className="progress-chips"
-        style={{ '--players-w': `${playersWidth}px` } as React.CSSProperties}
-      >
+      <div className="trackers">
         {(['tech', 'civic'] as const).map((k) => {
           const track = k === 'tech' ? me.techs : me.civics;
           const id = track.current;
@@ -1266,133 +1335,37 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
           const cost = id ? nodeCost(ctx, state, k, id) : 0;
           const progress = id ? (track.progress[id] ?? 0) : 0;
           const perTurnAmount = k === 'tech' ? empire.science : empire.culture;
+          const pct = def ? Math.min(100, (progress / cost) * 100) : 0;
           return (
             <button
               key={k}
               type="button"
-              className={`progress-chip ${k} ${id ? '' : 'idle'}`}
+              className={`tracker ${k} ${id ? '' : 'idle'}`}
               onClick={() => setOverlay({ kind: 'tree', tree: k })}
               title={k === 'tech' ? 'Technologies (T)' : 'Civics (C)'}
             >
-              <span aria-hidden="true">{icon(k === 'tech' ? 'science' : 'culture')}</span>
-              <span className="chip-name">
-                {def
-                  ? resolveText(content, def.name)
-                  : k === 'tech'
-                    ? 'Choose research'
-                    : 'Choose a civic'}
+              <span className="tracker-ring" style={{ '--pct': `${pct}%` } as React.CSSProperties}>
+                <Icon name={k === 'tech' ? 'research' : 'civic'} size={34} />
+              </span>
+              <span className="tracker-text">
+                <span className="tracker-kind">{k === 'tech' ? 'Research' : 'Civic'}</span>
+                <span className="tracker-name">
+                  {def
+                    ? resolveText(content, def.name)
+                    : k === 'tech'
+                      ? 'Choose research'
+                      : 'Choose a civic'}
+                </span>
               </span>
               {def && (
-                <span className="chip-turns mono">
+                <span className="tracker-turns mono">
                   {showTurns(turnsFor(cost, progress, perTurnAmount))}
-                </span>
-              )}
-              {def && (
-                <span className="chip-bar">
-                  <span style={{ width: `${Math.min(100, (progress / cost) * 100)}%` }} />
+                  <small>turns</small>
                 </span>
               )}
             </button>
           );
         })}
-        <button
-          type="button"
-          className="progress-chip"
-          onClick={() => setOverlay({ kind: 'greatPeople' })}
-          title="Great people (P)"
-          aria-label="Great people"
-        >
-          <span aria-hidden="true">★</span>
-        </button>
-        <button
-          type="button"
-          className="progress-chip"
-          onClick={() => setOverlay({ kind: 'religion' })}
-          title={`${
-            me.religion
-              ? (state.religions[me.religion]?.name ?? 'Religion')
-              : pantheonOf(ctx, state, viewer)
-                ? 'Religion'
-                : 'Pantheon'
-          } (R)`}
-          aria-label="Religion"
-        >
-          <span aria-hidden="true">{icon('faith')}</span>
-          <span className="chip-turns mono">{whole(me.faith)}</span>
-        </button>
-        {Object.keys(state.cityStates).length > 0 && (
-          <button
-            type="button"
-            className={`progress-chip ${me.envoys > 0 ? 'attention' : ''}`}
-            onClick={() => setOverlay({ kind: 'cityStates' })}
-            title={`City-states (I)${me.envoys > 0 ? `: ${me.envoys} envoys to send` : ''}`}
-            aria-label="City-states"
-          >
-            <span aria-hidden="true">🏛</span>
-            {me.envoys > 0 && <span className="chip-turns mono">{me.envoys}</span>}
-          </button>
-        )}
-        <button
-          type="button"
-          className="progress-chip"
-          onClick={() => setOverlay({ kind: 'victories' })}
-          title="Victories (V)"
-          aria-label="Victories"
-        >
-          <span aria-hidden="true">🏆</span>
-        </button>
-        <label
-          className={`progress-chip lens-chip ${lens !== 'none' ? 'attention' : ''}`}
-          title="Map lens (L)"
-        >
-          <span aria-hidden="true">🔍</span>
-          <select
-            aria-label="Map lens"
-            value={lens}
-            onChange={(e) => setLens(e.target.value as Lens)}
-          >
-            {LENSES.map((l) => (
-              <option key={l} value={l}>
-                {LENS_NAMES[l]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button
-          type="button"
-          className="progress-chip"
-          onClick={() => setOverlay({ kind: 'help' })}
-          title="Help and shortcuts (?)"
-          aria-label="Help"
-        >
-          <span aria-hidden="true">?</span>
-        </button>
-        <button
-          type="button"
-          className="progress-chip government"
-          onClick={openGovernment}
-          title="Government and policies (G)"
-        >
-          <span aria-hidden="true">⚖</span>
-          <span className="chip-name">
-            {resolveText(content, content.entities.government[me.government]?.name ?? '')}
-          </span>
-          <span className="chip-turns mono">
-            {SLOT_KINDS.reduce((n, k) => n + me.policies[k].length, 0)}/
-            {SLOT_KINDS.reduce((n, k) => n + policySlots(ctx, state, viewer)[k], 0)}
-          </span>
-        </button>
-        <span
-          className={`progress-chip celebrate ${me.celebration.turnsLeft > 0 ? 'on' : ''}`}
-          title="Happiness surplus builds toward a celebration: a bonus wildcard policy slot and +10% production"
-        >
-          <span aria-hidden="true">{me.celebration.turnsLeft > 0 ? '🎉' : icon('happiness')}</span>
-          <span className="chip-turns mono">
-            {me.celebration.turnsLeft > 0
-              ? `${me.celebration.turnsLeft} turns`
-              : `${me.celebration.store}/${celebrationThreshold(ctx, me)}`}
-          </span>
-        </span>
       </div>
 
       {hint && (
@@ -1420,7 +1393,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
       <div className="notices" aria-live="polite">
         {notices.map((n) => (
           <div key={n.id} className="notice">
-            {n.text}
+            <Rich text={n.text} />
           </div>
         ))}
       </div>
@@ -1496,15 +1469,31 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
         </div>
       )}
 
-      <button
-        type="button"
-        className={`next-action ${next.kind === 'end' ? 'end' : ''} ${busy ? 'busy' : ''}`}
-        onClick={doNext}
-        disabled={next.kind === 'waiting' || busy}
-      >
-        <span className="next-label">{busy ? 'Rivals are moving…' : next.label}</span>
-        <kbd>Enter</kbd>
-      </button>
+      <div className="corner">
+        <button
+          type="button"
+          className={`next-action ${next.kind === 'end' ? 'end' : ''} ${busy ? 'busy' : ''}`}
+          onClick={doNext}
+          disabled={next.kind === 'waiting' || busy}
+        >
+          <Icon
+            name={next.kind === 'end' ? 'next' : next.kind === 'unit' ? 'movement' : 'check'}
+            size={34}
+          />
+          <span className="next-label">{busy ? 'Rivals are moving…' : next.label}</span>
+          <kbd>Enter</kbd>
+        </button>
+        <Minimap
+          ctx={ctx}
+          state={state}
+          viewer={viewer}
+          fog={fog}
+          colors={colors}
+          lens={lens}
+          onLens={setLens}
+          onPick={(tile) => viewRef.current?.focusTile(tile)}
+        />
+      </div>
 
       {overlay?.kind === 'tree' && (
         <TreeScreen
