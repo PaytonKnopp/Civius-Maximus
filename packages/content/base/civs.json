@@ -3,6 +3,7 @@
     "type": "civ",
     "id": "civ_rome",
     "name": "Rome",
+    "architecture": "mediterranean",
     "adjective": "Roman",
     "colors": {
       "primary": "#7a1f2b",
@@ -53,6 +54,7 @@
     "type": "civ",
     "id": "civ_egypt",
     "name": "Egypt",
+    "architecture": "middle_eastern",
     "adjective": "Egyptian",
     "colors": {
       "primary": "#1f5f7a",
@@ -130,6 +132,7 @@
     "type": "civ",
     "id": "civ_macedon",
     "name": "Macedon",
+    "architecture": "mediterranean",
     "adjective": "Macedonian",
     "colors": {
       "primary": "#3b2a6b",
@@ -171,6 +174,7 @@
     "type": "civ",
     "id": "civ_mongols",
     "name": "Mongols",
+    "architecture": "steppe",
     "adjective": "Mongolian",
     "colors": {
       "primary": "#2c5f4a",
@@ -222,6 +226,7 @@
     "type": "civ",
     "id": "civ_england",
     "name": "England",
+    "architecture": "european",
     "adjective": "English",
     "colors": {
       "primary": "#a11d21",
@@ -273,6 +278,7 @@
     "type": "civ",
     "id": "civ_france",
     "name": "France",
+    "architecture": "european",
     "adjective": "French",
     "colors": {
       "primary": "#1d3b8a",
@@ -322,6 +328,7 @@
     "type": "civ",
     "id": "civ_america",
     "name": "United States",
+    "architecture": "european",
     "adjective": "American",
     "colors": {
       "primary": "#24477d",
@@ -366,6 +373,7 @@
     "type": "civ",
     "id": "civ_china",
     "name": "China",
+    "architecture": "east_asian",
     "adjective": "Chinese",
     "colors": {
       "primary": "#b8862b",
@@ -409,6 +417,7 @@
     "type": "civ",
     "id": "civ_mali",
     "name": "Mali",
+    "architecture": "african",
     "adjective": "Malian",
     "colors": {
       "primary": "#c2572b",
@@ -508,6 +517,7 @@
     "type": "civ",
     "id": "civ_japan",
     "name": "Japan",
+    "architecture": "east_asian",
     "adjective": "Japanese",
     "colors": {
       "primary": "#e8e2d4",

@@ -1,10 +1,7 @@
 import {
-  BoxGeometry,
   BufferGeometry,
   CanvasTexture,
   Color,
-  ConeGeometry,
-  CylinderGeometry,
   DoubleSide,
   Float32BufferAttribute,
   Group,
@@ -15,17 +12,16 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
-  PlaneGeometry,
   RingGeometry,
   SphereGeometry,
   Sprite,
   SpriteMaterial,
   SRGBColorSpace,
-  TorusGeometry,
   Vector3,
 } from 'three';
 import type { PathView, UnitView } from '../map/renderer';
 import { drawIcon } from '../ui/drawIcon';
+import { unitGeometry } from './unitModels';
 
 /**
  * Units in the 3D world: small low-poly squads (oversized against the terrain so they read at
@@ -50,68 +46,9 @@ export interface UnitWorld {
 }
 
 const geo = {
-  body: new ConeGeometry(0.05, 0.17, 6).translate(0, 0.085, 0),
-  head: new SphereGeometry(0.034, 6, 5).translate(0, 0.2, 0),
-  shield: new BoxGeometry(0.015, 0.09, 0.07).translate(0.055, 0.1, 0),
-  stick: new CylinderGeometry(0.008, 0.008, 0.26, 4).translate(-0.05, 0.12, 0),
-  bow: new TorusGeometry(0.06, 0.007, 4, 10, Math.PI).rotateY(Math.PI / 2).translate(0.05, 0.12, 0),
-  wagon: new BoxGeometry(0.24, 0.07, 0.13).translate(0, 0.085, 0),
-  canopy: new CylinderGeometry(0.075, 0.075, 0.24, 10, 1, false, 0, Math.PI)
-    .rotateZ(Math.PI / 2)
-    .rotateX(-Math.PI / 2)
-    .translate(0, 0.12, 0),
-  wheel: new CylinderGeometry(0.04, 0.04, 0.018, 10).rotateX(Math.PI / 2),
-  horse: new BoxGeometry(0.2, 0.07, 0.07).translate(0, 0.14, 0),
-  neck: new BoxGeometry(0.05, 0.1, 0.05).rotateZ(-0.5).translate(0.11, 0.2, 0),
-  leg: new BoxGeometry(0.018, 0.11, 0.018).translate(0, 0.055, 0),
-  hull: new CylinderGeometry(0.06, 0.09, 0.34, 4, 1)
-    .rotateZ(Math.PI / 2)
-    .scale(1, 0.55, 1)
-    .translate(0, 0.04, 0),
-  mast: new CylinderGeometry(0.008, 0.008, 0.3, 4).translate(0, 0.2, 0),
-  sail: new PlaneGeometry(0.16, 0.15).translate(0, 0.22, 0),
   base: new RingGeometry(0.2, 0.24, 24).rotateX(-Math.PI / 2),
-  // Later eras.
-  rifle: new CylinderGeometry(0.006, 0.006, 0.2, 4).rotateZ(0.45).translate(0.045, 0.13, 0),
-  frame: new BoxGeometry(0.22, 0.035, 0.12).translate(0, 0.06, 0),
-  arm: new BoxGeometry(0.2, 0.018, 0.018).rotateZ(0.7).translate(-0.02, 0.13, 0),
-  barrel: new CylinderGeometry(0.022, 0.03, 0.24, 8)
-    .rotateZ(Math.PI / 2 - 0.25)
-    .translate(0.03, 0.1, 0),
-  carriage: new BoxGeometry(0.14, 0.04, 0.07).translate(-0.02, 0.06, 0),
-  bigWheel: new CylinderGeometry(0.055, 0.055, 0.016, 12).rotateX(Math.PI / 2),
-  tankHull: new BoxGeometry(0.26, 0.06, 0.13).translate(0, 0.065, 0),
-  track: new BoxGeometry(0.28, 0.05, 0.035).translate(0, 0.025, 0),
-  turret: new BoxGeometry(0.11, 0.05, 0.09).translate(-0.02, 0.12, 0),
-  gun: new CylinderGeometry(0.01, 0.01, 0.17, 6).rotateZ(Math.PI / 2).translate(0.11, 0.125, 0),
-  deck: new BoxGeometry(0.12, 0.05, 0.07).translate(-0.02, 0.09, 0),
-  funnel: new CylinderGeometry(0.018, 0.022, 0.1, 8).translate(0.04, 0.15, 0),
-  pole: new CylinderGeometry(0.007, 0.007, 0.3, 4).translate(-0.09, 0.15, 0),
-  banner: new PlaneGeometry(0.1, 0.075).translate(-0.035, 0.25, 0),
-  robe: new ConeGeometry(0.06, 0.2, 6).translate(0, 0.1, 0),
 };
 
-const solid = (color: number) =>
-  new MeshStandardMaterial({ color, roughness: 0.85, flatShading: true });
-const mats = {
-  skin: solid(0xb88e6a),
-  wood: solid(0x5a4330),
-  dark: solid(0x2a2420),
-  canvas: solid(0xc9bfa3),
-  horse: solid(0x6b4b33),
-  metal: new MeshStandardMaterial({ color: 0x9a8f7a, roughness: 0.45, metalness: 0.7 }),
-  steel: new MeshStandardMaterial({ color: 0x4d5459, roughness: 0.5, metalness: 0.6 }),
-  robe: solid(0xd8cfb6),
-};
-const clothCache = new Map<number, MeshStandardMaterial>();
-const cloth = (color: number) => {
-  let m = clothCache.get(color);
-  if (!m) {
-    m = new MeshStandardMaterial({ color, roughness: 0.8, flatShading: true, side: DoubleSide });
-    clothCache.set(color, m);
-  }
-  return m;
-};
 const baseCache = new Map<number, MeshBasicMaterial>();
 const baseMat = (color: number) => {
   let m = baseCache.get(color);
@@ -122,122 +59,25 @@ const baseMat = (color: number) => {
   return m;
 };
 
-function part(g: BufferGeometry, m: MeshStandardMaterial, x = 0, z = 0, y = 0) {
-  const mesh = new Mesh(g, m);
-  mesh.position.set(x, y, z);
-  return mesh;
-}
-
-function figure(color: number, x: number, z: number, extra?: 'shield' | 'stick' | 'bow' | 'rifle') {
-  const g = new Group();
-  g.add(part(geo.body, cloth(color)), part(geo.head, mats.skin));
-  if (extra === 'shield') g.add(part(geo.shield, cloth(color)), part(geo.stick, mats.wood));
-  if (extra === 'stick') g.add(part(geo.stick, mats.wood));
-  if (extra === 'bow') g.add(part(geo.bow, mats.wood));
-  if (extra === 'rifle') g.add(part(geo.rifle, mats.dark));
-  g.position.set(x, 0, z);
-  return g;
-}
+const matte = new MeshStandardMaterial({
+  vertexColors: true,
+  roughness: 0.82,
+  flatShading: true,
+  side: DoubleSide,
+});
+const metal = new MeshStandardMaterial({
+  vertexColors: true,
+  roughness: 0.42,
+  metalness: 0.6,
+  flatShading: true,
+});
 
 function buildModel(view: UnitView): Group {
-  const color = view.color;
   const g = new Group();
-  switch (view.model) {
-    case 'warrior':
-      g.add(
-        figure(color, -0.07, 0.04, 'shield'),
-        figure(color, 0.07, 0.04, 'shield'),
-        figure(color, 0, -0.07, 'shield'),
-      );
-      break;
-    case 'archer':
-      g.add(
-        figure(color, -0.07, 0.04, 'bow'),
-        figure(color, 0.07, 0.04, 'bow'),
-        figure(color, 0, -0.07, 'bow'),
-      );
-      break;
-    case 'scout':
-      g.add(figure(color, -0.05, 0.02, 'stick'), figure(color, 0.06, -0.03, 'stick'));
-      break;
-    case 'settler': {
-      g.add(part(geo.wagon, mats.wood), part(geo.canopy, mats.canvas));
-      for (const [x, z] of [
-        [-0.08, 0.07],
-        [0.08, 0.07],
-        [-0.08, -0.07],
-        [0.08, -0.07],
-      ] as const) {
-        g.add(part(geo.wheel, mats.dark, x, z, 0.04));
-      }
-      g.add(figure(color, 0.2, 0));
-      break;
-    }
-    case 'cavalry': {
-      g.add(part(geo.horse, mats.horse), part(geo.neck, mats.horse));
-      for (const [x, z] of [
-        [-0.08, 0.025],
-        [0.08, 0.025],
-        [-0.08, -0.025],
-        [0.08, -0.025],
-      ] as const) {
-        g.add(part(geo.leg, mats.horse, x, z));
-      }
-      const rider = figure(color, 0, 0, 'stick');
-      rider.position.y = 0.13;
-      g.add(rider);
-      break;
-    }
-    case 'ship':
-      g.add(
-        part(geo.hull, mats.wood),
-        part(geo.mast, mats.wood),
-        part(geo.sail, cloth(color), 0, 0),
-      );
-      break;
-    case 'rifle':
-      g.add(
-        figure(color, -0.07, 0.04, 'rifle'),
-        figure(color, 0.07, 0.04, 'rifle'),
-        figure(color, 0, -0.07, 'rifle'),
-      );
-      break;
-    case 'siege':
-      g.add(part(geo.frame, mats.wood), part(geo.arm, mats.wood));
-      for (const x of [-0.08, 0.08])
-        for (const z of [0.065, -0.065]) g.add(part(geo.wheel, mats.dark, x, z, 0.04));
-      g.add(figure(color, -0.16, 0.06));
-      break;
-    case 'cannon':
-      g.add(part(geo.carriage, mats.wood), part(geo.barrel, mats.steel));
-      for (const z of [0.05, -0.05]) g.add(part(geo.bigWheel, mats.dark, -0.02, z, 0.055));
-      g.add(figure(color, -0.15, 0.06), figure(color, -0.15, -0.07));
-      break;
-    case 'tank':
-      g.add(
-        part(geo.tankHull, cloth(color)),
-        part(geo.track, mats.dark, 0, 0.07),
-        part(geo.track, mats.dark, 0, -0.07),
-        part(geo.turret, cloth(color)),
-        part(geo.gun, mats.steel),
-      );
-      break;
-    case 'steamship':
-      g.add(part(geo.hull, mats.steel), part(geo.deck, cloth(color)), part(geo.funnel, mats.dark));
-      break;
-    case 'commander': {
-      const leader = figure(color, 0.04, 0.02);
-      leader.scale.setScalar(1.2);
-      g.add(leader, part(geo.pole, mats.wood), part(geo.banner, cloth(color)));
-      break;
-    }
-    case 'robed':
-      g.add(part(geo.robe, mats.robe), part(geo.head, mats.skin), part(geo.stick, mats.wood));
-      break;
-    default:
-      g.add(figure(color, -0.05, 0), figure(color, 0.05, 0));
-  }
-  g.add(new Mesh(geo.base, baseMat(color)));
+  const geom = unitGeometry(view.model, view.color, view.accent);
+  g.add(new Mesh(geom.matte, matte));
+  if (geom.metal) g.add(new Mesh(geom.metal, metal));
+  g.add(new Mesh(geo.base, baseMat(view.color)));
   g.scale.setScalar(SCALE);
   return g;
 }

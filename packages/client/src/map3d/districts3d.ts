@@ -43,6 +43,28 @@ function colonnade(
   }
 }
 
+/** Where an industrial zone's smokestacks end (for smoke), matching its model below. */
+export function districtStacks(
+  model: string,
+  x: number,
+  z: number,
+  ground: number,
+  seed: number,
+): [number, number, number][] {
+  if (model !== 'industrial') return [];
+  const r = seeded(seed * 31 + 5);
+  const rot = Math.floor(r() * 6) * (Math.PI / 3);
+  const at = placer(x, z, rot);
+  const y = ground + 0.02;
+  return [
+    [0.2, -0.16, 0.36],
+    [0.08, -0.18, 0.28],
+  ].map(([dx, dz, h]) => {
+    const [cx, cz] = at(dx!, dz!);
+    return [cx, y + h! + 0.06, cz];
+  });
+}
+
 export function districtParts(
   model: string,
   color: number,

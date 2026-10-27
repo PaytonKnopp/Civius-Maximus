@@ -623,6 +623,22 @@ export const UnitDef = z.strictObject({
       'steamship',
       'commander',
       'robed',
+      'spear',
+      'pike',
+      'sword',
+      'crossbow',
+      'horseman',
+      'knight',
+      'chariot',
+      'musket',
+      'infantry',
+      'artillery',
+      'trader',
+      'frigate',
+      'destroyer',
+      'plane',
+      'bomber',
+      'helicopter',
       'generic',
     ])
     .default('generic'),
@@ -1125,6 +1141,20 @@ export const CivDef = z.strictObject({
   }),
   /** Settlement names in founding order; the first is the capital. */
   cityNames: z.array(Text).min(1),
+  /** How its settlements are built in 3D (docs/10-art-direction.md, "Settlements"). */
+  architecture: z
+    .enum([
+      'mediterranean',
+      'european',
+      'northern',
+      'east_asian',
+      'south_asian',
+      'middle_eastern',
+      'african',
+      'american',
+      'steppe',
+    ])
+    .default('mediterranean'),
   /** The civ's ability (docs/09-base-roster.md). */
   ability: z
     .strictObject({ name: Text, description: Text, effects: z.array(Effect).default([]) })

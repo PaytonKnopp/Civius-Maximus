@@ -21,6 +21,7 @@ import {
   type PlayerId,
   percentOf,
   placementTiles,
+  playerEra,
   policySlots,
   productionToward,
   SLOT_KINDS,
@@ -270,6 +271,16 @@ export function settlementSummary(
   };
 }
 
+/** A player's building style and era, for the 3D settlements. */
+function styleOf(ctx: EngineContext, state: GameState, owner: PlayerId) {
+  const p = state.players[owner];
+  const civ = p ? ctx.content.entities.civ[p.civ] : undefined;
+  return {
+    architecture: civ?.architecture ?? 'mediterranean',
+    era: (p && playerEra(ctx, p)?.order) ?? 1,
+  };
+}
+
 export function settlementViews(
   ctx: EngineContext,
   state: GameState,
@@ -312,6 +323,8 @@ export function settlementViews(
         maxHealth: settlementMaxHealth(ctx, s.kind),
         walls: s.walls,
         wallsMax: wallsMax(ctx, s),
+        ...styleOf(ctx, state, s.owner),
+        razing: s.razing === true,
       };
     });
 }

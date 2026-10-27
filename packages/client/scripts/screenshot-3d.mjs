@@ -55,5 +55,23 @@ await page.mouse.move(640, 400);
 for (let i = 0; i < 2; i++) await page.mouse.wheel(0, -250);
 await page.waitForTimeout(2500);
 await page.screenshot({ path: `${out}/3d-units.png` });
+await page.mouse.wheel(0, -350);
+await page.waitForTimeout(2000);
+await page.screenshot({ path: `${out}/3d-units-close.png` });
+
+// A capital in every architecture, one style through the ages, a city burning.
+await page.click('.controls-toggle');
+await page.uncheck('#models');
+await page.check('#towns');
+await page.click('.starts li:first-child button');
+await page.waitForTimeout(1500);
+await page.click('.controls-toggle');
+await page.mouse.move(640, 400);
+await page.mouse.wheel(0, 300);
+await page.waitForTimeout(2500);
+await page.screenshot({ path: `${out}/3d-buildings.png` });
+await page.mouse.wheel(0, -500);
+await page.waitForTimeout(2500);
+await page.screenshot({ path: `${out}/3d-buildings-close.png` });
 console.log('errors:', errors.length ? errors : 'none');
 await browser.close();

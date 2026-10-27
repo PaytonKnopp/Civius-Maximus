@@ -6026,6 +6026,22 @@
                 "steamship",
                 "commander",
                 "robed",
+                "spear",
+                "pike",
+                "sword",
+                "crossbow",
+                "horseman",
+                "knight",
+                "chariot",
+                "musket",
+                "infantry",
+                "artillery",
+                "trader",
+                "frigate",
+                "destroyer",
+                "plane",
+                "bomber",
+                "helicopter",
                 "generic"
               ]
             }
@@ -11763,6 +11779,21 @@
                 "type": "string",
                 "minLength": 1
               }
+            },
+            "architecture": {
+              "default": "mediterranean",
+              "type": "string",
+              "enum": [
+                "mediterranean",
+                "european",
+                "northern",
+                "east_asian",
+                "south_asian",
+                "middle_eastern",
+                "african",
+                "american",
+                "steppe"
+              ]
             },
             "ability": {
               "type": "object",
@@ -66290,6 +66321,22 @@
                   "steamship",
                   "commander",
                   "robed",
+                  "spear",
+                  "pike",
+                  "sword",
+                  "crossbow",
+                  "horseman",
+                  "knight",
+                  "chariot",
+                  "musket",
+                  "infantry",
+                  "artillery",
+                  "trader",
+                  "frigate",
+                  "destroyer",
+                  "plane",
+                  "bomber",
+                  "helicopter",
                   "generic"
                 ]
               }
@@ -72027,6 +72074,21 @@
                   "type": "string",
                   "minLength": 1
                 }
+              },
+              "architecture": {
+                "default": "mediterranean",
+                "type": "string",
+                "enum": [
+                  "mediterranean",
+                  "european",
+                  "northern",
+                  "east_asian",
+                  "south_asian",
+                  "middle_eastern",
+                  "african",
+                  "american",
+                  "steppe"
+                ]
               },
               "ability": {
                 "type": "object",

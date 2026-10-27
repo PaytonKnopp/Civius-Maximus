@@ -57,6 +57,11 @@ export interface SettlementView {
   /** Outer defense left and full (0 = no walls). */
   walls: number;
   wallsMax: number;
+  /** The owner's building style (content: `civ.architecture`) and era order (1 = ancient). */
+  architecture: string;
+  era: number;
+  /** Being burned down. */
+  razing: boolean;
 }
 
 /** Territory and improvements, per tile, as the viewer knows them. */

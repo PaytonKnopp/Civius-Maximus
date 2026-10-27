@@ -19,7 +19,17 @@ import {
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { SettlementView, TerritoryView, TileHighlight } from '../map/renderer';
 import { drawRichText, measureRichText } from '../ui/drawIcon';
-import { campParts, districtParts, wonderParts } from './districts3d';
+import {
+  ageOfEra,
+  architecture,
+  building,
+  cityCenter,
+  factory,
+  palace,
+  walls,
+} from './architecture';
+import { campParts, districtParts, districtStacks, wonderParts } from './districts3d';
+import { type Emitter, EffectsLayer } from './effects3d';
 import { G, house, part, scaled, seeded } from './parts';
 
 /**
@@ -39,52 +49,66 @@ export interface SettlementWorld {
   fog(tile: number): number;
 }
 
-/** The buildings of one settlement, around its center tile at (cx, cz). */
+/** The buildings of one settlement, around its center tile at (cx, cz), and its smoke and fire. */
 function settlementParts(
   view: SettlementView,
   cx: number,
   cz: number,
   height: (x: number, z: number) => number,
-) {
+): { parts: BufferGeometry[]; emitters: Emitter[] } {
   const parts: BufferGeometry[] = [];
+  const emitters: Emitter[] = [];
   const r = seeded(view.tile + 7);
   const ground = (x: number, z: number) => Math.max(0, height(x, z)) - 0.01;
   const city = view.kind === 'city';
+  const style = architecture(view.architecture);
+  const age = ageOfEra(view.era);
   // Paved plaza in the middle.
-  parts.push(scaled(G.cyl, 0x6f6658, cx, ground(cx, cz) + 0.005, cz, 0.3, 0.02, 0.3));
-  if (view.capital) {
-    const y = ground(cx, cz);
-    parts.push(
-      scaled(G.box, 0xc8b894, cx, y + 0.1, cz - 0.02, 0.34, 0.2, 0.2),
-      scaled(G.box, 0xb8a684, cx, y + 0.07, cz + 0.13, 0.22, 0.14, 0.1),
-      scaled(G.dome, 0xb08a3e, cx, y + 0.2, cz - 0.02, 0.09, 0.09, 0.09),
-      scaled(G.cyl, 0xc8b894, cx - 0.17, y + 0.14, cz - 0.1, 0.035, 0.28, 0.035),
-      scaled(G.cone, 0x8a6a34, cx - 0.17, y + 0.32, cz - 0.1, 0.05, 0.09, 0.05),
-    );
-  } else if (city) {
-    const y = ground(cx, cz);
-    parts.push(
-      scaled(G.cyl, 0x8f8574, cx, y + 0.13, cz, 0.08, 0.26, 0.08),
-      scaled(G.cone, 0x5e4a3c, cx, y + 0.31, cz, 0.1, 0.12, 0.1),
-    );
-  } else {
-    const y = ground(cx, cz);
+  parts.push(
+    scaled(G.cyl, age >= 3 ? 0x7a7670 : 0x6f6658, cx, ground(cx, cz) + 0.005, cz, 0.3, 0.02, 0.3),
+  );
+  const y = ground(cx, cz);
+  if (view.capital) palace(parts, cx, y, cz, style, age);
+  else if (city) cityCenter(parts, cx, y, cz, style, age);
+  else {
+    // A town's well.
     parts.push(
       scaled(G.cyl, 0x7d7466, cx, y + 0.03, cz, 0.05, 0.06, 0.05),
       scaled(G.box, 0x6b4a2e, cx, y + 0.09, cz, 0.12, 0.012, 0.012),
     );
   }
-  const count = Math.min(40, (city ? 6 : 3) + view.population * (city ? 3 : 2));
-  const radius = city ? 0.8 : 0.62;
+  const count = Math.min(44, (city ? 6 : 3) + view.population * (city ? 3 : 2));
+  const radius = city ? 0.78 : 0.62;
+  const homes: [number, number][] = [];
   for (let i = 0; i < count; i++) {
     // Rings outward from the plaza, with jitter.
-    const ring = 0.22 + Math.sqrt((i + 1) / count) * (radius - 0.22);
+    const t = Math.sqrt((i + 1) / count);
+    const ring = 0.24 + t * (radius - 0.24);
     const a = i * 2.39996 + r() * 0.5;
     const x = cx + Math.cos(a) * ring;
     const z = cz + Math.sin(a) * ring * 0.92;
-    house(parts, x, ground(x, z), z, a + r(), r, city ? 1.1 : 1);
+    // An industrial city puts a factory at the edge.
+    if (age === 3 && city && i === count - 1 && view.population >= 4) {
+      for (const top of factory(parts, x, ground(x, z), z, a))
+        emitters.push({ kind: 'chimney', at: top });
+      continue;
+    }
+    building(parts, x, ground(x, z), z, a + r(), r, city ? 1.25 : 1.05, style, age, t);
+    homes.push([x, z]);
   }
-  return parts;
+  if (city && view.wallsMax > 0)
+    walls(parts, cx, cz, ground, style, age, view.walls / view.wallsMax, view.tile);
+  // Chimney smoke in the Industrial age, from a few houses.
+  if (age === 3)
+    for (const [x, z] of homes.slice(0, Math.min(3, homes.length)))
+      emitters.push({ kind: 'chimney', at: [x, ground(x, z) + 0.2, z] });
+  // Burning: fire and black smoke over the houses. Badly damaged: a fire or two.
+  const fires = view.razing ? 4 : view.health < view.maxHealth * 0.5 ? 2 : 0;
+  for (const [x, z] of homes.slice(0, fires)) {
+    emitters.push({ kind: 'fire', at: [x, ground(x, z) + 0.08, z] });
+    emitters.push({ kind: 'smoke', at: [x, ground(x, z) + 0.22, z] });
+  }
+  return { parts, emitters };
 }
 
 /** Improvement models, sized to sit inside a tile around (x, z). */
@@ -502,9 +526,12 @@ export class SettlementLayer {
   private highlights = new Group();
   private highlightKey = '';
   private highlightX: number[] = [];
+  /** Smoke and fire over settlements and industrial zones. */
+  readonly effects: EffectsLayer;
 
   constructor(private world: SettlementWorld) {
-    this.group.add(this.highlights);
+    this.effects = new EffectsLayer(world);
+    this.group.add(this.highlights, this.effects.group);
   }
 
   /** The corners of the edge a tile shares with its neighbor, and the tile's center. */
@@ -570,6 +597,7 @@ export class SettlementLayer {
       if (keep.has(id)) continue;
       this.dispose(d);
       this.drawn.delete(id);
+      this.effects.set(id, []);
     }
     this.setCamps(territory.camps);
     this.setRoads(territory.roads);
@@ -652,7 +680,9 @@ export class SettlementLayer {
     const remembered = this.world.fog(view.tile) === 1;
 
     // Buildings and improvements: one merged mesh.
-    const parts: BufferGeometry[] = centerKnown ? settlementParts(view, cx, cz, height) : [];
+    const town = centerKnown ? settlementParts(view, cx, cz, height) : { parts: [], emitters: [] };
+    const parts: BufferGeometry[] = town.parts;
+    const emitters: Emitter[] = remembered ? [] : town.emitters;
     for (const t of tiles) {
       if (t === view.tile) continue;
       const [x, z] = this.world.center(t);
@@ -660,8 +690,12 @@ export class SettlementLayer {
       const district = territory.districts[t];
       const wonder = territory.wonders[t];
       const model = territory.improvements[t];
-      if (district) parts.push(...districtParts(district.model, district.color, x, z, ground, t));
-      else if (wonder) parts.push(...wonderParts(wonder.model, x, z, ground, t));
+      if (district) {
+        parts.push(...districtParts(district.model, district.color, x, z, ground, t));
+        if (this.world.fog(t) === 2)
+          for (const at of districtStacks(district.model, x, z, ground, t))
+            emitters.push({ kind: 'chimney', at });
+      } else if (wonder) parts.push(...wonderParts(wonder.model, x, z, ground, t));
       else if (model) parts.push(...improvementParts(model, x, z, ground, t));
     }
     if (parts.length > 0) {
@@ -717,6 +751,7 @@ export class SettlementLayer {
       if (remembered) sprite.material.color.setScalar(0.6);
       group.add(sprite);
     }
+    this.effects.set(view.id, emitters);
     return { key: '', group, x: cx };
   }
 
@@ -768,7 +803,8 @@ export class SettlementLayer {
   }
 
   /** Keeps everything in the copy of the world nearest the camera (east-west wrap). */
-  update(cameraX: number) {
+  update(cameraX: number, dt = 0) {
+    this.effects.update(dt, cameraX);
     if (!this.world.wrap()) return;
     const w = this.world.worldWidth();
     const shift = (x: number) => Math.round((cameraX - x) / w) * w;
@@ -781,6 +817,7 @@ export class SettlementLayer {
   }
 
   clear() {
+    this.effects.clear();
     for (const d of this.drawn.values()) this.dispose(d);
     this.drawn.clear();
     for (const d of this.camps.values()) this.dispose(d);
