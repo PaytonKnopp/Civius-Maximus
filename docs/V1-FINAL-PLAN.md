@@ -27,7 +27,7 @@ lists everything, how to try it, and what Payton does next.
 | F10 | **Loyalty**: loyalty pressure, free cities, settlements changing sides | ✅ |
 | F11 | **Great works**: writers, artists and musicians, slots, theming, tourism from works | ✅ |
 | F12 | **Espionage**: spies, offensive and defensive missions | ✅ |
-| F13 | **World Congress**: diplomatic favor, sessions and resolutions, diplomatic victory | |
+| F13 | **World Congress**: diplomatic favor, sessions and resolutions, diplomatic victory | ✅ |
 | F14 | **Climate and disasters**: floods, storms, droughts, eruptions, emissions and sea level (toggle) | |
 | F15 | **To the Future era**: Atomic and Information eras, air units, nukes (toggle), late governments, the rest of the space race | |
 | F16 | **Systems completed**: apostles, inquisitors, gurus and theological combat; worship buildings; plundering and sea trade; befriending independents and levies; goody huts | |

@@ -47,6 +47,7 @@ import {
   espionageOn,
   spiesOf,
   spyCapacity,
+  congressOn,
 } from '@cx/engine';
 import { type GameHandle, LocalGame, makeSave, RemoteGame } from '@cx/host';
 import { Icon, Rich } from '../ui/Icon';
@@ -92,6 +93,7 @@ import { AgesScreen } from './AgesScreen';
 import { GovernorsScreen } from './GovernorsScreen';
 import { GreatWorksScreen } from './GreatWorksScreen';
 import { EspionageScreen } from './EspionageScreen';
+import { CongressScreen } from './CongressScreen';
 import { Minimap } from './Minimap';
 import { music, play, type Sfx } from '../audio';
 import { LeaderHead } from '../ui/LeaderCard';
@@ -155,6 +157,9 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
     case 'spy_mission':
     case 'spy_noticed':
       return e.player === me ? 'notify' : null;
+    case 'congress_session':
+    case 'congress_founded':
+      return 'notify';
     case 'loyalty_falling':
       return e.owner === me ? 'notify' : null;
     case 'unit_promoted':
@@ -268,6 +273,23 @@ function noticeFor(
         ? `A ${name} begins! (${e.score} era score last era) Choose your dedication.`
         : `${civName(content, state, e.player)} enters a ${name}`;
     }
+    case 'congress_founded':
+      return `The World Congress has formed (${civName(content, state, e.by)} was first into the age). Diplomatic favor comes in every turn (U)`;
+    case 'congress_session':
+      return 'The World Congress meets this turn: cast your votes (U)';
+    case 'resolution_passed': {
+      const def = content.entities.resolution[e.resolution];
+      const o = def?.options.find((x) => x.id === e.option);
+      return def && o
+        ? `World Congress: ${resolveText(content, def.name)}: ${resolveText(content, o.name)}${e.target ? ` (${civName(content, state, e.target)})` : ''}`
+        : undefined;
+    }
+    case 'diplomatic_points':
+      return e.player === ME
+        ? `+${e.amount} diplomatic victory point${e.amount === 1 ? '' : 's'}: ${e.reason} (${e.total} now)`
+        : e.reason.startsWith('Name a World Leader') || e.amount >= 2
+          ? `${civName(content, state, e.player)} gains ${e.amount} diplomatic victory points (${e.total})`
+          : undefined;
     case 'spy_recruited':
       return e.player === ME ? `A new spy, ${e.name}, is ready (Y)` : undefined;
     case 'spy_arrived':
@@ -587,6 +609,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     | { kind: 'governors' }
     | { kind: 'greatWorks' }
     | { kind: 'espionage' }
+    | { kind: 'congress' }
     | { kind: 'graphs' }
     | { kind: 'help' }
     | null
@@ -1111,6 +1134,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     else if (n.kind === 'civic') setOverlay({ kind: 'tree', tree: 'civic' });
     else if (n.kind === 'policies') openGovernment();
     else if (n.kind === 'dedication') setOverlay({ kind: 'ages' });
+    else if (n.kind === 'vote') setOverlay({ kind: 'congress' });
     else if (n.kind === 'end') {
       act({ type: 'end_turn', player: viewer });
       select(null);
@@ -1296,6 +1320,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       else if (e.key === 'o') setOverlay({ kind: 'governors' });
       else if (e.key === 'k') setOverlay({ kind: 'greatWorks' });
       else if (e.key === 'y' && espionageOn(state)) setOverlay({ kind: 'espionage' });
+      else if (e.key === 'u' && congressOn(state)) setOverlay({ kind: 'congress' });
       else if (e.key === 'h') setOverlay({ kind: 'graphs' });
       else if (e.key === '?') setOverlay({ kind: 'help' });
       else if (e.key === 'l') setLens((l) => LENSES[(LENSES.indexOf(l) + 1) % LENSES.length]!);
@@ -1416,6 +1441,20 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               label="Great works (K)"
               onClick={() => setOverlay({ kind: 'greatWorks' })}
             />
+            {state.congress && congressOn(state) && (
+              <ScreenButton
+                icon="congress"
+                label={`World Congress (U)${
+                  state.congress.session?.turn === state.turn ? ': in session, vote now' : ''
+                }`}
+                badge={
+                  state.congress.session?.turn === state.turn && !state.congress.votes[viewer]
+                    ? '!'
+                    : undefined
+                }
+                onClick={() => setOverlay({ kind: 'congress' })}
+              />
+            )}
             {espionageOn(state) && spyCapacity(ctx, state, viewer) > 0 && (
               <ScreenButton
                 icon="spy"
@@ -1787,6 +1826,15 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           onClose={() => setOverlay(null)}
         />
       )}
+      {overlay?.kind === 'congress' && (
+        <CongressScreen
+          ctx={ctx}
+          state={state}
+          viewer={viewer}
+          act={act}
+          onClose={() => setOverlay(null)}
+        />
+      )}
       {overlay?.kind === 'espionage' && (
         <EspionageScreen
           ctx={ctx}
@@ -1919,13 +1967,15 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
                 ? 'A domination victory: every rival original capital is held.'
                 : state.result?.reason === 'science'
                   ? 'A science victory: their expedition reached another star.'
-                  : state.result?.reason === 'culture'
-                    ? 'A culture victory: their visitors outnumber every other civilization’s own tourists.'
-                    : state.result?.reason === 'religion'
-                      ? `A religious victory: ${religionNameOf(state, state.result.winner ?? null)} is followed in most settlements of every other civilization.`
-                      : state.result?.reason === 'conquest'
-                        ? 'A conquest victory: the last civilization standing.'
-                        : 'A score victory: the highest score at the turn limit.'
+                  : state.result?.reason === 'diplomatic'
+                    ? 'A diplomatic victory: the World Congress has made them the leader of the world.'
+                    : state.result?.reason === 'culture'
+                      ? 'A culture victory: their visitors outnumber every other civilization’s own tourists.'
+                      : state.result?.reason === 'religion'
+                        ? `A religious victory: ${religionNameOf(state, state.result.winner ?? null)} is followed in most settlements of every other civilization.`
+                        : state.result?.reason === 'conquest'
+                          ? 'A conquest victory: the last civilization standing.'
+                          : 'A score victory: the highest score at the turn limit.'
           }
           scores={state.playerOrder
             .map((p) => ({

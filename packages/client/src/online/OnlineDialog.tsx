@@ -25,6 +25,8 @@ export interface OnlineOptions {
     culture: boolean;
     loyalty?: boolean;
     espionage?: boolean;
+    congress?: boolean;
+    diplomatic?: boolean;
   };
   turnLimit?: number | null;
 }
@@ -38,6 +40,8 @@ const RULES: [keyof NonNullable<OnlineOptions['rules']>, string][] = [
   ['culture', 'Culture victory'],
   ['loyalty', 'Loyalty'],
   ['espionage', 'Espionage'],
+  ['congress', 'World Congress'],
+  ['diplomatic', 'Diplomatic victory'],
 ];
 
 interface Props {
@@ -98,6 +102,8 @@ export function OnlineDialog(props: Props) {
       culture: true,
       loyalty: true,
       espionage: true,
+      congress: true,
+      diplomatic: true,
     },
     turnLimit: null,
   });

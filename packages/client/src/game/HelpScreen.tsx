@@ -16,6 +16,7 @@ const KEYS: [string, string][] = [
   ['P', 'Great people'],
   ['K', 'Great works: what hangs where, theming, moving works'],
   ['Y', 'Espionage: send spies and choose their missions'],
+  ['U', 'World Congress: favor, votes, diplomatic victory'],
   ['R', 'Religion'],
   ['I', 'City-states'],
   ['V', 'Victories'],

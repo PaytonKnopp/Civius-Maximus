@@ -1,5 +1,7 @@
 import {
   cultureProgress,
+  diplomaticOn,
+  diplomaticPoints,
   dominationProgress,
   domesticTourists,
   type EngineContext,
@@ -65,6 +67,9 @@ export function VictoriesScreen({ ctx, state, viewer, onGraphs, onClose }: Props
               {s.religion !== false && (
                 <th title="Civs where your religion is followed in most settlements">Religion</th>
               )}
+              {diplomaticOn(state) && (
+                <th title="Diplomatic victory points (World Congress)">Diplomatic</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -114,6 +119,11 @@ export function VictoriesScreen({ ctx, state, viewer, onGraphs, onClose }: Props
                         : '—'}
                     </td>
                   )}
+                  {diplomaticOn(state) && (
+                    <td className="mono">
+                      {diplomaticPoints(ctx, state, p)}/{content.rules.congress.victoryPoints}
+                    </td>
+                  )}
                 </tr>
               );
             })}
@@ -136,6 +146,13 @@ export function VictoriesScreen({ ctx, state, viewer, onGraphs, onClose }: Props
           )}
           {s.religion !== false && (
             <li>Religion: your religion followed in most settlements of every other civ.</li>
+          )}
+          {diplomaticOn(state) && (
+            <li>
+              Diplomatic: {content.rules.congress.victoryPoints} diplomatic victory points, won in
+              the World Congress (being named World Leader, setting the agenda) and from some
+              wonders.
+            </li>
           )}
         </ul>
       </div>

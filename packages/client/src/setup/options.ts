@@ -41,6 +41,9 @@ export interface NewGameOptions {
   loyalty: boolean;
   /** Spies and their missions. */
   espionage: boolean;
+  /** The World Congress, and the diplomatic victory it leads to. */
+  congress: boolean;
+  diplomatic: boolean;
   turnLimit: number | null;
   speed: string;
   difficulty: string;
@@ -69,6 +72,8 @@ export const DEFAULT_OPTIONS: NewGameOptions = {
   culture: true,
   loyalty: true,
   espionage: true,
+  congress: true,
+  diplomatic: true,
   turnLimit: null,
   speed: 'speed_standard',
   difficulty: 'difficulty_prince',
@@ -95,6 +100,8 @@ export function makeSetup(o: NewGameOptions): GameSetup {
       culture: o.culture,
       ...(o.loyalty === false ? { loyalty: false } : {}),
       ...(o.espionage === false ? { espionage: false } : {}),
+      ...(o.congress === false ? { congress: false } : {}),
+      ...(o.diplomatic === false ? { diplomatic: false } : {}),
       turnLimit: o.turnLimit,
       speed: o.speed,
       difficulty: o.difficulty,

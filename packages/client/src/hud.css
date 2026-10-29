@@ -1788,14 +1788,16 @@ button.turn-pill:hover {
   font-size: 13px;
 }
 
-.dedication-cards {
+.dedication-cards,
+.resolution-options {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 10px;
   margin: 10px 0 14px;
 }
 
-.dedication-card {
+.dedication-card,
+.resolution-option {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1804,18 +1806,21 @@ button.turn-pill:hover {
   border-radius: 8px;
 }
 
-.dedication-card strong {
+.dedication-card strong,
+.resolution-option strong {
   font-family: var(--font-display);
   font-weight: 400;
   color: var(--gold-hi);
 }
 
-.dedication-card span {
+.dedication-card span,
+.resolution-option span {
   font-size: 12px;
   color: #cdbf9e;
 }
 
-.dedication-card.on {
+.dedication-card.on,
+.resolution-option.on {
   border-color: var(--gold-hi);
   box-shadow: 0 0 16px rgba(240, 212, 140, 0.35);
 }
@@ -2006,7 +2011,8 @@ button.turn-pill:hover {
 }
 
 /* Great works */
-.great-works-body {
+.great-works-body,
+.congress-body {
   flex: 1;
   overflow: auto;
   display: grid;
@@ -2017,7 +2023,8 @@ button.turn-pill:hover {
   align-content: start;
 }
 
-.works-settlement {
+.works-settlement,
+.congress-card {
   padding: 14px 16px;
   background: linear-gradient(180deg, rgba(27, 45, 60, 0.92), rgba(12, 22, 31, 0.92));
   border: 1px solid var(--gold-lo);
@@ -2119,4 +2126,79 @@ button.turn-pill:hover {
 .spy-status {
   margin: 0;
   color: #d9cfae;
+}
+
+/* World Congress */
+.congress-card.ballot {
+  grid-column: 1 / -1;
+}
+
+.congress-card h3 {
+  margin: 0 0 8px;
+}
+
+.dvp-list,
+.passed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.dvp-list li {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.dvp-list li.mine span:first-child {
+  color: var(--gold-hi);
+}
+
+.dvp-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.dvp-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #2f6f8f, #6fb6d8);
+}
+
+.passed-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.passed-list li span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.resolution {
+  padding: 10px 0;
+  border-top: 1px solid rgba(240, 212, 140, 0.15);
+}
+
+.resolution h4 {
+  margin: 0 0 4px;
+}
+
+.resolution-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+}
+
+.votes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }

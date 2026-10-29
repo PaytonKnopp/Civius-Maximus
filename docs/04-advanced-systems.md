@@ -457,7 +457,7 @@ forces new crisis policies. Off by default, for groups that like chaos.
   F12; see "Espionage" below.
 - **World congress:** periodic votes on resolutions (e.g., "+100% production to Campus districts for
   all" or "Embargo against [player]") using diplomatic favor. Diplomatic victory comes from
-  diplomatic points.
+  diplomatic points. Built in V1 final F13; see "World Congress" below.
 - **Climate & disasters:** floods (fertilize floodplains but damage improvements), volcanic
   eruptions, storms, and CO₂-driven global warming with rising sea levels in the late game.
 - **Corporations/monopolies:** control luxury resources for empire-wide bonuses.
@@ -559,6 +559,54 @@ Built in V1 final F12. On unless the `espionage` setup toggle is off.
 
 ---
 
+## World Congress
+
+Built in V1 final F13, after Civ VI's Gathering Storm. On unless the `congress` setup toggle is
+off. Diplomatic victory has its own toggle.
+
+- **Forming:** when the first civ reaches the Medieval era (`rules.congress.foundingEra`). The
+  first session meets 10 turns later.
+- **Diplomatic favor** comes in each turn from then on: +1, +2 per city-state you lead, +1 per
+  alliance and per friendship, and from governments (Classical Republic and Merchant Republic
+  +1, Democracy +2; the effect `diplomatic_favor`).
+- **Sessions** meet every 20 turns (scaled by game speed).
+  - The agenda is **Name a World Leader** (always) plus two of eight resolutions, never those
+    just decided (`resolution` content, original names).
+  - Five resolutions target a civ, with a boon or a bane: Trade Sanctions, Arms Limits,
+    Heritage Accord, Refugee Treaty and the World Leader vote.
+  - Four apply to everyone: Patronage of the Arts, Academic Charter, Accord of Faiths and
+    Public Works.
+- **Voting:** during the session's turn, each civ casts one free vote on each resolution and
+  can buy more with favor: 10, 30, 60, 100 and 150 for the 2nd to 6th vote.
+  - The option with the most votes passes, and its target is the civ most voted for among its
+    backers. Ties are settled by the seeded dice.
+  - What passes holds until the next session.
+  - Each player sees only their own ballots.
+- **Diplomatic victory points:**
+  - World Leader +2.
+  - Being the **single** civ that put the most votes behind what passed: +1. Nobody scores on
+    a tie.
+  - The Statue of Liberty: +4 (the effect `diplomatic_points`).
+  - **20 points win.**
+  - Why "single": when every backer scored, AIs that agreed all piled up points, and test
+    games ended around turn 205. Now they end around turn 285, a late-game win.
+- **On screen:**
+  - The **World Congress** screen (key **U**; its button appears once it forms, with a "!"
+    while a session waits for your vote). It shows favor and its sources, everyone's points
+    toward victory, your ballot during a session (options, target, extra votes with their
+    cost), and what's in force.
+  - The next action reads "Vote in the World Congress" during a session.
+  - Notices for forming, sessions, results and points. The Victories screen has a Diplomatic
+    column and the end screen a diplomatic win.
+- **AI:**
+  - It names itself World Leader, with extra votes from spare favor (all of it once halfway to
+    victory).
+  - It takes the boon on itself. If it's aggressive and trailing, it puts the bane on the
+    leader instead.
+  - On general resolutions it backs the option its personality likes.
+
+---
+
 ## Victory conditions
 
 All can be toggled. The game ends when one condition is met (or at the turn limit, which gives a
@@ -571,7 +619,7 @@ score victory).
 | **Culture** | Your foreign tourists exceed every other civ's domestic tourists |
 | **Religious** | Your religion is the majority in more than half of every other civ's cities |
 | **Score** | Highest score at the turn limit |
-| **Diplomatic** (later) | Reach N diplomatic points through the world congress |
+| **Diplomatic** | Reach 20 diplomatic victory points through the World Congress (built in V1 final F13) |
 | **Custom** | Defined by mods using the effects/conditions system (e.g., "Hold 5 natural wonders for 10 turns") |
 
 **Team victory:** if any member of a team meets a condition, the team wins.

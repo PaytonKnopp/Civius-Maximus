@@ -377,6 +377,7 @@ export type NextAction =
   | { kind: 'civic'; label: string }
   | { kind: 'policies'; label: string }
   | { kind: 'dedication'; label: string }
+  | { kind: 'vote'; label: string }
   | { kind: 'end'; label: string }
   | { kind: 'waiting'; label: string };
 
@@ -415,6 +416,9 @@ export function nextAction(
   const idle = mine.find((s) => s.kind === 'city' && s.queue.length === 0);
   if (idle) return { kind: 'production', id: idle.id, label: 'Choose production' };
   if (p.ages && p.ages.pending > 0) return { kind: 'dedication', label: 'Choose a dedication' };
+  const c = state.congress;
+  if (c?.session && c.session.turn === state.turn && !c.votes[player])
+    return { kind: 'vote', label: 'Vote in the World Congress' };
   if (mine.length > 0) {
     if (!p.techs.current && availableNodes(ctx, p, 'tech').length > 0)
       return { kind: 'research', label: 'Choose research' };
