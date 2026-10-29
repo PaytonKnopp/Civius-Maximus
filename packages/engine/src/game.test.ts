@@ -1,7 +1,7 @@
 import { compileContent } from '@cx/content';
 import { compileFromDirs, readPackageDir } from '@cx/content/node';
 import { produce } from 'immer';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { type Action, parseAction } from './actions';
 import { applyAction, createGame, type EngineContext, type GameSetup, MAX_PLAYERS } from './game';
 import { stateHash } from './hash';
@@ -276,10 +276,12 @@ describe('replays', () => {
     return { replay: { setup: s, actions }, state };
   }
 
-  // Playing the scripted game is the slow part (8 players, 25 turns): do it once for all three.
+  // Playing the scripted game is the slow part (8 players, 25 turns): do it once for all three,
+  // up front, so each test only pays for the replay it runs.
   let scripted: ReturnType<typeof scriptedReplay> | undefined;
   const played = () => (scripted ??= scriptedReplay());
-  // These play whole games, so they get more time than ordinary tests.
+  beforeAll(() => void played(), 120_000);
+  // Each replays a whole game, so they get more time than ordinary tests.
   const LONG = 30_000;
 
   it('rebuild the exact same game every time', { timeout: LONG }, () => {
