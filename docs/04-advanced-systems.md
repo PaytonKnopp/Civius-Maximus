@@ -605,6 +605,31 @@ toggle is off.
 
 ---
 
+## Nukes
+
+Built in V1 final F15. On unless the "Nuclear weapons" setup toggle is off.
+
+- **Weapons:**
+  - The **Atomic Bomb** (Nuclear Fission): range 8, blast radius 1.
+  - The **Nuclear Missile** (Guidance Systems): range 16, radius 2.
+  - Both are built like units and launched from where they stand. They don't move.
+- **Launching:** choose the weapon, then "Choose a target". Tiles you can hit are marked; the
+  blast shows as ☢. A confirmation comes before launch.
+  - Every tile in the blast must be unowned or belong to a civ you're at war with, never your
+    own.
+- **The blast:**
+  - Every unit in it is lost, whoever owns it.
+  - A settlement whose center is hit loses half its people (never the last) and its walls, and
+    drops to a quarter of its health.
+  - Improvements are wrecked, and the land yields nothing for 10 turns of **fallout**
+    (`rules.nukes.falloutTurns`).
+  - With disasters on, each strike adds 40 emissions.
+- **Memory:** the victims hold −10 opinion of whoever did it, and every other civ −3, both
+  fading ("Used nuclear weapons").
+- The AI never builds nuclear weapons.
+
+---
+
 ## World Congress
 
 Built in V1 final F13, after Civ VI's Gathering Storm. On unless the `congress` setup toggle is

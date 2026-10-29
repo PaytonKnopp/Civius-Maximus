@@ -72,6 +72,15 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         settlements: SettlementId[];
       }
     | { type: 'sea_level_rose'; phase: number; tiles: number[] }
+    | {
+        type: 'nuke_launched';
+        player: PlayerId;
+        weapon: string;
+        tile: number;
+        tiles: number[];
+        settlements: SettlementId[];
+        units: number;
+      }
     | { type: 'climate_phase'; phase: number; emissions: number }
     | { type: 'congress_founded'; by: PlayerId }
     /** A session meets this turn: everyone votes on `agenda`. */

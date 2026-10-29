@@ -102,5 +102,26 @@
     "domain": "sea",
     "layer": "military",
     "combat": true
+  },
+  {
+    "type": "unitClass",
+    "id": "class_air",
+    "name": "Air",
+    "domain": "air",
+    "layer": "support",
+    "combat": true,
+    "embarks": false,
+    "ignoresZoc": true,
+    "wallsDamagePercent": 50
+  },
+  {
+    "type": "unitClass",
+    "id": "class_nuclear",
+    "name": "Nuclear weapon",
+    "domain": "air",
+    "layer": "support",
+    "combat": false,
+    "embarks": false,
+    "ignoresZoc": true
   }
 ]

@@ -189,7 +189,7 @@ export interface Proposal {
 }
 
 export interface Incident {
-  kind: 'surprise_war' | 'broke_deal' | 'razed' | 'spied';
+  kind: 'surprise_war' | 'broke_deal' | 'razed' | 'spied' | 'nuked';
   by: PlayerId;
   against: PlayerId;
   turn: number;
@@ -399,6 +399,8 @@ export interface GameSettings {
   loyalty?: boolean | undefined;
   /** Espionage: spies and their missions (on unless false). */
   espionage?: boolean | undefined;
+  /** Nuclear weapons can be built and used (on unless false). */
+  nukes?: boolean | undefined;
   /** Natural disasters and climate change (on unless false). */
   disasters?: boolean | undefined;
   /** World Congress: favor, sessions and resolutions (on unless false). */

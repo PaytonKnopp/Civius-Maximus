@@ -849,6 +849,8 @@ export function itemProblem(
         code: 'obsolete',
         message: `Replaced by ${resolveText(ctx.content, ctx.content.entities.unit[newer]!.name)}`,
       };
+    if (u.nuke && state.settings.nukes === false)
+      return { code: 'off', message: 'Nuclear weapons are off in this game' };
     const domain = ctx.content.entities.unitClass[u.class]!.domain;
     if (domain === 'sea' && !isCoastal(ctx, state, s.tile))
       return { code: 'needs_coast', message: 'Ships need a settlement on the coast' };

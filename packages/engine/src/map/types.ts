@@ -22,6 +22,8 @@ export interface MapTile {
   fertile?: Record<string, number>;
   /** Its improvement was damaged by a disaster: out of use until this turn. */
   pillaged?: number;
+  /** Nuclear fallout: the tile yields nothing until this turn. */
+  fallout?: number;
 }
 
 export interface MapState {

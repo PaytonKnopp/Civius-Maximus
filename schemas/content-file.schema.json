@@ -6343,9 +6343,30 @@
                 "type": "string",
                 "enum": [
                   "found_settlement",
-                  "trade_route"
+                  "trade_route",
+                  "nuke"
                 ]
               }
+            },
+            "nuke": {
+              "type": "object",
+              "properties": {
+                "range": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 30
+                },
+                "radius": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 3
+                }
+              },
+              "required": [
+                "range",
+                "radius"
+              ],
+              "additionalProperties": false
             },
             "deepWater": {
               "default": false,
@@ -6457,6 +6478,7 @@
                 "plane",
                 "bomber",
                 "helicopter",
+                "rocket",
                 "generic"
               ]
             }
@@ -31437,6 +31459,11 @@
                 "type": "number",
                 "multipleOf": 0.5
               }
+            },
+            "speedsExpedition": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
             },
             "requiresTech": {
               "type": "string",
@@ -78053,6 +78080,18 @@
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
                     },
+                    "nukedUs": {
+                      "default": -10,
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "nukedOthers": {
+                      "default": -3,
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
                     "settledNear": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -79177,6 +79216,37 @@
                 "polarRows",
                 "resourceDensity",
                 "start"
+              ],
+              "additionalProperties": false
+            },
+            "nukes": {
+              "default": {
+                "falloutTurns": 10,
+                "populationLoss": 50,
+                "emissions": 40
+              },
+              "type": "object",
+              "properties": {
+                "falloutTurns": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "populationLoss": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "emissions": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "falloutTurns",
+                "populationLoss",
+                "emissions"
               ],
               "additionalProperties": false
             },
@@ -85757,9 +85827,30 @@
                   "type": "string",
                   "enum": [
                     "found_settlement",
-                    "trade_route"
+                    "trade_route",
+                    "nuke"
                   ]
                 }
+              },
+              "nuke": {
+                "type": "object",
+                "properties": {
+                  "range": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30
+                  },
+                  "radius": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3
+                  }
+                },
+                "required": [
+                  "range",
+                  "radius"
+                ],
+                "additionalProperties": false
               },
               "deepWater": {
                 "default": false,
@@ -85871,6 +85962,7 @@
                   "plane",
                   "bomber",
                   "helicopter",
+                  "rocket",
                   "generic"
                 ]
               }
@@ -110851,6 +110943,11 @@
                   "type": "number",
                   "multipleOf": 0.5
                 }
+              },
+              "speedsExpedition": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
               },
               "requiresTech": {
                 "type": "string",
@@ -157467,6 +157564,18 @@
                         "minimum": -9007199254740991,
                         "maximum": 9007199254740991
                       },
+                      "nukedUs": {
+                        "default": -10,
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "nukedOthers": {
+                        "default": -3,
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
                       "settledNear": {
                         "type": "integer",
                         "minimum": -9007199254740991,
@@ -158591,6 +158700,37 @@
                   "polarRows",
                   "resourceDensity",
                   "start"
+                ],
+                "additionalProperties": false
+              },
+              "nukes": {
+                "default": {
+                  "falloutTurns": 10,
+                  "populationLoss": 50,
+                  "emissions": 40
+                },
+                "type": "object",
+                "properties": {
+                  "falloutTurns": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "populationLoss": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "emissions": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "falloutTurns",
+                  "populationLoss",
+                  "emissions"
                 ],
                 "additionalProperties": false
               },

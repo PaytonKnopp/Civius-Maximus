@@ -307,6 +307,19 @@ last player standing wins. Puppets wait for the loyalty and settlement-limit wor
 | Air | Biplane → Jet Fighter / Bomber | Late game |
 | Support | Battering Ram, Siege Tower, Medic, Observation Balloon | Buff adjacent units |
 
+**Built so far (V1 final F15):**
+- **Air units:**
+  - Fighter, Bomber, Jet Fighter and Stealth Bomber (the `air` domain).
+  - They fly over anything (water, mountains, impassable features) at one move per tile and
+    ignore zones of control.
+  - They sit in the support layer, so they share a tile with a ground unit.
+  - They fight with ranged attacks and never capture.
+  - Civ VI's bases and rebasing are left out, which is simpler for a two-person game.
+- **New land units:** Helicopter (ignores terrain), Modern Armor, Mechanized Infantry and the
+  Future-era Titan Walker. Tanks and Infantry upgrade into them.
+- **Nuclear weapons:** Atomic Bomb and Nuclear Missile; see docs/04, "Nukes".
+- The AI builds and flies aircraft (bombers first). It never builds nuclear weapons.
+
 ### Stacking
 
 - One **military** unit and one **civilian** unit per tile (plus one support unit). This matches
@@ -478,6 +491,17 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
 - **Built so far (V1 part 9):** the Renaissance, Industrial and Modern eras: 47 techs in all,
   up to Rocketry, Satellites and Space Flight (the space race). Astronomy and Radio carry
   lasting bonuses (+1 science per University; +25% tourism).
+- **Built so far (V1 final F15):** the **Atomic, Information and Future eras**: 16 more techs,
+  63 in all, from Flight and Nuclear Fission to Artificial Intelligence and Future Tech.
+  - Atomic: Flight, Advanced Flight, Nuclear Fission, Computers, Synthetic Materials, Combined
+    Arms.
+  - Information: Composites, Robotics, Lasers, Telecommunications, Stealth Technology, Guidance
+    Systems, Nuclear Fusion.
+  - Future: Artificial Intelligence, Nanotechnology, Future Tech.
+  - Space Flight stays in the Modern era, so the science victory doesn't move later. The
+    **Orbital Laser Relay** (Lasers, on a Spaceport) brings a launched expedition 2 turns
+    sooner each time it's built.
+  - Games can start in the Atomic or Information era.
 
 ### Civics tree
 
@@ -497,6 +521,16 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
 - **Built so far (V1 part 9):** 37 civics through the Modern era, 10 governments (adding
   Democracy, Collectivism and Militarism, our names for the three Modern ones; ideological
   pressure isn't built) and 35 policy cards.
+- **Built so far (V1 final F15):** 9 more civics, 46 in all:
+  - Atomic: Cold War, Decolonization, Consumerism, Space Age.
+  - Information: Globalization, Environmentalism, Digital Rights, Social Networks.
+  - Future: World Federation.
+
+  Three late governments, our own names and bonuses:
+  - **Technocracy** (Digital Rights): +20% science, +10% toward districts.
+  - **Digital Republic** (Globalization): +15% gold, +1 happiness, +3 favor.
+  - **Corporate Federation** (Social Networks): +20% toward buildings, +10% gold, two more
+    trade routes.
 - This is one of Civ 6's best systems. It's very moddable, and it creates lots of strategic
   choices, so we keep it as-is.
 

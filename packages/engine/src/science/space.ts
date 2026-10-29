@@ -17,6 +17,13 @@ export function spaceProblem(
   player: PlayerId,
   project: string,
 ): RuleError | undefined {
+  // A relay that speeds the expedition needs one on its way.
+  if (ctx.content.entities.project[project]?.speedsExpedition) {
+    const arrives = state.players[player]!.expeditionArrives;
+    if (arrives === null || arrives <= state.turn + 1)
+      return { code: 'no_expedition', message: 'Needs an exoplanet expedition on its way' };
+    return undefined;
+  }
   const chain = ctx.content.rules.science.projects;
   const i = chain.indexOf(project);
   if (i < 0) return undefined;
@@ -43,6 +50,18 @@ export function spaceStep(
   const chain = ctx.content.rules.science.projects;
   const i = chain.indexOf(project);
   const p = draft.players[player]!;
+  const relay = ctx.content.entities.project[project]?.speedsExpedition;
+  if (relay && p.expeditionArrives !== null) {
+    p.expeditionArrives = Math.max(draft.turn + 1, p.expeditionArrives - relay);
+    emit({
+      type: 'space_project',
+      player,
+      project,
+      arrives: p.expeditionArrives,
+      visibleTo: 'all',
+    });
+    return;
+  }
   if (i < 0 || p.spaceProjects.includes(project)) return;
   p.spaceProjects = [...p.spaceProjects, project];
   const last = i === chain.length - 1;

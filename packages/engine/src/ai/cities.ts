@@ -178,6 +178,8 @@ function turnsFor(t: Turn, s: SettlementState, item: BuildItem): number {
 function unitItems(t: Turn, s: SettlementState): BuildItem[] {
   return t.memo(`units:${s.id}`, () =>
     t.ctx.content.ids.unit
+      // The AI leaves nuclear weapons alone.
+      .filter((id) => !t.ctx.content.entities.unit[id]!.nuke)
       .map((id) => ({ kind: 'unit' as const, id }))
       .filter((item) => !itemProblem(t.ctx, t.state, s, item)),
   );

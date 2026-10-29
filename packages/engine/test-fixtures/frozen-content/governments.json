@@ -376,5 +376,134 @@
         }
       }
     ]
+  },
+  {
+    "type": "government",
+    "id": "government_technocracy",
+    "name": "Technocracy",
+    "description": "+20% science in every settlement; +10% production toward districts.",
+    "slots": {
+      "military": 2,
+      "economic": 3,
+      "diplomatic": 1,
+      "wildcard": 3
+    },
+    "requiresCivic": "civic_digital_rights",
+    "order": 11,
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 10,
+          "toward": {
+            "kind": "district"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "government",
+    "id": "government_digital_republic",
+    "name": "Digital Republic",
+    "description": "+15% gold and +1 happiness in every settlement. +3 diplomatic favor a turn.",
+    "slots": {
+      "military": 1,
+      "economic": 3,
+      "diplomatic": 3,
+      "wildcard": 2
+    },
+    "requiresCivic": "civic_globalization",
+    "order": 12,
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "diplomatic_favor",
+        "params": {
+          "amount": 3
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "government",
+    "id": "government_corporate_federation",
+    "name": "Corporate Federation",
+    "description": "+20% production toward buildings and +10% gold in every settlement; two more trade routes.",
+    "slots": {
+      "military": 2,
+      "economic": 4,
+      "diplomatic": 1,
+      "wildcard": 2
+    },
+    "requiresCivic": "civic_social_networks",
+    "order": 13,
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 20,
+          "toward": {
+            "kind": "building"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "extra_trade_route",
+        "params": {
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   }
 ]

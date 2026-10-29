@@ -600,6 +600,24 @@ function build(model: string, body: number, trim: number, kit: Kit) {
       );
       break;
     }
+    case 'rocket': {
+      // A missile standing on its launch trailer.
+      kit.m.push(put(unit.box, C.dark, [0, 0.05, 0], [0.22, 0.04, 0.1]));
+      kit.m.push(put(unit.cyl, C.white, [0, 0.22, 0], [0.035, 0.16, 0.035]));
+      kit.m.push(put(unit.cyl, trim, [0, 0.1, 0], [0.04, 0.03, 0.04]));
+      kit.k.push(put(unit.ball, body, [0, 0.39, 0], [0.035, 0.05, 0.035]));
+      for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2])
+        kit.m.push(
+          put(
+            unit.box,
+            trim,
+            [Math.cos(a) * 0.04, 0.1, Math.sin(a) * 0.04],
+            [0.004, 0.05, 0.03],
+            [0, a, 0],
+          ),
+        );
+      break;
+    }
     case 'commander': {
       horse(kit, 0, 0, C.white, trim);
       rider(kit, -0.01, 0, {

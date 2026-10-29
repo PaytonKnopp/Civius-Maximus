@@ -41,6 +41,8 @@ export function canTraverse(
   const cls = unitClassOf(ctx, unit);
   const t = state.map.tiles[tile]!;
   const terrain = ctx.content.entities.terrain[t.terrain]!;
+  // Aircraft fly over anything.
+  if (cls.domain === 'air') return true;
   const feature = t.feature === null ? undefined : ctx.content.entities.feature[t.feature];
   if (feature?.impassable) return false;
   if (cls.domain === 'sea') return terrain.water && (!terrain.deepWater || def.deepWater);

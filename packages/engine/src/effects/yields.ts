@@ -48,6 +48,8 @@ export function computeTileYields(
   sources: readonly EffectSource[] = [],
 ): YieldBreakdown {
   const { content, tile } = ctx;
+  // Nuclear fallout: nothing grows or works there until it clears.
+  if (tile.fallout !== undefined) return { total: {}, lines: {} };
   const lines: Record<string, YieldLine[]> = {};
   const add = (yieldId: string, line: YieldLine) => {
     if (line.amount !== 0) (lines[yieldId] ??= []).push(line);

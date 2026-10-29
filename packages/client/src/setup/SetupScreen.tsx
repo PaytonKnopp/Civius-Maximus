@@ -527,6 +527,11 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
                   'Floods, storms, droughts and eruptions; emissions raise the seas.',
                 )}
                 {toggle(
+                  'nukes',
+                  'Nuclear weapons',
+                  'Atomic Bombs and Nuclear Missiles in the late game.',
+                )}
+                {toggle(
                   'espionage',
                   'Espionage',
                   'Spies that guard your settlements or work against others.',

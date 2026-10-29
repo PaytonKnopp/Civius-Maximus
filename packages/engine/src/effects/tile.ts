@@ -19,6 +19,8 @@ export interface TileFacts {
   ownerId: string | null;
   /** Lasting extra yields left by disasters. */
   fertile?: Record<string, number> | undefined;
+  /** Nuclear fallout until this turn: the tile yields nothing. */
+  fallout?: number | undefined;
 }
 
 /** What settlement conditions look at. */

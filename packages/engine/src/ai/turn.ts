@@ -223,7 +223,7 @@ export function roleOf(def: UnitDef, cls: UnitClassDef): Role {
   if (def.actions.includes('trade_route')) return 'trader';
   if (def.commander) return 'commander';
   if (!cls.combat) return 'civilian';
-  if (cls.domain !== 'land') return 'naval';
+  if (cls.domain === 'sea') return 'naval';
   if (def.rangedStrength > 0 && def.range > 0) return cls.vsSettlement > 0 ? 'siege' : 'ranged';
   if (cls.captures) return 'melee';
   return 'explorer';

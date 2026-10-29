@@ -237,6 +237,7 @@ export function opinionOf(
   let broke = 0;
   let razed = 0;
   let spied = 0;
+  let nuked = 0;
   for (const i of d.incidents) {
     if (i.by !== toward) continue;
     if (i.kind === 'surprise_war')
@@ -251,12 +252,15 @@ export function opinionOf(
       );
     if (i.kind === 'razed') razed += fade(ctx, state, i.turn, o.razed);
     if (i.kind === 'spied' && i.against === of) spied += fade(ctx, state, i.turn, o.spiedOnUs);
+    if (i.kind === 'nuked')
+      nuked += fade(ctx, state, i.turn, i.against === of ? o.nukedUs : o.nukedOthers);
   }
   add('Surprise war on us', onUs);
   add('Surprise wars on others', onOthers);
   add('Broke a deal', broke);
   add('Razed settlements', razed);
   add('Caught spying on us', spied);
+  add('Used nuclear weapons', nuked);
   const ours = Object.values(state.settlements).filter((s) => s.owner === of);
   const near = Object.values(state.settlements).filter(
     (s) =>
