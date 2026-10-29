@@ -580,6 +580,44 @@ button:disabled {
   top: calc(var(--topbar-h) + 60px);
 }
 
+/* --- Laptops: the screen buttons and yields share less room ------------------------------- */
+
+@media (min-width: 641px) and (max-width: 1440px) {
+  .empire-yields .delta {
+    display: none;
+  }
+
+  .empire-yields li {
+    padding: 0 6px;
+  }
+
+  .screen-button {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1100px) {
+  .turn-pill .era,
+  .turn-pill .turn-label,
+  .turn-pill .age-chip {
+    display: none;
+  }
+
+  .empire-yields li {
+    padding: 0 4px;
+  }
+
+  .screen-buttons {
+    gap: 0;
+  }
+
+  .screen-button {
+    width: 26px;
+    height: 26px;
+  }
+}
+
 /* --- Phones -------------------------------------------------------------------------------- */
 
 @media (max-width: 640px) {
@@ -1832,7 +1870,8 @@ button.turn-pill:hover {
 
 /* --- Governors ----------------------------------------------------------------------------- */
 
-.governor-grid {
+.governor-grid,
+.espionage-body {
   flex: 1;
   overflow: auto;
   display: grid;
@@ -1843,7 +1882,8 @@ button.turn-pill:hover {
   align-content: start;
 }
 
-.governor-card {
+.governor-card,
+.spy-card {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1898,7 +1938,8 @@ button.turn-pill:hover {
   color: #b9e08c;
 }
 
-.promotions {
+.promotions,
+.spy-missions {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1907,7 +1948,8 @@ button.turn-pill:hover {
   gap: 6px;
 }
 
-.promotions li {
+.promotions li,
+.spy-missions li {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1918,13 +1960,15 @@ button.turn-pill:hover {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.promotions li div {
+.promotions li div,
+.spy-missions li div {
   display: flex;
   flex-direction: column;
   font-size: 12px;
 }
 
-.promotions li strong {
+.promotions li strong,
+.spy-missions li strong {
   font-size: 13px;
   color: #efe4c8;
 }
@@ -1933,7 +1977,8 @@ button.turn-pill:hover {
   border-color: var(--gold-lo);
 }
 
-.promotions li.locked {
+.promotions li.locked,
+.spy-missions li.locked {
   opacity: 0.55;
 }
 
@@ -2046,4 +2091,32 @@ button.turn-pill:hover {
 
 .great-work select {
   max-width: 130px;
+}
+
+/* Espionage */
+.spy-card {
+  opacity: 1;
+  border-top-color: #4a3f5c;
+}
+
+.spy-card > header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.spy-card h3 {
+  margin: 0;
+}
+
+.spy-rank,
+.spy-missions li small {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0;
+}
+
+.spy-status {
+  margin: 0;
+  color: #d9cfae;
 }

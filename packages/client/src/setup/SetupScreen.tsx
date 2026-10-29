@@ -512,6 +512,11 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
                   'Attract more visiting tourists than any civ has at home.',
                 )}
                 {toggle(
+                  'espionage',
+                  'Espionage',
+                  'Spies that guard your settlements or work against others.',
+                )}
+                {toggle(
                   'loyalty',
                   'Loyalty',
                   'Settlements far from home and close to a rival can break away as free cities.',

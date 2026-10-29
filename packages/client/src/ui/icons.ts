@@ -867,6 +867,20 @@ export const ICONS: Record<string, IconDef> = {
     ],
   },
   envoy: { bg: C.influence, glyph: SCROLL },
+  // A brimmed hat over an eye mask.
+  spy: {
+    bg: '#4a3f5c',
+    glyph: [
+      s(ellipse(12, 10.2, 8.2, 1.6)),
+      s('M7.6 9.6Q8 5.2 12 5.2Q16 5.2 16.4 9.6Z'),
+      s(
+        'M6.6 13.2Q12 11.6 17.4 13.2L16.8 16.2Q14.6 15.2 12 16.6Q9.4 15.2 7.2 16.2Z' +
+          ellipse(9.6, 14.3, 1.3, 0.8) +
+          ellipse(14.4, 14.3, 1.3, 0.8),
+        true,
+      ),
+    ],
+  },
   war: { bg: C.military, glyph: SWORDS },
   peace: {
     bg: '#4f8f5a',

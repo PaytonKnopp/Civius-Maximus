@@ -87,7 +87,7 @@ function campSites(ctx: EngineContext, state: GameState, avoid: number[]): numbe
 }
 
 /** Raider types for the latest era any player has reached. */
-function raiderTypes(ctx: EngineContext, state: GameState): string[] {
+export function raiderTypes(ctx: EngineContext, state: GameState): string[] {
   const reached = Math.max(
     0,
     ...state.playerOrder.map((p) => playerEra(ctx, state.players[p]!)?.order ?? 0),
@@ -182,6 +182,7 @@ export function raidersTurn(draft: Draft<GameState>, ctx: EngineContext, emit: E
   const random = makeRandom(draft.rng as GameState['rng']);
 
   if (
+    draft.settings.camps !== false &&
     draft.turn % rules.spawnEvery === 0 &&
     Object.keys(draft.camps).length < maxCamps(ctx, draft as GameState)
   ) {

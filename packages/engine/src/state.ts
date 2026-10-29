@@ -59,6 +59,8 @@ export interface GameState {
   worldMoments?: string[];
   /** Great works, by id (`gw3`...). See greatworks/greatworks.ts. */
   greatWorks?: Record<string, GreatWorkState>;
+  /** Spies, by id (`spy5`...), and how many names have been handed out. See espionage/. */
+  espionage?: { spies: Record<string, SpyState>; named: number };
   /** The great people race (docs/04-advanced-systems.md, "Great people"). */
   greatPeople: {
     /** Points per player, per great person class. */
@@ -181,7 +183,7 @@ export interface Proposal {
 }
 
 export interface Incident {
-  kind: 'surprise_war' | 'broke_deal' | 'razed';
+  kind: 'surprise_war' | 'broke_deal' | 'razed' | 'spied';
   by: PlayerId;
   against: PlayerId;
   turn: number;
@@ -316,6 +318,21 @@ export interface UnitState {
   recovering?: number;
 }
 
+export interface SpyState {
+  owner: PlayerId;
+  name: string;
+  /** 1 to `rules.espionage.rankAt.length + 1`. */
+  rank: number;
+  /** Missions that worked. */
+  successes: number;
+  /** Where it is (or is going): a settlement, or null for at home and free. */
+  at: SettlementId | null;
+  /** The turn it gets there (or back home); it can start a mission from then. */
+  arrives: number;
+  /** A `spyMission` id, and the turn it finishes (0 for ongoing, like counterspying). */
+  mission: { id: string; done: number } | null;
+}
+
 export interface GreatWorkState {
   /** Its title (text, or a string key). */
   name: string;
@@ -354,6 +371,8 @@ export interface GameSettings {
   startEra?: string | undefined;
   /** Loyalty: settlements can break away and change sides (on unless false). */
   loyalty?: boolean | undefined;
+  /** Espionage: spies and their missions (on unless false). */
+  espionage?: boolean | undefined;
 }
 
 export interface PlayerState {

@@ -238,6 +238,9 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'moment':
       break;
+    case 'spyMission':
+      requirements(out, entity);
+      break;
     case 'governor':
       effectList(out, entity.effects, ['effects']);
       entity.promotions.forEach((p, i) => effectList(out, p.effects, ['promotions', i, 'effects']));

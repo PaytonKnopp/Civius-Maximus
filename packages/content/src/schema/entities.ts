@@ -398,6 +398,8 @@ export const RulesDef = z.strictObject({
       surpriseWarOnOthers: z.int(),
       brokeDeal: z.int(),
       razed: z.int(),
+      /** Each time one of their spies was caught or seen working against us (fades). */
+      spiedOnUs: z.int().default(-2),
       /** Per settlement of theirs within `nearDistance` of ours, up to `nearMax` of them. */
       settledNear: z.int(),
       nearDistance: z.int().min(1),
@@ -573,6 +575,43 @@ export const RulesDef = z.strictObject({
     .default({
       yields: { writing: {}, art: {}, music: {}, relic: {} },
       themingPercent: 0,
+    }),
+  /** Espionage (docs/04-advanced-systems.md, "Espionage"), when the `espionage` setting is on. */
+  espionage: z
+    .strictObject({
+      /** Each of these civics done gives one more spy. */
+      capacityCivics: z.array(Id),
+      /** Turns to reach a settlement: `travelBase`, plus one per `travelPerTiles` tiles away. */
+      travelBase: z.int().min(0),
+      travelPerTiles: z.int().min(1),
+      /** Successful missions needed for each rank after the first; each rank adds `rankChance`. */
+      rankAt: z.array(z.int().min(1)),
+      rankChance: z.int().min(0),
+      /** A counterspy in the target settlement takes this much chance (and more per rank). */
+      counterspy: z.int().min(0),
+      counterspyPerRank: z.int().min(0),
+      minChance: z.int().min(0).max(100),
+      maxChance: z.int().min(0).max(100),
+      /** A spy whose mission fails is caught this often (percent); otherwise it slips home. */
+      caughtChance: z.int().min(0).max(100),
+      /** A spy whose mission works is still seen this often (the target learns who sent it). */
+      seenChance: z.int().min(0).max(100),
+      /** Spies' names, handed out in order. */
+      names: z.array(Text).min(1),
+    })
+    .default({
+      capacityCivics: [],
+      travelBase: 1,
+      travelPerTiles: 8,
+      rankAt: [],
+      rankChance: 0,
+      counterspy: 0,
+      counterspyPerRank: 0,
+      minChance: 5,
+      maxChance: 95,
+      caughtChance: 50,
+      seenChance: 30,
+      names: ['Agent'],
     }),
   mapgen: z.strictObject({
     coastTerrain: Id,
@@ -1558,6 +1597,42 @@ export const GreatPersonDef = z.strictObject({
   effects: z.array(Effect).default([]),
 });
 
+/** A spy mission (docs/04-advanced-systems.md, "Espionage"). */
+export const SpyMissionDef = z.strictObject({
+  type: z.literal('spyMission'),
+  id: Id,
+  name: Text,
+  description: Text,
+  /** What it does (each kind is a rule in the engine). */
+  kind: z.enum([
+    'counterspy',
+    'gain_sources',
+    'siphon_funds',
+    'steal_boost',
+    'sabotage',
+    'partisans',
+    'unrest',
+    'heist',
+  ]),
+  /** In your own settlements (counterspy) or in someone else's. */
+  target: z.enum(['own', 'foreign']),
+  /** Turns it takes (0 = for as long as the spy stays). */
+  turns: z.int().min(0).max(20),
+  /** Base chance of success, percent. */
+  chance: z.int().min(0).max(100),
+  /** Per kind: `percent` and `max` (gold), `radius` (tiles), `count` (units), `amount`. */
+  params: z
+    .strictObject({
+      percent: z.int().min(0).max(100).optional(),
+      max: z.int().min(0).optional(),
+      radius: z.int().min(0).max(10).optional(),
+      count: z.int().min(0).max(6).optional(),
+      amount: z.int().min(0).optional(),
+    })
+    .default({}),
+  ...requires,
+});
+
 /** A belief (docs/04-advanced-systems.md, "Religion"): a pantheon's, or a religion's. */
 export const BeliefDef = z.strictObject({
   type: z.literal('belief'),
@@ -1736,6 +1811,7 @@ export const ENTITY_SCHEMAS = {
   dedication: DedicationDef,
   moment: MomentDef,
   governor: GovernorDef,
+  spyMission: SpyMissionDef,
   rules: RulesDef,
 } as const;
 
@@ -1760,6 +1836,7 @@ export type AgeDef = z.infer<typeof AgeDef>;
 export type DedicationDef = z.infer<typeof DedicationDef>;
 export type MomentDef = z.infer<typeof MomentDef>;
 export type GovernorDef = z.infer<typeof GovernorDef>;
+export type SpyMissionDef = z.infer<typeof SpyMissionDef>;
 export type UnitClassDef = z.infer<typeof UnitClassDef>;
 export type UnitDef = z.infer<typeof UnitDef>;
 export type ImprovementDef = z.infer<typeof ImprovementDef>;
@@ -1819,6 +1896,7 @@ export interface EntityByType {
   dedication: DedicationDef;
   moment: MomentDef;
   governor: GovernorDef;
+  spyMission: SpyMissionDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

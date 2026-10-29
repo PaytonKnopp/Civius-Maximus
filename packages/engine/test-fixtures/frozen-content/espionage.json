@@ -1,0 +1,101 @@
+[
+  {
+    "type": "spyMission",
+    "id": "mission_watch_gates",
+    "name": "Watch the Gates",
+    "description": "Guard this settlement for as long as the spy stays: foreign spies here have a harder time (−25% chance, −10% more for each rank) and are caught more often.",
+    "kind": "counterspy",
+    "target": "own",
+    "turns": 0,
+    "chance": 100
+  },
+  {
+    "type": "spyMission",
+    "id": "mission_make_contacts",
+    "name": "Make Contacts",
+    "description": "Learn the land within 4 tiles of the settlement and what its owner is researching.",
+    "kind": "gain_sources",
+    "target": "foreign",
+    "turns": 3,
+    "chance": 85,
+    "params": {
+      "radius": 4
+    }
+  },
+  {
+    "type": "spyMission",
+    "id": "mission_skim_treasury",
+    "name": "Skim the Treasury",
+    "description": "Steal 15% of their treasury, up to 300 gold.",
+    "kind": "siphon_funds",
+    "target": "foreign",
+    "turns": 5,
+    "chance": 60,
+    "params": {
+      "percent": 15,
+      "max": 300
+    }
+  },
+  {
+    "type": "spyMission",
+    "id": "mission_steal_plans",
+    "name": "Steal Plans",
+    "description": "A boost toward one of your techs or civics. Their owner must know a tech you don't.",
+    "kind": "steal_boost",
+    "target": "foreign",
+    "turns": 6,
+    "chance": 55
+  },
+  {
+    "type": "spyMission",
+    "id": "mission_sabotage",
+    "name": "Sabotage the Works",
+    "description": "Half the production put into what the settlement is building is lost.",
+    "kind": "sabotage",
+    "target": "foreign",
+    "turns": 5,
+    "chance": 50,
+    "params": {
+      "percent": 50
+    }
+  },
+  {
+    "type": "spyMission",
+    "id": "mission_arm_rebels",
+    "name": "Arm the Rebels",
+    "description": "Two bands of raiders rise near the settlement.",
+    "kind": "partisans",
+    "target": "foreign",
+    "turns": 7,
+    "chance": 45,
+    "params": {
+      "count": 2
+    },
+    "requiresCivic": "civic_nationalism"
+  },
+  {
+    "type": "spyMission",
+    "id": "mission_stir_discontent",
+    "name": "Stir Discontent",
+    "description": "The settlement loses 25 loyalty (when loyalty is on). Not in capitals or city-states.",
+    "kind": "unrest",
+    "target": "foreign",
+    "turns": 5,
+    "chance": 55,
+    "params": {
+      "amount": 25
+    }
+  },
+  {
+    "type": "spyMission",
+    "id": "mission_lift_masterpiece",
+    "name": "Lift a Masterpiece",
+    "description": "Steal one of the settlement's great works into an empty slot of yours.",
+    "kind": "heist",
+    "target": "foreign",
+    "turns": 7,
+    "chance": 40,
+    "params": {},
+    "requiresCivic": "civic_humanism"
+  }
+]

@@ -453,7 +453,8 @@ forces new crisis policies. Off by default, for groups that like chaos.
   a big rival can **flip** (become a free city, then join someone else). This makes settling
   "inside" your friend's empire risky. Built in V1 final F10; see "Loyalty" below.
 - **Espionage:** spies with missions: steal tech boosts, siphon funds, sabotage production,
-  recruit partisans, counterspy. Each mission has a visible success chance.
+  recruit partisans, counterspy. Each mission has a visible success chance. Built in V1 final
+  F12; see "Espionage" below.
 - **World congress:** periodic votes on resolutions (e.g., "+100% production to Campus districts for
   all" or "Embargo against [player]") using diplomatic favor. Diplomatic victory comes from
   diplomatic points.
@@ -507,6 +508,54 @@ Built in V1 final F10, after Civ VI. On unless the `loyalty` setup toggle is off
   and those cities broke away again a few turns later. Some 37 flips happened in 200 turns,
   mostly ping-pong. With the rule, about 12 happen, mostly cities taken in war drifting back to
   the civ whose people surround them.
+
+---
+
+## Espionage
+
+Built in V1 final F12. On unless the `espionage` setup toggle is off.
+
+- **Spies are agents, not units on the map** (as in Civ V and VII), so they stay secret and
+  need no pathing.
+  - Each of Diplomatic Service, Nationalism, Ideology and Mass Media gives one
+    (`rules.espionage.capacityCivics`). Spies arrive free and named.
+  - Only their owner sees them: the per-player view leaves out everyone else's.
+- **Travel:** send a spy to one of your settlements, or to any settlement you know. It takes
+  `1 + distance / 8` turns from your nearest settlement.
+- **Missions** (`spyMission` content; the names are our own):
+
+  | Mission | Turns | Chance | What it does |
+  |---|---|---|---|
+  | Watch the Gates | ongoing | — | Counterspy in your own settlement: foreign missions there get −25% chance (−10% more per rank) and are caught 25% more often |
+  | Make Contacts | 3 | 85% | Reveals the land within 4 tiles and says what they're researching |
+  | Skim the Treasury | 5 | 60% | Steals 15% of their gold, up to 300 |
+  | Steal Plans | 6 | 55% | A boost toward your research (needs them to know a tech you don't) |
+  | Sabotage the Works | 5 | 50% | Half the production in their current build is lost |
+  | Arm the Rebels | 7 | 45% | Two bands of raiders rise nearby (Nationalism) |
+  | Stir Discontent | 5 | 55% | −25 loyalty (loyalty on; not capitals or city-states) |
+  | Lift a Masterpiece | 7 | 40% | Steals a great work into an empty slot of yours (Humanism) |
+
+- **Chance:** the mission's base, +10% per rank, less any counterspy, kept between 5% and 95%.
+  A mission rolls when it finishes, using the game's seeded dice.
+  - **Success:** the spy stays, ready for another mission. Rank 2 comes after 1 success and
+    rank 3 after 3. It's still **seen** 30% of the time.
+  - **Failure:** the spy is **caught** 50% of the time (more against a counterspy) and lost;
+    otherwise it slips home.
+- **Consequences:**
+  - The victim always learns that something happened, and learns who did it if the spy was
+    seen or caught.
+  - A seen or caught spy is a diplomatic incident: −2 opinion, fading ("Caught spying on us").
+- **On screen:**
+  - The **Espionage** screen (key **Y**; its button appears once you have room for a spy,
+    with a badge for idle ones). It shows each spy's rank, where it is and what it's doing.
+  - Send it anywhere, with travel turns shown. Start a mission, with its chance and any reason
+    it can't be run, or call it home.
+  - Notices cover recruits, arrivals, outcomes, and foreign spies caught or noticed.
+- **AI:** its first spy guards the capital. Others go to rivals' settlements (enemies first,
+  then capitals and big ones). At war they sabotage and arm rebels; at peace they steal plans
+  and gold. They need at least a 40% chance.
+- **Deviation from Civ VI:** no spy units, districts or escape routes. The Civ V-style agent
+  model keeps a two-person game readable and hides spies without special vision rules.
 
 ---
 

@@ -285,7 +285,8 @@
       "nearDistance": 6,
       "nearMax": 3,
       "perDeal": 3,
-      "tradeRoute": 3
+      "tradeRoute": 3,
+      "spiedOnUs": -2
     },
     "friendshipOpinion": 6,
     "allianceOpinion": 14
@@ -448,5 +449,41 @@
       }
     },
     "themingPercent": 100
+  },
+  "espionage": {
+    "capacityCivics": [
+      "civic_diplomatic_service",
+      "civic_nationalism",
+      "civic_ideology",
+      "civic_mass_media"
+    ],
+    "travelBase": 1,
+    "travelPerTiles": 8,
+    "rankAt": [1, 3],
+    "rankChance": 10,
+    "counterspy": 25,
+    "counterspyPerRank": 10,
+    "minChance": 5,
+    "maxChance": 95,
+    "caughtChance": 50,
+    "seenChance": 30,
+    "names": [
+      "Ash",
+      "Brannock",
+      "Cassia",
+      "Dorran",
+      "Esk",
+      "Fidelma",
+      "Garrick",
+      "Hesper",
+      "Ilse",
+      "Jorund",
+      "Kesta",
+      "Lazlo",
+      "Mireille",
+      "Noor",
+      "Oswin",
+      "Pell"
+    ]
   }
 }

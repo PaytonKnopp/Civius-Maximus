@@ -44,6 +44,9 @@ import {
   warKey,
   workableTiles,
   FREE,
+  espionageOn,
+  spiesOf,
+  spyCapacity,
 } from '@cx/engine';
 import { type GameHandle, LocalGame, makeSave, RemoteGame } from '@cx/host';
 import { Icon, Rich } from '../ui/Icon';
@@ -88,6 +91,7 @@ import { LeaderIntro, LeaderSpeech, type SpeechLine } from './LeaderSpeech';
 import { AgesScreen } from './AgesScreen';
 import { GovernorsScreen } from './GovernorsScreen';
 import { GreatWorksScreen } from './GreatWorksScreen';
+import { EspionageScreen } from './EspionageScreen';
 import { Minimap } from './Minimap';
 import { music, play, type Sfx } from '../audio';
 import { LeaderHead } from '../ui/LeaderCard';
@@ -148,6 +152,9 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
       return 'captured';
     case 'settlement_flipped':
       return e.from === me || e.to === me ? 'captured' : 'notify';
+    case 'spy_mission':
+    case 'spy_noticed':
+      return e.player === me ? 'notify' : null;
     case 'loyalty_falling':
       return e.owner === me ? 'notify' : null;
     case 'unit_promoted':
@@ -260,6 +267,33 @@ function noticeFor(
       return e.player === ME
         ? `A ${name} begins! (${e.score} era score last era) Choose your dedication.`
         : `${civName(content, state, e.player)} enters a ${name}`;
+    }
+    case 'spy_recruited':
+      return e.player === ME ? `A new spy, ${e.name}, is ready (Y)` : undefined;
+    case 'spy_arrived':
+      return e.player === ME
+        ? `${e.name} reached ${name(e.settlement)}: choose a mission (Y)`
+        : undefined;
+    case 'spy_mission': {
+      if (e.player !== ME) return undefined;
+      const m = content.entities.spyMission[e.mission];
+      const what = m ? resolveText(content, m.name) : e.mission;
+      return e.outcome === 'success'
+        ? `${e.name}: ${what} in ${name(e.settlement)} worked${e.detail ? `. ${e.detail}` : ''}`
+        : e.outcome === 'caught'
+          ? `${e.name} was caught in ${name(e.settlement)}!`
+          : `${e.name}'s ${what} in ${name(e.settlement)} failed; the spy got away`;
+    }
+    case 'spy_noticed': {
+      if (e.player !== ME) return undefined;
+      const m = content.entities.spyMission[e.mission];
+      const what = m ? resolveText(content, m.name).toLowerCase() : 'a mission';
+      const who = e.by ? `A spy of ${civName(content, state, e.by)}` : 'An unknown spy';
+      return e.outcome === 'caught'
+        ? `${who} was caught in ${name(e.settlement)} trying ${what}`
+        : e.outcome === 'success'
+          ? `${who} pulled off ${what} in ${name(e.settlement)}`
+          : `Someone tried ${what} in ${name(e.settlement)} and got away`;
     }
     case 'great_work_created': {
       const person = content.entities.greatPerson[e.person];
@@ -552,6 +586,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     | { kind: 'ages' }
     | { kind: 'governors' }
     | { kind: 'greatWorks' }
+    | { kind: 'espionage' }
     | { kind: 'graphs' }
     | { kind: 'help' }
     | null
@@ -1260,6 +1295,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       else if (e.key === 'e') setOverlay({ kind: 'ages' });
       else if (e.key === 'o') setOverlay({ kind: 'governors' });
       else if (e.key === 'k') setOverlay({ kind: 'greatWorks' });
+      else if (e.key === 'y' && espionageOn(state)) setOverlay({ kind: 'espionage' });
       else if (e.key === 'h') setOverlay({ kind: 'graphs' });
       else if (e.key === '?') setOverlay({ kind: 'help' });
       else if (e.key === 'l') setLens((l) => LENSES[(LENSES.indexOf(l) + 1) % LENSES.length]!);
@@ -1380,6 +1416,19 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               label="Great works (K)"
               onClick={() => setOverlay({ kind: 'greatWorks' })}
             />
+            {espionageOn(state) && spyCapacity(ctx, state, viewer) > 0 && (
+              <ScreenButton
+                icon="spy"
+                label="Espionage (Y)"
+                badge={(() => {
+                  const idle = spiesOf(state, viewer).filter(
+                    ([, s]) => s.arrives <= state.turn && !s.mission,
+                  ).length;
+                  return idle > 0 ? String(idle) : undefined;
+                })()}
+                onClick={() => setOverlay({ kind: 'espionage' })}
+              />
+            )}
             <ScreenButton
               icon="religion"
               label={`${
@@ -1735,6 +1784,15 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             return ok;
           }}
           prophet={overlay.prophet}
+          onClose={() => setOverlay(null)}
+        />
+      )}
+      {overlay?.kind === 'espionage' && (
+        <EspionageScreen
+          ctx={ctx}
+          state={state}
+          viewer={viewer}
+          act={act}
           onClose={() => setOverlay(null)}
         />
       )}

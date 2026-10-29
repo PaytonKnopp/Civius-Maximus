@@ -174,6 +174,26 @@ export const Action = z.discriminatedUnion('type', [
     work: z.string().min(1).max(64),
     settlement: z.string().min(1).max(64),
   }),
+  /** Send a spy to a settlement (yours, to guard it, or someone else's). */
+  z.strictObject({
+    type: z.literal('send_spy'),
+    player: PlayerRef,
+    spy: z.string().min(1).max(64),
+    settlement: z.string().min(1).max(64),
+  }),
+  /** A spy that has arrived starts a mission there (a `spyMission` id). */
+  z.strictObject({
+    type: z.literal('start_spy_mission'),
+    player: PlayerRef,
+    spy: z.string().min(1).max(64),
+    mission: ContentRef,
+  }),
+  /** Call a spy home (it stops what it's doing). */
+  z.strictObject({
+    type: z.literal('recall_spy'),
+    player: PlayerRef,
+    spy: z.string().min(1).max(64),
+  }),
   /** Swap two of your great works of the same kind (to theme a building). */
   z.strictObject({
     type: z.literal('swap_great_works'),

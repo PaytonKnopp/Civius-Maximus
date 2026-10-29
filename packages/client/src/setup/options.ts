@@ -39,6 +39,8 @@ export interface NewGameOptions {
   culture: boolean;
   /** Settlements can break away when their loyalty runs out. */
   loyalty: boolean;
+  /** Spies and their missions. */
+  espionage: boolean;
   turnLimit: number | null;
   speed: string;
   difficulty: string;
@@ -66,6 +68,7 @@ export const DEFAULT_OPTIONS: NewGameOptions = {
   science: true,
   culture: true,
   loyalty: true,
+  espionage: true,
   turnLimit: null,
   speed: 'speed_standard',
   difficulty: 'difficulty_prince',
@@ -91,6 +94,7 @@ export function makeSetup(o: NewGameOptions): GameSetup {
       science: o.science,
       culture: o.culture,
       ...(o.loyalty === false ? { loyalty: false } : {}),
+      ...(o.espionage === false ? { espionage: false } : {}),
       turnLimit: o.turnLimit,
       speed: o.speed,
       difficulty: o.difficulty,

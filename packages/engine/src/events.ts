@@ -61,6 +61,30 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         player: PlayerId;
         settlement: SettlementId;
       }
+    | { type: 'spy_recruited'; player: PlayerId; spy: string; name: string }
+    | { type: 'spy_arrived'; player: PlayerId; spy: string; name: string; settlement: SettlementId }
+    | {
+        /** How a mission went, for the spy's owner. */
+        type: 'spy_mission';
+        player: PlayerId;
+        spy: string;
+        name: string;
+        mission: string;
+        settlement: SettlementId;
+        target: PlayerId;
+        outcome: 'success' | 'escaped' | 'caught';
+        /** What it got, in words (gold stolen, the tech boosted...). */
+        detail: string;
+      }
+    | {
+        /** A foreign spy's mission against one of your settlements: `by` is null if unseen. */
+        type: 'spy_noticed';
+        player: PlayerId;
+        by: PlayerId | null;
+        mission: string;
+        settlement: SettlementId;
+        outcome: 'success' | 'escaped' | 'caught';
+      }
     | { type: 'pantheon_founded'; player: PlayerId; belief: string }
     /** A player found a city-state (and got `envoys` free envoys there for being first). */
     | { type: 'city_state_met'; cityState: PlayerId; player: PlayerId; envoys: number }
