@@ -107,6 +107,19 @@ describe('loyalty', () => {
     expect(lines.some((l) => l.label.startsWith('Disloyal'))).toBe(true);
   });
 
+  it('counts a Monument only in its own settlement', () => {
+    const { s: start, outpost } = frontier();
+    const base = loyaltyOf(ctx, start, start.settlements[outpost]!).change;
+    const elsewhere = produce(start, (d) => {
+      d.settlements[d.players.p1!.capital!]!.buildings.push('building_monument');
+    });
+    expect(loyaltyOf(ctx, elsewhere, elsewhere.settlements[outpost]!).change).toBe(base);
+    const here = produce(start, (d) => {
+      d.settlements[outpost]!.buildings.push('building_monument');
+    });
+    expect(loyaltyOf(ctx, here, here.settlements[outpost]!).change).toBe(base + 1);
+  });
+
   it('does nothing with the loyalty setting off', () => {
     const { s: start, outpost } = frontier();
     const off = produce(start, (d) => {

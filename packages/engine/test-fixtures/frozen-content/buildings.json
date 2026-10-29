@@ -24,7 +24,7 @@
     "yields": {
       "culture": 2
     },
-    "effects": [
+    "localEffects": [
       {
         "effect": "modify_loyalty",
         "params": {
