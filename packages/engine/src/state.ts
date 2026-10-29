@@ -15,7 +15,7 @@ export interface GameState {
   status: 'playing' | 'ended';
   /** How the game ended, once it has. */
   result: {
-    reason: 'score' | 'conquest' | 'domination' | 'religion' | 'science' | 'culture';
+    reason: 'score' | 'conquest' | 'domination' | 'religion' | 'science' | 'culture' | 'diplomatic';
     winner: PlayerId | null;
   } | null;
   /** Starts at 1. */
@@ -59,6 +59,8 @@ export interface GameState {
   worldMoments?: string[];
   /** Great works, by id (`gw3`...). See greatworks/greatworks.ts. */
   greatWorks?: Record<string, GreatWorkState>;
+  /** The World Congress, once it has formed. See congress/congress.ts. */
+  congress?: CongressState;
   /** Spies, by id (`spy5`...), and how many names have been handed out. See espionage/. */
   espionage?: { spies: Record<string, SpyState>; named: number };
   /** The great people race (docs/04-advanced-systems.md, "Great people"). */
@@ -318,6 +320,26 @@ export interface UnitState {
   recovering?: number;
 }
 
+export interface Ballot {
+  resolution: string;
+  option: string;
+  /** For a resolution with a target: the civ voted for. */
+  target: PlayerId | null;
+  /** 1 free, the rest bought with favor. */
+  votes: number;
+}
+
+export interface CongressState {
+  /** The turn the next session meets. */
+  nextSession: number;
+  /** The session meeting now (players vote this turn), or null between sessions. */
+  session: { turn: number; agenda: string[] } | null;
+  /** This session's ballots, by player. */
+  votes: Record<PlayerId, Ballot[]>;
+  /** What the last session decided (in force until the next). */
+  passed: { resolution: string; option: string; target: PlayerId | null }[];
+}
+
 export interface SpyState {
   owner: PlayerId;
   name: string;
@@ -373,6 +395,10 @@ export interface GameSettings {
   loyalty?: boolean | undefined;
   /** Espionage: spies and their missions (on unless false). */
   espionage?: boolean | undefined;
+  /** World Congress: favor, sessions and resolutions (on unless false). */
+  congress?: boolean | undefined;
+  /** Diplomatic victory, through the World Congress (on unless false). */
+  diplomatic?: boolean | undefined;
 }
 
 export interface PlayerState {
@@ -433,6 +459,11 @@ export interface PlayerState {
   ages?: AgeState;
   /** Appointed governors, by `governor` content id. */
   governors?: Record<string, GovernorState>;
+  /** World Congress: favor (whole points), diplomatic victory points earned, and the
+   * resolutions in force for this player (until the next session). */
+  favor?: number;
+  diploPoints?: number;
+  resolutions?: { resolution: string; option: string }[];
   /** The tech tree (paid with science) and the civics tree (paid with culture). */
   techs: Track;
   civics: Track;

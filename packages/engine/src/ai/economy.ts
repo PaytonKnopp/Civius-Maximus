@@ -25,6 +25,7 @@ import { obsoletedBy, upgradeCost, upgradeProblem } from '../units/upgrades';
 import { jitter, personalityOf, roleOf, type Turn } from './turn';
 import { titlesAvailable } from '../governors/governors';
 import { manageSpies } from './espionage';
+import { voteInCongress } from './congress';
 import { loyaltyOf, loyaltyOn, turnsToFlip } from '../loyalty/loyalty';
 import { effectValue, happinessWeight, yieldsValue } from './values';
 
@@ -141,6 +142,7 @@ export function manageProgress(t: Turn) {
   chooseDedications(t);
   manageGovernors(t);
   manageSpies(t);
+  voteInCongress(t);
   for (const kind of ['tech', 'civic'] as const) {
     if (trackOf(t.p, kind).current) continue;
     const next = bestNode(t, kind);

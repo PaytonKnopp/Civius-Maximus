@@ -61,6 +61,18 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         player: PlayerId;
         settlement: SettlementId;
       }
+    | { type: 'congress_founded'; by: PlayerId }
+    /** A session meets this turn: everyone votes on `agenda`. */
+    | { type: 'congress_session'; turn: number; agenda: string[] }
+    | {
+        type: 'resolution_passed';
+        resolution: string;
+        option: string;
+        target: PlayerId | null;
+        /** Votes for each option. */
+        tally: Record<string, number>;
+      }
+    | { type: 'diplomatic_points'; player: PlayerId; amount: number; total: number; reason: string }
     | { type: 'spy_recruited'; player: PlayerId; spy: string; name: string }
     | { type: 'spy_arrived'; player: PlayerId; spy: string; name: string; settlement: SettlementId }
     | {
@@ -137,7 +149,8 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
     | { type: 'governor_established'; player: PlayerId; governor: string; settlement: SettlementId }
     | {
         type: 'game_ended';
-        reason: 'score' | 'conquest' | 'domination' | 'religion' | 'science' | 'culture';
+        reason:
+          'score' | 'conquest' | 'domination' | 'religion' | 'science' | 'culture' | 'diplomatic';
         winner: PlayerId | null;
       }
     /** `path` starts at the tile the unit left. */

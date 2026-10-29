@@ -103,6 +103,8 @@ export type {
   GameSettings,
   GameState,
   GreatWorkState,
+  Ballot,
+  CongressState,
   SpyState,
   PlayerId,
   PlayerState,
@@ -289,6 +291,15 @@ export {
   titlesEarned,
   titlesSpent,
 } from './governors/governors';
+export {
+  ballotCost,
+  congressOn,
+  diplomaticOn,
+  diplomaticPoints,
+  favorPerTurn,
+  voteCost,
+  votingProblem,
+} from './congress/congress';
 export {
   espionageOn,
   missionChance,

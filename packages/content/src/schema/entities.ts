@@ -613,6 +613,38 @@ export const RulesDef = z.strictObject({
       seenChance: 30,
       names: ['Agent'],
     }),
+  /** World Congress (docs/04-advanced-systems.md, "World Congress"), with the `congress` setting. */
+  congress: z
+    .strictObject({
+      /** It forms when the first civ reaches this era. */
+      foundingEra: Id,
+      /** Turns between sessions (scaled by game speed). */
+      sessionEvery: z.int().min(1),
+      /** Resolutions drawn for each session, besides those always on the agenda. */
+      resolutionsPerSession: z.int().min(0).max(6),
+      /** Favor for each extra vote on one resolution: the 2nd, 3rd... (the first is free). */
+      voteCosts: z.array(z.int().min(0)),
+      /** Diplomatic victory points to win. */
+      victoryPoints: z.int().min(1),
+      /** Points for the one civ that put the most votes behind what passed (none on a tie). */
+      agendaPoints: z.int().min(0),
+      /** Favor a turn, once it forms. */
+      favor: z.strictObject({
+        base: z.int(),
+        perSuzerain: z.int(),
+        perAlliance: z.int(),
+        perFriendship: z.int(),
+      }),
+    })
+    .default({
+      foundingEra: 'era_medieval',
+      sessionEvery: 20,
+      resolutionsPerSession: 2,
+      voteCosts: [10, 30, 60, 100, 150],
+      victoryPoints: 20,
+      agendaPoints: 1,
+      favor: { base: 1, perSuzerain: 2, perAlliance: 1, perFriendship: 1 },
+    }),
   mapgen: z.strictObject({
     coastTerrain: Id,
     oceanTerrain: Id,
@@ -1597,6 +1629,36 @@ export const GreatPersonDef = z.strictObject({
   effects: z.array(Effect).default([]),
 });
 
+/** A World Congress resolution (docs/04-advanced-systems.md, "World Congress"). */
+export const ResolutionDef = z.strictObject({
+  type: z.literal('resolution'),
+  id: Id,
+  name: Text,
+  description: Text,
+  /** `player`: each civ also votes for a target civ, and the effects go to the target. */
+  target: z.enum(['player', 'none']),
+  /** On every session's agenda (e.g. naming a world leader). */
+  always: z.boolean().default(false),
+  options: z
+    .array(
+      z.strictObject({
+        id: Id,
+        name: Text,
+        description: Text,
+        /** Until the next session: for the target, or for every civ. */
+        effects: z.array(Effect).default([]),
+        /** Diplomatic victory points for the target. */
+        points: z.int().min(0).default(0),
+        /** For a target: good for them (`boon`) or bad (`bane`). Guides the AI. */
+        tone: z.enum(['boon', 'bane']).default('boon'),
+        /** The AI trait that likes this option (`science`, `culture`, ...). */
+        favoredBy: z.string().optional(),
+      }),
+    )
+    .min(1)
+    .max(2),
+});
+
 /** A spy mission (docs/04-advanced-systems.md, "Espionage"). */
 export const SpyMissionDef = z.strictObject({
   type: z.literal('spyMission'),
@@ -1812,6 +1874,7 @@ export const ENTITY_SCHEMAS = {
   moment: MomentDef,
   governor: GovernorDef,
   spyMission: SpyMissionDef,
+  resolution: ResolutionDef,
   rules: RulesDef,
 } as const;
 
@@ -1837,6 +1900,7 @@ export type DedicationDef = z.infer<typeof DedicationDef>;
 export type MomentDef = z.infer<typeof MomentDef>;
 export type GovernorDef = z.infer<typeof GovernorDef>;
 export type SpyMissionDef = z.infer<typeof SpyMissionDef>;
+export type ResolutionDef = z.infer<typeof ResolutionDef>;
 export type UnitClassDef = z.infer<typeof UnitClassDef>;
 export type UnitDef = z.infer<typeof UnitDef>;
 export type ImprovementDef = z.infer<typeof ImprovementDef>;
@@ -1897,6 +1961,7 @@ export interface EntityByType {
   moment: MomentDef;
   governor: GovernorDef;
   spyMission: SpyMissionDef;
+  resolution: ResolutionDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

@@ -60,6 +60,16 @@ export function playerView(ctx: EngineContext, state: GameState, player: PlayerI
       const [from, to] = o.split('>') as [string, string];
       return involves(from, to);
     }),
+    ...(state.congress
+      ? {
+          congress: {
+            ...state.congress,
+            votes: Object.fromEntries(
+              Object.entries(state.congress.votes).filter(([id]) => id === player),
+            ),
+          },
+        }
+      : {}),
     ...(state.espionage
       ? {
           espionage: {

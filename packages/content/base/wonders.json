@@ -432,7 +432,7 @@
     "type": "wonder",
     "id": "wonder_statue_of_liberty",
     "name": "Statue of Liberty",
-    "description": "+4 influence and +3 tourism here. +1 wildcard policy slot.",
+    "description": "+4 influence and +3 tourism here. +1 wildcard policy slot. +4 diplomatic victory points.",
     "icon": "SL",
     "cost": 900,
     "era": "era_modern",
@@ -446,6 +446,15 @@
         "params": {
           "slot": "wildcard",
           "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "diplomatic_points",
+        "params": {
+          "amount": 4
         },
         "target": {
           "scope": "player"

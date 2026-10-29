@@ -485,5 +485,19 @@
       "Oswin",
       "Pell"
     ]
+  },
+  "congress": {
+    "foundingEra": "era_medieval",
+    "sessionEvery": 20,
+    "resolutionsPerSession": 2,
+    "voteCosts": [10, 30, 60, 100, 150],
+    "victoryPoints": 20,
+    "agendaPoints": 1,
+    "favor": {
+      "base": 1,
+      "perSuzerain": 2,
+      "perAlliance": 1,
+      "perFriendship": 1
+    }
   }
 }

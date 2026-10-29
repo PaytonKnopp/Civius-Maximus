@@ -27,6 +27,7 @@ import { agesHandlers, agesTurn, awardMoments, newAgeState } from './eras/ages';
 import { governorHandlers, governorsTurn } from './governors/governors';
 import { greatWorksHandlers, greatWorksTurn } from './greatworks/greatworks';
 import { espionageHandlers, espionageTurn } from './espionage/espionage';
+import { congressHandlers, congressTurn } from './congress/congress';
 import { freeCitiesTurn, loyaltyTurn } from './loyalty/loyalty';
 import { applyStartEra } from './progress/startEra';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
@@ -200,6 +201,7 @@ const handlers: Handlers = {
   ...governorHandlers,
   ...greatWorksHandlers,
   ...espionageHandlers,
+  ...congressHandlers,
   ...unitHandlers,
   ...settlementHandlers,
   ...progressHandlers,
@@ -259,6 +261,7 @@ const turnSteps: TurnStep[] = [
   { id: 'governors', order: 136, run: governorsTurn },
   { id: 'loyalty', order: 137, run: loyaltyTurn },
   { id: 'espionage', order: 138, run: espionageTurn },
+  { id: 'congress', order: 139, run: congressTurn },
   { id: 'history', order: 140, run: (draft, ctx) => historyTurn(draft, ctx) },
 ];
 
