@@ -4,12 +4,14 @@ import { type Fixed, toFixed } from '../fixed';
 import { neighbors } from '../map/hex';
 import { playerEffects } from '../progress/sources';
 import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
-import { landCost } from '../units/movement';
+import { landCost, MP } from '../units/movement';
 import { exploredBits } from '../units/vision';
+import { countsAs } from '../uniques';
 
 /**
  * Trade routes and roads (docs/04-advanced-systems.md, "Trade routes"): a trader in one of your
- * settlements is sent to another settlement (yours or another player's) within range over land;
+ * settlements is sent to another settlement (yours or another player's) within range over land
+ * (and over shallow water from a settlement with a Harbor);
  * the route pays yields every turn for a while, builds a road along its way, then the trader
  * comes home. Roads make movement cheaper.
  */
@@ -52,7 +54,7 @@ export function tradePartners(state: GameState, a: PlayerId, b: PlayerId): boole
 
 /**
  * The cheapest land path between two tiles (no further than `range` tiles), ignoring units:
- * the tiles from `from` to `to`, or null.
+ * the tiles from `from` to `to`, or null. With `sea`, shallow water counts too (a move a tile).
  */
 export function tradePath(
   ctx: EngineContext,
@@ -60,6 +62,7 @@ export function tradePath(
   from: number,
   to: number,
   range: number,
+  sea = false,
 ): number[] | null {
   const best = new Map<number, { cost: number; steps: number; prev: number }>([
     [from, { cost: 0, steps: 0, prev: -1 }],
@@ -73,9 +76,13 @@ export function tradePath(
     if (tile === to) break;
     if (here.steps >= range) continue;
     for (const n of neighbors(state.map, tile)) {
-      const step = landCost(ctx, state, n);
-      if (step === null || ctx.content.entities.terrain[state.map.tiles[n]!.terrain]!.water)
-        continue;
+      const terrain = ctx.content.entities.terrain[state.map.tiles[n]!.terrain]!;
+      const step = terrain.water
+        ? sea && !terrain.deepWater
+          ? MP
+          : null
+        : landCost(ctx, state, n);
+      if (step === null) continue;
       const cost = here.cost + step;
       const seen = best.get(n);
       if (seen && (seen.cost < cost || (seen.cost === cost && seen.prev <= tile))) continue;
@@ -139,6 +146,31 @@ export function traderOrigin(state: GameState, unit: UnitState): SettlementState
   return s && s.tile === unit.tile && s.owner === unit.owner ? s : undefined;
 }
 
+/** Whether routes from this settlement may cross shallow water (it has the sea district). */
+export function seaTrade(ctx: EngineContext, s: SettlementState): boolean {
+  const d = ctx.content.rules.trade.seaDistrict;
+  return !!d && s.districts.some((x) => countsAs(ctx, 'district', x.id, d));
+}
+
+/** The way a route from `from` to `to` would run, or null if it's out of reach. */
+export function routePath(
+  ctx: EngineContext,
+  state: GameState,
+  from: SettlementState,
+  to: SettlementState,
+): number[] | null {
+  const r = ctx.content.rules.trade;
+  const sea = seaTrade(ctx, from);
+  return tradePath(
+    ctx,
+    state,
+    from.tile,
+    to.tile,
+    sea ? Math.max(r.range, r.seaRange) : r.range,
+    sea,
+  );
+}
+
 /** Why `unit` can't start a route to settlement `to`, or undefined. */
 export function routeProblem(
   ctx: EngineContext,
@@ -175,11 +207,15 @@ export function routeProblem(
       code: 'duplicate',
       message: `There's already a route from ${from.name} to ${dest.name}`,
     };
-  if (!tradePath(ctx, state, from.tile, dest.tile, ctx.content.rules.trade.range))
+  if (!routePath(ctx, state, from, dest)) {
+    const r = ctx.content.rules.trade;
     return {
       code: 'out_of_range',
-      message: `${dest.name} is more than ${ctx.content.rules.trade.range} tiles away over land`,
+      message: seaTrade(ctx, from)
+        ? `${dest.name} is more than ${Math.max(r.range, r.seaRange)} tiles away over land and shallow water`
+        : `${dest.name} is more than ${r.range} tiles away over land (a Harbor lets routes cross the sea)`,
     };
+  }
   return undefined;
 }
 

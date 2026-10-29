@@ -78,6 +78,8 @@ export interface TerritoryView {
   features: (string | null)[];
   /** Hostile camps on explored tiles. */
   camps: boolean[];
+  /** Tribal villages (goody huts) on explored tiles. */
+  huts: boolean[];
   /** Roads on explored tiles (settlement centers count). */
   roads: boolean[];
 }

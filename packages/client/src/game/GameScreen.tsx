@@ -172,6 +172,15 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
       return 'war';
     case 'theological_combat':
       return e.attackerOwner === me || e.defenderOwner === me ? 'religion' : null;
+    case 'pillaged':
+    case 'route_plundered':
+      return e.player === me ? 'buy' : e.owner === me ? 'war' : null;
+    case 'hut_found':
+      return e.player === me ? 'great_person' : null;
+    case 'camp_befriended':
+      return e.player === me ? 'peace' : 'notify';
+    case 'levied':
+      return e.player === me ? 'war' : null;
     case 'loyalty_falling':
       return e.owner === me ? 'notify' : null;
     case 'unit_promoted':
@@ -547,6 +556,46 @@ function noticeFor(
         : undefined;
     case 'capital_moved':
       return e.player === ME ? `Your capital moved to ${name(e.settlement)}` : undefined;
+    case 'pillaged':
+      return e.player === ME
+        ? `Pillaged ${civName(content, state, e.owner)}'s land: +${e.gold} gold`
+        : `${civName(content, state, e.player)} pillaged your land`;
+    case 'route_plundered':
+      return e.player === ME
+        ? `Plundered ${civName(content, state, e.owner)}'s trade route: +${e.gold} gold`
+        : `${civName(content, state, e.player)} plundered one of your trade routes`;
+    case 'camp_befriending':
+      return `Befriending a hostile camp: ${e.turns} of ${e.of} turns`;
+    case 'camp_befriended': {
+      const cs = state.players[e.cityState]?.name ?? 'a city-state';
+      return e.player === ME
+        ? `The camp you befriended has settled as ${cs}: you lead it`
+        : `${civName(content, state, e.player)} befriended a camp: it's now ${cs}`;
+    }
+    case 'levied':
+      return e.player === ME
+        ? `You command ${state.players[e.cityState]?.name ?? 'the city-state'}'s ${e.units} soldier${e.units === 1 ? '' : 's'} until turn ${e.until}`
+        : `${civName(content, state, e.player)} levied ${state.players[e.cityState]?.name ?? 'a city-state'}'s soldiers`;
+    case 'levy_ended':
+      return `${state.players[e.cityState]?.name ?? 'The city-state'}'s levied soldiers have gone home`;
+    case 'hut_found': {
+      const r = content.rules.huts?.rewards.find((x) => x.id === e.reward);
+      if (!r) return undefined;
+      const what = resolveText(content, r.name);
+      const extra =
+        r.gold > 0
+          ? `: +${r.gold} gold`
+          : r.faith > 0
+            ? `: +${r.faith} faith`
+            : r.boost && e.detail
+              ? `: a boost toward ${resolveText(content, (r.boost === 'tech' ? content.entities.tech[e.detail] : content.entities.civic[e.detail])?.name ?? e.detail)}`
+              : r.population > 0 && e.detail
+                ? `: ${name(e.detail)} grows`
+                : r.reveal > 0
+                  ? ': the land around is mapped'
+                  : '';
+      return `A tribal village! ${what}${extra}`;
+    }
     case 'camp_cleared':
       return e.by === ME
         ? `Hostile camp cleared: +${Math.floor(e.gold / 100)} gold`

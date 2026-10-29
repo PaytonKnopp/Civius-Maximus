@@ -12,6 +12,7 @@ import {
 import { distance, neighbors, tilesWithin } from '../map/hex';
 import type { GameState, PlayerId, UnitState } from '../state';
 import { clearCampsOn } from '../combat/camps';
+import { takeHuts } from '../huts/huts';
 import { canTraverse, fullMoves, hasRoom } from './movement';
 import { findPath, type PathStep } from './pathfind';
 import { exploreVisible, lineOfSight, sightOf } from './vision';
@@ -124,6 +125,7 @@ export function advanceAlongPath(
     visibleTo: watchers(ctx, snapshot, unit.owner, tiles),
   });
   if (unitClassOf(ctx, unit).combat) clearCampsOn(draft, ctx, unit.owner, tiles.slice(1), emit);
+  takeHuts(draft, ctx, unitId, tiles.slice(1), emit);
 }
 
 export const unitHandlers = {

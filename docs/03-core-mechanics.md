@@ -559,7 +559,8 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   Husbandry, plantations Irrigation; farms, mines, fishing boats and woodcutters are available
   from the start.
 - **Pillaged** improvements are repaired with a cheap city project or by a unit with the *Engineer*
-  ability (Military Engineer).
+  ability (Military Engineer). *Built (V1 final F16):* they come back into use on their own after
+  10 turns, like disaster damage, so a repair never takes a slot in the build queue (D85).
 - **Roads** are built automatically by trade routes. Military engineers can build them manually.
 
 ---

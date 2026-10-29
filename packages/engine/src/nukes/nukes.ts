@@ -132,9 +132,11 @@ export const nukeHandlers = {
   } satisfies ActionHandler<LaunchNuke>,
 };
 
-/** Turn step: fallout that has run its time clears. */
+/** Turn step: fallout, and damage from disasters, nukes and pillaging, that has run its time clears. */
 export function falloutTurn(draft: Draft<GameState>) {
   const next = draft.turn + 1;
-  for (const t of draft.map.tiles)
+  for (const t of draft.map.tiles) {
     if (t.fallout !== undefined && t.fallout <= next) delete t.fallout;
+    if (t.pillaged !== undefined && t.pillaged <= next) delete t.pillaged;
+  }
 }

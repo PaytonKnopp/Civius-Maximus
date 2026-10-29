@@ -74819,6 +74819,28 @@
                     "type": "number",
                     "multipleOf": 0.5
                   }
+                },
+                "plunderGold": {
+                  "default": 50,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "plunderGoldPerEra": {
+                  "default": 15,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "seaDistrict": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "seaRange": {
+                  "default": 20,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
                 }
               },
               "required": [
@@ -77851,6 +77873,51 @@
                   "minimum": 0,
                   "maximum": 9007199254740991
                 },
+                "pillage": {
+                  "default": {
+                    "moves": 3,
+                    "turns": 10,
+                    "gold": 20,
+                    "goldPerEra": 10,
+                    "heal": 25
+                  },
+                  "type": "object",
+                  "properties": {
+                    "moves": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "turns": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "gold": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "goldPerEra": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "heal": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "moves",
+                    "turns",
+                    "gold",
+                    "goldPerEra",
+                    "heal"
+                  ],
+                  "additionalProperties": false
+                },
                 "promotionXp": {
                   "minItems": 1,
                   "type": "array",
@@ -78256,6 +78323,36 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 9007199254740991
+                },
+                "befriendInfluence": {
+                  "default": 30,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "befriendTurns": {
+                  "default": 4,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "befriendEnvoys": {
+                  "default": 3,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "levyGoldPerUnit": {
+                  "default": 40,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "levyTurns": {
+                  "default": 30,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
                 }
               },
               "required": [
@@ -78521,6 +78618,96 @@
                 "aggroRange",
                 "reward",
                 "units"
+              ],
+              "additionalProperties": false
+            },
+            "huts": {
+              "type": "object",
+              "properties": {
+                "landTilesPerHut": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "minDistance": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "rewards": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "weight": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "fromTurn": {
+                        "default": 0,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "gold": {
+                        "default": 0,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "faith": {
+                        "default": 0,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "boost": {
+                        "type": "string",
+                        "enum": [
+                          "tech",
+                          "civic"
+                        ]
+                      },
+                      "population": {
+                        "default": 0,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "unit": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "reveal": {
+                        "default": 0,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "weight"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "landTilesPerHut",
+                "minDistance",
+                "rewards"
               ],
               "additionalProperties": false
             },
@@ -154365,6 +154552,28 @@
                       "type": "number",
                       "multipleOf": 0.5
                     }
+                  },
+                  "plunderGold": {
+                    "default": 50,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "plunderGoldPerEra": {
+                    "default": 15,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "seaDistrict": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "seaRange": {
+                    "default": 20,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
                   }
                 },
                 "required": [
@@ -157397,6 +157606,51 @@
                     "minimum": 0,
                     "maximum": 9007199254740991
                   },
+                  "pillage": {
+                    "default": {
+                      "moves": 3,
+                      "turns": 10,
+                      "gold": 20,
+                      "goldPerEra": 10,
+                      "heal": 25
+                    },
+                    "type": "object",
+                    "properties": {
+                      "moves": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "turns": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "gold": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "goldPerEra": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "heal": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "moves",
+                      "turns",
+                      "gold",
+                      "goldPerEra",
+                      "heal"
+                    ],
+                    "additionalProperties": false
+                  },
                   "promotionXp": {
                     "minItems": 1,
                     "type": "array",
@@ -157802,6 +158056,36 @@
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 9007199254740991
+                  },
+                  "befriendInfluence": {
+                    "default": 30,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "befriendTurns": {
+                    "default": 4,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "befriendEnvoys": {
+                    "default": 3,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "levyGoldPerUnit": {
+                    "default": 40,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "levyTurns": {
+                    "default": 30,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
                   }
                 },
                 "required": [
@@ -158067,6 +158351,96 @@
                   "aggroRange",
                   "reward",
                   "units"
+                ],
+                "additionalProperties": false
+              },
+              "huts": {
+                "type": "object",
+                "properties": {
+                  "landTilesPerHut": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "minDistance": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "rewards": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "weight": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "fromTurn": {
+                          "default": 0,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "gold": {
+                          "default": 0,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "faith": {
+                          "default": 0,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "boost": {
+                          "type": "string",
+                          "enum": [
+                            "tech",
+                            "civic"
+                          ]
+                        },
+                        "population": {
+                          "default": 0,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "unit": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$"
+                        },
+                        "reveal": {
+                          "default": 0,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "weight"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "landTilesPerHut",
+                  "minDistance",
+                  "rewards"
                 ],
                 "additionalProperties": false
               },

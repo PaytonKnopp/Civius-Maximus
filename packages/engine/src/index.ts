@@ -336,3 +336,19 @@ export {
   pushFor,
   turnsToFlip,
 } from './loyalty/loyalty';
+export {
+  pillageGold,
+  pillageProblem,
+  plunderableRoutes,
+  plunderGold,
+  plunderProblem,
+} from './combat/pillage';
+export {
+  befriendProblem,
+  leviesTurn,
+  levyCost,
+  levyProblem,
+  levySoldiers,
+} from './citystates/befriend';
+export { hutsOn } from './huts/huts';
+export { routePath, seaTrade } from './trade/rules';

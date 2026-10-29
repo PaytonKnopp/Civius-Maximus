@@ -109,7 +109,11 @@
     },
     "destination": {
       "gold": 1
-    }
+    },
+    "plunderGold": 50,
+    "plunderGoldPerEra": 15,
+    "seaDistrict": "district_harbor",
+    "seaRange": 20
   },
   "luxuryHappinessRadius": 3,
   "mapgen": {
@@ -256,6 +260,13 @@
       "max": 10,
       "unhappinessPerPoint": 1,
       "maxUnhappiness": 5
+    },
+    "pillage": {
+      "moves": 3,
+      "turns": 10,
+      "gold": 20,
+      "goldPerEra": 10,
+      "heal": 25
     }
   },
   "diplomacy": {
@@ -305,7 +316,12 @@
     "questEnvoys": 1,
     "liberateEnvoys": 6,
     "maxUnits": 3,
-    "startingPopulation": 2
+    "startingPopulation": 2,
+    "befriendInfluence": 30,
+    "befriendTurns": 4,
+    "befriendEnvoys": 3,
+    "levyGoldPerUnit": 40,
+    "levyTurns": 30
   },
   "religion": {
     "pantheonFaith": 25,
@@ -357,6 +373,62 @@
       {
         "era": "era_modern",
         "units": ["unit_infantry", "unit_machine_gun", "unit_cavalry"]
+      }
+    ]
+  },
+  "huts": {
+    "landTilesPerHut": 40,
+    "minDistance": 4,
+    "rewards": [
+      {
+        "id": "hut_gold",
+        "name": "A cache of old coins",
+        "weight": 30,
+        "gold": 40
+      },
+      {
+        "id": "hut_treasure",
+        "name": "A chieftain's hoard",
+        "weight": 10,
+        "fromTurn": 25,
+        "gold": 90
+      },
+      {
+        "id": "hut_relics",
+        "name": "Relics from a forgotten shrine",
+        "weight": 15,
+        "faith": 30
+      },
+      {
+        "id": "hut_charts",
+        "name": "Old star charts",
+        "weight": 15,
+        "boost": "tech"
+      },
+      {
+        "id": "hut_tales",
+        "name": "Tales told by the elders",
+        "weight": 15,
+        "boost": "civic"
+      },
+      {
+        "id": "hut_families",
+        "name": "Wandering families who join you",
+        "weight": 10,
+        "fromTurn": 10,
+        "population": 1
+      },
+      {
+        "id": "hut_guide",
+        "name": "A guide who offers to lead the way",
+        "weight": 10,
+        "unit": "unit_scout"
+      },
+      {
+        "id": "hut_maps",
+        "name": "Maps of the lands around",
+        "weight": 10,
+        "reveal": 6
       }
     ]
   },

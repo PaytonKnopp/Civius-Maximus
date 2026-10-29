@@ -19,7 +19,10 @@ import { commanderHandlers } from './units/commanders';
 import { tradeHandlers, tradeTurn } from './trade/handlers';
 import { greatPeopleHandlers, greatPeopleTurn } from './greatpeople/greatpeople';
 import { religionHandlers, religionTurn } from './religion/handlers';
+import { befriendHandlers, leviesTurn } from './citystates/befriend';
 import { cityStateHandlers, cityStatesTurn, placeCityStates } from './citystates/handlers';
+import { pillageHandlers } from './combat/pillage';
+import { placeHuts } from './huts/huts';
 import { upgradeHandlers } from './units/upgrades';
 import { cultureTurn } from './culture/tourism';
 import { scienceTurn } from './science/space';
@@ -192,6 +195,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
   placeStartingCamps(state, ctx, random);
   const placed = produce(state, (draft) => {
     placeCityStates(draft, ctx, random);
+    placeHuts(draft, ctx, random);
     draft.rng = castDraft(random.state());
   });
   // Frozen like every later state: Immer then shares the untouched parts instead of copying
@@ -207,6 +211,8 @@ const handlers: Handlers = {
   ...congressHandlers,
   ...nukeHandlers,
   ...theologyHandlers,
+  ...pillageHandlers,
+  ...befriendHandlers,
   ...unitHandlers,
   ...settlementHandlers,
   ...progressHandlers,
@@ -255,6 +261,7 @@ const turnSteps: TurnStep[] = [
   { id: 'settlements', order: 100, run: settlementsTurn },
   { id: 'cityStates', order: 105, run: cityStatesTurn },
   { id: 'freeCities', order: 106, run: freeCitiesTurn },
+  { id: 'levies', order: 107, run: (draft, _ctx, emit) => leviesTurn(draft, emit) },
   { id: 'diplomacy', order: 110, run: diplomacyTurn },
   { id: 'trade', order: 120, run: tradeTurn },
   { id: 'greatPeople', order: 115, run: greatPeopleTurn },

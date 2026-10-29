@@ -413,6 +413,10 @@ export function collectRefs(entity: AnyEntity): Ref[] {
         out.push({ path: ['camps', 'units', i, 'era'], kind: 'era', id: u.era });
         ids(out, 'unit', u.units, ['camps', 'units', i, 'units']);
       });
+      ids(out, 'district', entity.trade.seaDistrict, ['trade', 'seaDistrict']);
+      entity.huts?.rewards.forEach((r, i) =>
+        ids(out, 'unit', r.unit, ['huts', 'rewards', i, 'unit']),
+      );
       break;
     default: {
       // Adding a content type? Teach this function which of its fields point at other content.

@@ -232,6 +232,12 @@ export const RulesDef = z.strictObject({
     perDestinationDistrict: YieldMap,
     /** ...and what the destination settlement gets. */
     destination: YieldMap,
+    /** Gold for plundering an enemy's route (`+ goldPerEra ×` the plunderer's era number). */
+    plunderGold: z.int().min(0).default(50),
+    plunderGoldPerEra: z.int().min(0).default(15),
+    /** Settlements with this district send routes over shallow water too, this far. */
+    seaDistrict: Id.optional(),
+    seaRange: z.int().min(1).default(20),
   }),
   luxuryHappinessRadius: z.int().min(0),
   progress: z.strictObject({
@@ -325,6 +331,19 @@ export const RulesDef = z.strictObject({
     }),
     /** Turns a war lasts before peace can be offered. */
     minWarTurns: z.int().min(0),
+    /**
+     * Pillaging an enemy's improvement: the moves it takes, the turns it's out of use, the gold
+     * it gives (`gold + goldPerEra ×` the pillager's era number) and the health it restores.
+     */
+    pillage: z
+      .strictObject({
+        moves: z.int().min(0),
+        turns: z.int().min(1),
+        gold: z.int().min(0),
+        goldPerEra: z.int().min(0),
+        heal: z.int().min(0),
+      })
+      .default({ moves: 3, turns: 10, gold: 20, goldPerEra: 10, heal: 25 }),
     /** XP needed for the 1st, 2nd... promotion (the last value repeats). */
     promotionXp: z.array(z.int().min(1)).min(1),
     /**
@@ -436,6 +455,16 @@ export const RulesDef = z.strictObject({
     maxUnits: z.int().min(0),
     /** Its people at the start. */
     startingPopulation: z.int().min(1),
+    /**
+     * Befriending a hostile camp into a city-state (Civ VII): influence a turn, the turns it
+     * takes (the first player to finish wins), and the envoys that player gets there.
+     */
+    befriendInfluence: z.int().min(0).default(30),
+    befriendTurns: z.int().min(1).default(4),
+    befriendEnvoys: z.int().min(0).default(3),
+    /** Levying a city-state's soldiers as its suzerain: gold per soldier, and for how long. */
+    levyGoldPerUnit: z.int().min(0).default(40),
+    levyTurns: z.int().min(1).default(30),
   }),
   /** Religion (docs/04-advanced-systems.md, "Religion"). */
   religion: z.strictObject({
@@ -510,6 +539,40 @@ export const RulesDef = z.strictObject({
     /** Raider units by era: the latest era any player has reached picks the list. */
     units: z.array(z.strictObject({ era: Id, units: z.array(Id).min(1) })).min(1),
   }),
+  /**
+   * Tribal villages (goody huts, docs/04-advanced-systems.md), with the `huts` setting: one per
+   * `landTilesPerHut` land tiles at the start, at least `minDistance` from every start, camp,
+   * city-state and other village. The first civ unit to step on one takes a reward, picked by
+   * weight from those open by then.
+   */
+  huts: z
+    .strictObject({
+      landTilesPerHut: z.int().min(1),
+      minDistance: z.int().min(1),
+      rewards: z
+        .array(
+          z.strictObject({
+            id: Id,
+            /** What the notice says was found. */
+            name: Text,
+            weight: z.int().min(1),
+            /** Only from this turn on. */
+            fromTurn: z.int().min(0).default(0),
+            gold: z.int().min(0).default(0),
+            faith: z.int().min(0).default(0),
+            /** A boost toward a tech or civic that's open to research. */
+            boost: z.enum(['tech', 'civic']).optional(),
+            /** People for the nearest settlement (needs one). */
+            population: z.int().min(0).default(0),
+            /** A free unit where the hut was. */
+            unit: Id.optional(),
+            /** The land this far around is revealed. */
+            reveal: z.int().min(0).default(0),
+          }),
+        )
+        .min(1),
+    })
+    .optional(),
   /**
    * Era score thresholds (docs/04-advanced-systems.md, "Eras and ages"), in score earned during
    * an era. For the era with order N, a dark age is below `darkBase + darkStep * (N - 1)`, a

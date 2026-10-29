@@ -156,20 +156,29 @@ export function placeCityStates(draft: Draft<GameState>, ctx: EngineContext, ran
     placed.push(t);
   }
   const defs = random.shuffle([...ctx.content.ids.cityState]);
-  placed.forEach((tile, i) => {
-    const id = `cs${i + 1}`;
-    const def = ctx.content.entities.cityState[defs[i]!]!;
-    const name = resolveText(ctx.content, def.name);
-    draft.players[id] = castDraft(cityStatePlayer(ctx, snap, id, name, tile));
-    draft.cityStates[id] = { def: def.id, envoys: {}, suzerain: null, met: [], quests: {} };
-    const sid = foundSettlement(draft, ctx, id, tile, () => {});
-    const s = draft.settlements[sid]!;
-    s.name = name;
-    s.population = rules.startingPopulation;
-    refreshCitizens(draft, ctx, sid);
-    const soldier = bestSoldier(ctx, view(draft), sid);
-    if (soldier) spawnUnit(draft, ctx, id, soldier, tile);
-  });
+  placed.forEach((tile, i) => createCityState(draft, ctx, `cs${i + 1}`, defs[i]!, tile));
+}
+
+/** A new city-state `id` of kind `def` (a `cityState` content id), founded on `tile`, with a soldier. */
+export function createCityState(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  id: PlayerId,
+  def: string,
+  tile: number,
+) {
+  const d = ctx.content.entities.cityState[def]!;
+  const name = resolveText(ctx.content, d.name);
+  draft.players[id] = castDraft(cityStatePlayer(ctx, view(draft), id, name, tile));
+  draft.cityStates[id] = { def: d.id, envoys: {}, suzerain: null, met: [], quests: {} };
+  const sid = foundSettlement(draft, ctx, id, tile, () => {});
+  const s = draft.settlements[sid]!;
+  s.name = name;
+  s.population = ctx.content.rules.cityStates.startingPopulation;
+  refreshCitizens(draft, ctx, sid);
+  const soldier = bestSoldier(ctx, view(draft), sid);
+  if (soldier) spawnUnit(draft, ctx, id, soldier, tile);
+  return sid;
 }
 
 /** The strongest land soldier a city-state's settlement can train now (cheapest on ties). */
@@ -250,7 +259,7 @@ export function chooseBuild(
   const snap = view(draft);
   const soldiers = Object.values(snap.units).filter(
     (u) =>
-      u.owner === s.owner &&
+      (u.owner === s.owner || u.levied?.from === s.owner) &&
       unitClassOf(ctx, u).combat &&
       (!near || distance(snap.map, u.tile, s.tile) <= 3),
   ).length;
