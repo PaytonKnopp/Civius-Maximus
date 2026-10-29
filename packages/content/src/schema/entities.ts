@@ -503,6 +503,13 @@ export const RulesDef = z.strictObject({
    * an era. For the era with order N, a dark age is below `darkBase + darkStep * (N - 1)`, a
    * golden one at that plus `goldenGap` or more. A golden age right after a dark one is heroic.
    */
+  /** Governors: turns to establish in a settlement, and the civics that each grant a title. */
+  governors: z
+    .strictObject({
+      establishTurns: z.int().min(0).max(20),
+      titleCivics: z.array(Id),
+    })
+    .default({ establishTurns: 5, titleCivics: [] }),
   ages: z
     .strictObject({
       darkBase: z.int().min(0),
@@ -1573,6 +1580,39 @@ export const MomentDef = z.strictObject({
   cap: z.int().min(1).optional(),
 });
 
+/**
+ * A governor (docs/04-advanced-systems.md, "Governors"): appointed with a governor title,
+ * assigned to one settlement, and promoted with more titles. Its settlement-scope effects apply
+ * only in the settlement it governs (once established); player-scope ones apply empire-wide.
+ */
+export const GovernorDef = z.strictObject({
+  type: z.literal('governor'),
+  id: Id,
+  name: Text,
+  /** "the Architect". */
+  title: Text,
+  description: Text,
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #d4a94e')
+    .default('#d4a94e'),
+  effects: z.array(Effect).default([]),
+  promotions: z
+    .array(
+      z.strictObject({
+        id: Id,
+        name: Text,
+        description: Text,
+        effects: z.array(Effect).default([]),
+        /** Promotions of this governor needed first. */
+        requires: z.array(Id).default([]),
+      }),
+    )
+    .default([]),
+  /** Drawn like a leader portrait (see `Portrait`). */
+  portrait: Portrait.optional(),
+});
+
 /** Schemas for entities that have an `id` and are stored in compiled content. */
 export const ENTITY_SCHEMAS = {
   yield: YieldDef,
@@ -1608,6 +1648,7 @@ export const ENTITY_SCHEMAS = {
   age: AgeDef,
   dedication: DedicationDef,
   moment: MomentDef,
+  governor: GovernorDef,
   rules: RulesDef,
 } as const;
 
@@ -1631,6 +1672,7 @@ export type DifficultyDef = z.infer<typeof DifficultyDef>;
 export type AgeDef = z.infer<typeof AgeDef>;
 export type DedicationDef = z.infer<typeof DedicationDef>;
 export type MomentDef = z.infer<typeof MomentDef>;
+export type GovernorDef = z.infer<typeof GovernorDef>;
 export type UnitClassDef = z.infer<typeof UnitClassDef>;
 export type UnitDef = z.infer<typeof UnitDef>;
 export type ImprovementDef = z.infer<typeof ImprovementDef>;
@@ -1689,6 +1731,7 @@ export interface EntityByType {
   age: AgeDef;
   dedication: DedicationDef;
   moment: MomentDef;
+  governor: GovernorDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

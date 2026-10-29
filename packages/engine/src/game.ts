@@ -24,6 +24,7 @@ import { upgradeHandlers } from './units/upgrades';
 import { cultureTurn } from './culture/tourism';
 import { scienceTurn } from './science/space';
 import { agesHandlers, agesTurn, awardMoments, newAgeState } from './eras/ages';
+import { governorHandlers, governorsTurn } from './governors/governors';
 import { applyStartEra } from './progress/startEra';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
@@ -193,6 +194,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
 
 const handlers: Handlers = {
   ...agesHandlers,
+  ...governorHandlers,
   ...unitHandlers,
   ...settlementHandlers,
   ...progressHandlers,
@@ -247,6 +249,7 @@ const turnSteps: TurnStep[] = [
   { id: 'culture', order: 128, run: cultureTurn },
   { id: 'science', order: 129, run: scienceTurn },
   { id: 'ages', order: 135, run: agesTurn },
+  { id: 'governors', order: 136, run: governorsTurn },
   { id: 'history', order: 140, run: (draft, ctx) => historyTurn(draft, ctx) },
 ];
 

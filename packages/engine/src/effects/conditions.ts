@@ -115,6 +115,8 @@ export function evaluateCondition(ctx: ConditionContext, c: Condition): boolean 
       (d) => oneOf(d, wanted) || oneOf(baseOf({ content: ctx.content }, 'district', d), wanted),
     );
   }
+  if ('settlement_has_governor' in c)
+    return !!settlement?.governor && oneOf(settlement.governor, c.settlement_has_governor);
   if ('has_tech' in c) return !!player && player.techs.includes(c.has_tech);
   if ('has_civic' in c) return !!player && player.civics.includes(c.has_civic);
   if ('government_is' in c) return !!player && oneOf(player.government, c.government_is);

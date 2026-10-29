@@ -1829,3 +1829,114 @@ button.turn-pill:hover {
     grid-column: 1;
   }
 }
+
+/* --- Governors ----------------------------------------------------------------------------- */
+
+.governor-grid {
+  flex: 1;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+  padding: 20px max(18px, env(safe-area-inset-right, 0px)) 28px
+    max(18px, env(safe-area-inset-left, 0px));
+  align-content: start;
+}
+
+.governor-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(27, 45, 60, 0.92), rgba(12, 22, 31, 0.92));
+  border: 1px solid var(--gold-lo);
+  border-top: 3px solid;
+  border-radius: 8px;
+  opacity: 0.9;
+}
+
+.governor-card.appointed {
+  opacity: 1;
+  box-shadow: 0 0 18px rgba(240, 212, 140, 0.12);
+}
+
+.governor-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.governor-head .portrait {
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  flex: none;
+}
+
+.governor-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  color: var(--gold-hi);
+}
+
+.governor-title {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cdbf9e;
+}
+
+.governor-desc,
+.governor-status {
+  margin: 0;
+  font-size: 13px;
+}
+
+.governor-status {
+  color: #b9e08c;
+}
+
+.promotions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.promotions li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.promotions li div {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+
+.promotions li strong {
+  font-size: 13px;
+  color: #efe4c8;
+}
+
+.promotions li.taken {
+  border-color: var(--gold-lo);
+}
+
+.promotions li.locked {
+  opacity: 0.55;
+}
+
+.governor-line {
+  color: #b9e08c;
+}

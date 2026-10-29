@@ -101,6 +101,7 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         golden: number;
       }
     | { type: 'natural_wonder_found'; player: PlayerId; feature: string; tile: number }
+    | { type: 'governor_established'; player: PlayerId; governor: string; settlement: SettlementId }
     | {
         type: 'game_ended';
         reason: 'score' | 'conquest' | 'domination' | 'religion' | 'science' | 'culture';

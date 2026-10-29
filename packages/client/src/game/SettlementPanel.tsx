@@ -188,6 +188,25 @@ export function SettlementPanel({
               ? `Being razed: gone in ${s.population} turn${s.population === 1 ? '' : 's'}`
               : `${s.kind === 'city' ? 'City' : 'Town'} · ${growthText}`}
           </p>
+          {(() => {
+            const owner = state.players[s.owner];
+            const entry = Object.entries(owner?.governors ?? {}).find(
+              ([, g]) => g.settlement === s.id,
+            );
+            if (!entry) return null;
+            const [gid, g] = entry;
+            const def = ctx.content.entities.governor[gid];
+            const left = Math.max(0, g.activeOn - state.turn);
+            return (
+              <p className="unit-sub governor-line">
+                Governor:{' '}
+                {def
+                  ? `${resolveText(ctx.content, def.name)} ${resolveText(ctx.content, def.title)}`
+                  : gid}
+                {g.established ? '' : ` (settling in, ${left} turn${left === 1 ? '' : 's'})`}
+              </p>
+            );
+          })()}
         </div>
         <button type="button" className="close" onClick={onClose} aria-label="Close">
           ✕

@@ -30,6 +30,8 @@ export interface SettlementFacts {
   onRiver?: boolean;
   /** Soldiers trained there so far. */
   unitsTrained?: number;
+  /** Its established governor (a `governor` id). */
+  governor?: string;
 }
 
 /** What player conditions look at (techs and civics finished, government...). */

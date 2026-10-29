@@ -392,6 +392,8 @@ export interface PlayerState {
   declaredWarTurn: number | null;
   /** Era score and the age (absent for city-states and raiders). */
   ages?: AgeState;
+  /** Appointed governors, by `governor` content id. */
+  governors?: Record<string, GovernorState>;
   /** The tech tree (paid with science) and the civics tree (paid with culture). */
   techs: Track;
   civics: Track;
@@ -434,6 +436,18 @@ export interface AgeState {
   timeline: { turn: number; moment: string; score: number; era: string }[];
   /** The age each past era had: era id → age id. */
   history: Record<string, string>;
+}
+
+/** One appointed governor (docs/04-advanced-systems.md, "Governors"). */
+export interface GovernorState {
+  /** Promotion ids taken. */
+  promotions: string[];
+  /** The settlement it serves, or null while unassigned. */
+  settlement: SettlementId | null;
+  /** The turn it becomes established in that settlement. */
+  activeOn: number;
+  /** Established: its effects apply. */
+  established: boolean;
 }
 
 export interface Track {

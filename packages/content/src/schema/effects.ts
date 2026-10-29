@@ -55,6 +55,7 @@ export type Condition =
   | { settlement_has_building: IdOrIds }
   /** The settlement has one of these districts (or a unique one replacing it). */
   | { settlement_has_district: IdOrIds }
+  | { settlement_has_governor: IdOrIds }
   | { settlement_on_river: boolean }
   /** Fewer than this many soldiers trained there so far. */
   | { settlement_units_trained_below: number }
@@ -93,6 +94,8 @@ export const Condition: z.ZodType<Condition> = z.lazy(() =>
     z.strictObject({ settlement_population_at_least: z.int().min(1) }),
     z.strictObject({ settlement_has_building: IdOrIds }),
     z.strictObject({ settlement_has_district: IdOrIds }),
+    /** The settlement's established governor is one of these. */
+    z.strictObject({ settlement_has_governor: IdOrIds }),
     z.strictObject({ has_tech: Id }),
     z.strictObject({ has_civic: Id }),
     z.strictObject({ government_is: IdOrIds }),

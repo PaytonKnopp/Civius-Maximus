@@ -20,9 +20,10 @@ import {
 } from '../greatpeople/greatpeople';
 import { faithUnitCost, maxReligions, pantheonCost, pantheonOf } from '../religion/rules';
 import { countsAs } from '../uniques';
-import { isCoastal } from '../settlements/rules';
+import { isCoastal, settlementsOf } from '../settlements/rules';
 import { obsoletedBy, upgradeCost, upgradeProblem } from '../units/upgrades';
 import { jitter, personalityOf, roleOf, type Turn } from './turn';
+import { titlesAvailable } from '../governors/governors';
 import { effectValue, happinessWeight, yieldsValue } from './values';
 
 /** Which trait each dedication serves (an AI leader picks the ones its personality likes). */
@@ -54,9 +55,72 @@ export function chooseDedications(t: Turn) {
   if (pick.length > 0) t.act({ type: 'choose_dedications', player: t.player, dedications: pick });
 }
 
+/** Which trait each governor serves. */
+const GOVERNOR_TRAITS: Record<string, keyof ReturnType<typeof personalityOf>> = {
+  gov_architect: 'wonders',
+  gov_steward: 'expansion',
+  gov_envoy: 'diplomacy',
+  gov_warden: 'aggression',
+  gov_scholar: 'science',
+  gov_treasurer: 'gold',
+  gov_abbot: 'faith',
+};
+
+/**
+ * Governors (docs/04-advanced-systems.md, "Governors"): appoint while settlements outnumber
+ * governors, otherwise promote; post each one to the biggest settlement without a governor.
+ */
+export function manageGovernors(t: Turn) {
+  const traits = personalityOf(t.ctx, t.state, t.player);
+  const weight = (id: string) => {
+    const trait = GOVERNOR_TRAITS[id];
+    return (trait ? Number(traits[trait] ?? 5) : 5) * 100 + jitter(t.player, id);
+  };
+  for (let guard = 0; guard < 8 && titlesAvailable(t.ctx, t.p) > 0; guard++) {
+    const appointed = Object.keys(t.p.governors ?? {});
+    const settlements = settlementsOf(t.state, t.player).length;
+    const free = t.ctx.content.ids.governor.filter((id) => !appointed.includes(id));
+    if (free.length > 0 && appointed.length < settlements) {
+      const best = [...free].sort((a, b) => weight(b) - weight(a))[0]!;
+      if (!t.act({ type: 'appoint_governor', player: t.player, governor: best })) break;
+      continue;
+    }
+    // Promote the governor with the most valuable promotion open.
+    const options = appointed.flatMap((gid) => {
+      const g = t.p.governors![gid]!;
+      return t.ctx.content.entities.governor[gid]!.promotions.filter(
+        (pr) => !g.promotions.includes(pr.id) && pr.requires.every((r) => g.promotions.includes(r)),
+      ).map((pr) => ({ gid, pr: pr.id, w: weight(gid) + jitter(gid, pr.id) }));
+    });
+    const top = options.sort((a, b) => b.w - a.w)[0];
+    if (
+      !top ||
+      !t.act({ type: 'promote_governor', player: t.player, governor: top.gid, promotion: top.pr })
+    )
+      break;
+  }
+  const govs = t.p.governors ?? {};
+  const taken = new Set(Object.values(govs).map((g) => g.settlement));
+  const open = settlementsOf(t.state, t.player)
+    .filter((s) => !taken.has(s.id))
+    .sort(
+      (a, b) =>
+        Number(b.capital) - Number(a.capital) ||
+        b.population - a.population ||
+        (a.id < b.id ? -1 : 1),
+    );
+  for (const [gid, g] of Object.entries(govs).sort(([a], [b]) => weight(b) - weight(a))) {
+    if (g.settlement !== null) continue;
+    const s = open.shift();
+    if (!s) break;
+    t.act({ type: 'assign_governor', player: t.player, governor: gid, settlement: s.id });
+  }
+}
+
 /** Research, civics, government and policy cards. */
 export function manageProgress(t: Turn) {
   chooseDedications(t);
+  manageGovernors(t);
   for (const kind of ['tech', 'civic'] as const) {
     if (trackOf(t.p, kind).current) continue;
     const next = bestNode(t, kind);

@@ -73,6 +73,8 @@ function condition(out: Refs, c: Condition, path: PathSegment[]) {
     ids(out, 'building', c.settlement_has_building, [...path, 'settlement_has_building']);
   else if ('settlement_has_district' in c)
     ids(out, 'district', c.settlement_has_district, [...path, 'settlement_has_district']);
+  else if ('settlement_has_governor' in c)
+    ids(out, 'governor', c.settlement_has_governor, [...path, 'settlement_has_governor']);
   else if ('has_tech' in c) ids(out, 'tech', c.has_tech, [...path, 'has_tech']);
   else if ('has_civic' in c) ids(out, 'civic', c.has_civic, [...path, 'has_civic']);
   else if ('government_is' in c)
@@ -235,6 +237,10 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ids(out, 'moment', entity.bonusMoments, ['bonusMoments']);
       break;
     case 'moment':
+      break;
+    case 'governor':
+      effectList(out, entity.effects, ['effects']);
+      entity.promotions.forEach((p, i) => effectList(out, p.effects, ['promotions', i, 'effects']));
       break;
     case 'unitClass':
       entity.bonuses.forEach((b, i) => ids(out, 'unitClass', b.vs, ['bonuses', i, 'vs']));

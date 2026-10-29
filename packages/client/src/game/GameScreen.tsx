@@ -21,6 +21,7 @@ import {
   celebrationThreshold,
   nodeCost,
   playerEra,
+  titlesAvailable,
   type PlayerId,
   pantheonOf,
   policySlots,
@@ -84,6 +85,7 @@ import { HINTS, hintFor, hintsOn, markSeen, seenHints, setHints } from './hints'
 import { type Lens, LENSES, lensFor } from './lenses';
 import { LeaderIntro, LeaderSpeech, type SpeechLine } from './LeaderSpeech';
 import { AgesScreen } from './AgesScreen';
+import { GovernorsScreen } from './GovernorsScreen';
 import { Minimap } from './Minimap';
 import { music, play, type Sfx } from '../audio';
 import { LeaderHead } from '../ui/LeaderCard';
@@ -251,6 +253,11 @@ function noticeFor(
       return e.player === ME
         ? `A ${name} begins! (${e.score} era score last era) Choose your dedication.`
         : `${civName(content, state, e.player)} enters a ${name}`;
+    }
+    case 'governor_established': {
+      if (e.player !== ME) return undefined;
+      const g = content.entities.governor[e.governor];
+      return `${g ? resolveText(content, g.name) : e.governor} is now governing ${name(e.settlement)}`;
     }
     case 'natural_wonder_found': {
       const f = content.entities.feature[e.feature];
@@ -517,6 +524,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     | { kind: 'cityStates' }
     | { kind: 'victories' }
     | { kind: 'ages' }
+    | { kind: 'governors' }
     | { kind: 'graphs' }
     | { kind: 'help' }
     | null
@@ -1223,6 +1231,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       else if (e.key === 'i') setOverlay({ kind: 'cityStates' });
       else if (e.key === 'v') setOverlay({ kind: 'victories' });
       else if (e.key === 'e') setOverlay({ kind: 'ages' });
+      else if (e.key === 'o') setOverlay({ kind: 'governors' });
       else if (e.key === 'h') setOverlay({ kind: 'graphs' });
       else if (e.key === '?') setOverlay({ kind: 'help' });
       else if (e.key === 'l') setLens((l) => LENSES[(LENSES.indexOf(l) + 1) % LENSES.length]!);
@@ -1326,6 +1335,12 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
                 return filled < slots ? `${filled}/${slots}` : undefined;
               })()}
               onClick={openGovernment}
+            />
+            <ScreenButton
+              icon="capital"
+              label="Governors (O)"
+              badge={titlesAvailable(ctx, me) > 0 ? String(titlesAvailable(ctx, me)) : undefined}
+              onClick={() => setOverlay({ kind: 'governors' })}
             />
             <ScreenButton
               icon="greatPeople"
@@ -1687,6 +1702,15 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             return ok;
           }}
           prophet={overlay.prophet}
+          onClose={() => setOverlay(null)}
+        />
+      )}
+      {overlay?.kind === 'governors' && (
+        <GovernorsScreen
+          ctx={ctx}
+          state={state}
+          viewer={viewer}
+          act={act}
           onClose={() => setOverlay(null)}
         />
       )}
