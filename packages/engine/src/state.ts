@@ -59,6 +59,10 @@ export interface GameState {
   worldMoments?: string[];
   /** Great works, by id (`gw3`...). See greatworks/greatworks.ts. */
   greatWorks?: Record<string, GreatWorkState>;
+  /** Climate change (with the disasters setting): world emissions so far and the phase reached. */
+  climate?: { emissions: number; phase: number; submerged?: number };
+  /** The latest natural disasters, newest last (a short history for the screens). */
+  disasterLog?: { turn: number; disaster: string; tile: number }[];
   /** The World Congress, once it has formed. See congress/congress.ts. */
   congress?: CongressState;
   /** Spies, by id (`spy5`...), and how many names have been handed out. See espionage/. */
@@ -395,6 +399,8 @@ export interface GameSettings {
   loyalty?: boolean | undefined;
   /** Espionage: spies and their missions (on unless false). */
   espionage?: boolean | undefined;
+  /** Natural disasters and climate change (on unless false). */
+  disasters?: boolean | undefined;
   /** World Congress: favor, sessions and resolutions (on unless false). */
   congress?: boolean | undefined;
   /** Diplomatic victory, through the World Congress (on unless false). */

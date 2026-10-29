@@ -2012,7 +2012,8 @@ button.turn-pill:hover {
 
 /* Great works */
 .great-works-body,
-.congress-body {
+.congress-body,
+.climate-body {
   flex: 1;
   overflow: auto;
   display: grid;
@@ -2201,4 +2202,13 @@ button.turn-pill:hover {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+/* Climate */
+.climate-bar span {
+  background: linear-gradient(90deg, #c9a14f, #b5562d);
+}
+
+.climate-bar {
+  margin: 4px 0 8px;
 }

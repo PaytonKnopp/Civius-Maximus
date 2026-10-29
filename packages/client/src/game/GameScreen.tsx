@@ -48,6 +48,7 @@ import {
   spiesOf,
   spyCapacity,
   congressOn,
+  disastersOn,
 } from '@cx/engine';
 import { type GameHandle, LocalGame, makeSave, RemoteGame } from '@cx/host';
 import { Icon, Rich } from '../ui/Icon';
@@ -94,6 +95,7 @@ import { GovernorsScreen } from './GovernorsScreen';
 import { GreatWorksScreen } from './GreatWorksScreen';
 import { EspionageScreen } from './EspionageScreen';
 import { CongressScreen } from './CongressScreen';
+import { ClimateScreen } from './ClimateScreen';
 import { Minimap } from './Minimap';
 import { music, play, type Sfx } from '../audio';
 import { LeaderHead } from '../ui/LeaderCard';
@@ -159,7 +161,11 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
       return e.player === me ? 'notify' : null;
     case 'congress_session':
     case 'congress_founded':
+    case 'climate_phase':
+    case 'sea_level_rose':
       return 'notify';
+    case 'disaster':
+      return e.settlements.some((id) => s.settlements[id]?.owner === me) ? 'war' : null;
     case 'loyalty_falling':
       return e.owner === me ? 'notify' : null;
     case 'unit_promoted':
@@ -272,6 +278,22 @@ function noticeFor(
       return e.player === ME
         ? `A ${name} begins! (${e.score} era score last era) Choose your dedication.`
         : `${civName(content, state, e.player)} enters a ${name}`;
+    }
+    case 'disaster': {
+      const def = content.entities.disaster[e.disaster];
+      if (!def) return undefined;
+      const mine = e.settlements.filter((id) => state.settlements[id]?.owner === ME);
+      const what = resolveText(content, def.name);
+      if (mine.length === 0) return `${what} struck far from you`;
+      return `${what} hit ${mine.map((id) => name(id)).join(' and ')}${e.pillaged > 0 ? `: ${e.pillaged} improvement${e.pillaged === 1 ? '' : 's'} damaged for a few turns` : ''}${Object.keys(def.fertility).length > 0 ? ', but the land is richer' : ''}`;
+    }
+    case 'sea_level_rose':
+      return `The seas are rising: ${e.tiles.length} tile${e.tiles.length === 1 ? '' : 's'} of low coastal land went under (X)`;
+    case 'climate_phase': {
+      const p = content.rules.climate.phases[e.phase - 1];
+      return p
+        ? `Climate: ${resolveText(content, p.name)}. Disasters are more likely (X)`
+        : undefined;
     }
     case 'congress_founded':
       return `The World Congress has formed (${civName(content, state, e.by)} was first into the age). Diplomatic favor comes in every turn (U)`;
@@ -610,6 +632,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     | { kind: 'greatWorks' }
     | { kind: 'espionage' }
     | { kind: 'congress' }
+    | { kind: 'climate' }
     | { kind: 'graphs' }
     | { kind: 'help' }
     | null
@@ -847,6 +870,10 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           view.flash(e.tile, 'Destroyed', e.owner === viewer ? 'damage' : 'good');
         } else if (e.type === 'civilian_captured' || e.type === 'settlement_captured') {
           view.flash(e.tile, 'Captured!', e.by === viewer ? 'good' : 'damage');
+        } else if (e.type === 'disaster') {
+          const def = content.entities.disaster[e.disaster];
+          view.animateDisaster(e.tiles, def?.visual ?? 'dust');
+          if (def) view.flash(e.tile, resolveText(content, def.name), 'damage');
         }
       }
       setState(s);
@@ -1321,6 +1348,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       else if (e.key === 'k') setOverlay({ kind: 'greatWorks' });
       else if (e.key === 'y' && espionageOn(state)) setOverlay({ kind: 'espionage' });
       else if (e.key === 'u' && congressOn(state)) setOverlay({ kind: 'congress' });
+      else if (e.key === 'x' && disastersOn(state)) setOverlay({ kind: 'climate' });
       else if (e.key === 'h') setOverlay({ kind: 'graphs' });
       else if (e.key === '?') setOverlay({ kind: 'help' });
       else if (e.key === 'l') setLens((l) => LENSES[(LENSES.indexOf(l) + 1) % LENSES.length]!);
@@ -1441,6 +1469,13 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               label="Great works (K)"
               onClick={() => setOverlay({ kind: 'greatWorks' })}
             />
+            {disastersOn(state) && (state.disasterLog?.length || state.climate) && (
+              <ScreenButton
+                icon="climate"
+                label="Climate and disasters (X)"
+                onClick={() => setOverlay({ kind: 'climate' })}
+              />
+            )}
             {state.congress && congressOn(state) && (
               <ScreenButton
                 icon="congress"
@@ -1825,6 +1860,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           prophet={overlay.prophet}
           onClose={() => setOverlay(null)}
         />
+      )}
+      {overlay?.kind === 'climate' && (
+        <ClimateScreen ctx={ctx} state={state} viewer={viewer} onClose={() => setOverlay(null)} />
       )}
       {overlay?.kind === 'congress' && (
         <CongressScreen

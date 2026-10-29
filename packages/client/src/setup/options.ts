@@ -44,6 +44,8 @@ export interface NewGameOptions {
   /** The World Congress, and the diplomatic victory it leads to. */
   congress: boolean;
   diplomatic: boolean;
+  /** Natural disasters and climate change. */
+  disasters: boolean;
   turnLimit: number | null;
   speed: string;
   difficulty: string;
@@ -74,6 +76,7 @@ export const DEFAULT_OPTIONS: NewGameOptions = {
   espionage: true,
   congress: true,
   diplomatic: true,
+  disasters: true,
   turnLimit: null,
   speed: 'speed_standard',
   difficulty: 'difficulty_prince',
@@ -102,6 +105,7 @@ export function makeSetup(o: NewGameOptions): GameSetup {
       ...(o.espionage === false ? { espionage: false } : {}),
       ...(o.congress === false ? { congress: false } : {}),
       ...(o.diplomatic === false ? { diplomatic: false } : {}),
+      ...(o.disasters === false ? { disasters: false } : {}),
       turnLimit: o.turnLimit,
       speed: o.speed,
       difficulty: o.difficulty,

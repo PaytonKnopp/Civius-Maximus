@@ -522,6 +522,11 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
                   'Sessions every few turns vote on resolutions; favor buys votes.',
                 )}
                 {toggle(
+                  'disasters',
+                  'Climate and disasters',
+                  'Floods, storms, droughts and eruptions; emissions raise the seas.',
+                )}
+                {toggle(
                   'espionage',
                   'Espionage',
                   'Spies that guard your settlements or work against others.',

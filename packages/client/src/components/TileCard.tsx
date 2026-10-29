@@ -29,6 +29,8 @@ export function TileCard({
     ...map.tiles[i]!,
     river: isOnRiver(map, rivers, i),
     ownerId: null,
+    // A damaged improvement gives nothing until it's repaired.
+    improvement: map.tiles[i]!.pillaged !== undefined ? null : map.tiles[i]!.improvement,
   });
   const ctx = {
     content,
@@ -90,6 +92,28 @@ export function TileCard({
             <dd>
               <Icon name={t.resource!} size={18} /> {name(resource.name)}{' '}
               <span className={`chip ${resource.class}`}>{resource.class}</span>
+            </dd>
+          </>
+        )}
+        {t.pillaged !== undefined && t.improvement && (
+          <>
+            <dt>Damaged</dt>
+            <dd>
+              {name(content.entities.improvement[t.improvement]?.name ?? t.improvement)} out of use
+              until turn {t.pillaged}
+            </dd>
+          </>
+        )}
+        {t.fertile && Object.keys(t.fertile).length > 0 && (
+          <>
+            <dt>Fertile</dt>
+            <dd>
+              <Rich
+                text={Object.entries(t.fertile)
+                  .map(([y, n]) => `+${n} ${content.entities.yield[y]?.icon ?? y}`)
+                  .join(' ')}
+              />{' '}
+              left by disasters
             </dd>
           </>
         )}

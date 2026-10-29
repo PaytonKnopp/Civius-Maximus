@@ -91,6 +91,8 @@ export function tileFacts(state: GameState, i: number): TileFacts {
   const t = state.map.tiles[i]!;
   return {
     ...t,
+    // A damaged improvement does nothing until it's repaired.
+    improvement: t.pillaged !== undefined ? null : t.improvement,
     river: tileOnRiver(state.map, i),
     ownerId: t.owner,
     center: t.settlement !== null && state.settlements[t.settlement]?.tile === i,

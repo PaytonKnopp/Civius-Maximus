@@ -130,6 +130,8 @@ export interface MapRenderer {
   flash(tile: number, text: string, tone: FlashTone): void;
   /** A unit lunges at a tile (melee) or the tile is hit by a shot (ranged). */
   animateAttack(unit: string | null, from: number, tile: number, mode: 'melee' | 'ranged'): void;
+  /** A disaster strikes these tiles (a plume over each). */
+  animateDisaster(tiles: readonly number[], visual: 'mist' | 'dust' | 'fire' | 'smoke'): void;
   focusPlayer(player: string | undefined): void;
   /** Pans to a tile, zooming in only if the camera is too far out to see units; `close` zooms in
    * for a good look (used at the start of a game). */

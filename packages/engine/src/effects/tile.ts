@@ -17,6 +17,8 @@ export interface TileFacts {
   /** True if a river runs along any edge of the tile. */
   river: boolean;
   ownerId: string | null;
+  /** Lasting extra yields left by disasters. */
+  fertile?: Record<string, number> | undefined;
 }
 
 /** What settlement conditions look at. */

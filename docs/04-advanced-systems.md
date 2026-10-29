@@ -460,6 +460,7 @@ forces new crisis policies. Off by default, for groups that like chaos.
   diplomatic points. Built in V1 final F13; see "World Congress" below.
 - **Climate & disasters:** floods (fertilize floodplains but damage improvements), volcanic
   eruptions, storms, and CO₂-driven global warming with rising sea levels in the late game.
+  Built in V1 final F14; see "Climate & disasters" below.
 - **Corporations/monopolies:** control luxury resources for empire-wide bonuses.
 
 ---
@@ -556,6 +557,51 @@ Built in V1 final F12. On unless the `espionage` setup toggle is off.
   and gold. They need at least a 40% chance.
 - **Deviation from Civ VI:** no spy units, districts or escape routes. The Civ V-style agent
   model keeps a two-person game readable and hides spies without special vision rules.
+
+---
+
+## Climate & disasters
+
+Built in V1 final F14, after Civ VI's Gathering Storm. On unless the "Climate and disasters" setup
+toggle is off.
+
+- **Disasters** (`disaster` content). Each kind may strike once a turn somewhere it can, from
+  turn 10. The base chance is per thousand, scaled by `rules.disasters.intensity` and by the
+  climate phase.
+
+  | Disaster | Where | What it does |
+  |---|---|---|
+  | River Flood | floodplains (2 tiles, floodplains only) | half the improvements damaged; units −15; +1 food left behind |
+  | Great Storm | coastal land (2 tiles) | 30% of improvements damaged; units −25 |
+  | Dust Storm | desert (2 tiles) | 25% damaged; units −20; +1 production left behind |
+  | Drought | grassland or plains away from rivers (2 tiles) | settlements there lose half their stored food |
+  | Volcanic Eruption | a volcano (1 tile) | 60% damaged; units −50; the settlement there loses a citizen; +1 food and +1 production |
+
+  - **Damaged improvements** give nothing for 5 turns (`repairTurns`), then repair themselves.
+    There are no builders to send, as in Civ VII.
+  - **Fertility** lasts, up to +2 of a yield per tile (`maxFertility`).
+  - Units are never killed by a disaster, and a settlement never loses its last citizen.
+- **Volcanoes:** a new feature on 6% of mountains (`rules.mapgen.volcanoes`). They're placed
+  as the last step of map generation, so the rest of a seed's map doesn't change. The 3D view
+  shows each as a smoking vent.
+- **Climate:**
+  - Factories (2), power plants (3) and electronics works (2) emit each turn (`emissions` on
+    buildings).
+  - World emissions add up through four phases (`rules.climate.phases`): Warming at 150,
+    Rising Seas at 400, Climate Crisis at 800, Drowned Coasts at 1,400.
+  - Each phase makes disasters 25%, 50%, 100% and then 150% likelier.
+  - Each phase also puts more **low coastal land** under the sea: 15%, 35%, 60% and then 90%.
+    That's flat land next to the sea, never a settlement's center, a district, a wonder or a
+    natural wonder. Land units there move to the nearest land.
+- **On screen:**
+  - The **Climate** screen (key **X**; its button appears with the first disaster or
+    emissions) shows world emissions toward the next phase, each civ's share, the latest
+    disasters and where they struck, and what each kind does.
+  - Disasters show as plumes over the tiles they hit in 3D, with a flash on the map.
+  - Notices say which of your settlements were hit and what they lost.
+  - The tile card shows a damaged improvement (and the turn it's back) and fertile soil.
+- **Not in this version:** flood barriers, carbon capture, clean power, nuclear accidents, and
+  disasters on districts.
 
 ---
 

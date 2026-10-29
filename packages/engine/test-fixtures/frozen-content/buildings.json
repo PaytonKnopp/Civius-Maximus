@@ -707,7 +707,7 @@
     "type": "building",
     "id": "building_factory",
     "name": "Factory",
-    "description": "+4 production.",
+    "description": "+4 production. Emissions 2 a turn.",
     "icon": "Fa",
     "cost": 390,
     "maintenance": 3,
@@ -728,13 +728,14 @@
         }
       }
     ],
-    "requiresTech": "tech_industrialization"
+    "requiresTech": "tech_industrialization",
+    "emissions": 2
   },
   {
     "type": "building",
     "id": "building_electronics_works",
     "name": "Electronics Works",
-    "description": "+4 production; +4 culture from the Modern era.",
+    "description": "+4 production; +4 culture from the Modern era. Emissions 2 a turn.",
     "icon": "EW",
     "cost": 390,
     "maintenance": 3,
@@ -772,7 +773,8 @@
         }
       }
     ],
-    "requiresTech": "tech_industrialization"
+    "requiresTech": "tech_industrialization",
+    "emissions": 2
   },
   {
     "type": "building",
@@ -808,7 +810,7 @@
     "type": "building",
     "id": "building_power_plant",
     "name": "Power Plant",
-    "description": "+5 production.",
+    "description": "+5 production. Emissions 3 a turn.",
     "icon": "PP",
     "cost": 450,
     "maintenance": 4,
@@ -817,7 +819,8 @@
     },
     "requiresBuilding": "building_factory",
     "district": "district_industrial_zone",
-    "requiresTech": "tech_electricity"
+    "requiresTech": "tech_electricity",
+    "emissions": 3
   },
   {
     "type": "building",

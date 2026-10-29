@@ -71,6 +71,7 @@ export function computeTileYields(
     if (!feature) throw new Error(`Unknown feature "${tile.feature}"`);
     addMap(feature.yields, feature.id, resolveText(content, feature.name));
   }
+  if (tile.fertile) addMap(tile.fertile, 'fertile', 'Fertile soil');
   // Natural wonders next door share some of their bounty.
   for (const n of ctx.neighbors ?? []) {
     const nw = n.feature ? content.entities.feature[n.feature] : undefined;

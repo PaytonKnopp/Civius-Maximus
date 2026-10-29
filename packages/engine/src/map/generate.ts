@@ -203,6 +203,15 @@ export function generateMap(input: GenerateInput, random: Random): GenerateResul
 
   // 9. Natural wonders, away from each other and from every start.
   placeNaturalWonders(map, content, size.naturalWonders, Object.values(starts), random);
+
+  // 10. Volcanoes, last, so they change nothing else about the map.
+  const v = content.rules.mapgen.volcanoes;
+  if (v && v.percent > 0 && content.entities.feature[v.feature]) {
+    for (const t of map.tiles) {
+      if (t.elevation === 'mountain' && t.feature === null && random.chance(v.percent))
+        t.feature = v.feature;
+    }
+  }
   return { map, starts };
 }
 
