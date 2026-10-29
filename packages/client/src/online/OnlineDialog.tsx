@@ -13,7 +13,28 @@ export interface OnlineOptions {
   rivals: number;
   speed: string;
   difficulty: string;
+  /** An `era` content id to start in. */
+  startEra?: string;
+  /** Rules (all on unless turned off), as in the setup screen. */
+  rules?: {
+    camps: boolean;
+    cityStates: boolean;
+    domination: boolean;
+    religion: boolean;
+    science: boolean;
+    culture: boolean;
+  };
+  turnLimit?: number | null;
 }
+
+const RULES: [keyof NonNullable<OnlineOptions['rules']>, string][] = [
+  ['camps', 'Hostile camps'],
+  ['cityStates', 'City-states'],
+  ['domination', 'Domination victory'],
+  ['religion', 'Religious victory'],
+  ['science', 'Science victory'],
+  ['culture', 'Culture victory'],
+];
 
 interface Props {
   content: CompiledContent;
@@ -63,6 +84,16 @@ export function OnlineDialog(props: Props) {
     rivals: 2,
     speed: 'speed_standard',
     difficulty: 'difficulty_prince',
+    startEra: 'era_ancient',
+    rules: {
+      camps: true,
+      cityStates: true,
+      domination: true,
+      religion: true,
+      science: true,
+      culture: true,
+    },
+    turnLimit: null,
   });
   const [friends, setFriends] = useState(1);
   const [error, setError] = useState<string>();
@@ -265,6 +296,56 @@ export function OnlineDialog(props: Props) {
                 </select>
               </div>
             </div>
+            <details className="online-rules">
+              <summary>More rules</summary>
+              <div className="row">
+                <div>
+                  <label htmlFor="online-era">Start era</label>
+                  <select
+                    id="online-era"
+                    value={o.startEra ?? 'era_ancient'}
+                    onChange={(e) => setO({ ...o, startEra: e.target.value })}
+                  >
+                    {Object.values(content.entities.era)
+                      .sort((a, b) => a.order - b.order)
+                      .map((x) => (
+                        <option key={x.id} value={x.id}>
+                          {resolveText(content, x.name)}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="online-limit">Turn limit</label>
+                  <select
+                    id="online-limit"
+                    value={o.turnLimit ?? ''}
+                    onChange={(e) =>
+                      setO({ ...o, turnLimit: e.target.value ? Number(e.target.value) : null })
+                    }
+                  >
+                    <option value="">None</option>
+                    {[100, 150, 250, 330, 500].map((n) => (
+                      <option key={n} value={n}>
+                        {n} turns
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {RULES.map(([key, label]) => (
+                <label key={key} className="check">
+                  <input
+                    type="checkbox"
+                    checked={o.rules?.[key] ?? true}
+                    onChange={(e) =>
+                      setO({ ...o, rules: { ...o.rules!, [key]: e.target.checked } })
+                    }
+                  />
+                  {label}
+                </label>
+              ))}
+            </details>
           </>
         )}
 

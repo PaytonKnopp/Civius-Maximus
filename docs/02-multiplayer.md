@@ -56,6 +56,26 @@ Immortal and Deity give them more yields (+10% to +50% science, culture, gold, p
 faith), more strength (+1 to +4) and extra starting units. The bonuses are ordinary effects, so
 they show in every "why?" breakdown. A seat can have its own difficulty in the setup.
 
+**Built so far (V1 final, F6):** the setup screen (Home → New game…) has Basic and Advanced
+tabs.
+- **Basic:** your leader (portrait, abilities and uniques; or Random), map type, size,
+  difficulty, speed, number of rivals and start era, with notes on what each choice means, and
+  presets.
+- **Advanced:** every seat (humans for hotseat, AI rivals) with its own leader, team and AI
+  difficulty. A leader one seat has is greyed out for the others, and Random seats get a leader
+  nobody picked. The map section has type, size, resources, start positions (standard or
+  balanced), seed and wrap. The rules section has start era, turn limit, camps, city-states and
+  each victory.
+- **Presets:** six built in (Standard, Duel, Grand empire, Conquest, Peaceful builder,
+  Renaissance start), plus your own, saved in the browser. The screen reopens on your last
+  setup.
+- **Start era** (`era.start` content): every tech and civic of the earlier eras is done, and
+  each player gets the era's gold and units. For example, the Medieval start gives 150 gold, two
+  settlers, a swordsman and a crossbowman.
+- Hosting online has the same start era, turn limit and rule switches under "More rules".
+- Leader picks in the online lobby and turn timers come with F20. World settings (age,
+  temperature, rainfall, sea level) come with the map work (F7).
+
 **Rules (toggles)**
 
 Religion, theological combat, great people, independent powers (city-states and barbarians),

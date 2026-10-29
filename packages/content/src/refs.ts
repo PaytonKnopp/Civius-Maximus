@@ -298,6 +298,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       if (entity.ability) effectList(out, entity.ability.effects, ['ability', 'effects']);
       break;
     case 'era':
+      ids(out, 'unit', entity.start?.units, ['start', 'units']);
       break;
     case 'leader':
       out.push({ path: ['civ'], kind: 'civ', id: entity.civ });

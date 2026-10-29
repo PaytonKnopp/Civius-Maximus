@@ -6,6 +6,7 @@ import { greatPersonCost } from './greatpeople/greatpeople';
 import { activeSources } from './progress/sources';
 import { nodeCost } from './progress/rules';
 import { growthThreshold, itemCost } from './settlements/rules';
+import type { GameState } from './state';
 import { ctx, testState } from './testing/world';
 
 const FIELD = Array.from({ length: 5 }, () => '.'.repeat(10));
@@ -69,5 +70,48 @@ describe('difficulty', () => {
 
   it('refuses a difficulty that does not exist', () => {
     expect(() => createGame(setup('difficulty_nope'), full)).toThrow(/Unknown difficulty/);
+  });
+});
+
+describe('start era', () => {
+  const full = { content: compileFromDirs().content! };
+  const setupWith = (startEra?: string): GameSetup => ({
+    gameId: 'start-era',
+    settings: {
+      seed: 'start-era',
+      turnLimit: null,
+      ...(startEra ? { startEra } : {}),
+      map: {
+        script: 'continents',
+        size: 'tiny',
+        wrapX: true,
+        resources: 'standard',
+        startBalance: 'normal',
+      },
+    },
+    players: [
+      { id: 'p1', name: 'Human', kind: 'human' },
+      { id: 'p2', name: 'AI', kind: 'ai' },
+    ],
+  });
+
+  it('finishes the earlier eras and gives the era gold and units', () => {
+    const base = createGame(setupWith(), full);
+    const later = createGame(setupWith('era_medieval'), full);
+    const { entities, ids } = full.content;
+    const p = later.players.p1!;
+    const order = (e: string) => entities.era[e]!.order;
+    const medieval = order('era_medieval');
+    const techs = ids.tech.filter((t) => order(entities.tech[t]!.era) < medieval);
+    expect([...p.techs.done].sort()).toEqual([...techs].sort());
+    expect(p.civics.done.length).toBeGreaterThan(0);
+    const start = entities.era.era_medieval!.start!;
+    expect(p.gold).toBe(base.players.p1!.gold + start.gold * 100);
+    const count = (s: GameState) => Object.values(s.units).filter((u) => u.owner === 'p1').length;
+    expect(count(later)).toBe(count(base) + start.units.length);
+  });
+
+  it('rejects an unknown era', () => {
+    expect(() => createGame(setupWith('era_space'), full)).toThrow(/Unknown era/);
   });
 });

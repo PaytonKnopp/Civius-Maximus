@@ -1075,6 +1075,16 @@ export const EraDef = z.strictObject({
   id: Id,
   name: Text,
   order: z.int(),
+  /**
+   * Starting a game in this era (setup "Start era"): every tech and civic of earlier eras is
+   * done, and each player gets this gold and these units on top of the usual ones.
+   */
+  start: z
+    .strictObject({
+      gold: z.int().min(0).default(0),
+      units: z.array(Id).default([]),
+    })
+    .optional(),
 });
 
 const progressShape = {

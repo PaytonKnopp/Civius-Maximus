@@ -330,6 +330,8 @@ export interface GameSettings {
   speed?: string | undefined;
   /** A `difficulty` content id for AI players (no bonuses when absent). */
   difficulty?: string | undefined;
+  /** An `era` content id to start in (the first era when absent): see `era.start`. */
+  startEra?: string | undefined;
 }
 
 export interface PlayerState {
