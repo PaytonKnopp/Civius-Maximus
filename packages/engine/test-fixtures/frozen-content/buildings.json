@@ -18,12 +18,23 @@
     "type": "building",
     "id": "building_monument",
     "name": "Monument",
-    "description": "Culture that grows your borders.",
+    "description": "Culture that grows your borders, and +1 loyalty a turn.",
     "icon": "Mo",
     "cost": 60,
     "yields": {
       "culture": 2
-    }
+    },
+    "effects": [
+      {
+        "effect": "modify_loyalty",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "building",

@@ -9,6 +9,7 @@ import {
   districtYields,
   type EngineContext,
   formatFixed,
+  FREE,
   type GameState,
   happinessOf,
   holyCityOf,
@@ -16,6 +17,10 @@ import {
   incomingPressure,
   itemCost,
   itemKey,
+  loyaltyOf,
+  loyaltyOn,
+  loyaltyPenalty,
+  turnsToFlip,
   canBuyWithFaith,
   isBuyable,
   type Line,
@@ -246,6 +251,7 @@ export function SettlementPanel({
             ? 'Content'
             : `${happiness.mood === 'unrest' ? 'Unrest' : 'Unhappy'}: ${happiness.yieldPercent}% yields`}
       </p>
+      <LoyaltyLine ctx={ctx} state={state} id={s.id} />
 
       <p
         className="defense-line"
@@ -679,5 +685,45 @@ export function SettlementPanel({
         </section>
       )}
     </aside>
+  );
+}
+
+/** Loyalty (when the setting is on): a meter, the change a turn and why, and what it costs. */
+function LoyaltyLine({ ctx, state, id }: { ctx: EngineContext; state: GameState; id: string }) {
+  const s = state.settlements[id];
+  if (!s || !loyaltyOn(state)) return null;
+  const r = loyaltyOf(ctx, state, s);
+  const max = ctx.content.rules.loyalty.max;
+  const flip = turnsToFlip(r);
+  const penalty = loyaltyPenalty(ctx, state, s);
+  const why = r.steadfast
+    ? s.capital
+      ? 'The capital always stays loyal.'
+      : 'City-states always stay loyal.'
+    : r.lines.map((l) => `${l.label}: ${l.amount > 0 ? '+' : ''}${l.amount}`).join('\n') ||
+      'Nothing pulls either way.';
+  const tone = r.change < 0 ? 'falling' : r.loyalty < max ? 'rising' : 'steady';
+  return (
+    <div className={`loyalty-line ${tone}`} title={`Loyalty\n${why}`}>
+      <div className="bar" aria-label={`Loyalty ${r.loyalty} of ${max}`}>
+        <span className="bar-fill loyalty" style={{ width: `${(r.loyalty / max) * 100}%` }} />
+        <span className="bar-text">
+          Loyalty {r.loyalty}/{max}
+          {r.steadfast ? '' : ` (${r.change >= 0 ? '+' : ''}${r.change} a turn)`}
+        </span>
+      </div>
+      {flip !== null && (
+        <p className="loyalty-warn">
+          {s.owner === FREE
+            ? `Joins another civ in ${flip} turn${flip === 1 ? '' : 's'}.`
+            : `Breaks away as a free city in ${flip} turn${flip === 1 ? '' : 's'}. A governor, more happiness or more of your people nearby will hold it.`}
+        </p>
+      )}
+      {penalty && (
+        <p className="loyalty-warn">
+          {penalty.label}: {penalty.percent}% yields
+        </p>
+      )}
+    </div>
   );
 }

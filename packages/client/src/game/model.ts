@@ -10,6 +10,7 @@ import {
   goldPerTurn,
   hasRoad,
   influencePerTurn,
+  FREE,
   HOSTILE,
   growthPerTurn,
   growthThreshold,
@@ -68,6 +69,8 @@ export function playerColors(content: CompiledContent, state: GameState): Record
   }
   // Raiders: soot and ember.
   out[HOSTILE] = { main: 0x2b2420, accent: 0xe0503c };
+  // Free cities: undyed linen and slate.
+  out[FREE] = { main: 0xd8d2c2, accent: 0x3a4048 };
   return out;
 }
 

@@ -239,13 +239,22 @@
     "name": "Celestine",
     "title": "the Envoy",
     "color": "#4a8ac0",
-    "description": "Speaks for you abroad: +2 influence from her settlement.",
+    "description": "Speaks for you abroad: +2 influence from her settlement, and +4 loyalty there.",
     "effects": [
       {
         "effect": "modify_yield",
         "params": {
           "yield": "influence",
           "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_loyalty",
+        "params": {
+          "amount": 4
         },
         "target": {
           "scope": "settlements"

@@ -1,4 +1,4 @@
-import { unitClassOf, unitDef } from '../context';
+import { FREE, unitClassOf, unitDef } from '../context';
 import { getBit } from '../bitset';
 import { attackTargets, previewAttack } from '../combat/strength';
 import { distance, tilesWithin } from '../map/hex';
@@ -10,6 +10,7 @@ import { tradeDestinations, traderOrigin } from '../trade/rules';
 import { activateProblem } from '../greatpeople/greatpeople';
 import { isSoldier } from './cities';
 import { fixedYieldsValue } from './values';
+import { holdable } from '../loyalty/loyalty';
 import { missionary, prophet } from './religion';
 import { moveSettler, settleHere } from './settle';
 import { type Role, type Turn, unitPower, unitRole } from './turn';
@@ -94,6 +95,8 @@ function bestAttack(t: Turn, u: UnitState): number | undefined {
       score = kill + dealt * 3 - taken * caution + (kill ? unitPower(t.ctx, p.target.unit) : 0);
     } else {
       const s = p.target.settlement;
+      // A free city we couldn't hold would only break away again.
+      if (s.owner === FREE && !holdable(t.ctx, t.state, s.tile, t.player)) continue;
       const health = p.split ? Math.floor((p.split.health[0] + p.split.health[1]) / 2) : dealt;
       const walls = p.split ? Math.floor((p.split.walls[0] + p.split.walls[1]) / 2) : 0;
       if (p.captures && p.split && p.split.health[0] >= s.health && p.toAttacker[1] < u.health)
@@ -218,6 +221,17 @@ function fieldTarget(t: Turn, field: Set<string>): Plan['target'] {
       .filter((c) => t.isExplored(c.tile) && nearHome(c.tile) <= 8)
       .sort((a, b) => nearHome(a.tile) - nearHome(b.tile) || (a.id < b.id ? -1 : 1))[0];
     if (camp) return { tile: camp.tile, kind: 'camp' };
+  }
+  // A free city near home is there for the taking.
+  if (field.size >= 3) {
+    const free = t
+      .knownSettlements()
+      .filter(
+        (s) =>
+          s.owner === FREE && nearHome(s.tile) <= 8 && holdable(t.ctx, t.state, s.tile, t.player),
+      )
+      .sort((a, b) => nearHome(a.tile) - nearHome(b.tile) || (a.id < b.id ? -1 : 1))[0];
+    if (free) return { tile: free.tile, kind: 'siege' };
   }
   return null;
 }

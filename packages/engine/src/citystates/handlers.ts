@@ -173,7 +173,7 @@ export function placeCityStates(draft: Draft<GameState>, ctx: EngineContext, ran
 }
 
 /** The strongest land soldier a city-state's settlement can train now (cheapest on ties). */
-function bestSoldier(ctx: EngineContext, state: GameState, sid: string): string | undefined {
+export function bestSoldier(ctx: EngineContext, state: GameState, sid: string): string | undefined {
   const s = state.settlements[sid]!;
   let best: { id: string; strength: number; cost: number } | undefined;
   for (const id of ctx.content.ids.unit) {
@@ -217,7 +217,7 @@ export function cityStatesTurn(draft: Draft<GameState>, ctx: EngineContext, emit
 }
 
 /** City-states know the techs and civics at least half the living players know. */
-function keepUp(draft: Draft<GameState>, ctx: EngineContext, ids: PlayerId[]) {
+export function keepUp(draft: Draft<GameState>, ctx: EngineContext, ids: PlayerId[]) {
   const alive = draft.playerOrder.filter((p) => draft.players[p]!.alive);
   for (const kind of ['techs', 'civics'] as const) {
     const all = kind === 'techs' ? ctx.content.ids.tech : ctx.content.ids.civic;
@@ -234,14 +234,27 @@ function keepUp(draft: Draft<GameState>, ctx: EngineContext, ids: PlayerId[]) {
   }
 }
 
-function chooseBuild(draft: Draft<GameState>, ctx: EngineContext, sid: string) {
+/**
+ * Picks what a city-state (or a free city) builds: soldiers up to `cap` (counting only those
+ * within 3 tiles when `near`), then the cheapest building.
+ */
+export function chooseBuild(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  sid: string,
+  cap = ctx.content.rules.cityStates.maxUnits,
+  near = false,
+) {
   const s = draft.settlements[sid]!;
   if (s.queue.length > 0) return;
   const snap = view(draft);
   const soldiers = Object.values(snap.units).filter(
-    (u) => u.owner === s.owner && unitClassOf(ctx, u).combat,
+    (u) =>
+      u.owner === s.owner &&
+      unitClassOf(ctx, u).combat &&
+      (!near || distance(snap.map, u.tile, s.tile) <= 3),
   ).length;
-  if (soldiers < ctx.content.rules.cityStates.maxUnits) {
+  if (soldiers < cap) {
     const unit = bestSoldier(ctx, snap, sid);
     if (unit) {
       s.queue = [{ kind: 'unit', id: unit }];

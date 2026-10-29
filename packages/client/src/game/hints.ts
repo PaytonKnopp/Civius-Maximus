@@ -2,6 +2,7 @@ import {
   atWar,
   type EngineContext,
   type GameState,
+  FREE,
   HOSTILE,
   pantheonOf,
   type PlayerId,
@@ -85,7 +86,12 @@ export const HINTS: Hint[] = [
     id: 'war',
     when: ({ state, viewer }) =>
       state.playerOrder.some(
-        (p) => p !== viewer && p !== HOSTILE && state.players[p]!.alive && atWar(state, viewer, p),
+        (p) =>
+          p !== viewer &&
+          p !== HOSTILE &&
+          p !== FREE &&
+          state.players[p]!.alive &&
+          atWar(state, viewer, p),
       ),
     text: (ctx) =>
       `You are at war. Peace can be offered after ${ctx.content.rules.combat.minWarTurns} turns (click their name at the top right). Losses lower war support, and falling behind on it costs happiness.`,

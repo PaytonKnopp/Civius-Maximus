@@ -274,6 +274,8 @@ export interface SettlementState {
   religion: string | null;
   /** Religious pressure built up toward each religion (it converts at `convertAt`). */
   pressure: Record<string, number>;
+  /** Loyalty, 0 to `rules.loyalty.max` (full when absent). See loyalty/loyalty.ts. */
+  loyalty?: number;
 }
 
 export type UnitId = string;
@@ -334,6 +336,8 @@ export interface GameSettings {
   difficulty?: string | undefined;
   /** An `era` content id to start in (the first era when absent): see `era.start`. */
   startEra?: string | undefined;
+  /** Loyalty: settlements can break away and change sides (on unless false). */
+  loyalty?: boolean | undefined;
 }
 
 export interface PlayerState {

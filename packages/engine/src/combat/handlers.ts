@@ -296,6 +296,7 @@ export function captureSettlement(
   s.pendingDevelop = 0;
   s.capturedFrom = from;
   s.captureChoice = true;
+  s.loyalty = ctx.content.rules.loyalty.afterCapture;
   // Taking it back stops whoever was burning it down.
   delete s.razing;
   s.struckTurn = draft.turn;
@@ -380,6 +381,7 @@ function liberate(draft: Draft<GameState>, ctx: EngineContext, id: string, emit:
   s.owner = to;
   s.capturedFrom = null;
   s.captureChoice = false;
+  delete s.loyalty;
   for (const t of draft.map.tiles) if (t.settlement === id) t.owner = to;
   if (draft.players[to]!.capital === null) relocateCapital(draft, ctx, to, emit);
   refreshCitizens(draft, ctx, id);

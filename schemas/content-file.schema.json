@@ -3016,6 +3016,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -5737,6 +5827,96 @@
                             "maximum": 1000
                           }
                         },
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
                         "additionalProperties": false
                       },
                       "target": {
@@ -9232,6 +9412,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -11731,6 +12001,96 @@
                             "maximum": 1000
                           }
                         },
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
                         "additionalProperties": false
                       },
                       "target": {
@@ -14409,6 +14769,96 @@
                           "target"
                         ],
                         "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "modify_loyalty"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "amount"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "settlements"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "modify_loyalty_pressure"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "percent": {
+                                "type": "integer",
+                                "minimum": -100,
+                                "maximum": 1000
+                              }
+                            },
+                            "required": [
+                              "percent"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "player"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
                       }
                     ]
                   }
@@ -16956,6 +17406,96 @@
                                 "maximum": 1000
                               }
                             },
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "player"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "modify_loyalty"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "amount"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "settlements"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "modify_loyalty_pressure"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "percent": {
+                                "type": "integer",
+                                "minimum": -100,
+                                "maximum": 1000
+                              }
+                            },
+                            "required": [
+                              "percent"
+                            ],
                             "additionalProperties": false
                           },
                           "target": {
@@ -21050,6 +21590,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -23549,6 +24179,96 @@
                             "maximum": 1000
                           }
                         },
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
                         "additionalProperties": false
                       },
                       "target": {
@@ -26948,6 +27668,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -29447,6 +30257,96 @@
                             "maximum": 1000
                           }
                         },
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
                         "additionalProperties": false
                       },
                       "target": {
@@ -32127,6 +33027,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -34626,6 +35616,96 @@
                             "maximum": 1000
                           }
                         },
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
                         "additionalProperties": false
                       },
                       "target": {
@@ -37825,6 +38905,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -40734,6 +41904,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -43319,6 +44579,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -45865,6 +47215,96 @@
                             "maximum": 1000
                           }
                         },
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
                         "additionalProperties": false
                       },
                       "target": {
@@ -48585,6 +50025,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -51122,6 +52652,96 @@
                             "maximum": 1000
                           }
                         },
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
                         "additionalProperties": false
                       },
                       "target": {
@@ -53724,6 +55344,96 @@
                             "target"
                           ],
                           "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "modify_loyalty"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "amount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "modify_loyalty_pressure"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "percent": {
+                                  "type": "integer",
+                                  "minimum": -100,
+                                  "maximum": 1000
+                                }
+                              },
+                              "required": [
+                                "percent"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
                         }
                       ]
                     }
@@ -56272,6 +57982,96 @@
                                 "maximum": 1000
                               }
                             },
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "player"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "modify_loyalty"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "amount"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "settlements"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "modify_loyalty_pressure"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "percent": {
+                                "type": "integer",
+                                "minimum": -100,
+                                "maximum": 1000
+                              }
+                            },
+                            "required": [
+                              "percent"
+                            ],
                             "additionalProperties": false
                           },
                           "target": {
@@ -58866,6 +60666,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -61430,6 +63320,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -61490,7 +63470,8 @@
                 "era_first",
                 "space_project",
                 "tech_researched",
-                "civic_completed"
+                "civic_completed",
+                "settlement_joined"
               ]
             },
             "once": {
@@ -64065,6 +66046,96 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "modify_loyalty_pressure"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "percent": {
+                            "type": "integer",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "percent"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -66582,6 +68653,96 @@
                                   "maximum": 1000
                                 }
                               },
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "modify_loyalty"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "amount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "modify_loyalty_pressure"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "percent": {
+                                  "type": "integer",
+                                  "minimum": -100,
+                                  "maximum": 1000
+                                }
+                              },
+                              "required": [
+                                "percent"
+                              ],
                               "additionalProperties": false
                             },
                             "target": {
@@ -69857,6 +72018,96 @@
                               "target"
                             ],
                             "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "modify_loyalty"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "amount": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "amount"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "settlements"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "modify_loyalty_pressure"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "percent": {
+                                    "type": "integer",
+                                    "minimum": -100,
+                                    "maximum": 1000
+                                  }
+                                },
+                                "required": [
+                                  "percent"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "player"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
                           }
                         ]
                       }
@@ -70823,6 +73074,134 @@
                 "darkBase",
                 "darkStep",
                 "goldenGap"
+              ],
+              "additionalProperties": false
+            },
+            "loyalty": {
+              "default": {
+                "max": 100,
+                "range": 9,
+                "maxPressure": 20,
+                "governor": 8,
+                "mood": {
+                  "thriving": 3,
+                  "content": 0,
+                  "unhappy": -3,
+                  "unrest": -6
+                },
+                "afterCapture": 50,
+                "freeCity": 100,
+                "freeCityUnits": 2,
+                "yieldPenalties": []
+              },
+              "type": "object",
+              "properties": {
+                "max": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "range": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 20
+                },
+                "maxPressure": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "governor": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "mood": {
+                  "type": "object",
+                  "properties": {
+                    "thriving": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "content": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "unhappy": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "unrest": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "thriving",
+                    "content",
+                    "unhappy",
+                    "unrest"
+                  ],
+                  "additionalProperties": false
+                },
+                "afterCapture": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "freeCity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "freeCityUnits": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4
+                },
+                "yieldPenalties": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "below": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "percent": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 0
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "below",
+                      "percent",
+                      "label"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "max",
+                "range",
+                "maxPressure",
+                "governor",
+                "mood",
+                "afterCapture",
+                "freeCity",
+                "freeCityUnits",
+                "yieldPenalties"
               ],
               "additionalProperties": false
             },
@@ -74269,6 +76648,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -76990,6 +79459,96 @@
                               "maximum": 1000
                             }
                           },
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
                           "additionalProperties": false
                         },
                         "target": {
@@ -80485,6 +83044,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -82984,6 +85633,96 @@
                               "maximum": 1000
                             }
                           },
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
                           "additionalProperties": false
                         },
                         "target": {
@@ -85662,6 +88401,96 @@
                             "target"
                           ],
                           "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "modify_loyalty"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "amount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "modify_loyalty_pressure"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "percent": {
+                                  "type": "integer",
+                                  "minimum": -100,
+                                  "maximum": 1000
+                                }
+                              },
+                              "required": [
+                                "percent"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
                         }
                       ]
                     }
@@ -88209,6 +91038,96 @@
                                   "maximum": 1000
                                 }
                               },
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "modify_loyalty"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "amount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "modify_loyalty_pressure"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "percent": {
+                                  "type": "integer",
+                                  "minimum": -100,
+                                  "maximum": 1000
+                                }
+                              },
+                              "required": [
+                                "percent"
+                              ],
                               "additionalProperties": false
                             },
                             "target": {
@@ -92303,6 +95222,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -94802,6 +97811,96 @@
                               "maximum": 1000
                             }
                           },
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
                           "additionalProperties": false
                         },
                         "target": {
@@ -98201,6 +101300,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -100700,6 +103889,96 @@
                               "maximum": 1000
                             }
                           },
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
                           "additionalProperties": false
                         },
                         "target": {
@@ -103380,6 +106659,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -105879,6 +109248,96 @@
                               "maximum": 1000
                             }
                           },
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
                           "additionalProperties": false
                         },
                         "target": {
@@ -109078,6 +112537,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -111987,6 +115536,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -114572,6 +118211,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -117118,6 +120847,96 @@
                               "maximum": 1000
                             }
                           },
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
                           "additionalProperties": false
                         },
                         "target": {
@@ -119838,6 +123657,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -122375,6 +126284,96 @@
                               "maximum": 1000
                             }
                           },
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
                           "additionalProperties": false
                         },
                         "target": {
@@ -124977,6 +128976,96 @@
                               "target"
                             ],
                             "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "modify_loyalty"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "amount": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "amount"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "settlements"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "modify_loyalty_pressure"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "percent": {
+                                    "type": "integer",
+                                    "minimum": -100,
+                                    "maximum": 1000
+                                  }
+                                },
+                                "required": [
+                                  "percent"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "player"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
                           }
                         ]
                       }
@@ -127525,6 +131614,96 @@
                                   "maximum": 1000
                                 }
                               },
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "modify_loyalty"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "amount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "modify_loyalty_pressure"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "percent": {
+                                  "type": "integer",
+                                  "minimum": -100,
+                                  "maximum": 1000
+                                }
+                              },
+                              "required": [
+                                "percent"
+                              ],
                               "additionalProperties": false
                             },
                             "target": {
@@ -130119,6 +134298,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -132683,6 +136952,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -132743,7 +137102,8 @@
                   "era_first",
                   "space_project",
                   "tech_researched",
-                  "civic_completed"
+                  "civic_completed",
+                  "settlement_joined"
                 ]
               },
               "once": {
@@ -135318,6 +139678,96 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "modify_loyalty_pressure"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "percent": {
+                              "type": "integer",
+                              "minimum": -100,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -137835,6 +142285,96 @@
                                     "maximum": 1000
                                   }
                                 },
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "player"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "modify_loyalty"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "amount": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "amount"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "settlements"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "modify_loyalty_pressure"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "percent": {
+                                    "type": "integer",
+                                    "minimum": -100,
+                                    "maximum": 1000
+                                  }
+                                },
+                                "required": [
+                                  "percent"
+                                ],
                                 "additionalProperties": false
                               },
                               "target": {
@@ -141110,6 +145650,96 @@
                                 "target"
                               ],
                               "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "effect": {
+                                  "type": "string",
+                                  "const": "modify_loyalty"
+                                },
+                                "params": {
+                                  "type": "object",
+                                  "properties": {
+                                    "amount": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "amount"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "target": {
+                                  "type": "object",
+                                  "properties": {
+                                    "scope": {
+                                      "type": "string",
+                                      "const": "settlements"
+                                    }
+                                  },
+                                  "required": [
+                                    "scope"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "condition": {
+                                  "$ref": "#/$defs/__schema0"
+                                }
+                              },
+                              "required": [
+                                "effect",
+                                "params",
+                                "target"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "effect": {
+                                  "type": "string",
+                                  "const": "modify_loyalty_pressure"
+                                },
+                                "params": {
+                                  "type": "object",
+                                  "properties": {
+                                    "percent": {
+                                      "type": "integer",
+                                      "minimum": -100,
+                                      "maximum": 1000
+                                    }
+                                  },
+                                  "required": [
+                                    "percent"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "target": {
+                                  "type": "object",
+                                  "properties": {
+                                    "scope": {
+                                      "type": "string",
+                                      "const": "player"
+                                    }
+                                  },
+                                  "required": [
+                                    "scope"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "condition": {
+                                  "$ref": "#/$defs/__schema0"
+                                }
+                              },
+                              "required": [
+                                "effect",
+                                "params",
+                                "target"
+                              ],
+                              "additionalProperties": false
                             }
                           ]
                         }
@@ -142076,6 +146706,134 @@
                   "darkBase",
                   "darkStep",
                   "goldenGap"
+                ],
+                "additionalProperties": false
+              },
+              "loyalty": {
+                "default": {
+                  "max": 100,
+                  "range": 9,
+                  "maxPressure": 20,
+                  "governor": 8,
+                  "mood": {
+                    "thriving": 3,
+                    "content": 0,
+                    "unhappy": -3,
+                    "unrest": -6
+                  },
+                  "afterCapture": 50,
+                  "freeCity": 100,
+                  "freeCityUnits": 2,
+                  "yieldPenalties": []
+                },
+                "type": "object",
+                "properties": {
+                  "max": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "range": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 20
+                  },
+                  "maxPressure": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "governor": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "mood": {
+                    "type": "object",
+                    "properties": {
+                      "thriving": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "content": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "unhappy": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "unrest": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "thriving",
+                      "content",
+                      "unhappy",
+                      "unrest"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "afterCapture": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "freeCity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "freeCityUnits": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                  },
+                  "yieldPenalties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "below": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "percent": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 0
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "below",
+                        "percent",
+                        "label"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "max",
+                  "range",
+                  "maxPressure",
+                  "governor",
+                  "mood",
+                  "afterCapture",
+                  "freeCity",
+                  "freeCityUnits",
+                  "yieldPenalties"
                 ],
                 "additionalProperties": false
               },

@@ -50,6 +50,7 @@ function makeOnlineSetup(names: string[], o: OnlineOptions): GameSetup {
     cityStates: rules?.cityStates ?? true,
     science: rules?.science ?? true,
     culture: rules?.culture ?? true,
+    loyalty: rules?.loyalty ?? true,
     turnLimit: o.turnLimit ?? null,
     speed: o.speed,
     difficulty: o.difficulty,

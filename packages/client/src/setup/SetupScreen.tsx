@@ -511,6 +511,11 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
                   'Culture victory',
                   'Attract more visiting tourists than any civ has at home.',
                 )}
+                {toggle(
+                  'loyalty',
+                  'Loyalty',
+                  'Settlements far from home and close to a rival can break away as free cities.',
+                )}
               </div>
 
               <h4>Presets</h4>

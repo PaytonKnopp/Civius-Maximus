@@ -14,7 +14,7 @@
     "id": "age_golden",
     "kind": "golden",
     "name": "Golden Age",
-    "description": "Your people remember the last era with pride: +1 happiness in every settlement and +10% culture. Choose one dedication.",
+    "description": "Your people remember the last era with pride: +1 happiness in every settlement, +10% culture and 20% more loyalty pressure. Choose one dedication.",
     "effects": [
       {
         "effect": "modify_happiness",
@@ -34,6 +34,15 @@
         "target": {
           "scope": "settlements"
         }
+      },
+      {
+        "effect": "modify_loyalty_pressure",
+        "params": {
+          "percent": 20
+        },
+        "target": {
+          "scope": "player"
+        }
       }
     ],
     "dedications": 1,
@@ -44,7 +53,7 @@
     "id": "age_dark",
     "kind": "dark",
     "name": "Dark Age",
-    "description": "Hard times: −1 happiness in every settlement, but people turn to faith (+25% faith). Choose one dedication, and earn your way back.",
+    "description": "Hard times: −1 happiness and −2 loyalty in every settlement and 20% less loyalty pressure, but people turn to faith (+25% faith). Choose one dedication, and earn your way back.",
     "effects": [
       {
         "effect": "modify_happiness",
@@ -64,6 +73,24 @@
         "target": {
           "scope": "settlements"
         }
+      },
+      {
+        "effect": "modify_loyalty",
+        "params": {
+          "amount": -2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_loyalty_pressure",
+        "params": {
+          "percent": -20
+        },
+        "target": {
+          "scope": "player"
+        }
       }
     ],
     "dedications": 1,
@@ -74,7 +101,7 @@
     "id": "age_heroic",
     "kind": "heroic",
     "name": "Heroic Age",
-    "description": "From darkness to glory: +2 happiness in every settlement, +10% culture, and three dedications.",
+    "description": "From darkness to glory: +2 happiness in every settlement, +10% culture, 40% more loyalty pressure, and three dedications.",
     "effects": [
       {
         "effect": "modify_happiness",
@@ -93,6 +120,15 @@
         },
         "target": {
           "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_loyalty_pressure",
+        "params": {
+          "percent": 40
+        },
+        "target": {
+          "scope": "player"
         }
       }
     ],
@@ -438,6 +474,14 @@
     "name": "A civic of a new kind",
     "score": 0,
     "trigger": "civic_completed",
+    "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_city_joined",
+    "name": "A city joins of its own free will",
+    "score": 2,
+    "trigger": "settlement_joined",
     "once": "never"
   }
 ]

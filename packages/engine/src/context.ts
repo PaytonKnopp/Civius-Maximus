@@ -39,9 +39,11 @@ export function warKey(a: string, b: string): string {
 
 /** The owner of hostile camps' raiders: at war with everyone, never in the turn order. */
 export const HOSTILE = 'hostile';
+/** The owner of free cities (settlements that broke away): also at war with everyone. */
+export const FREE = 'free';
 
 export function atWar(state: Pick<GameState, 'wars'>, a: string, b: string): boolean {
   if (a === b) return false;
-  if (a === HOSTILE || b === HOSTILE) return true;
+  if (a === HOSTILE || b === HOSTILE || a === FREE || b === FREE) return true;
   return state.wars.includes(warKey(a, b));
 }

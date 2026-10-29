@@ -23,6 +23,7 @@ export interface OnlineOptions {
     religion: boolean;
     science: boolean;
     culture: boolean;
+    loyalty?: boolean;
   };
   turnLimit?: number | null;
 }
@@ -34,6 +35,7 @@ const RULES: [keyof NonNullable<OnlineOptions['rules']>, string][] = [
   ['religion', 'Religious victory'],
   ['science', 'Science victory'],
   ['culture', 'Culture victory'],
+  ['loyalty', 'Loyalty'],
 ];
 
 interface Props {
@@ -92,6 +94,7 @@ export function OnlineDialog(props: Props) {
       religion: true,
       science: true,
       culture: true,
+      loyalty: true,
     },
     turnLimit: null,
   });

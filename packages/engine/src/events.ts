@@ -216,6 +216,23 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         turns: number;
       }
     | {
+        /** Loyalty ran out: it broke away as a free city, or a free city joined a civ. */
+        type: 'settlement_flipped';
+        settlement: SettlementId;
+        name: string;
+        from: PlayerId;
+        to: PlayerId;
+        tile: number;
+      }
+    | {
+        type: 'loyalty_falling';
+        settlement: SettlementId;
+        name: string;
+        owner: PlayerId;
+        loyalty: number;
+        change: number;
+      }
+    | {
         type: 'settlement_liberated';
         settlement: SettlementId;
         name: string;
