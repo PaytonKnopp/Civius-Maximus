@@ -101,7 +101,9 @@ describe('AI', () => {
   it('beats a player who does nothing', () => {
     const { state } = play(createGame(setup(2, '2', 'duel', 'pangaea', true), ctx), 200);
     expect(state.result?.winner).toBe('p2');
-    // Domination when one of its settlements broke away to the idle player's side (loyalty).
-    expect(['conquest', 'domination']).toContain(state.result?.reason);
+    // An outright win, not just a better score at the turn limit: conquest, or domination when
+    // one of its settlements broke away to the idle player (loyalty), or religion when it drew
+    // a leader of faith.
+    expect(['conquest', 'domination', 'religion']).toContain(state.result?.reason);
   }, 180_000);
 });

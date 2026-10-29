@@ -149,7 +149,7 @@ Alexander's "war support never decays" is dropped (war support doesn't decay).
 
 ## Leaders 11–20 (full kits, V1 final F17)
 
-The signature ideas became these kits, built from the effects the engine has (and one new
+The signature ideas (an earlier table) became these kits, built from the effects the engine has (and one new
 one, `pillage_bonus`). Where an idea needed a rule the game doesn't have, the closest fit is
 noted.
 
@@ -236,20 +236,93 @@ noted.
   +1 faith, +1 culture.
 - **Agenda: *Never Conquered.*** Distrusts big armies and conquerors.
 
-## Leaders 21–30 (signature ideas)
+## Leaders 21–30 (full kits, V1 final F17)
 
-| # | Leader | Civ | Signature idea |
-|---|---|---|---|
-| 21 | Charlemagne | Franks | Crowned by faith: religious and military policies stack; holy knights |
-| 22 | Cyrus the Great | Persia | Tolerant conqueror: captured cities keep happiness, satrapies boost trade |
-| 23 | Sejong the Great | Korea | Scholar king: campuses next to mountains become powerhouses; science from writing |
-| 24 | Theodora | Byzantium | Holy city politics: spreading religion boosts combat; dromons and hippodromes |
-| 25 | Isabella | Spain | Distant lands: settlements on other continents boosted, treasure fleets |
-| 26 | Pericles | Greece | Golden age of Athens: culture from city-states you lead; acropolis on hills |
-| 27 | Lady Six Sky | Maya | Calendar and observatories: farms feed science; a tight empire around the capital |
-| 28 | Hammurabi | Babylon | Code of laws: boosts complete whole techs; slower raw science |
-| 29 | Pedro II | Brazil | Patron of the arts: great people refunds; rainforest becomes an asset |
-| 30 | Menelik II | Ethiopia | Highland resilience: hills give faith and defense; resources trade for faith |
+### 21. Charlemagne — Franks
+- **Leader: *Peers of the Realm.*** +1 military policy slot; heavy cavalry +4 strength (the
+  "religious and military policies stack" idea, as an extra military slot).
+- **Civ: *Carolingian Renaissance.*** Settlements with a Campus +1 culture; +25% great
+  scientist points.
+- **Scara** (replaces Knight): 50 strength, cheaper. **Palace School** (replaces Library): +1
+  culture.
+- **Agenda: *Father of Europe.*** Admires knights, dislikes surprise wars.
+
+### 22. Cyrus the Great — Persia
+- **Leader: *King of the Four Corners.*** Units +2 strength for 10 turns after declaring war;
+  capturing a settlement gives a boost per district in it.
+- **Civ: *The Royal Road.*** +1 trade route; routes +1 gold and +1 culture at their origin
+  (the satrapies' trade).
+- **Immortal** (replaces Swordsman): 37 strength. **Apadana** (replaces Monument): +1
+  happiness.
+- **Agenda: *Tolerant Conqueror.*** Respects conquerors, scorns the weak.
+
+### 23. Sejong the Great — Korea
+- **Leader: *Letters for the People.*** Settlements with a Library +1 science; +50% great
+  scientist points.
+- **Civ: *Hall of Worthies.*** Campuses +1 science per neighboring hills; +25% production
+  toward Campuses.
+- **Hwacha** (replaces Field Cannon): 66 ranged strength. **Hyanggyo** (replaces Library): +1
+  science, +1 more great scientist point.
+- **Agenda: *Scholar King.*** Likes peacekeepers, distrusts big armies.
+
+### 24. Theodora — Byzantium
+- **Leader: *From the Hippodrome.*** Settlements with an Arena +2 happiness; with a Holy Site
+  +2 faith.
+- **Civ: *Greek Fire.*** Naval units +4 strength; +50% great admiral points (in place of
+  "spreading religion boosts combat").
+- **Dromon** (replaces Galley): 33 strength. **Hippodrome** (replaces Arena): +1 happiness,
+  +1 culture.
+- **Agenda: *Purple-Born Politics.*** Admires a full treasury, distrusts surprise wars.
+
+### 25. Isabella — Spain
+- **Leader: *Patron of Explorers.*** Naval melee units start with Helmsman (+1 movement);
+  international routes +3 gold (treasure fleets).
+- **Civ: *Missions of the Frontier.*** Settlements with a Holy Site +1 science and +1 faith
+  (in place of "boosts on other continents").
+- **Tercio** (replaces Pike and Shot): 60 strength. **Alcázar** (replaces Castle): +2
+  culture, +1 happiness.
+- **Agenda: *Crown of Castile.*** Sees rivals at sea, respects wealth.
+
+### 26. Pericles — Greece
+- **Leader: *School of Hellas.*** Settlements with a Theater Square +2 culture; +1 wildcard
+  policy slot (in place of "culture from city-states you lead").
+- **Civ: *Acropolis.*** Theater Squares +1 culture per neighboring hills.
+- **Hoplite** (replaces Spearman): 28 strength. **Odeon** (replaces Amphitheater): +1
+  culture, +1 great musician point.
+- **Agenda: *Delian League.*** Likes peacekeepers, admires wonders.
+
+### 27. Lady Six Sky — Maya
+- **Leader: *Warrior Queen of Sa'aal.*** Farms +0.5 science; units +3 strength in rainforest
+  or woods.
+- **Civ: *The Long Count.*** Campuses +1 science per two neighboring farms ("a tight empire
+  around the capital" is left out).
+- **Holkan** (replaces Spearman): 27 strength, cheaper. **E-Group** (replaces Library): +1
+  faith.
+- **Agenda: *Watcher of the Sky.*** Covets wonders, likes peaceful neighbors.
+
+### 28. Hammurabi — Babylon
+- **Leader: *Law of the Land.*** Boosts give 40% more of a tech or civic's cost; all science
+  15% lower.
+- **Civ: *Cradle of Learning.*** +30% production toward Campuses; +1 science in the capital.
+- **Composite Bowman** (replaces Archer): 27 ranged strength, cheaper. **Edubba** (replaces
+  Library): +1 science, +1 more great scientist point.
+- **Agenda: *Code of Laws.*** Hates surprise wars, likes peacekeepers.
+
+### 29. Pedro II — Brazil
+- **Leader: *The Magnanimous.*** +20% great scientist, engineer, merchant, writer, artist and
+  musician points (in place of refunds).
+- **Civ: *Riches of the Rainforest.*** Rainforest +1 production; Campuses +1 science and
+  Theater Squares +1 culture per neighboring rainforest.
+- **Bandeirante** (replaces Scout): 16 strength, 4 movement. **Samba School** (replaces
+  Arena): +1 culture, +1 great musician point.
+- **Agenda: *Patron of the Arts and Sciences.*** Admires wonders, dislikes big armies.
+
+### 30. Menelik II — Ethiopia
+- **Leader: *Victor of Adwa.*** Units +4 strength on hills; hills +1 faith.
+- **Civ: *Aksumite Legacy.*** Tiles with a resource +1 faith.
+- **Mehal Sefari** (replaces Line Infantry): 68 strength. **Gebbi** (replaces Castle): +2
+  faith, +1 culture.
+- **Agenda: *Never Colonized.*** Hates conquerors, likes peaceful neighbors.
 
 ## Queued for later (just say "add X")
 

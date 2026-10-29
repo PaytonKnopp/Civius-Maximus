@@ -977,7 +977,7 @@
     "cityNames": [
       "Pataliputra",
       "Ujjayini",
-      "Takshashila",
+      "Pushkalavati",
       "Tosali",
       "Suvarnagiri",
       "Vidisha",
@@ -1188,6 +1188,605 @@
           },
           "target": {
             "scope": "settlements"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_franks",
+    "name": "Franks",
+    "adjective": "Frankish",
+    "architecture": "european",
+    "emblem": "sword",
+    "colors": {
+      "primary": "#2a3a8a",
+      "secondary": "#e8d8a0"
+    },
+    "cityNames": [
+      "Aachen",
+      "Paderborn",
+      "Ingelheim",
+      "Worms",
+      "Mainz",
+      "Köln",
+      "Metz",
+      "Reims",
+      "Tours",
+      "Soissons",
+      "Orléans",
+      "Regensburg",
+      "Frankfurt",
+      "Nijmegen",
+      "Trier",
+      "Herstal"
+    ],
+    "ability": {
+      "name": "Carolingian Renaissance",
+      "description": "Settlements with a Campus +1 culture. +25% great scientist points.",
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "culture",
+            "amount": 1
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_has_district": "district_campus"
+          }
+        },
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_scientist",
+            "percent": 25
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_persia",
+    "name": "Persia",
+    "adjective": "Persian",
+    "architecture": "middle_eastern",
+    "emblem": "bull",
+    "colors": {
+      "primary": "#8a6a2a",
+      "secondary": "#3a2a5a"
+    },
+    "cityNames": [
+      "Pasargadae",
+      "Parsa",
+      "Shusha",
+      "Hagmatana",
+      "Anshan",
+      "Bakhtri",
+      "Maracanda",
+      "Raga",
+      "Gabae",
+      "Arbela",
+      "Karmana",
+      "Hecatompylos",
+      "Tus",
+      "Istakhr",
+      "Nishapur",
+      "Margu"
+    ],
+    "ability": {
+      "name": "The Royal Road",
+      "description": "+1 trade route. Trade routes give +1 gold and +1 culture to the settlement they start from.",
+      "effects": [
+        {
+          "effect": "extra_trade_route",
+          "params": {
+            "amount": 1
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "trade_route_bonus",
+          "params": {
+            "origin": {
+              "gold": 1,
+              "culture": 1
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_korea",
+    "name": "Korea",
+    "adjective": "Korean",
+    "architecture": "east_asian",
+    "emblem": "wave",
+    "colors": {
+      "primary": "#1a3a7a",
+      "secondary": "#d82a2a"
+    },
+    "cityNames": [
+      "Hanseong",
+      "Gaeseong",
+      "Gyeongju",
+      "Pyeongyang",
+      "Jeonju",
+      "Gwangju",
+      "Daegu",
+      "Busan",
+      "Hamheung",
+      "Wonju",
+      "Chungju",
+      "Suwon",
+      "Andong",
+      "Naju",
+      "Uiju",
+      "Jeju"
+    ],
+    "ability": {
+      "name": "Hall of Worthies",
+      "description": "Campuses +1 science for each neighboring hills tile. +25% production toward Campuses.",
+      "effects": [
+        {
+          "effect": "extra_adjacency",
+          "params": {
+            "district": "district_campus",
+            "adjacency": {
+              "yield": "science",
+              "amount": 1,
+              "per": {
+                "elevation": "hills"
+              },
+              "label": "Hills (Hall of Worthies)"
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "modify_production",
+          "params": {
+            "percent": 25,
+            "toward": {
+              "district": "district_campus"
+            }
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_byzantium",
+    "name": "Byzantium",
+    "adjective": "Byzantine",
+    "architecture": "mediterranean",
+    "emblem": "eagle",
+    "colors": {
+      "primary": "#6a1a6a",
+      "secondary": "#d4a94e"
+    },
+    "cityNames": [
+      "Konstantinoupolis",
+      "Thessalonike",
+      "Nikaia",
+      "Trapezous",
+      "Antiocheia",
+      "Smyrne",
+      "Nikomedeia",
+      "Ankyra",
+      "Mystras",
+      "Dyrrachion",
+      "Kaisareia",
+      "Chalkedon",
+      "Monemvasia",
+      "Prousa",
+      "Philippopolis",
+      "Edessa"
+    ],
+    "ability": {
+      "name": "Greek Fire",
+      "description": "Naval units +4 strength. +50% great admiral points.",
+      "effects": [
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 4,
+            "unitClass": ["class_naval_melee", "class_naval_ranged"]
+          },
+          "target": {
+            "scope": "units"
+          }
+        },
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_admiral",
+            "percent": 50
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_spain",
+    "name": "Spain",
+    "adjective": "Spanish",
+    "architecture": "european",
+    "emblem": "compass",
+    "colors": {
+      "primary": "#c8a030",
+      "secondary": "#a11d21"
+    },
+    "cityNames": [
+      "Madrid",
+      "Sevilla",
+      "Granada",
+      "Valladolid",
+      "Burgos",
+      "Salamanca",
+      "Córdoba",
+      "Zaragoza",
+      "Valencia",
+      "Barcelona",
+      "Cádiz",
+      "Málaga",
+      "Segovia",
+      "León",
+      "Pamplona",
+      "Santiago"
+    ],
+    "ability": {
+      "name": "Missions of the Frontier",
+      "description": "Settlements with a Holy Site +1 science and +1 faith.",
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "science",
+            "amount": 1
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_has_district": "district_holy_site"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "faith",
+            "amount": 1
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_has_district": "district_holy_site"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_greece",
+    "name": "Greece",
+    "adjective": "Greek",
+    "architecture": "mediterranean",
+    "emblem": "bird",
+    "colors": {
+      "primary": "#2a5a9a",
+      "secondary": "#f0f0e8"
+    },
+    "cityNames": [
+      "Athenai",
+      "Korinthos",
+      "Thebai",
+      "Argos",
+      "Megara",
+      "Olympia",
+      "Eretria",
+      "Chalkis",
+      "Miletos",
+      "Rhodos",
+      "Syrakousai",
+      "Massalia",
+      "Pylos",
+      "Elis",
+      "Mykenai",
+      "Aigina"
+    ],
+    "ability": {
+      "name": "Acropolis",
+      "description": "Theater Squares +1 culture for each neighboring hills tile.",
+      "effects": [
+        {
+          "effect": "extra_adjacency",
+          "params": {
+            "district": "district_theater",
+            "adjacency": {
+              "yield": "culture",
+              "amount": 1,
+              "per": {
+                "elevation": "hills"
+              },
+              "label": "Hills (Acropolis)"
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_maya",
+    "name": "Maya",
+    "adjective": "Maya",
+    "architecture": "american",
+    "emblem": "mask",
+    "colors": {
+      "primary": "#2a7a5a",
+      "secondary": "#c8a030"
+    },
+    "cityNames": [
+      "Sa'aal",
+      "Mutal",
+      "Lakamha'",
+      "Ox Te' Tuun",
+      "Oxwitza'",
+      "Xukpi",
+      "Yaxchilan",
+      "Uxmal",
+      "Chichen Itza",
+      "Mayapan",
+      "Coba",
+      "Tulum",
+      "Bonampak",
+      "Yokib",
+      "Dos Pilas",
+      "Quirigua"
+    ],
+    "ability": {
+      "name": "The Long Count",
+      "description": "Campuses +1 science for every two neighboring farms.",
+      "effects": [
+        {
+          "effect": "extra_adjacency",
+          "params": {
+            "district": "district_campus",
+            "adjacency": {
+              "yield": "science",
+              "amount": 1,
+              "per": {
+                "improvement": "improvement_farm"
+              },
+              "every": 2,
+              "label": "Farms (The Long Count)"
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_babylon",
+    "name": "Babylon",
+    "adjective": "Babylonian",
+    "architecture": "middle_eastern",
+    "emblem": "tower",
+    "colors": {
+      "primary": "#2a4a8a",
+      "secondary": "#d4a94e"
+    },
+    "cityNames": [
+      "Babili",
+      "Sippar",
+      "Kish",
+      "Borsippa",
+      "Nippur",
+      "Uruk",
+      "Larsa",
+      "Lagash",
+      "Isin",
+      "Eshnunna",
+      "Kutha",
+      "Dilbat",
+      "Marad",
+      "Akshak",
+      "Umma",
+      "Shuruppak"
+    ],
+    "ability": {
+      "name": "Cradle of Learning",
+      "description": "+30% production toward Campuses. +1 science in the capital.",
+      "effects": [
+        {
+          "effect": "modify_production",
+          "params": {
+            "percent": 30,
+            "toward": {
+              "district": "district_campus"
+            }
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "science",
+            "amount": 1
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_is_capital": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_brazil",
+    "name": "Brazil",
+    "adjective": "Brazilian",
+    "architecture": "american",
+    "emblem": "feather",
+    "colors": {
+      "primary": "#2a8a3a",
+      "secondary": "#f0d030"
+    },
+    "cityNames": [
+      "Rio de Janeiro",
+      "São Paulo",
+      "Salvador",
+      "Recife",
+      "Belém",
+      "Manaus",
+      "Ouro Preto",
+      "Porto Alegre",
+      "Fortaleza",
+      "Curitiba",
+      "Petrópolis",
+      "São Luís",
+      "Natal",
+      "Cuiabá",
+      "Goiás",
+      "Florianópolis"
+    ],
+    "ability": {
+      "name": "Riches of the Rainforest",
+      "description": "Rainforest tiles +1 production. Campuses +1 science and Theater Squares +1 culture for each neighboring rainforest.",
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "amount": 1
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_feature": "rainforest"
+          }
+        },
+        {
+          "effect": "extra_adjacency",
+          "params": {
+            "district": "district_campus",
+            "adjacency": {
+              "yield": "science",
+              "amount": 1,
+              "per": {
+                "feature": "rainforest"
+              },
+              "label": "Rainforest"
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "extra_adjacency",
+          "params": {
+            "district": "district_theater",
+            "adjacency": {
+              "yield": "culture",
+              "amount": 1,
+              "per": {
+                "feature": "rainforest"
+              },
+              "label": "Rainforest"
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_ethiopia",
+    "name": "Ethiopia",
+    "adjective": "Ethiopian",
+    "architecture": "african",
+    "emblem": "lion",
+    "colors": {
+      "primary": "#2a7a2a",
+      "secondary": "#e8c030"
+    },
+    "cityNames": [
+      "Addis Ababa",
+      "Ankober",
+      "Gondar",
+      "Aksum",
+      "Lalibela",
+      "Harar",
+      "Debre Berhan",
+      "Mekele",
+      "Adwa",
+      "Dessie",
+      "Jimma",
+      "Bahir Dar",
+      "Dire Dawa",
+      "Debre Markos",
+      "Entoto",
+      "Magdala"
+    ],
+    "ability": {
+      "name": "Aksumite Legacy",
+      "description": "Tiles with a resource +1 faith.",
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "faith",
+            "amount": 1
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_has_resource": true
           }
         }
       ]

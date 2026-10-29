@@ -20,6 +20,7 @@ import {
   testState,
 } from './testing/world';
 import { nextPromotionXp } from './units/promotions';
+import { boostPercent } from './progress/handlers';
 
 /** Civ and leader kits (docs/09-base-roster.md). p1 is Rome (Caesar), p2 Egypt (Cleopatra). */
 
@@ -245,5 +246,19 @@ describe('leader and civ abilities', () => {
       improvementsFor(ctx, owned(st, 'p1'), tile, 'p1').includes('improvement_terrace_farm');
     expect(terrace(inca)).toBe(true);
     expect(terrace(s)).toBe(false);
+  });
+
+  it("Warrior Queen of Sa'aal: Maya farms +0.5 science; Law of the Land: bigger boosts", () => {
+    const s = produce(testState(FIELD), (d) => {
+      const t = d.map.tiles[at(d as GameState, 2, 2)]!;
+      t.improvement = 'improvement_farm';
+      t.owner = 'p1';
+    });
+    const tile = at(s, 2, 2);
+    const science = (st: GameState) => tileYields(ctx, st, tile).total.science ?? 0;
+    const maya = as(s, 'p1', 'civ_maya', 'leader_six_sky');
+    expect(science(maya) - science(s)).toBe(50);
+    const babylon = as(s, 'p1', 'civ_babylon', 'leader_hammurabi');
+    expect(boostPercent(ctx, babylon, 'p1') - boostPercent(ctx, s, 'p1')).toBe(40);
   });
 });
