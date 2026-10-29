@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { advisorsOn, setAdvisors } from './advisors';
 import { hintsOn, setHints } from './hints';
 import { Icon } from '../ui/Icon';
 
@@ -25,6 +26,7 @@ const KEYS: [string, string][] = [
   ['H', 'Graphs'],
   ['L', 'Next map lens'],
   ['?', 'This screen'],
+  ['F1', 'Civilopedia: every unit, building, wonder, leader and rule'],
 ];
 
 const MOUSE: [string, string][] = [
@@ -39,13 +41,21 @@ const MOUSE: [string, string][] = [
 ];
 
 /** Every shortcut on one screen, and the switch for first-game hints. */
-export function HelpScreen({ onClose }: { onClose: () => void }) {
+export function HelpScreen({
+  onClose,
+  onPedia,
+}: {
+  onClose: () => void;
+  /** Opens the Civilopedia instead. */
+  onPedia?: () => void;
+}) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
   const [hints, setOn] = useState(hintsOn);
+  const [advisors, setAdvisorsOn] = useState(advisorsOn);
   return (
     <div className="screen" role="dialog" aria-label="Help">
       <header className="screen-head">
@@ -53,7 +63,14 @@ export function HelpScreen({ onClose }: { onClose: () => void }) {
           <Icon name="help" size={30} />
           Help
         </h2>
-        <p className="screen-sub">Every number has a breakdown: hover it to see why.</p>
+        <p className="screen-sub">
+          Every number has a breakdown: hover it to see why.{' '}
+          {onPedia && (
+            <button type="button" className="pedia-link" onClick={onPedia}>
+              Open the Civilopedia (F1)
+            </button>
+          )}
+        </p>
         <button type="button" className="close" onClick={onClose} aria-label="Close">
           ✕
         </button>
@@ -94,6 +111,18 @@ export function HelpScreen({ onClose }: { onClose: () => void }) {
             />{' '}
             Show a short note the first time something new comes up (turning this on starts them
             over)
+          </label>
+          <h3>Advisors</h3>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={advisors}
+              onChange={(e) => {
+                setAdvisors(e.target.checked);
+                setAdvisorsOn(e.target.checked);
+              }}
+            />{' '}
+            Each turn, tips from your military, economic, culture and foreign advisors
           </label>
         </section>
       </div>

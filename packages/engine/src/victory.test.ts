@@ -2,8 +2,8 @@ import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 import type { GameEvent } from './events';
 import { foundSettlement } from './settlements/handlers';
-import { act, at, ctx, testState } from './testing/world';
-import { dominationProgress, scoreOf } from './victory';
+import { act, addUnit, at, ctx, testState } from './testing/world';
+import { decodeOwners, dominationProgress, encodeOwners, scoreOf } from './victory';
 
 describe('score', () => {
   it('counts citizens, settlements, progress, wonders and battles', () => {
@@ -48,5 +48,19 @@ describe('domination', () => {
       foundSettlement(d, ctx, 'p2', at(s, 7, 1), () => {});
     });
     expect(dominationProgress(s, 'p1')).toEqual({ held: 0, needed: 1 });
+  });
+});
+
+describe('replay frames', () => {
+  it('round-trip who owns each tile', () => {
+    let s = testState(Array.from({ length: 4 }, () => '.'.repeat(12)));
+    const u = addUnit(s, 'p1', 'unit_settler', at(s, 2, 1));
+    s = act(s, { type: 'found_settlement', player: 'p1', unit: u.id }).state;
+    const frame = decodeOwners(encodeOwners(s));
+    expect(frame).toHaveLength(s.map.tiles.length);
+    expect(frame[at(s, 2, 1)]).toBe('A');
+    expect(frame[at(s, 3, 1)]).toBe('a');
+    expect(frame[at(s, 9, 3)]).toBe('.');
+    expect(encodeOwners(s).length).toBeLessThan(s.map.tiles.length);
   });
 });

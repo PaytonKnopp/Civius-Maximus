@@ -57,7 +57,15 @@ export {
   validateAction,
 } from './game';
 export { stateHash } from './hash';
-export { checkVictory, dominationProgress, scoreOf, type ScoreLine, teamOf } from './victory';
+export {
+  checkVictory,
+  decodeOwners,
+  dominationProgress,
+  encodeOwners,
+  scoreOf,
+  type ScoreLine,
+  teamOf,
+} from './victory';
 export * from './map/hex';
 export {
   generateMap,

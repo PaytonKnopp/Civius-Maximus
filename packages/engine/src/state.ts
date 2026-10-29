@@ -80,6 +80,12 @@ export interface GameState {
 export interface HistoryEntry {
   turn: number;
   stats: Record<PlayerId, TurnStats>;
+  /**
+   * Every `rules.score.replayEvery` turns: who owns each tile, for the replay (see
+   * `encodeOwners`): run-length encoded, one letter per player in turn order (capitals for
+   * settlement centers), `+`/`#` for city-states and free cities, `.` for no one.
+   */
+  owners?: string;
 }
 
 /** Yields per turn are whole numbers here (not hundredths). */

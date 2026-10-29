@@ -3,6 +3,8 @@ import { type GameHandle, makeSave, readSave } from '@cx/host';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadContent } from './content';
 import { HomeScreen } from './HomeScreen';
+import { CivilopediaScreen } from './game/CivilopediaScreen';
+import { HallOfFameScreen } from './game/HallOfFameScreen';
 import { type GameStart, GameScreen } from './game/GameScreen';
 import {
   AUTOSAVE,
@@ -81,10 +83,10 @@ export function App() {
   const ctx: EngineContext = useMemo(() => ({ content }), [content]);
   // `#lab` opens the Map Lab directly (handy for sharing a map, and for the screenshot scripts).
   // `#gallery` shows every leader portrait and civ emblem.
-  const [screen, setScreenState] = useState<'game' | 'lab' | 'gallery'>(() =>
+  const [screen, setScreenState] = useState<'game' | 'lab' | 'gallery' | 'fame' | 'pedia'>(() =>
     location.hash === '#lab' ? 'lab' : location.hash === '#gallery' ? 'gallery' : 'game',
   );
-  const setScreen = (s: 'game' | 'lab') => {
+  const setScreen = (s: 'game' | 'lab' | 'fame' | 'pedia') => {
     history.replaceState(null, '', s === 'lab' ? '#lab' : location.pathname + location.search);
     setScreenState(s);
   };
@@ -125,6 +127,9 @@ export function App() {
 
   if (screen === 'lab') return <MapLab content={content} onBack={() => setScreen('game')} />;
   if (screen === 'gallery') return <Gallery content={content} onBack={() => setScreen('game')} />;
+  if (screen === 'fame') return <HallOfFameScreen onClose={() => setScreen('game')} />;
+  if (screen === 'pedia')
+    return <CivilopediaScreen content={content} onClose={() => setScreen('game')} />;
 
   return (
     <div className="app">
@@ -150,6 +155,8 @@ export function App() {
           }}
           onMapLab={() => setScreen('lab')}
           onOnline={() => setOnline({})}
+          onHallOfFame={() => setScreen('fame')}
+          onPedia={() => setScreen('pedia')}
           onResumeOnline={(state) => setOnline({ resume: state })}
         />
       )}

@@ -12,6 +12,8 @@ interface Props {
   onContinue: (state: GameState) => void;
   onMapLab: () => void;
   onOnline: () => void;
+  onHallOfFame: () => void;
+  onPedia: () => void;
   /** Host the online game this browser hosted last (from its autosave). */
   onResumeOnline: (state: GameState) => void;
 }
@@ -65,6 +67,12 @@ export function HomeScreen(props: Props) {
           )}
           <button type="button" onClick={onLoadGame}>
             Load game…
+          </button>
+          <button type="button" className="ghost" onClick={props.onHallOfFame}>
+            Hall of Fame
+          </button>
+          <button type="button" className="ghost" onClick={props.onPedia}>
+            Civilopedia
           </button>
           <button type="button" className="ghost" onClick={onMapLab}>
             Map Lab
