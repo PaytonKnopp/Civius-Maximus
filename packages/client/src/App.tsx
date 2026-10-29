@@ -56,6 +56,7 @@ function makeOnlineSetup(names: string[], o: OnlineOptions): GameSetup {
     diplomatic: rules?.diplomatic ?? true,
     disasters: rules?.disasters ?? true,
     nukes: rules?.nukes ?? true,
+    theologicalCombat: rules?.theologicalCombat ?? false,
     turnLimit: o.turnLimit ?? null,
     speed: o.speed,
     difficulty: o.difficulty,

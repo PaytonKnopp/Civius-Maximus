@@ -295,6 +295,22 @@ export const Action = z.discriminatedUnion('type', [
       .regex(/^[^\p{C}]+$/u, 'No control characters'),
     founder: ContentRef,
     follower: ContentRef,
+    /** A worship belief (its building), when any are left. */
+    worship: ContentRef.optional(),
+  }),
+  /** A religious unit fights a neighbouring one of another religion (theological combat). */
+  z.strictObject({
+    type: z.literal('theological_combat'),
+    player: PlayerRef,
+    unit: UnitRef,
+    target: UnitRef,
+  }),
+  /** An inquisitor drives other religions out of one of your settlements it stands on or by. */
+  z.strictObject({
+    type: z.literal('remove_heresy'),
+    player: PlayerRef,
+    unit: UnitRef,
+    settlement: z.string().min(1).max(64),
   }),
   /** A missionary preaches its religion in a settlement it stands on or next to. */
   z.strictObject({

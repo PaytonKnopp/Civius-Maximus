@@ -15,6 +15,8 @@ import {
   type PlayerId,
   religionFoundingProblem,
   routesOf,
+  theologyOn,
+  theologyTargets,
   tradeCapacity,
   tradeDestinations,
   traderOrigin,
@@ -96,11 +98,14 @@ export function UnitPanel({
     ? religionFoundingProblem(ctx, state, viewer, unit.id)
     : undefined;
   const religion = unit.religion ? state.religions[unit.religion] : undefined;
+  const religious = def.religious;
   const preachIn = religion
     ? Object.values(state.settlements)
         .filter((s) => distance(state.map, unit.tile, s.tile) <= 1)
         .sort((a, b) => (a.id < b.id ? -1 : 1))
     : [];
+  const preaches = religious?.spread !== 0;
+  const rivals = religion && mine ? theologyTargets(ctx, state, unit) : [];
   const upgradeTo = mine
     ? (obsoletedBy(ctx, state, viewer, unit.type) ?? upgradeTarget(ctx, state, viewer, unit.type))
     : undefined;
@@ -315,12 +320,79 @@ export function UnitPanel({
         </section>
       )}
       {religion && (
-        <section className="great-person" aria-label="Missionary">
+        <section className="great-person" aria-label="Religious unit">
           <p>
-            Spreads <strong>{religion.name}</strong>: {unit.charges ?? 0} more times. Preach on or
-            next to a settlement to win it over.
+            {religious?.removesHeresy ? (
+              <>
+                Defends <strong>{religion.name}</strong>: {unit.charges ?? 0} more times. Stand on
+                or next to one of your settlements to drive other religions out of it.
+              </>
+            ) : religious && religious.heals > 0 ? (
+              <>
+                Heals the <strong>{religion.name}</strong> units next to it by {religious.heals}{' '}
+                each turn.
+              </>
+            ) : (
+              <>
+                Spreads <strong>{religion.name}</strong>: {unit.charges ?? 0} more times. Preach on
+                or next to a settlement to win it over.
+              </>
+            )}
+            {theologyOn(state) && religious && religious.strength > 0 && (
+              <>
+                {' '}
+                Religious strength <strong>{religious.strength}</strong>: it can challenge a rival
+                religion&apos;s unit next to it, at peace or at war.
+              </>
+            )}
           </p>
+          {rivals.map((id) => {
+            const rival = state.units[id]!;
+            const action: Action = {
+              type: 'theological_combat',
+              player: viewer,
+              unit: unit.id,
+              target: id,
+            };
+            const theirs = ctx.content.entities.unit[rival.type]?.religious?.strength ?? 0;
+            return (
+              <button
+                key={id}
+                type="button"
+                title={`Their strength ${theirs}, yours ${religious?.strength ?? 0}. The winner's religion gains ground in the settlements around.`}
+                onClick={() => act(action)}
+              >
+                Challenge {civName(ctx.content, state, rival.owner)}{' '}
+                {resolveText(ctx.content, ctx.content.entities.unit[rival.type]?.name ?? '')}
+              </button>
+            );
+          })}
           {mine &&
+            religious?.removesHeresy &&
+            preachIn
+              .filter((s) => s.owner === viewer)
+              .map((s) => {
+                const action: Action = {
+                  type: 'remove_heresy',
+                  player: viewer,
+                  unit: unit.id,
+                  settlement: s.id,
+                };
+                const blocked = validateAction(state, action, ctx);
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    disabled={!!blocked}
+                    title={blocked?.message}
+                    onClick={() => act(action)}
+                  >
+                    Remove heresy in {s.name}
+                  </button>
+                );
+              })}
+          {mine &&
+            preaches &&
             preachIn.map((s) => {
               const action: Action = {
                 type: 'spread_religion',
@@ -341,7 +413,7 @@ export function UnitPanel({
                 </button>
               );
             })}
-          {mine && preachIn.length === 0 && (
+          {mine && preaches && preachIn.length === 0 && (
             <p className="hint">Walk next to a settlement that doesn&apos;t follow it yet.</p>
           )}
         </section>

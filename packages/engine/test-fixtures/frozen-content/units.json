@@ -81,7 +81,70 @@
     "faithCost": 100,
     "upkeep": 0,
     "icon": "Mi",
-    "model": "robed"
+    "model": "robed",
+    "religious": {
+      "strength": 100,
+      "charges": 3
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_apostle",
+    "name": "Apostle",
+    "class": "class_civilian",
+    "movement": 4,
+    "sight": 2,
+    "cost": 0,
+    "faithCost": 200,
+    "upkeep": 0,
+    "icon": "Ap",
+    "model": "robed",
+    "requiresCivic": "civic_theology",
+    "religious": {
+      "strength": 110,
+      "charges": 3,
+      "spread": 90
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_inquisitor",
+    "name": "Inquisitor",
+    "class": "class_civilian",
+    "movement": 3,
+    "sight": 2,
+    "cost": 0,
+    "faithCost": 120,
+    "upkeep": 0,
+    "icon": "Iq",
+    "model": "robed",
+    "requiresCivic": "civic_reformed_church",
+    "religious": {
+      "strength": 75,
+      "charges": 3,
+      "spread": 0,
+      "removesHeresy": true
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_guru",
+    "name": "Guru",
+    "class": "class_civilian",
+    "movement": 3,
+    "sight": 2,
+    "cost": 0,
+    "faithCost": 120,
+    "upkeep": 0,
+    "icon": "Gu",
+    "model": "robed",
+    "requiresCivic": "civic_theology",
+    "religious": {
+      "strength": 0,
+      "charges": 0,
+      "spread": 0,
+      "heals": 30
+    }
   },
   {
     "type": "unit",

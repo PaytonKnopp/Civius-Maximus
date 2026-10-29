@@ -6348,6 +6348,41 @@
                 ]
               }
             },
+            "religious": {
+              "type": "object",
+              "properties": {
+                "strength": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "charges": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "spread": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "removesHeresy": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "heals": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "strength",
+                "charges"
+              ],
+              "additionalProperties": false
+            },
             "nuke": {
               "type": "object",
               "properties": {
@@ -7135,6 +7170,10 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 9007199254740991
+            },
+            "worship": {
+              "default": false,
+              "type": "boolean"
             },
             "localEffects": {
               "default": [],
@@ -51818,8 +51857,13 @@
               "enum": [
                 "pantheon",
                 "founder",
-                "follower"
+                "follower",
+                "worship"
               ]
+            },
+            "building": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
             },
             "effects": {
               "default": [],
@@ -78282,6 +78326,24 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 9007199254740991
+                },
+                "combatPressure": {
+                  "default": 150,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "combatRadius": {
+                  "default": 3,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "heresyRemoved": {
+                  "default": 75,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
                 }
               },
               "required": [
@@ -85832,6 +85894,41 @@
                   ]
                 }
               },
+              "religious": {
+                "type": "object",
+                "properties": {
+                  "strength": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "charges": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "spread": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "removesHeresy": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "heals": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "strength",
+                  "charges"
+                ],
+                "additionalProperties": false
+              },
               "nuke": {
                 "type": "object",
                 "properties": {
@@ -86619,6 +86716,10 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              "worship": {
+                "default": false,
+                "type": "boolean"
               },
               "localEffects": {
                 "default": [],
@@ -131302,8 +131403,13 @@
                 "enum": [
                   "pantheon",
                   "founder",
-                  "follower"
+                  "follower",
+                  "worship"
                 ]
+              },
+              "building": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
               },
               "effects": {
                 "default": [],
@@ -157766,6 +157872,24 @@
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 9007199254740991
+                  },
+                  "combatPressure": {
+                    "default": 150,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "combatRadius": {
+                    "default": 3,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "heresyRemoved": {
+                    "default": 75,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
                   }
                 },
                 "required": [

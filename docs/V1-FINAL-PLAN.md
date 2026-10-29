@@ -30,7 +30,7 @@ lists everything, how to try it, and what Payton does next.
 | F13 | **World Congress**: diplomatic favor, sessions and resolutions, diplomatic victory | ✅ |
 | F14 | **Climate and disasters**: floods, storms, droughts, eruptions, emissions and sea level (toggle) | ✅ |
 | F15 | **To the Future era**: Atomic and Information eras, air units, nukes (toggle), late governments, the rest of the space race | ✅ |
-| F16 | **Systems completed**: apostles, inquisitors, gurus and theological combat; worship buildings; plundering and sea trade; befriending independents and levies; goody huts | |
+| F16 | **Systems completed**: apostles, inquisitors, gurus and theological combat; worship buildings; plundering and sea trade; befriending independents and levies; goody huts | Religion ✅ (F16a) |
 | F17 | **The full roster**: leaders and civs 11–30 with full kits; 40+ world wonders; the rest of the units and buildings | |
 | F18 | **AI and balance**: the AI plays every system above, difficulty levels, simulation-tuned balance | |
 | F19 | **Explanations and history**: Civilopedia, advisor tips, hall of fame, replays | |

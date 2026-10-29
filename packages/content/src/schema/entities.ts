@@ -459,6 +459,11 @@ export const RulesDef = z.strictObject({
     /** What a missionary adds where it preaches, and how many times it can. */
     missionaryPressure: z.int().min(1),
     missionaryCharges: z.int().min(1),
+    /** Theological combat: pressure the winner's religion gains (and the loser's loses) nearby. */
+    combatPressure: z.int().min(0).default(150),
+    combatRadius: z.int().min(0).default(3),
+    /** Percent of other religions' pressure an inquisitor removes from a settlement. */
+    heresyRemoved: z.int().min(0).max(100).default(75),
   }),
   /** Science victory: the space projects in order, and the last one's journey. */
   science: z.strictObject({
@@ -838,6 +843,20 @@ export const UnitDef = z.strictObject({
   upgradesTo: Id.optional(),
   /** Special actions this unit can take. */
   actions: z.array(z.enum(['found_settlement', 'trade_route', 'nuke'])).default([]),
+  /**
+   * A religious unit (docs/04-advanced-systems.md, "Religion"): its strength in theological
+   * combat, how many times it can act, the pressure it adds when it preaches (missing: the
+   * rules' missionary pressure; 0: it can't preach), and inquisitors' and gurus' gifts.
+   */
+  religious: z
+    .strictObject({
+      strength: z.int().min(0),
+      charges: z.int().min(0),
+      spread: z.int().min(0).optional(),
+      removesHeresy: z.boolean().default(false),
+      heals: z.int().min(0).default(0),
+    })
+    .optional(),
   /** A nuclear weapon (with the nukes setting): strikes a tile up to `range` away, `radius` wide. */
   nuke: z.strictObject({ range: z.int().min(1).max(30), radius: z.int().min(0).max(3) }).optional(),
   /** Sea units: can enter deep ocean. */
@@ -1126,6 +1145,8 @@ export const BuildingDef = z.strictObject({
   slots: GreatWorkSlots,
   /** Emissions a turn toward climate change (when disasters are on). */
   emissions: z.int().min(0).default(0),
+  /** A worship building: only where the religion followed has the worship belief naming it. */
+  worship: z.boolean().default(false),
   /** Effects on the settlement it's in. */
   localEffects: z.array(Effect).default([]),
   /** Effects on the whole empire. */
@@ -1792,7 +1813,9 @@ export const BeliefDef = z.strictObject({
    * `pantheon`: for the player who picks it. `founder`: for the religion's founder.
    * `follower`: for every settlement that follows the religion, whoever owns it.
    */
-  kind: z.enum(['pantheon', 'founder', 'follower']),
+  kind: z.enum(['pantheon', 'founder', 'follower', 'worship']),
+  /** Worship beliefs: the building its followers' settlements can build. */
+  building: Id.optional(),
   effects: z.array(Effect).default([]),
 });
 

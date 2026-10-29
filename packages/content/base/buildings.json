@@ -957,5 +957,134 @@
     "district": "district_campus",
     "requiresBuilding": "building_research_lab",
     "requiresTech": "tech_computers"
+  },
+  {
+    "type": "building",
+    "id": "building_cathedral",
+    "name": "Cathedral",
+    "description": "A worship building (only where its religion is followed): +3 faith and a slot for any great work.",
+    "icon": "Ca",
+    "cost": 190,
+    "maintenance": 2,
+    "yields": {
+      "faith": 3
+    },
+    "slots": {
+      "any": 1
+    },
+    "district": "district_holy_site",
+    "requiresBuilding": "building_temple",
+    "worship": true
+  },
+  {
+    "type": "building",
+    "id": "building_mosque",
+    "name": "Mosque",
+    "description": "A worship building (only where its religion is followed): +3 faith and +1 happiness.",
+    "icon": "Mo",
+    "cost": 190,
+    "maintenance": 2,
+    "yields": {
+      "faith": 3
+    },
+    "happiness": 1,
+    "district": "district_holy_site",
+    "requiresBuilding": "building_temple",
+    "worship": true
+  },
+  {
+    "type": "building",
+    "id": "building_pagoda",
+    "name": "Pagoda",
+    "description": "A worship building (only where its religion is followed): +3 faith and +1 food.",
+    "icon": "Pa",
+    "cost": 190,
+    "maintenance": 2,
+    "yields": {
+      "faith": 3,
+      "food": 1
+    },
+    "district": "district_holy_site",
+    "requiresBuilding": "building_temple",
+    "worship": true
+  },
+  {
+    "type": "building",
+    "id": "building_meeting_house",
+    "name": "Meeting House",
+    "description": "A worship building (only where its religion is followed): +3 faith and +2 production.",
+    "icon": "Me",
+    "cost": 190,
+    "maintenance": 2,
+    "yields": {
+      "faith": 3,
+      "production": 2
+    },
+    "district": "district_holy_site",
+    "requiresBuilding": "building_temple",
+    "worship": true
+  },
+  {
+    "type": "building",
+    "id": "building_stupa",
+    "name": "Stupa",
+    "description": "A worship building (only where its religion is followed): +3 faith and +1 happiness.",
+    "icon": "St",
+    "cost": 190,
+    "maintenance": 2,
+    "yields": {
+      "faith": 3
+    },
+    "happiness": 1,
+    "district": "district_holy_site",
+    "requiresBuilding": "building_temple",
+    "worship": true
+  },
+  {
+    "type": "building",
+    "id": "building_synagogue",
+    "name": "Synagogue",
+    "description": "A worship building (only where its religion is followed): +5 faith.",
+    "icon": "Sy",
+    "cost": 190,
+    "maintenance": 2,
+    "yields": {
+      "faith": 5
+    },
+    "district": "district_holy_site",
+    "requiresBuilding": "building_temple",
+    "worship": true
+  },
+  {
+    "type": "building",
+    "id": "building_wat",
+    "name": "Wat",
+    "description": "A worship building (only where its religion is followed): +3 faith and +2 science.",
+    "icon": "Wa",
+    "cost": 190,
+    "maintenance": 2,
+    "yields": {
+      "faith": 3,
+      "science": 2
+    },
+    "district": "district_holy_site",
+    "requiresBuilding": "building_temple",
+    "worship": true
+  },
+  {
+    "type": "building",
+    "id": "building_gurdwara",
+    "name": "Gurdwara",
+    "description": "A worship building (only where its religion is followed): +3 faith and +2 food.",
+    "icon": "Gu",
+    "cost": 190,
+    "maintenance": 2,
+    "yields": {
+      "faith": 3,
+      "food": 2
+    },
+    "district": "district_holy_site",
+    "requiresBuilding": "building_temple",
+    "worship": true
   }
 ]

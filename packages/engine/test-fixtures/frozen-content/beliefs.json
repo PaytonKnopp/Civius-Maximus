@@ -490,5 +490,69 @@
         }
       }
     ]
+  },
+  {
+    "type": "belief",
+    "id": "bel_cathedral",
+    "name": "Cathedral Builders",
+    "description": "Followers' settlements can build a Cathedral: +3 faith and a slot for any great work.",
+    "kind": "worship",
+    "building": "building_cathedral"
+  },
+  {
+    "type": "belief",
+    "id": "bel_mosque",
+    "name": "Minarets",
+    "description": "Followers' settlements can build a Mosque: +3 faith and +1 happiness.",
+    "kind": "worship",
+    "building": "building_mosque"
+  },
+  {
+    "type": "belief",
+    "id": "bel_pagoda",
+    "name": "Pagoda Gardens",
+    "description": "Followers' settlements can build a Pagoda: +3 faith and +1 food.",
+    "kind": "worship",
+    "building": "building_pagoda"
+  },
+  {
+    "type": "belief",
+    "id": "bel_meeting_house",
+    "name": "Meeting Houses",
+    "description": "Followers' settlements can build a Meeting House: +3 faith and +2 production.",
+    "kind": "worship",
+    "building": "building_meeting_house"
+  },
+  {
+    "type": "belief",
+    "id": "bel_stupa",
+    "name": "Stupas",
+    "description": "Followers' settlements can build a Stupa: +3 faith and +1 happiness.",
+    "kind": "worship",
+    "building": "building_stupa"
+  },
+  {
+    "type": "belief",
+    "id": "bel_synagogue",
+    "name": "Synagogues",
+    "description": "Followers' settlements can build a Synagogue: +5 faith.",
+    "kind": "worship",
+    "building": "building_synagogue"
+  },
+  {
+    "type": "belief",
+    "id": "bel_wat",
+    "name": "Wats",
+    "description": "Followers' settlements can build a Wat: +3 faith and +2 science.",
+    "kind": "worship",
+    "building": "building_wat"
+  },
+  {
+    "type": "belief",
+    "id": "bel_gurdwara",
+    "name": "Gurdwaras",
+    "description": "Followers' settlements can build a Gurdwara: +3 faith and +2 food.",
+    "kind": "worship",
+    "building": "building_gurdwara"
   }
 ]
