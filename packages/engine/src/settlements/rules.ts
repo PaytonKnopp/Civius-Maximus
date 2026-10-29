@@ -38,6 +38,7 @@ import {
 } from './districts';
 import { scaleCost } from '../speed';
 import { loyaltyPenalty } from '../loyalty/loyalty';
+import { greatWorkYields } from '../greatworks/greatworks';
 
 /**
  * Settlement rules as pure functions of the game state (docs/03-core-mechanics.md, section 3).
@@ -453,6 +454,10 @@ export function settlementYields(
       );
     }
   }
+
+  // Great works on display.
+  for (const g of greatWorkYields(ctx, state, s))
+    for (const y of Object.keys(g.yields).sort()) add(y, g.label, g.yields[y]!);
 
   // Settlement-wide effects (government, policies...): flat amounts now, percentages after.
   const percents: { y: string; label: string; percent: number }[] = [];

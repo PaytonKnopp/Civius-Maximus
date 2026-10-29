@@ -2,6 +2,7 @@ import { resolveText } from '@cx/content';
 import {
   type Action,
   activateProblem,
+  worksToMake,
   availablePromotions,
   commandOf,
   distance,
@@ -83,7 +84,8 @@ export function UnitPanel({
   const found: Action = { type: 'found_settlement', player: viewer, unit: unit.id };
   const command = commandOf(ctx, unit);
   const person = unit.person ? ctx.content.entities.greatPerson[unit.person] : undefined;
-  const activateBlocked = person ? activateProblem(state, unit.id, viewer) : undefined;
+  const activateBlocked = person ? activateProblem(state, unit.id, viewer, ctx) : undefined;
+  const works = person ? worksToMake(person, unit) : undefined;
   const prophet = !!person && !!ctx.content.entities.greatPersonClass[person.class]?.foundsReligion;
   const religionBlocked = prophet
     ? religionFoundingProblem(ctx, state, viewer, unit.id)
@@ -269,11 +271,19 @@ export function UnitPanel({
               type="button"
               className="primary"
               disabled={!!activateBlocked}
-              title={activateBlocked?.message ?? 'Use them here (they are used up)'}
+              title={
+                activateBlocked?.message ??
+                (works
+                  ? `Create ${resolveText(ctx.content, works.next)} here`
+                  : 'Use them here (they are used up)')
+              }
               onClick={() => act({ type: 'activate_great_person', player: viewer, unit: unit.id })}
             >
-              Activate
+              {works ? `Create a great work (${works.left} left)` : 'Activate'}
             </button>
+          )}
+          {mine && activateBlocked?.code === 'no_slot' && (
+            <p className="hint">{activateBlocked.message}.</p>
           )}
           {mine && prophet && (
             <button

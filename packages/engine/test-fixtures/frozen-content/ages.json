@@ -483,5 +483,14 @@
     "score": 2,
     "trigger": "settlement_joined",
     "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_great_work",
+    "name": "A great work is created",
+    "score": 1,
+    "trigger": "great_work",
+    "once": "never",
+    "cap": 3
   }
 ]

@@ -145,6 +145,9 @@ export function awardMoments(
       case 'settlement_flipped':
         award(draft, ctx, e.to, 'settlement_joined', emit);
         break;
+      case 'great_work_created':
+        award(draft, ctx, e.player, 'great_work', emit);
+        break;
       case 'suzerain_changed':
         if (e.to) award(draft, ctx, e.to, 'suzerain', emit);
         break;

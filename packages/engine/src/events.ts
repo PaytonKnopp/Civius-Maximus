@@ -52,6 +52,15 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
     | { type: 'space_project'; player: PlayerId; project: string; arrives: number | null }
     | { type: 'great_person_born'; person: string; player: PlayerId }
     | { type: 'great_person_activated'; person: string; player: PlayerId; settlement: SettlementId }
+    | {
+        type: 'great_work_created';
+        work: string;
+        name: string;
+        kind: string;
+        person: string;
+        player: PlayerId;
+        settlement: SettlementId;
+      }
     | { type: 'pantheon_founded'; player: PlayerId; belief: string }
     /** A player found a city-state (and got `envoys` free envoys there for being first). */
     | { type: 'city_state_met'; cityState: PlayerId; player: PlayerId; envoys: number }

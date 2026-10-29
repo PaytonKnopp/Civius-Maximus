@@ -1959,3 +1959,91 @@ button.turn-pill:hover {
   font-size: 0.85rem;
   color: #f0a58f;
 }
+
+/* Great works */
+.great-works-body {
+  flex: 1;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  padding: 20px max(18px, env(safe-area-inset-right, 0px)) 28px
+    max(18px, env(safe-area-inset-left, 0px));
+  align-content: start;
+}
+
+.works-settlement {
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(27, 45, 60, 0.92), rgba(12, 22, 31, 0.92));
+  border: 1px solid var(--gold-lo);
+  border-radius: 8px;
+}
+
+.works-settlement h3 {
+  margin: 0 0 8px;
+}
+
+.works-holder {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(240, 212, 140, 0.18);
+  border-radius: 6px;
+}
+
+.works-holder.themed {
+  border-color: var(--gold);
+  box-shadow: 0 0 14px rgba(240, 212, 140, 0.18);
+}
+
+.works-holder h4 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.works-holder h4 small {
+  color: var(--muted);
+  font-weight: normal;
+}
+
+.works {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.great-work {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.great-work.empty {
+  border: 1px dashed rgba(240, 212, 140, 0.25);
+  background: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.great-work .work-kind {
+  font-size: 1.2rem;
+}
+
+.great-work .work-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.great-work .work-text small {
+  color: var(--muted);
+}
+
+.great-work select {
+  max-width: 130px;
+}

@@ -167,6 +167,20 @@ export const Action = z.discriminatedUnion('type', [
   }),
   /** Use a great person in one of your settlements (it's used up). */
   z.strictObject({ type: z.literal('activate_great_person'), player: PlayerRef, unit: UnitRef }),
+  /** Move one of your great works to an empty slot of its kind in another of your settlements. */
+  z.strictObject({
+    type: z.literal('move_great_work'),
+    player: PlayerRef,
+    work: z.string().min(1).max(64),
+    settlement: z.string().min(1).max(64),
+  }),
+  /** Swap two of your great works of the same kind (to theme a building). */
+  z.strictObject({
+    type: z.literal('swap_great_works'),
+    player: PlayerRef,
+    a: z.string().min(1).max(64),
+    b: z.string().min(1).max(64),
+  }),
   /** Upgrade a unit to its newer version, for gold, in your own territory. */
   z.strictObject({ type: z.literal('upgrade_unit'), player: PlayerRef, unit: UnitRef }),
   /** A trader in one of your settlements starts a trade route to another settlement. */

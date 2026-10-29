@@ -409,6 +409,42 @@ forces new crisis policies. Off by default, for groups that like chaos.
 - **Culture victory:** your visitors from each other civ outnumber its domestic tourists.
 - Not yet: ideologies and their pressure, great works, national parks and seaside resorts.
 
+### Great works (V1 final, F11)
+
+- **Who makes them:** Great Writers, Artists and Musicians (two new classes join the writers).
+  - Each makes named, real works: Homer's *The Iliad* and *The Odyssey*, Leonardo's *Mona
+    Lisa*, Beethoven's *Symphony No. 9*, and so on. There are 6 writers, 6 artists and 6
+    musicians.
+  - Writers make 2 works, artists 3, musicians 2.
+  - Each activation makes **one** work into an empty slot of its kind in the settlement where
+    the great person stands. The person stays until they've made them all, as in Civ VI.
+- **Slots** (`slots` on buildings and wonders; `any` takes every kind):
+  - Palace: 1 any. Amphitheater: 2 writing. Museum: 3 art. Broadcast Center and Film Studio:
+    2 music.
+  - Great Library: 2 writing. Taj Mahal: 2 art. Broadway: 1 writing and 1 music.
+  - Relic slots exist in the format for later.
+- **Points:** the Museum gives +2 Great Artist points, the Broadcast Center +2 Great Musician
+  points. Writers come from the Theater Square and the Amphitheater, as before.
+- **Yields** where displayed (`rules.greatWorks.yields`): writing +2 culture +2 tourism, art
+  +3 / +3, music +4 / +4, relics +4 faith +8 tourism.
+  - **Theming** doubles a building's works (`themingPercent` 100). It needs two or more slots,
+    all full, with every work by a different great person. A simpler rule than Civ VI's
+    same-era, different-civ sets.
+- **Moving:** move a work to an empty slot in another of your settlements, or swap two works of
+  the same kind.
+  - Works go with their settlement when it's captured or flips.
+  - A work whose building is gone, such as a captured Palace, is kept in storage and yields
+    nothing until moved.
+  - A razed settlement's works are lost.
+- **On screen:**
+  - The **Great Works** screen (key **K**) shows every slot, what's in it, themed buildings,
+    stored works, and Move or Swap for each work.
+  - The unit panel offers "Create a great work (N left)", or says what slot is missing.
+  - The settlement's yield tooltips list each building's works.
+  - A new work is a historic moment (+1, three an era).
+- **AI:** takes its writers, artists and musicians to its nearest settlement with room. In a
+  250-turn, four-player test game the AIs made 12 works.
+
 ---
 
 ## More modules (all in v1 as toggles)

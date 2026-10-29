@@ -57,6 +57,8 @@ export interface GameState {
   history: HistoryEntry[];
   /** World-first historic moments already claimed (`moment:key`, e.g. the first into an era). */
   worldMoments?: string[];
+  /** Great works, by id (`gw3`...). See greatworks/greatworks.ts. */
+  greatWorks?: Record<string, GreatWorkState>;
   /** The great people race (docs/04-advanced-systems.md, "Great people"). */
   greatPeople: {
     /** Points per player, per great person class. */
@@ -312,6 +314,20 @@ export interface UnitState {
   cargo?: UnitState[];
   /** Commanders: out of action after a retreat until this turn. */
   recovering?: number;
+}
+
+export interface GreatWorkState {
+  /** Its title (text, or a string key). */
+  name: string;
+  kind: 'writing' | 'art' | 'music' | 'relic';
+  /** The great person who made it. */
+  creator: string;
+  /** Who it was made for (works change hands with the settlement they're in). */
+  by: PlayerId;
+  turn: number;
+  /** Where it's displayed: a settlement, and the building or wonder in it with the slot. */
+  settlement: SettlementId;
+  holder: string;
 }
 
 export interface GameSettings {

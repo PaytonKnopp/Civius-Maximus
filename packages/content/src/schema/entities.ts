@@ -557,6 +557,23 @@ export const RulesDef = z.strictObject({
       freeCityUnits: 2,
       yieldPenalties: [],
     }),
+  /** Great works (docs/04-advanced-systems.md, "Great works"). */
+  greatWorks: z
+    .strictObject({
+      /** What one work of each kind yields where it's displayed. */
+      yields: z.strictObject({
+        writing: YieldMap,
+        art: YieldMap,
+        music: YieldMap,
+        relic: YieldMap,
+      }),
+      /** Extra percent for a themed building: two or more slots, all full, all by different people. */
+      themingPercent: z.int().min(0).max(500),
+    })
+    .default({
+      yields: { writing: {}, art: {}, music: {}, relic: {} },
+      themingPercent: 0,
+    }),
   mapgen: z.strictObject({
     coastTerrain: Id,
     oceanTerrain: Id,
@@ -912,6 +929,21 @@ export const ImprovementDef = z.strictObject({
 });
 
 /** A building in a settlement: in its center, or inside one of its districts. */
+/** Kinds of great work (docs/04-advanced-systems.md, "Great works"). */
+export const GreatWorkKind = z.enum(['writing', 'art', 'music', 'relic']);
+export type GreatWorkKind = z.infer<typeof GreatWorkKind>;
+
+/** Slots for great works in a building or wonder, by kind (`any` takes every kind). */
+const GreatWorkSlots = z
+  .strictObject({
+    writing: z.int().min(1).max(6).optional(),
+    art: z.int().min(1).max(6).optional(),
+    music: z.int().min(1).max(6).optional(),
+    relic: z.int().min(1).max(6).optional(),
+    any: z.int().min(1).max(6).optional(),
+  })
+  .default({});
+
 export const BuildingDef = z.strictObject({
   type: z.literal('building'),
   id: Id,
@@ -936,6 +968,8 @@ export const BuildingDef = z.strictObject({
   district: Id.optional(),
   /** Outer defenses: HP that attacks must break before they hurt the settlement much. */
   walls: z.int().min(0).default(0),
+  /** Slots for great works. */
+  slots: GreatWorkSlots,
   /** Effects on the settlement it's in. */
   localEffects: z.array(Effect).default([]),
   /** Effects on the whole empire. */
@@ -1025,6 +1059,8 @@ export const WonderDef = z.strictObject({
   /** Yields to the settlement that built it. */
   yields: YieldMap.default({}),
   happiness: z.int().default(0),
+  /** Slots for great works. */
+  slots: GreatWorkSlots,
   placement: Placement.default(anyPlacement),
   localEffects: z.array(Effect).default([]),
   effects: z.array(Effect).default([]),
@@ -1495,6 +1531,15 @@ export const GreatAction = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('boosts'), count: z.int().min(1).max(10) }),
   /** A promotion for your soldiers within `radius` of the settlement. */
   z.strictObject({ kind: z.literal('promote'), promotion: Id, radius: z.int().min(0).max(10) }),
+  /**
+   * Great works, one per activation (the great person stays until all are made), each into an
+   * empty slot of its kind in the settlement where it's made.
+   */
+  z.strictObject({
+    kind: z.literal('create_works'),
+    work: GreatWorkKind,
+    works: z.array(Text).min(1).max(5),
+  }),
 ]);
 export type GreatAction = z.infer<typeof GreatAction>;
 
@@ -1616,6 +1661,7 @@ export const MomentDef = z.strictObject({
     'tech_researched',
     'civic_completed',
     'settlement_joined',
+    'great_work',
   ]),
   once: z.enum(['player', 'world', 'never']).default('never'),
   cap: z.int().min(1).optional(),
