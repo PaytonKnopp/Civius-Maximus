@@ -294,6 +294,41 @@ feel populated and give players something to compete over even when there's no w
   bonus. Players always know how to reach a Golden Age.
 - Historic moments double as a **timeline** shown in the end-of-game replay.
 
+### Built so far (V1 final, F8)
+
+- **Era score from historic moments** (`moment` content, 17 of them):
+  - Moments include a new settlement, a town becoming a city, a world wonder (4), a great person
+    (2), a pantheon and a religion (once each), a new government, districts, battles won, a
+    captured city (2), becoming a city-state's suzerain, trade routes, finding a natural wonder,
+    being the **first civ into a new era** (3, world-first) and steps into space.
+  - Some have caps per era: 5 battles, 4 districts and 3 trade routes count.
+  - Each moment goes on your **timeline**.
+- **Ages:** when a civ enters its next era, last era's score decides its age:
+  - **Dark** below `8 + 3 × (era − 1)`: −1 happiness everywhere, +25% faith.
+  - **Golden** at 10 more: +1 happiness and +10% culture.
+  - **Heroic** for a golden age right after a dark one: +2 happiness, +10% culture, three
+    dedications.
+  - **Normal** in between.
+- Thresholds are `rules.ages`; ages are `age` content with ordinary effects, so they show in
+  every breakdown.
+- **Dedications** (`dedication` content, 8): pick one each era (three in a heroic age), for
+  example *Light of Learning* (+15% science, techs earn era score), *Under the Banners* (+2
+  strength, faster soldiers, battles earn more), or *Open the Frontier* (cheaper settlers, faster
+  growth, settlements earn more). Each gives a bonus for the era and adds +1 to its kind of
+  moment.
+- AI leaders choose dedications by personality.
+- **On screen:** the turn pill shows your era and age with this era's score. Clicking it (or
+  **E**) opens Eras and Ages: the age and its bonus, a meter with the dark and golden marks and
+  what the next age would be now, the dedications (chosen there when it's time; the next-action
+  button says so), the ages of past eras, and the moment timeline. Moments, new ages and natural
+  wonders found show as notices with a sound.
+
+**Different from the plan above, on purpose:** each civ's age changes when *it* enters its next
+era (its own techs and civics), not when a world era advances. Everything else in the game
+already follows a civ's own era (units, buildings, music, city art), and in simultaneous play it
+never ends an era early for a civ that hasn't reached it. The "first into an era" moment rewards
+whoever gets there first. Legacy goals and dark-age policy cards are still to come.
+
 ### Ages mode (optional, later)
 
 Civ 7's signature system for groups that want it: the game is split into three ages (Antiquity,

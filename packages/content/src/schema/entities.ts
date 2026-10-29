@@ -498,6 +498,18 @@ export const RulesDef = z.strictObject({
     /** Raider units by era: the latest era any player has reached picks the list. */
     units: z.array(z.strictObject({ era: Id, units: z.array(Id).min(1) })).min(1),
   }),
+  /**
+   * Era score thresholds (docs/04-advanced-systems.md, "Eras and ages"), in score earned during
+   * an era. For the era with order N, a dark age is below `darkBase + darkStep * (N - 1)`, a
+   * golden one at that plus `goldenGap` or more. A golden age right after a dark one is heroic.
+   */
+  ages: z
+    .strictObject({
+      darkBase: z.int().min(0),
+      darkStep: z.int().min(0),
+      goldenGap: z.int().min(1),
+    })
+    .default({ darkBase: 8, darkStep: 3, goldenGap: 10 }),
   mapgen: z.strictObject({
     coastTerrain: Id,
     oceanTerrain: Id,
@@ -1498,6 +1510,69 @@ export const CityStateDef = z.strictObject({
   suzerain: z.strictObject({ name: Text, description: Text, effects: z.array(Effect).default([]) }),
 });
 
+/**
+ * An age (docs/04-advanced-systems.md, "Eras and ages"): what a civ's era score in the last era
+ * earns it for the next one. Its effects apply for the whole era, and it lets the player pick
+ * this many dedications.
+ */
+export const AgeDef = z.strictObject({
+  type: z.literal('age'),
+  id: Id,
+  name: Text,
+  description: Text,
+  kind: z.enum(['normal', 'golden', 'dark', 'heroic']),
+  effects: z.array(Effect).default([]),
+  dedications: z.int().min(0).max(5).default(1),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #d4a94e')
+    .default('#d4a94e'),
+});
+
+/** A dedication: a goal the player commits the era to, with its bonus for the whole era. */
+export const DedicationDef = z.strictObject({
+  type: z.literal('dedication'),
+  id: Id,
+  name: Text,
+  description: Text,
+  effects: z.array(Effect).default([]),
+  /** Historic moments that score one more while this dedication is chosen. */
+  bonusMoments: z.array(Id).default([]),
+});
+
+/**
+ * A historic moment (docs/04-advanced-systems.md, "Eras and ages"): something that earns era
+ * score. `trigger` names what happens; `once` limits it to the first time for a player or for
+ * the whole world; `cap` limits how many count in one era.
+ */
+export const MomentDef = z.strictObject({
+  type: z.literal('moment'),
+  id: Id,
+  name: Text,
+  score: z.int().min(0).max(20),
+  trigger: z.enum([
+    'settlement_founded',
+    'town_upgraded',
+    'wonder_completed',
+    'great_person',
+    'pantheon_founded',
+    'religion_founded',
+    'government_changed',
+    'district_built',
+    'enemy_killed',
+    'settlement_captured',
+    'suzerain',
+    'trade_route',
+    'natural_wonder',
+    'era_first',
+    'space_project',
+    'tech_researched',
+    'civic_completed',
+  ]),
+  once: z.enum(['player', 'world', 'never']).default('never'),
+  cap: z.int().min(1).optional(),
+});
+
 /** Schemas for entities that have an `id` and are stored in compiled content. */
 export const ENTITY_SCHEMAS = {
   yield: YieldDef,
@@ -1530,6 +1605,9 @@ export const ENTITY_SCHEMAS = {
   belief: BeliefDef,
   cityStateType: CityStateTypeDef,
   cityState: CityStateDef,
+  age: AgeDef,
+  dedication: DedicationDef,
+  moment: MomentDef,
   rules: RulesDef,
 } as const;
 
@@ -1550,6 +1628,9 @@ export type MapScriptDef = z.infer<typeof MapScriptDef>;
 export type MapSizeDef = z.infer<typeof MapSizeDef>;
 export type GameSpeedDef = z.infer<typeof GameSpeedDef>;
 export type DifficultyDef = z.infer<typeof DifficultyDef>;
+export type AgeDef = z.infer<typeof AgeDef>;
+export type DedicationDef = z.infer<typeof DedicationDef>;
+export type MomentDef = z.infer<typeof MomentDef>;
 export type UnitClassDef = z.infer<typeof UnitClassDef>;
 export type UnitDef = z.infer<typeof UnitDef>;
 export type ImprovementDef = z.infer<typeof ImprovementDef>;
@@ -1605,6 +1686,9 @@ export interface EntityByType {
   belief: BeliefDef;
   cityStateType: CityStateTypeDef;
   cityState: CityStateDef;
+  age: AgeDef;
+  dedication: DedicationDef;
+  moment: MomentDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

@@ -87,6 +87,12 @@ export const Action = z.discriminatedUnion('type', [
   }),
   /** Pay gold to turn a town into a city. */
   z.strictObject({ type: z.literal('upgrade_town'), player: PlayerRef, settlement: SettlementRef }),
+  /** Pick the dedications for this era's age (docs/04-advanced-systems.md, "Eras and ages"). */
+  z.strictObject({
+    type: z.literal('choose_dedications'),
+    player: PlayerRef,
+    dedications: z.array(ContentRef).min(1).max(5),
+  }),
   /** Research toward a tech (and the path of prerequisites to it). */
   z.strictObject({ type: z.literal('set_research'), player: PlayerRef, tech: ContentRef }),
   /** Work toward a civic (and the path of prerequisites to it). */

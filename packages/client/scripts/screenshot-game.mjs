@@ -121,6 +121,12 @@ for (let guard = 0; guard < TURNS * 15 && (await turn(page)) < TURNS; guard++) {
       ).join(', '),
     );
     await page.keyboard.press('Escape');
+  } else if (next === 'Choose a dedication') {
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('.dedication-card');
+    await page.click('.dedication-card');
+    await page.click('.dedication-choice .primary');
+    await page.keyboard.press('Escape');
   } else if (next === 'Rivals are moving…') {
     // The AI plays in a background worker: wait for it (it doesn't count as a step).
     await page.waitForFunction(

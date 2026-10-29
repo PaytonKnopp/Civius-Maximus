@@ -6,6 +6,7 @@ import type { PlayerFacts, SettlementFacts } from '../effects/tile';
 import type { EffectSource } from '../effects/yields';
 import { tileTouchesRiver } from '../map/hex';
 import type { GameState, PlayerId, PlayerState, SettlementState, Track } from '../state';
+import { ageSources } from '../eras/ages';
 
 /**
  * Where a player's effects come from (docs/05-modding.md, "The effects system"): their
@@ -120,6 +121,8 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
   const level = p.handicap ? content.entities.difficulty?.[p.handicap] : undefined;
   if (level && level.aiEffects.length > 0)
     out.push({ id: level.id, label: resolveText(content, level.name), effects: level.aiEffects });
+  // The age and its dedications (docs/04-advanced-systems.md, "Eras and ages").
+  out.push(...ageSources(ctx, p));
   const gov = content.entities.government[p.government];
   if (gov && gov.effects.length > 0)
     out.push({ id: gov.id, label: resolveText(content, gov.name), effects: gov.effects });

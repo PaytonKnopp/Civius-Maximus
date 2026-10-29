@@ -22,7 +22,7 @@ lists everything, how to try it, and what Payton does next.
 | F5 | **Audio**: sound effects for every action and event, music for each era (generative, plus public-domain classical pieces played by the game's own instruments), volume settings | ✅ |
 | F6 | **Game setup**: Basic and Advanced setup (speed, difficulty, start era, world settings, every rule toggle, leader picks per seat, presets) for local and online games | ✅ (lobby leader picks with F20) |
 | F7 | **Map breadth**: 10+ map types, world age / temperature / rainfall / sea level, natural wonders | ✅ |
-| F8 | **Eras and ages**: era score from historic moments, golden, normal, dark and heroic ages with dedications | |
+| F8 | **Eras and ages**: era score from historic moments, golden, normal, dark and heroic ages with dedications | ✅ |
 | F9 | **Governors**: seven governors with promotion trees, assigned to settlements | |
 | F10 | **Loyalty**: loyalty pressure, free cities, settlements changing sides | |
 | F11 | **Great works**: writers, artists and musicians, slots, theming, tourism from works | |

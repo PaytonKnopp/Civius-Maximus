@@ -88,6 +88,19 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
     | { type: 'turn_ended_by_player'; player: PlayerId }
     | { type: 'turn_unended_by_player'; player: PlayerId }
     | { type: 'turn_started'; turn: number }
+    /** Era score earned (docs/04-advanced-systems.md, "Eras and ages"). */
+    | { type: 'historic_moment'; player: PlayerId; moment: string; score: number; total: number }
+    /** A civ entered a new era: its age for it, from last era's score. */
+    | {
+        type: 'age_started';
+        player: PlayerId;
+        era: string;
+        age: string;
+        score: number;
+        dark: number;
+        golden: number;
+      }
+    | { type: 'natural_wonder_found'; player: PlayerId; feature: string; tile: number }
     | {
         type: 'game_ended';
         reason: 'score' | 'conquest' | 'domination' | 'religion' | 'science' | 'culture';

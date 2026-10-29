@@ -227,6 +227,15 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       effectList(out, entity.aiEffects, ['aiEffects']);
       ids(out, 'unit', entity.aiStartUnits, ['aiStartUnits']);
       break;
+    case 'age':
+      effectList(out, entity.effects, ['effects']);
+      break;
+    case 'dedication':
+      effectList(out, entity.effects, ['effects']);
+      ids(out, 'moment', entity.bonusMoments, ['bonusMoments']);
+      break;
+    case 'moment':
+      break;
     case 'unitClass':
       entity.bonuses.forEach((b, i) => ids(out, 'unitClass', b.vs, ['bonuses', i, 'vs']));
       break;

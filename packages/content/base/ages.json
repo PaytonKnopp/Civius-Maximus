@@ -1,0 +1,443 @@
+[
+  {
+    "type": "age",
+    "id": "age_normal",
+    "kind": "normal",
+    "name": "Normal Age",
+    "description": "An ordinary era: no blessing, no curse. Choose one dedication.",
+    "effects": [],
+    "dedications": 1,
+    "color": "#9fb4c4"
+  },
+  {
+    "type": "age",
+    "id": "age_golden",
+    "kind": "golden",
+    "name": "Golden Age",
+    "description": "Your people remember the last era with pride: +1 happiness in every settlement and +10% culture. Choose one dedication.",
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "dedications": 1,
+    "color": "#e8c15a"
+  },
+  {
+    "type": "age",
+    "id": "age_dark",
+    "kind": "dark",
+    "name": "Dark Age",
+    "description": "Hard times: −1 happiness in every settlement, but people turn to faith (+25% faith). Choose one dedication, and earn your way back.",
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": -1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 25
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "dedications": 1,
+    "color": "#6a5a7a"
+  },
+  {
+    "type": "age",
+    "id": "age_heroic",
+    "kind": "heroic",
+    "name": "Heroic Age",
+    "description": "From darkness to glory: +2 happiness in every settlement, +10% culture, and three dedications.",
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "dedications": 3,
+    "color": "#f0a040"
+  },
+  {
+    "type": "dedication",
+    "id": "ded_monuments",
+    "name": "Monuments to the Ages",
+    "description": "+20% production toward wonders and districts. Wonders and districts earn one more era score.",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 20,
+          "toward": {
+            "kind": "wonder"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 20,
+          "toward": {
+            "kind": "district"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "bonusMoments": ["moment_wonder", "moment_district"]
+  },
+  {
+    "type": "dedication",
+    "id": "ded_frontier",
+    "name": "Open the Frontier",
+    "description": "Settlers cost 30% less and settlements grow 10% faster. New settlements earn one more era score.",
+    "effects": [
+      {
+        "effect": "modify_item_cost",
+        "params": {
+          "percent": -30,
+          "toward": {
+            "kind": "unit",
+            "unit": "unit_settler"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_growth",
+        "params": {
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "bonusMoments": ["moment_settlement"]
+  },
+  {
+    "type": "dedication",
+    "id": "ded_learning",
+    "name": "Light of Learning",
+    "description": "+15% science. Technologies earn one more era score.",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "bonusMoments": ["moment_tech"]
+  },
+  {
+    "type": "dedication",
+    "id": "ded_muses",
+    "name": "Hall of the Muses",
+    "description": "+15% culture. Civics earn one more era score.",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "bonusMoments": ["moment_civic"]
+  },
+  {
+    "type": "dedication",
+    "id": "ded_coin",
+    "name": "Sound Coin",
+    "description": "+15% gold and one more trade route. Trade routes earn one more era score.",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "extra_trade_route",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "bonusMoments": ["moment_trade_route"]
+  },
+  {
+    "type": "dedication",
+    "id": "ded_devotion",
+    "name": "Days of Devotion",
+    "description": "+20% faith. Founding a pantheon or religion, and great people, earn one more era score.",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "bonusMoments": ["moment_pantheon", "moment_religion", "moment_great_person"]
+  },
+  {
+    "type": "dedication",
+    "id": "ded_banners",
+    "name": "Under the Banners",
+    "description": "+2 strength for every unit and +20% production toward soldiers. Victories in battle earn one more era score.",
+    "effects": [
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": 2
+        },
+        "target": {
+          "scope": "units"
+        }
+      },
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 20,
+          "toward": {
+            "kind": "unit",
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "bonusMoments": ["moment_kill", "moment_capture"]
+  },
+  {
+    "type": "dedication",
+    "id": "ded_horizons",
+    "name": "Beyond the Horizon",
+    "description": "Ships and scouts cost 30% less; finding natural wonders and meeting city-states earn one more era score.",
+    "effects": [
+      {
+        "effect": "modify_item_cost",
+        "params": {
+          "percent": -30,
+          "toward": {
+            "kind": "unit",
+            "unitClass": ["class_recon", "class_naval_melee", "class_naval_ranged"]
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "bonusMoments": ["moment_natural_wonder", "moment_suzerain"]
+  },
+  {
+    "type": "moment",
+    "id": "moment_settlement",
+    "name": "A new settlement",
+    "score": 1,
+    "trigger": "settlement_founded",
+    "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_town_city",
+    "name": "A town becomes a city",
+    "score": 1,
+    "trigger": "town_upgraded",
+    "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_wonder",
+    "name": "A world wonder completed",
+    "score": 4,
+    "trigger": "wonder_completed",
+    "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_great_person",
+    "name": "A great person joins you",
+    "score": 2,
+    "trigger": "great_person",
+    "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_pantheon",
+    "name": "A pantheon founded",
+    "score": 1,
+    "trigger": "pantheon_founded",
+    "once": "player"
+  },
+  {
+    "type": "moment",
+    "id": "moment_religion",
+    "name": "A religion founded",
+    "score": 3,
+    "trigger": "religion_founded",
+    "once": "player"
+  },
+  {
+    "type": "moment",
+    "id": "moment_government",
+    "name": "A new form of government",
+    "score": 1,
+    "trigger": "government_changed",
+    "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_district",
+    "name": "A district built",
+    "score": 1,
+    "trigger": "district_built",
+    "once": "never",
+    "cap": 4
+  },
+  {
+    "type": "moment",
+    "id": "moment_kill",
+    "name": "An enemy defeated in battle",
+    "score": 1,
+    "trigger": "enemy_killed",
+    "once": "never",
+    "cap": 5
+  },
+  {
+    "type": "moment",
+    "id": "moment_capture",
+    "name": "A settlement captured",
+    "score": 2,
+    "trigger": "settlement_captured",
+    "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_suzerain",
+    "name": "Suzerain of a city-state",
+    "score": 1,
+    "trigger": "suzerain",
+    "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_trade_route",
+    "name": "A trade route opened",
+    "score": 1,
+    "trigger": "trade_route",
+    "once": "never",
+    "cap": 3
+  },
+  {
+    "type": "moment",
+    "id": "moment_natural_wonder",
+    "name": "A natural wonder discovered",
+    "score": 1,
+    "trigger": "natural_wonder",
+    "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_era_first",
+    "name": "First into a new era",
+    "score": 3,
+    "trigger": "era_first",
+    "once": "world"
+  },
+  {
+    "type": "moment",
+    "id": "moment_space",
+    "name": "A step into space",
+    "score": 3,
+    "trigger": "space_project",
+    "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_tech",
+    "name": "A technology of a new kind",
+    "score": 0,
+    "trigger": "tech_researched",
+    "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_civic",
+    "name": "A civic of a new kind",
+    "score": 0,
+    "trigger": "civic_completed",
+    "once": "never"
+  }
+]

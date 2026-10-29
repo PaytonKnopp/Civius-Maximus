@@ -22,11 +22,41 @@ import { faithUnitCost, maxReligions, pantheonCost, pantheonOf } from '../religi
 import { countsAs } from '../uniques';
 import { isCoastal } from '../settlements/rules';
 import { obsoletedBy, upgradeCost, upgradeProblem } from '../units/upgrades';
-import { roleOf, type Turn } from './turn';
+import { jitter, personalityOf, roleOf, type Turn } from './turn';
 import { effectValue, happinessWeight, yieldsValue } from './values';
+
+/** Which trait each dedication serves (an AI leader picks the ones its personality likes). */
+const DEDICATION_TRAITS: Record<string, keyof ReturnType<typeof personalityOf>> = {
+  ded_monuments: 'wonders',
+  ded_frontier: 'expansion',
+  ded_learning: 'science',
+  ded_muses: 'culture',
+  ded_coin: 'gold',
+  ded_devotion: 'faith',
+  ded_banners: 'aggression',
+  ded_horizons: 'naval',
+};
+
+/** Picks this era's dedications (docs/04-advanced-systems.md, "Eras and ages"). */
+export function chooseDedications(t: Turn) {
+  const a = t.p.ages;
+  if (!a || a.pending <= 0) return;
+  const traits = personalityOf(t.ctx, t.state, t.player);
+  const ranked = t.ctx.content.ids.dedication
+    .filter((id) => !a.dedications.includes(id))
+    .map((id) => {
+      const trait = DEDICATION_TRAITS[id];
+      const w = trait ? Number(traits[trait] ?? 5) : 5;
+      return { id, w: w * 100 + jitter(t.player, id, a.era) };
+    })
+    .sort((x, y) => y.w - x.w || (x.id < y.id ? -1 : 1));
+  const pick = ranked.slice(0, a.pending).map((x) => x.id);
+  if (pick.length > 0) t.act({ type: 'choose_dedications', player: t.player, dedications: pick });
+}
 
 /** Research, civics, government and policy cards. */
 export function manageProgress(t: Turn) {
+  chooseDedications(t);
   for (const kind of ['tech', 'civic'] as const) {
     if (trackOf(t.p, kind).current) continue;
     const next = bestNode(t, kind);

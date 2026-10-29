@@ -278,3 +278,5 @@ export {
   visitingTourists,
 } from './culture/tourism';
 export { spaceProblem, spaceProgress } from './science/space';
+
+export { ageSources, dedicationProblem, newAgeState, thresholds } from './eras/ages';

@@ -373,6 +373,7 @@ export type NextAction =
   | { kind: 'research'; label: string }
   | { kind: 'civic'; label: string }
   | { kind: 'policies'; label: string }
+  | { kind: 'dedication'; label: string }
   | { kind: 'end'; label: string }
   | { kind: 'waiting'; label: string };
 
@@ -410,6 +411,7 @@ export function nextAction(
   if (growing) return { kind: 'develop', id: growing.id, label: 'Choose a tile to develop' };
   const idle = mine.find((s) => s.kind === 'city' && s.queue.length === 0);
   if (idle) return { kind: 'production', id: idle.id, label: 'Choose production' };
+  if (p.ages && p.ages.pending > 0) return { kind: 'dedication', label: 'Choose a dedication' };
   if (mine.length > 0) {
     if (!p.techs.current && availableNodes(ctx, p, 'tech').length > 0)
       return { kind: 'research', label: 'Choose research' };
