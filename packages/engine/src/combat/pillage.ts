@@ -1,3 +1,4 @@
+import type { Draft } from 'immer';
 import type { Action } from '../actions';
 import {
   type ActionHandler,
@@ -8,6 +9,7 @@ import {
 } from '../context';
 import { toFixed } from '../fixed';
 import { playerEra } from '../progress/rules';
+import { playerEffects } from '../progress/sources';
 import { scaleCost } from '../speed';
 import type { GameState, PlayerId, TradeRoute, UnitState } from '../state';
 import { ownedUnit } from '../units/handlers';
@@ -105,6 +107,24 @@ export function plunderProblem(
   return undefined;
 }
 
+/** Kit bonuses for raiding (`pillage_bonus`): extra yields, whole points. */
+function raidBonus(draft: Draft<GameState>, ctx: EngineContext, player: PlayerId) {
+  const p = draft.players[player]!;
+  for (const { effect } of playerEffects(ctx, draft as GameState, player, 'pillage_bonus')) {
+    for (const [y, n] of Object.entries(effect.params.yields)) {
+      if (y === 'gold') p.gold += toFixed(n);
+      else if (y === 'faith') p.faith += toFixed(n);
+      else if (y === 'science' || y === 'culture') {
+        // Toward what's being researched (or the civic being worked on).
+        const track = y === 'science' ? p.techs : p.civics;
+        const id = track.current;
+        if (id) track.progress[id] = (track.progress[id] ?? 0) + toFixed(n);
+        else track.stored += toFixed(n);
+      }
+    }
+  }
+}
+
 type A<T extends Action['type']> = Extract<Action, { type: T }>;
 
 export const pillageHandlers = {
@@ -122,6 +142,7 @@ export const pillageHandlers = {
       u.moves = Math.max(0, u.moves - r.moves * MP);
       u.health = Math.min(ctx.content.rules.combat.maxHealth, u.health + r.heal);
       draft.players[action.player]!.gold += gold;
+      raidBonus(draft, ctx, action.player);
       emit({
         type: 'pillaged',
         player: action.player,
@@ -145,6 +166,7 @@ export const pillageHandlers = {
       draft.routes = draft.routes.filter((x) => x.id !== action.route);
       u.moves = 0;
       draft.players[action.player]!.gold += gold;
+      raidBonus(draft, ctx, action.player);
       emit({
         type: 'route_plundered',
         player: action.player,

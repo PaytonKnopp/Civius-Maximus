@@ -147,20 +147,99 @@ Alexander's "war support never decays" is dropped (war support doesn't decay).
 - **Agenda: *Unifier.*** Respects players who capture cities. Dislikes players with weak armies.
 - **Personality:** aggression high, district planning high.
 
-## Leaders 11–30 (signature ideas; full kits in M6–M8)
+## Leaders 11–20 (full kits, V1 final F17)
+
+The signature ideas became these kits, built from the effects the engine has (and one new
+one, `pillage_bonus`). Where an idea needed a rule the game doesn't have, the closest fit is
+noted.
+
+### 11. Harald Hardrada — Norse
+- **Leader: *The Hard Ruler.*** Naval melee units +5 strength. Every pillage or plunder also
+  gives 15 culture and 15 faith.
+- **Civ: *Fjord Shipwrights.*** Land units can embark from the start. +50% production toward
+  naval units.
+- **Longship** (replaces Galley): 30 strength, 4 movement. **Stave Church** (replaces Temple):
+  woods worked by that settlement +1 production.
+- **Agenda: *Saga of the Sea.*** Respects a strong fleet, scorns a weak one.
+
+### 12. Shaka — Zulu
+- **Leader: *Horns of the Buffalo.*** Commanders give +3 strength in their radius and gain XP
+  50% faster. Melee and anti-cavalry units +3 strength when attacking.
+- **Civ: *Regiments of the King.*** +25% production toward soldiers; unit upkeep 25% less.
+- **Impi** (replaces Pikeman): 43 strength, 3 movement, cheaper. **Ikanda** (replaces
+  Barracks): +2 production; melee units trained there start with Vanguard, anti-cavalry with
+  Spearhead.
+- **Agenda: *Iron Discipline.*** Respects strong armies, despises weak ones.
+
+### 13. Montezuma — Aztec
+- **Leader: *Flower Wars.*** 25% chance to capture the melee, anti-cavalry and ranged units
+  your soldiers defeat ("captured units become laborers" becomes "captured units join you").
+  Capturing a settlement heals every unit.
+- **Civ: *Chinampas.*** Farms on a river or by a lake +1 food; luxury resources +1 production
+  (in place of "each luxury boosts combat", which needs a rule the game doesn't have).
+- **Eagle Warrior** (replaces Warrior): 28 strength. **Tlachtli** (replaces Arena): +2 faith.
+- **Agenda: *Tribute of Jade.*** Covets others' wonders, respects warriors.
+
+### 14. Hannibal Barca — Carthage
+- **Leader: *Over the Mountains.*** Units +5 strength fighting on hills; cavalry +3 strength.
+- **Civ: *Traders of Tyre.*** +1 trade route; routes +2 gold at their origin.
+- **War Elephant** (replaces Horseman): 36 strength, 3 movement. **Cothon** (replaces
+  Lighthouse): +1 gold, +50% production toward naval units there.
+- **Agenda: *Barcid Oath.*** Hates surprise wars, respects a worthy foe.
+
+### 15. Saladin — Ayyubids
+- **Leader: *Chivalry of the Sultan.*** Cavalry +4 strength when defending; every city +2 faith.
+- **Civ: *Madrasa Learning.*** Settlements with a worship building +2 science; worship
+  buildings cost 50% less.
+- **Mamluk** (replaces Knight): 51 strength. **Madrasa** (replaces University): +2 faith.
+- **Agenda: *Defender of the Faithful.*** Honors peacekeepers, detests surprise wars.
+
+### 16. Catherine the Great — Russia
+- **Leader: *Patron of the Hermitage.*** +50% great writer, artist and musician points; +1
+  wildcard policy slot.
+- **Civ: *The Vast Frontier.*** Borders grow 50% faster; tundra +1 production and +1 faith.
+- **Cossack** (replaces Cavalry): 67 strength. **Lavra** (replaces Shrine): +1 faith, +1
+  culture, +1 more great prophet point.
+- **Agenda: *Enlightened Empress.*** Admires wonders, thinks civs with none uncultured.
+
+### 17. Ashoka — Maurya
+- **Leader: *Edicts of the Law.*** While celebrating, settlements +3 faith and +2 culture (the
+  "peace after war" idea, carried by celebrations).
+- **Civ: *Lands of the Five Rivers.*** Settlements on rivers grow 15% faster.
+- **Elephant Archer** (replaces Archer): 28 ranged strength, 3 movement. **Stepwell** (unique
+  improvement on flat land): +1 food, +1 faith next to a Holy Site, +1 food per two farms.
+- **Agenda: *Wheel of the Law.*** Loves peacekeepers, hates warmongers.
+
+### 18. Suleiman the Magnificent — Ottomans
+- **Leader: *The Lawgiver.*** +1 happiness and +2 loyalty in every settlement.
+- **Civ: *Masters of the Siege Train.*** +50% production toward siege units, which get +5
+  strength against settlements.
+- **Janissary** (replaces Musketman): 60 strength. **Grand Bazaar** (replaces Bank): +2 gold,
+  +1 happiness.
+- **Agenda: *Magnificence.*** Admires wonders, dislikes surprise wars.
+
+### 19. Pachacuti — Inca
+- **Leader: *Earth-Shaker.*** Campuses +1 science per neighboring mountain; settlements grow
+  10% faster.
+- **Civ: *Roads of the Four Quarters.*** Every new settlement gets a road to the capital; hills
+  +1 food ("work mountains" becomes richer hills and terraces).
+- **Huaraca Slinger** (replaces Slinger): 18 ranged strength. **Terrace Farm** (unique
+  improvement on hills): +1 food, +1 food per neighboring mountain.
+- **Agenda: *Children of the Sun.*** Likes peaceful neighbors, wary of big armies.
+
+### 20. Boudica — Celts
+- **Leader: *Fury of the Iceni.*** Units +4 strength in woods or rainforest, +3 attacking
+  settlements (in place of "bonus versus larger empires").
+- **Civ: *Sacred Groves.*** Holy Sites +1 faith per neighboring woods; +25% production toward
+  Holy Sites.
+- **Essedarius** (replaces Horseman): a 31-strength war chariot. **Nemeton** (replaces Shrine):
+  +1 faith, +1 culture.
+- **Agenda: *Never Conquered.*** Distrusts big armies and conquerors.
+
+## Leaders 21–30 (signature ideas)
 
 | # | Leader | Civ | Signature idea |
 |---|---|---|---|
-| 11 | Harald Hardrada | Vikings | Raiding from the sea: coastal pillaging pays culture and gold; longships carry troops early |
-| 12 | Shaka | Zulu | Disciplined impis: units that win fights become commanders faster; corps-style formations early |
-| 13 | Montezuma | Aztecs | Luxuries fuel war: each distinct luxury boosts combat; captured units become laborers |
-| 14 | Hannibal Barca | Carthage | Crossing the impossible: units ignore mountain penalties once; trade colonies on every coast |
-| 15 | Saladin | Ayyubids | Faith and chivalry: worship buildings cost less and grant science; strong defensive cavalry |
-| 16 | Catherine the Great | Russia | Vast frontier: extra tiles on founding, tundra becomes productive, great people from the cold |
-| 17 | Ashoka | Maurya India | Dharma after conquest: peace and religion spread grant big yields after wars end |
-| 18 | Suleiman the Magnificent | Ottomans | Siege masters: siege units and conquered cities stay loyal and productive |
-| 19 | Pachacuti | Inca | Mountain empire: terrace farms on hills, mountain tiles can be worked, roads through peaks |
-| 20 | Boudica | Celts | Rally the tribes: bonus versus larger empires; holy sites in woods |
 | 21 | Charlemagne | Franks | Crowned by faith: religious and military policies stack; holy knights |
 | 22 | Cyrus the Great | Persia | Tolerant conqueror: captured cities keep happiness, satrapies boost trade |
 | 23 | Sejong the Great | Korea | Scholar king: campuses next to mountains become powerhouses; science from writing |

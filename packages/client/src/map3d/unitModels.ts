@@ -404,6 +404,38 @@ function build(model: string, body: number, trim: number, kit: Kit) {
         });
       }
       break;
+    case 'elephant': {
+      // A war elephant with a howdah and two riders.
+      const hide = 0x6e6a66;
+      kit.m.push(put(unit.ball, hide, [0, 0.17, 0], [0.15, 0.085, 0.075]));
+      kit.m.push(put(unit.ball, hide, [0.13, 0.2, 0], [0.055, 0.055, 0.05]));
+      for (const z of [0.045, -0.045])
+        kit.m.push(
+          put(
+            unit.box,
+            hide,
+            [0.12, 0.2, z * 1.25],
+            [0.045, 0.07, 0.01],
+            [0, 0.4 * Math.sign(z), 0],
+          ),
+        );
+      kit.m.push(put(unit.cyl, hide, [0.18, 0.13, 0], [0.012, 0.1, 0.012], [0, 0, -0.2]));
+      for (const z of [0.022, -0.022])
+        kit.m.push(put(unit.cone, 0xe8e0c8, [0.17, 0.16, z], [0.008, 0.06, 0.008], [0, 0, -1.9]));
+      for (const [dx, dz] of [
+        [0.07, 0.04],
+        [0.07, -0.04],
+        [-0.07, 0.04],
+        [-0.07, -0.04],
+      ] as const) {
+        kit.m.push(put(unit.cyl, hide, [dx, 0.05, dz], [0.022, 0.1, 0.022]));
+      }
+      kit.m.push(put(unit.box, trim, [-0.01, 0.255, 0], [0.11, 0.04, 0.09]));
+      kit.m.push(put(unit.box, body, [-0.01, 0.235, 0], [0.13, 0.012, 0.11]));
+      figure(kit, 0.0, 0.025, { helmet: 'none', weapon: 'bow', body, trim }, 0.2);
+      figure(kit, -0.03, -0.025, { helmet: 'none', weapon: 'spear', body, trim }, 0.2);
+      break;
+    }
     case 'chariot': {
       horse(kit, 0.12, 0.035);
       horse(kit, 0.12, -0.035, C.horse2);

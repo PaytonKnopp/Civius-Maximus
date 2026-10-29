@@ -205,5 +205,71 @@
     "color": "#a89a80",
     "requiresTech": "tech_masonry",
     "civ": "civ_china"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_stepwell",
+    "name": "Stepwell",
+    "icon": "Sw",
+    "yields": {
+      "food": 1
+    },
+    "order": 15,
+    "sites": [
+      {
+        "terrains": ["grassland", "plains", "desert"],
+        "elevations": ["flat"]
+      }
+    ],
+    "color": "#c89a5a",
+    "adjacency": [
+      {
+        "yield": "faith",
+        "amount": 1,
+        "per": {
+          "district": "district_holy_site"
+        },
+        "label": "Holy Site"
+      },
+      {
+        "yield": "food",
+        "amount": 1,
+        "per": {
+          "improvement": "improvement_farm"
+        },
+        "every": 2,
+        "label": "Neighboring farms"
+      }
+    ],
+    "civ": "civ_maurya"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_terrace_farm",
+    "name": "Terrace Farm",
+    "icon": "TF",
+    "yields": {
+      "food": 1
+    },
+    "order": 12,
+    "sites": [
+      {
+        "terrains": ["grassland", "plains", "desert", "tundra"],
+        "elevations": ["hills"]
+      }
+    ],
+    "color": "#8ab04a",
+    "model": "farm",
+    "adjacency": [
+      {
+        "yield": "food",
+        "amount": 1,
+        "per": {
+          "elevation": "mountain"
+        },
+        "label": "Mountains"
+      }
+    ],
+    "civ": "civ_inca"
   }
 ]

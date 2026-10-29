@@ -3200,6 +3200,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -6126,6 +6177,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -6504,6 +6606,7 @@
                 "horseman",
                 "knight",
                 "chariot",
+                "elephant",
                 "musket",
                 "infantry",
                 "artillery",
@@ -9875,6 +9978,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -12553,6 +12707,57 @@
                         },
                         "required": [
                           "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
                         ],
                         "additionalProperties": false
                       },
@@ -15412,6 +15617,57 @@
                           "target"
                         ],
                         "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "pillage_bonus"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "yields": {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "additionalProperties": {
+                                  "type": "number",
+                                  "multipleOf": 0.5
+                                }
+                              }
+                            },
+                            "required": [
+                              "yields"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "player"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
                       }
                     ]
                   }
@@ -18138,6 +18394,57 @@
                             },
                             "required": [
                               "amount"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "player"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "pillage_bonus"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "yields": {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "additionalProperties": {
+                                  "type": "number",
+                                  "multipleOf": 0.5
+                                }
+                              }
+                            },
+                            "required": [
+                              "yields"
                             ],
                             "additionalProperties": false
                           },
@@ -22413,6 +22720,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -25091,6 +25449,57 @@
                         },
                         "required": [
                           "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
                         ],
                         "additionalProperties": false
                       },
@@ -28703,6 +29112,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -31381,6 +31841,57 @@
                         },
                         "required": [
                           "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
                         ],
                         "additionalProperties": false
                       },
@@ -34247,6 +34758,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -36925,6 +37487,57 @@
                         },
                         "required": [
                           "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
                         ],
                         "additionalProperties": false
                       },
@@ -40305,6 +40918,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -43394,6 +44058,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -46159,6 +46874,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -48884,6 +49650,57 @@
                         },
                         "required": [
                           "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
                         ],
                         "additionalProperties": false
                       },
@@ -51818,6 +52635,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -54539,6 +55407,57 @@
                         },
                         "required": [
                           "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
                         ],
                         "additionalProperties": false
                       },
@@ -57322,6 +58241,57 @@
                             "target"
                           ],
                           "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "pillage_bonus"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yields": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  "additionalProperties": {
+                                    "type": "number",
+                                    "multipleOf": 0.5
+                                  }
+                                }
+                              },
+                              "required": [
+                                "yields"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
                         }
                       ]
                     }
@@ -60049,6 +61019,57 @@
                             },
                             "required": [
                               "amount"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "player"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "pillage_bonus"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "yields": {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "additionalProperties": {
+                                  "type": "number",
+                                  "multipleOf": 0.5
+                                }
+                              }
+                            },
+                            "required": [
+                              "yields"
                             ],
                             "additionalProperties": false
                           },
@@ -62824,6 +63845,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -65542,6 +66614,57 @@
                         },
                         "required": [
                           "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
                         ],
                         "additionalProperties": false
                       },
@@ -68385,6 +69508,57 @@
                       "target"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "pillage_bonus"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yields": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "additionalProperties": {
+                              "type": "number",
+                              "multipleOf": 0.5
+                            }
+                          }
+                        },
+                        "required": [
+                          "yields"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -71081,6 +72255,57 @@
                               },
                               "required": [
                                 "amount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "pillage_bonus"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yields": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  "additionalProperties": {
+                                    "type": "number",
+                                    "multipleOf": 0.5
+                                  }
+                                }
+                              },
+                              "required": [
+                                "yields"
                               ],
                               "additionalProperties": false
                             },
@@ -74105,6 +75330,57 @@
                               },
                               "required": [
                                 "amount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "pillage_bonus"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yields": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  "additionalProperties": {
+                                    "type": "number",
+                                    "multipleOf": 0.5
+                                  }
+                                }
+                              },
+                              "required": [
+                                "yields"
                               ],
                               "additionalProperties": false
                             },
@@ -77572,6 +78848,57 @@
                                 },
                                 "required": [
                                   "amount"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "player"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "pillage_bonus"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "yields": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    },
+                                    "additionalProperties": {
+                                      "type": "number",
+                                      "multipleOf": 0.5
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "yields"
                                 ],
                                 "additionalProperties": false
                               },
@@ -82933,6 +84260,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -85859,6 +87237,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -86237,6 +87666,7 @@
                   "horseman",
                   "knight",
                   "chariot",
+                  "elephant",
                   "musket",
                   "infantry",
                   "artillery",
@@ -89608,6 +91038,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -92286,6 +93767,57 @@
                           },
                           "required": [
                             "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
                           ],
                           "additionalProperties": false
                         },
@@ -95145,6 +96677,57 @@
                             "target"
                           ],
                           "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "pillage_bonus"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yields": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  "additionalProperties": {
+                                    "type": "number",
+                                    "multipleOf": 0.5
+                                  }
+                                }
+                              },
+                              "required": [
+                                "yields"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
                         }
                       ]
                     }
@@ -97871,6 +99454,57 @@
                               },
                               "required": [
                                 "amount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "pillage_bonus"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yields": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  "additionalProperties": {
+                                    "type": "number",
+                                    "multipleOf": 0.5
+                                  }
+                                }
+                              },
+                              "required": [
+                                "yields"
                               ],
                               "additionalProperties": false
                             },
@@ -102146,6 +103780,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -104824,6 +106509,57 @@
                           },
                           "required": [
                             "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
                           ],
                           "additionalProperties": false
                         },
@@ -108436,6 +110172,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -111114,6 +112901,57 @@
                           },
                           "required": [
                             "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
                           ],
                           "additionalProperties": false
                         },
@@ -113980,6 +115818,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -116658,6 +118547,57 @@
                           },
                           "required": [
                             "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
                           ],
                           "additionalProperties": false
                         },
@@ -120038,6 +121978,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -123127,6 +125118,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -125892,6 +127934,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -128617,6 +130710,57 @@
                           },
                           "required": [
                             "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
                           ],
                           "additionalProperties": false
                         },
@@ -131551,6 +133695,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -134272,6 +136467,57 @@
                           },
                           "required": [
                             "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
                           ],
                           "additionalProperties": false
                         },
@@ -137055,6 +139301,57 @@
                               "target"
                             ],
                             "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "pillage_bonus"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "yields": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    },
+                                    "additionalProperties": {
+                                      "type": "number",
+                                      "multipleOf": 0.5
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "yields"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "player"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
                           }
                         ]
                       }
@@ -139782,6 +142079,57 @@
                               },
                               "required": [
                                 "amount"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "pillage_bonus"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yields": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  "additionalProperties": {
+                                    "type": "number",
+                                    "multipleOf": 0.5
+                                  }
+                                }
+                              },
+                              "required": [
+                                "yields"
                               ],
                               "additionalProperties": false
                             },
@@ -142557,6 +144905,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -145275,6 +147674,57 @@
                           },
                           "required": [
                             "amount"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
                           ],
                           "additionalProperties": false
                         },
@@ -148118,6 +150568,57 @@
                         "target"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "pillage_bonus"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yields": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "additionalProperties": {
+                                "type": "number",
+                                "multipleOf": 0.5
+                              }
+                            }
+                          },
+                          "required": [
+                            "yields"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -150814,6 +153315,57 @@
                                 },
                                 "required": [
                                   "amount"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "player"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "pillage_bonus"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "yields": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    },
+                                    "additionalProperties": {
+                                      "type": "number",
+                                      "multipleOf": 0.5
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "yields"
                                 ],
                                 "additionalProperties": false
                               },
@@ -153838,6 +156390,57 @@
                                 },
                                 "required": [
                                   "amount"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "player"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "pillage_bonus"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "yields": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    },
+                                    "additionalProperties": {
+                                      "type": "number",
+                                      "multipleOf": 0.5
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "yields"
                                 ],
                                 "additionalProperties": false
                               },
@@ -157305,6 +159908,57 @@
                                   },
                                   "required": [
                                     "amount"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "target": {
+                                  "type": "object",
+                                  "properties": {
+                                    "scope": {
+                                      "type": "string",
+                                      "const": "player"
+                                    }
+                                  },
+                                  "required": [
+                                    "scope"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "condition": {
+                                  "$ref": "#/$defs/__schema0"
+                                }
+                              },
+                              "required": [
+                                "effect",
+                                "params",
+                                "target"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "effect": {
+                                  "type": "string",
+                                  "const": "pillage_bonus"
+                                },
+                                "params": {
+                                  "type": "object",
+                                  "properties": {
+                                    "yields": {
+                                      "type": "object",
+                                      "propertyNames": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]*$"
+                                      },
+                                      "additionalProperties": {
+                                        "type": "number",
+                                        "multipleOf": 0.5
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "yields"
                                   ],
                                   "additionalProperties": false
                                 },

@@ -566,5 +566,631 @@
         }
       ]
     }
+  },
+  {
+    "type": "civ",
+    "id": "civ_norse",
+    "name": "Norse",
+    "adjective": "Norse",
+    "architecture": "northern",
+    "emblem": "wolf",
+    "colors": {
+      "primary": "#2b4a6b",
+      "secondary": "#d8d0bc"
+    },
+    "cityNames": [
+      "Nidaros",
+      "Bjørgvin",
+      "Oslo",
+      "Hamar",
+      "Tønsberg",
+      "Stavanger",
+      "Kaupang",
+      "Sarpsborg",
+      "Skien",
+      "Borg",
+      "Hlaðir",
+      "Vardø",
+      "Tromsø",
+      "Bodø",
+      "Alta",
+      "Ålesund"
+    ],
+    "ability": {
+      "name": "Fjord Shipwrights",
+      "description": "Land units can embark from the start. +50% production toward naval units.",
+      "effects": [
+        {
+          "effect": "enable_embark",
+          "params": {},
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "modify_production",
+          "params": {
+            "percent": 50,
+            "toward": {
+              "unitClass": ["class_naval_melee", "class_naval_ranged"]
+            }
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_zulu",
+    "name": "Zulu",
+    "adjective": "Zulu",
+    "architecture": "african",
+    "emblem": "shield",
+    "colors": {
+      "primary": "#3a2a1a",
+      "secondary": "#e8d8a8"
+    },
+    "cityNames": [
+      "KwaBulawayo",
+      "Ulundi",
+      "Dukuza",
+      "Ondini",
+      "Nobamba",
+      "Nodwengu",
+      "Mgungundlovu",
+      "Eshowe",
+      "Nongoma",
+      "Emakhosini",
+      "Isandlwana",
+      "Mahlabathini",
+      "Babanango",
+      "Nkandla",
+      "Mtonjaneni",
+      "Esiklebheni"
+    ],
+    "ability": {
+      "name": "Regiments of the King",
+      "description": "+25% production toward soldiers. Unit upkeep costs 25% less.",
+      "effects": [
+        {
+          "effect": "modify_production",
+          "params": {
+            "percent": 25,
+            "toward": {
+              "military": true
+            }
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        },
+        {
+          "effect": "modify_unit_upkeep",
+          "params": {
+            "percent": -25
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_aztec",
+    "name": "Aztec",
+    "adjective": "Aztec",
+    "architecture": "american",
+    "emblem": "serpent",
+    "colors": {
+      "primary": "#1f7a6b",
+      "secondary": "#d4a94e"
+    },
+    "cityNames": [
+      "Tenochtitlan",
+      "Texcoco",
+      "Tlacopan",
+      "Tlatelolco",
+      "Xochimilco",
+      "Coyoacan",
+      "Chalco",
+      "Tollan",
+      "Cholula",
+      "Iztapalapa",
+      "Azcapotzalco",
+      "Malinalco",
+      "Huexotla",
+      "Cuauhnahuac",
+      "Otompan",
+      "Teotihuacan"
+    ],
+    "ability": {
+      "name": "Chinampas",
+      "description": "Farms on a river or next to a lake +1 food. Luxury resources +1 production.",
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "food",
+            "amount": 1
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "all": [
+              {
+                "tile_has_improvement": "improvement_farm"
+              },
+              {
+                "any": [
+                  {
+                    "tile_on_river": true
+                  },
+                  {
+                    "tile_adjacent_to": {
+                      "terrain": "lake"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "amount": 1
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_resource_class": "luxury"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_carthage",
+    "name": "Carthage",
+    "adjective": "Carthaginian",
+    "architecture": "mediterranean",
+    "emblem": "ship",
+    "colors": {
+      "primary": "#5a2a7a",
+      "secondary": "#e8c66a"
+    },
+    "cityNames": [
+      "Qart-Hadasht",
+      "Utica",
+      "Hadrumetum",
+      "Lepcis",
+      "Gades",
+      "Malaca",
+      "Panormus",
+      "Motya",
+      "Lilybaeum",
+      "Carales",
+      "Tharros",
+      "Ebusus",
+      "Hippo Regius",
+      "Thapsus",
+      "Kerkouane",
+      "Sabratha"
+    ],
+    "ability": {
+      "name": "Traders of Tyre",
+      "description": "+1 trade route. Trade routes give +2 gold to the settlement they start from.",
+      "effects": [
+        {
+          "effect": "extra_trade_route",
+          "params": {
+            "amount": 1
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "trade_route_bonus",
+          "params": {
+            "origin": {
+              "gold": 2
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_ayyubid",
+    "name": "Ayyubids",
+    "adjective": "Ayyubid",
+    "architecture": "middle_eastern",
+    "emblem": "sword",
+    "colors": {
+      "primary": "#c8a030",
+      "secondary": "#7a1f1f"
+    },
+    "cityNames": [
+      "Al-Qahira",
+      "Dimashq",
+      "Halab",
+      "Hama",
+      "Hims",
+      "Al-Karak",
+      "Ajlun",
+      "Baalbek",
+      "Asqalan",
+      "Adan",
+      "Zabid",
+      "Mayyafariqin",
+      "Hisn Kayfa",
+      "Amid",
+      "Busra",
+      "Al-Shawbak"
+    ],
+    "ability": {
+      "name": "Madrasa Learning",
+      "description": "Settlements with a worship building +2 science. Worship buildings cost 50% less.",
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "science",
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_has_building": [
+              "building_cathedral",
+              "building_mosque",
+              "building_pagoda",
+              "building_meeting_house",
+              "building_stupa",
+              "building_synagogue",
+              "building_wat",
+              "building_gurdwara"
+            ]
+          }
+        },
+        {
+          "effect": "modify_item_cost",
+          "params": {
+            "percent": -50,
+            "toward": {
+              "building": [
+                "building_cathedral",
+                "building_mosque",
+                "building_pagoda",
+                "building_meeting_house",
+                "building_stupa",
+                "building_synagogue",
+                "building_wat",
+                "building_gurdwara"
+              ]
+            }
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_russia",
+    "name": "Russia",
+    "adjective": "Russian",
+    "architecture": "northern",
+    "emblem": "crown",
+    "colors": {
+      "primary": "#e8c030",
+      "secondary": "#1a1a1a"
+    },
+    "cityNames": [
+      "Sankt-Peterburg",
+      "Moskva",
+      "Novgorod",
+      "Kazan",
+      "Tver",
+      "Smolensk",
+      "Vladimir",
+      "Yaroslavl",
+      "Pskov",
+      "Arkhangelsk",
+      "Astrakhan",
+      "Tobolsk",
+      "Nizhny Novgorod",
+      "Samara",
+      "Tula",
+      "Voronezh"
+    ],
+    "ability": {
+      "name": "The Vast Frontier",
+      "description": "Borders grow 50% faster. Tundra tiles +1 production and +1 faith.",
+      "effects": [
+        {
+          "effect": "modify_border_growth",
+          "params": {
+            "percent": 50
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "amount": 1
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_terrain": "tundra"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "faith",
+            "amount": 1
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_terrain": "tundra"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_maurya",
+    "name": "Maurya",
+    "adjective": "Mauryan",
+    "architecture": "south_asian",
+    "emblem": "lotus",
+    "colors": {
+      "primary": "#e88a2b",
+      "secondary": "#2b5a2b"
+    },
+    "cityNames": [
+      "Pataliputra",
+      "Ujjayini",
+      "Takshashila",
+      "Tosali",
+      "Suvarnagiri",
+      "Vidisha",
+      "Mathura",
+      "Sanchi",
+      "Sarnath",
+      "Kausambi",
+      "Shravasti",
+      "Rajagriha",
+      "Vaishali",
+      "Kalinganagara",
+      "Bharukaccha",
+      "Prayaga"
+    ],
+    "ability": {
+      "name": "Lands of the Five Rivers",
+      "description": "Settlements on rivers grow 15% faster. Can build Stepwells.",
+      "effects": [
+        {
+          "effect": "modify_growth",
+          "params": {
+            "percent": 15
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_on_river": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_ottoman",
+    "name": "Ottomans",
+    "adjective": "Ottoman",
+    "architecture": "middle_eastern",
+    "emblem": "crescent",
+    "colors": {
+      "primary": "#8a1520",
+      "secondary": "#f0f0e8"
+    },
+    "cityNames": [
+      "Istanbul",
+      "Edirne",
+      "Bursa",
+      "Konya",
+      "Ankara",
+      "Izmir",
+      "Trabzon",
+      "Sinop",
+      "Antalya",
+      "Adana",
+      "Sivas",
+      "Kayseri",
+      "Erzurum",
+      "Manisa",
+      "Amasya",
+      "Iznik"
+    ],
+    "ability": {
+      "name": "Masters of the Siege Train",
+      "description": "+50% production toward siege units. Siege units +5 strength against settlements.",
+      "effects": [
+        {
+          "effect": "modify_production",
+          "params": {
+            "percent": 50,
+            "toward": {
+              "unitClass": "class_siege"
+            }
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        },
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 5,
+            "unitClass": "class_siege",
+            "vs": {
+              "settlement": true
+            }
+          },
+          "target": {
+            "scope": "units"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_inca",
+    "name": "Inca",
+    "adjective": "Inca",
+    "architecture": "american",
+    "emblem": "mountain",
+    "colors": {
+      "primary": "#c8a030",
+      "secondary": "#7a2a1a"
+    },
+    "cityNames": [
+      "Qusqu",
+      "Ollantaytambo",
+      "Pisaq",
+      "Machu Picchu",
+      "Vilcabamba",
+      "Cajamarca",
+      "Quitu",
+      "Tumipampa",
+      "Huanuco Pampa",
+      "Hatun Xauxa",
+      "Vilcashuaman",
+      "Tambo Colorado",
+      "Incallajta",
+      "Pumpu",
+      "Paria",
+      "Choquequirao"
+    ],
+    "ability": {
+      "name": "Roads of the Four Quarters",
+      "description": "Every new settlement gets a road to the capital. Hills tiles +1 food. Can build Terrace Farms.",
+      "effects": [
+        {
+          "effect": "road_to_capital",
+          "params": {},
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "food",
+            "amount": 1
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_elevation": "hills"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "civ",
+    "id": "civ_celts",
+    "name": "Celts",
+    "adjective": "Celtic",
+    "architecture": "northern",
+    "emblem": "tree",
+    "colors": {
+      "primary": "#2a5a2a",
+      "secondary": "#c8a030"
+    },
+    "cityNames": [
+      "Venta Icenorum",
+      "Camulodunon",
+      "Verlamion",
+      "Alesia",
+      "Bibracte",
+      "Gergovia",
+      "Avaricum",
+      "Manching",
+      "Hallstatt",
+      "Danebury",
+      "Mai Dun",
+      "Temair",
+      "Emain Macha",
+      "Dún Aonghasa",
+      "Durnovaria",
+      "Isca"
+    ],
+    "ability": {
+      "name": "Sacred Groves",
+      "description": "Holy Sites +1 faith for each neighboring woods tile. +25% production toward Holy Sites.",
+      "effects": [
+        {
+          "effect": "extra_adjacency",
+          "params": {
+            "district": "district_holy_site",
+            "adjacency": {
+              "yield": "faith",
+              "amount": 1,
+              "per": {
+                "feature": "woods"
+              },
+              "label": "Woods (Sacred Groves)"
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "modify_production",
+          "params": {
+            "percent": 25,
+            "toward": {
+              "district": "district_holy_site"
+            }
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   }
 ]
