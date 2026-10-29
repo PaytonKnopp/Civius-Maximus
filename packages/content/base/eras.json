@@ -68,5 +68,45 @@
         "unit_cavalry"
       ]
     }
+  },
+  {
+    "type": "era",
+    "id": "era_atomic",
+    "name": "Atomic",
+    "order": 7,
+    "start": {
+      "gold": 800,
+      "units": [
+        "unit_settler",
+        "unit_settler",
+        "unit_settler",
+        "unit_infantry",
+        "unit_artillery",
+        "unit_tank"
+      ]
+    }
+  },
+  {
+    "type": "era",
+    "id": "era_information",
+    "name": "Information",
+    "order": 8,
+    "start": {
+      "gold": 1000,
+      "units": [
+        "unit_settler",
+        "unit_settler",
+        "unit_settler",
+        "unit_infantry",
+        "unit_artillery",
+        "unit_tank"
+      ]
+    }
+  },
+  {
+    "type": "era",
+    "id": "era_future",
+    "name": "Future",
+    "order": 9
   }
 ]

@@ -290,7 +290,9 @@
       "nearMax": 3,
       "perDeal": 3,
       "tradeRoute": 3,
-      "spiedOnUs": -2
+      "spiedOnUs": -2,
+      "nukedUs": -10,
+      "nukedOthers": -3
     },
     "friendshipOpinion": 6,
     "allianceOpinion": 14
@@ -536,5 +538,10 @@
         "disasters": 150
       }
     ]
+  },
+  "nukes": {
+    "falloutTurns": 10,
+    "populationLoss": 50,
+    "emissions": 40
   }
 }

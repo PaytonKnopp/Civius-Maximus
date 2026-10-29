@@ -761,5 +761,86 @@
         "building": "building_museum"
       }
     }
+  },
+  {
+    "type": "civic",
+    "id": "civic_cold_war",
+    "name": "Cold War",
+    "era": "era_atomic",
+    "cost": 1200,
+    "requires": ["civic_ideology"],
+    "row": 3
+  },
+  {
+    "type": "civic",
+    "id": "civic_decolonization",
+    "name": "Decolonization",
+    "era": "era_atomic",
+    "cost": 1180,
+    "requires": ["civic_suffrage"],
+    "row": 4
+  },
+  {
+    "type": "civic",
+    "id": "civic_consumerism",
+    "name": "Consumerism",
+    "era": "era_atomic",
+    "cost": 1220,
+    "requires": ["civic_urbanization"],
+    "row": 5
+  },
+  {
+    "type": "civic",
+    "id": "civic_space_age",
+    "name": "Space Age",
+    "era": "era_atomic",
+    "cost": 1260,
+    "requires": ["civic_mass_media", "civic_cold_war"],
+    "row": 6
+  },
+  {
+    "type": "civic",
+    "id": "civic_globalization",
+    "name": "Globalization",
+    "era": "era_information",
+    "cost": 1600,
+    "requires": ["civic_consumerism", "civic_decolonization"],
+    "row": 4
+  },
+  {
+    "type": "civic",
+    "id": "civic_environmentalism",
+    "name": "Environmentalism",
+    "era": "era_information",
+    "cost": 1560,
+    "requires": ["civic_conservation"],
+    "row": 7
+  },
+  {
+    "type": "civic",
+    "id": "civic_digital_rights",
+    "name": "Digital Rights",
+    "era": "era_information",
+    "cost": 1620,
+    "requires": ["civic_space_age"],
+    "row": 6
+  },
+  {
+    "type": "civic",
+    "id": "civic_social_networks",
+    "name": "Social Networks",
+    "era": "era_information",
+    "cost": 1680,
+    "requires": ["civic_globalization"],
+    "row": 5
+  },
+  {
+    "type": "civic",
+    "id": "civic_world_federation",
+    "name": "World Federation",
+    "era": "era_future",
+    "cost": 2200,
+    "requires": ["civic_social_networks", "civic_digital_rights", "civic_environmentalism"],
+    "row": 5
   }
 ]

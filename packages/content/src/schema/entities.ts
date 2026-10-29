@@ -402,6 +402,9 @@ export const RulesDef = z.strictObject({
       razed: z.int(),
       /** Each time one of their spies was caught or seen working against us (fades). */
       spiedOnUs: z.int().default(-2),
+      /** Each nuclear strike on us, and on anyone else (fades). */
+      nukedUs: z.int().default(-10),
+      nukedOthers: z.int().default(-3),
       /** Per settlement of theirs within `nearDistance` of ours, up to `nearMax` of them. */
       settledNear: z.int(),
       nearDistance: z.int().min(1),
@@ -698,6 +701,17 @@ export const RulesDef = z.strictObject({
     /** Volcanoes: this feature on `percent` of mountains, placed last (after natural wonders). */
     volcanoes: z.strictObject({ feature: Id, percent: z.int().min(0).max(100) }).optional(),
   }),
+  /** Nuclear weapons (docs/04-advanced-systems.md, "Nukes"), with the `nukes` setting. */
+  nukes: z
+    .strictObject({
+      /** Turns the fallout keeps a tile from yielding. */
+      falloutTurns: z.int().min(0),
+      /** Percent of the population a settlement in the blast loses (never the last citizen). */
+      populationLoss: z.int().min(0).max(100),
+      /** Emissions toward climate change for each strike (with disasters on). */
+      emissions: z.int().min(0),
+    })
+    .default({ falloutTurns: 10, populationLoss: 50, emissions: 40 }),
   /** Natural disasters (docs/04-advanced-systems.md, "Climate & disasters"). */
   disasters: z
     .strictObject({
@@ -823,7 +837,9 @@ export const UnitDef = z.strictObject({
    */
   upgradesTo: Id.optional(),
   /** Special actions this unit can take. */
-  actions: z.array(z.enum(['found_settlement', 'trade_route'])).default([]),
+  actions: z.array(z.enum(['found_settlement', 'trade_route', 'nuke'])).default([]),
+  /** A nuclear weapon (with the nukes setting): strikes a tile up to `range` away, `radius` wide. */
+  nuke: z.strictObject({ range: z.int().min(1).max(30), radius: z.int().min(0).max(3) }).optional(),
   /** Sea units: can enter deep ocean. */
   deepWater: z.boolean().default(false),
   /** Every tile costs 1 movement (e.g. some scouts and cavalry). */
@@ -886,6 +902,7 @@ export const UnitDef = z.strictObject({
       'plane',
       'bomber',
       'helicopter',
+      'rocket',
       'generic',
     ])
     .default('generic'),
@@ -1234,6 +1251,8 @@ export const ProjectDef = z
     onDistrict: Id.optional(),
     /** One-time reward: food to the settlement's store, production to its next item, gold... */
     reward: YieldMap.default({}),
+    /** Brings its builder's exoplanet expedition this many turns sooner (built while it travels). */
+    speedsExpedition: z.int().min(1).optional(),
     ...requires,
   })
   .refine((p) => (p.clears === undefined) !== (p.onDistrict === undefined), {

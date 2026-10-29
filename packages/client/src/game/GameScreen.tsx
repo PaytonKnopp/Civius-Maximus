@@ -49,6 +49,8 @@ import {
   spyCapacity,
   congressOn,
   disastersOn,
+  blastTiles,
+  nukeProblem,
 } from '@cx/engine';
 import { type GameHandle, LocalGame, makeSave, RemoteGame } from '@cx/host';
 import { Icon, Rich } from '../ui/Icon';
@@ -166,6 +168,8 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
       return 'notify';
     case 'disaster':
       return e.settlements.some((id) => s.settlements[id]?.owner === me) ? 'war' : null;
+    case 'nuke_launched':
+      return 'war';
     case 'loyalty_falling':
       return e.owner === me ? 'notify' : null;
     case 'unit_promoted':
@@ -286,6 +290,13 @@ function noticeFor(
       const what = resolveText(content, def.name);
       if (mine.length === 0) return `${what} struck far from you`;
       return `${what} hit ${mine.map((id) => name(id)).join(' and ')}${e.pillaged > 0 ? `: ${e.pillaged} improvement${e.pillaged === 1 ? '' : 's'} damaged for a few turns` : ''}${Object.keys(def.fertility).length > 0 ? ', but the land is richer' : ''}`;
+    }
+    case 'nuke_launched': {
+      const weapon = resolveText(content, content.entities.unit[e.weapon]?.name ?? e.weapon);
+      const hit = e.settlements.map((id) => name(id)).join(' and ');
+      return e.player === ME
+        ? `Your ${weapon} struck${hit ? ` ${hit}` : ''}: ${e.units} unit${e.units === 1 ? '' : 's'} lost`
+        : `${civName(content, state, e.player)} used a ${weapon}${hit ? ` on ${hit}` : ''}!`;
     }
     case 'sea_level_rose':
       return `The seas are rising: ${e.tiles.length} tile${e.tiles.length === 1 ? '' : 's'} of low coastal land went under (X)`;
@@ -651,6 +662,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     tile: number;
   } | null>(null);
   const [striking, setStriking] = useState(false);
+  // A nuclear weapon picking its target, and the target waiting for "Launch".
+  const [nuking, setNuking] = useState<string | null>(null);
+  const [nukeAt, setNukeAt] = useState<number | null>(null);
   const [gameOverSeen, setGameOverSeen] = useState(false);
   // Leader screens: your leader's intro at the start, rivals speaking at war, peace and defeat.
   const [introSeen, setIntroSeen] = useState<Set<PlayerId>>(() => new Set());
@@ -870,6 +884,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           view.flash(e.tile, 'Destroyed', e.owner === viewer ? 'damage' : 'good');
         } else if (e.type === 'civilian_captured' || e.type === 'settlement_captured') {
           view.flash(e.tile, 'Captured!', e.by === viewer ? 'good' : 'damage');
+        } else if (e.type === 'nuke_launched') {
+          view.animateDisaster(e.tiles, 'fire');
+          view.flash(e.tile, '☢', 'damage');
         } else if (e.type === 'disaster') {
           const def = content.entities.disaster[e.disaster];
           view.animateDisaster(e.tiles, def?.visual ?? 'dust');
@@ -1022,7 +1039,26 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     () => lensFor(ctx, state, viewer, fog, lens),
     [ctx, state, viewer, fog, lens],
   );
+  const nukeTargets = useMemo(() => {
+    const u = nuking ? state.units[nuking] : undefined;
+    const def = u ? content.entities.unit[u.type] : undefined;
+    if (!u || !def?.nuke) return [];
+    return tilesWithin(state.map, u.tile, def.nuke.range).filter(
+      (t) => fog[t] !== 0 && !nukeProblem(ctx, state, viewer, u.id, t),
+    );
+  }, [ctx, content, state, nuking, viewer, fog]);
   const choiceHighlights = useMemo((): TileHighlight[] => {
+    if (nuking) {
+      const u = state.units[nuking];
+      const aim = nukeAt ?? (hover !== undefined && nukeTargets.includes(hover) ? hover : null);
+      const blast = u && aim !== null ? blastTiles(ctx, state, u.type, aim) : [];
+      return [
+        ...nukeTargets
+          .filter((t) => !blast.includes(t))
+          .map((tile) => ({ tile, tone: 'planned' as const })),
+        ...blast.map((tile) => ({ tile, tone: 'attack' as const, label: '☢' })),
+      ];
+    }
     if (myUnit) {
       return targets.map((tile) => {
         const p = previewAttack(ctx, state, myUnit, tile);
@@ -1089,6 +1125,10 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     striking,
     strikes,
     viewer,
+    nuking,
+    nukeAt,
+    nukeTargets,
+    hover,
   ]);
   const highlights = useMemo(
     () => [...lensHighlights, ...choiceHighlights],
@@ -1232,6 +1272,10 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   /** A click or right-click on a tile the selected unit or striking settlement can hit. */
   const combatClick = (tile: number): boolean => {
     const s = game.state;
+    if (nuking) {
+      if (nukeTargets.includes(tile)) setNukeAt(tile);
+      return true;
+    }
     if (striking && settlement && strikes.includes(tile)) {
       act({ type: 'strike', player: viewer, settlement: settlement.id, tile });
       setStriking(false);
@@ -1354,7 +1398,10 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       else if (e.key === 'l') setLens((l) => LENSES[(LENSES.indexOf(l) + 1) % LENSES.length]!);
       else if (e.key === 'Escape') {
         if (placing) setPlacing(null);
-        else if (striking) setStriking(false);
+        else if (nuking) {
+          setNuking(null);
+          setNukeAt(null);
+        } else if (striking) setStriking(false);
         else select(null);
       } else if (!unit || unit.owner !== viewer) return;
       else if (e.key === ' ') {
@@ -1746,7 +1793,47 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           }}
           onSkip={() => skip(unit.id)}
           onFoundReligion={() => setOverlay({ kind: 'religion', prophet: unit.id })}
+          nuking={nuking === unit.id}
+          onNuke={() => {
+            setNukeAt(null);
+            setNuking(nuking === unit.id ? null : unit.id);
+          }}
         />
+      )}
+      {nuking && nukeAt !== null && state.units[nuking] && (
+        <div className="dialog-backdrop" role="presentation">
+          <div className="dialog confirm-dialog" role="alertdialog" aria-label="Launch">
+            <h3>
+              Launch the{' '}
+              {resolveText(
+                content,
+                content.entities.unit[state.units[nuking]!.type]?.name ?? 'weapon',
+              )}
+              ?
+            </h3>
+            <p>
+              Every unit in the blast is lost, settlements there lose half their people and their
+              defenses, and the land yields nothing for {content.rules.nukes.falloutTurns} turns.
+              Every civilization will remember it.
+            </p>
+            <div className="dialog-actions">
+              <button type="button" className="ghost" onClick={() => setNukeAt(null)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="primary danger"
+                onClick={() => {
+                  act({ type: 'launch_nuke', player: viewer, unit: nuking, tile: nukeAt });
+                  setNuking(null);
+                  setNukeAt(null);
+                }}
+              >
+                Launch
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {settlement && (

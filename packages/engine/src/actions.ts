@@ -174,6 +174,13 @@ export const Action = z.discriminatedUnion('type', [
     work: z.string().min(1).max(64),
     settlement: z.string().min(1).max(64),
   }),
+  /** Use a nuclear weapon on a tile in its range (it's used up). */
+  z.strictObject({
+    type: z.literal('launch_nuke'),
+    player: PlayerRef,
+    unit: UnitRef,
+    tile: z.int().min(0),
+  }),
   /** Vote in the World Congress session meeting this turn (replaces earlier ballots). */
   z.strictObject({
     type: z.literal('cast_votes'),

@@ -49,6 +49,9 @@ interface Props {
   onSkip: () => void;
   /** Opens the religion screen to found a religion with this great prophet. */
   onFoundReligion: () => void;
+  /** Nuclear weapons: whether it's picking a target, and toggling that. */
+  nuking?: boolean;
+  onNuke?: () => void;
 }
 
 export function UnitPanel({
@@ -62,6 +65,8 @@ export function UnitPanel({
   act,
   onSkip,
   onFoundReligion,
+  nuking = false,
+  onNuke,
 }: Props) {
   const [confirmDisband, setConfirmDisband] = useState(false);
   const def = unitDef(ctx, unit);
@@ -258,6 +263,18 @@ export function UnitPanel({
               {unit.cargo!.map((u) => resolveText(ctx.content, unitDef(ctx, u).name)).join(', ')}
             </p>
           )}
+        </section>
+      )}
+      {def.nuke && unit.owner === viewer && onNuke && (
+        <section className="great-person" aria-label="Nuclear weapon">
+          <p>
+            Strikes a tile up to <strong>{def.nuke.range}</strong> tiles away; the blast reaches{' '}
+            {def.nuke.radius} tile{def.nuke.radius === 1 ? '' : 's'} around it. Only at war.
+          </p>
+          <button type="button" className={nuking ? 'ghost' : 'primary danger'} onClick={onNuke}>
+            {nuking ? 'Cancel (Esc)' : 'Choose a target'}
+          </button>
+          {nuking && <p className="hint">Click a marked tile to aim; the blast shows as ☢.</p>}
         </section>
       )}
       {person && (

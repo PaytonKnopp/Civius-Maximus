@@ -836,5 +836,181 @@
         "building": "building_power_plant"
       }
     }
+  },
+  {
+    "type": "tech",
+    "id": "tech_flight",
+    "name": "Flight",
+    "era": "era_atomic",
+    "cost": 1250,
+    "requires": ["tech_combustion", "tech_replaceable_parts"],
+    "row": 0,
+    "boost": {
+      "text": "Build a Factory",
+      "goal": {
+        "kind": "buildings",
+        "count": 1,
+        "building": "building_factory"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_advanced_flight",
+    "name": "Advanced Flight",
+    "era": "era_atomic",
+    "cost": 1320,
+    "requires": ["tech_flight", "tech_radio"],
+    "row": 1
+  },
+  {
+    "type": "tech",
+    "id": "tech_nuclear_fission",
+    "name": "Nuclear Fission",
+    "era": "era_atomic",
+    "cost": 1350,
+    "requires": ["tech_electricity", "tech_chemistry"],
+    "row": 2,
+    "boost": {
+      "text": "Build 2 Research Labs",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_research_lab"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_computers",
+    "name": "Computers",
+    "era": "era_atomic",
+    "cost": 1380,
+    "requires": ["tech_electricity", "tech_radio"],
+    "row": 3
+  },
+  {
+    "type": "tech",
+    "id": "tech_synthetic_materials",
+    "name": "Synthetic Materials",
+    "era": "era_atomic",
+    "cost": 1320,
+    "requires": ["tech_chemistry", "tech_steel"],
+    "row": 5
+  },
+  {
+    "type": "tech",
+    "id": "tech_combined_arms",
+    "name": "Combined Arms",
+    "era": "era_atomic",
+    "cost": 1420,
+    "requires": ["tech_advanced_flight", "tech_steel"],
+    "row": 6
+  },
+  {
+    "type": "tech",
+    "id": "tech_composites",
+    "name": "Composites",
+    "era": "era_information",
+    "cost": 1650,
+    "requires": ["tech_synthetic_materials", "tech_combined_arms"],
+    "row": 5
+  },
+  {
+    "type": "tech",
+    "id": "tech_robotics",
+    "name": "Robotics",
+    "era": "era_information",
+    "cost": 1720,
+    "requires": ["tech_computers", "tech_composites"],
+    "row": 4
+  },
+  {
+    "type": "tech",
+    "id": "tech_lasers",
+    "name": "Lasers",
+    "era": "era_information",
+    "cost": 1700,
+    "requires": ["tech_nuclear_fission", "tech_computers"],
+    "row": 2,
+    "boost": {
+      "text": "Build a Nuclear Plant",
+      "goal": {
+        "kind": "buildings",
+        "count": 1,
+        "building": "building_nuclear_plant"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_telecommunications",
+    "name": "Telecommunications",
+    "era": "era_information",
+    "cost": 1680,
+    "requires": ["tech_computers", "tech_satellites"],
+    "row": 3
+  },
+  {
+    "type": "tech",
+    "id": "tech_stealth",
+    "name": "Stealth Technology",
+    "era": "era_information",
+    "cost": 1760,
+    "requires": ["tech_advanced_flight", "tech_composites"],
+    "row": 6
+  },
+  {
+    "type": "tech",
+    "id": "tech_guidance_systems",
+    "name": "Guidance Systems",
+    "era": "era_information",
+    "cost": 1740,
+    "requires": ["tech_rocketry", "tech_computers"],
+    "row": 1
+  },
+  {
+    "type": "tech",
+    "id": "tech_nuclear_fusion",
+    "name": "Nuclear Fusion",
+    "era": "era_information",
+    "cost": 1880,
+    "requires": ["tech_lasers"],
+    "row": 0
+  },
+  {
+    "type": "tech",
+    "id": "tech_artificial_intelligence",
+    "name": "Artificial Intelligence",
+    "era": "era_future",
+    "cost": 2250,
+    "requires": ["tech_robotics", "tech_telecommunications"],
+    "row": 3,
+    "boost": {
+      "text": "Build 2 Data Centers",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_data_center"
+      }
+    }
+  },
+  {
+    "type": "tech",
+    "id": "tech_nanotechnology",
+    "name": "Nanotechnology",
+    "era": "era_future",
+    "cost": 2300,
+    "requires": ["tech_robotics", "tech_nuclear_fusion"],
+    "row": 1
+  },
+  {
+    "type": "tech",
+    "id": "tech_future_tech",
+    "name": "Future Tech",
+    "era": "era_future",
+    "cost": 2600,
+    "requires": ["tech_artificial_intelligence", "tech_nanotechnology"],
+    "row": 2
   }
 ]

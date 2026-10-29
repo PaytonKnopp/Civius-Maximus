@@ -84,5 +84,16 @@
     "cost": 1320,
     "onDistrict": "district_spaceport",
     "requiresTech": "tech_space_flight"
+  },
+  {
+    "type": "project",
+    "id": "project_laser_relay",
+    "name": "Orbital Laser Relay",
+    "description": "Pushes your exoplanet expedition faster: it arrives 2 turns sooner. Build it again while the ship is on its way.",
+    "icon": "S5",
+    "cost": 700,
+    "onDistrict": "district_spaceport",
+    "speedsExpedition": 2,
+    "requiresTech": "tech_lasers"
   }
 ]

@@ -928,5 +928,34 @@
     "district": "district_entertainment",
     "happiness": 2,
     "requiresCivic": "civic_urbanization"
+  },
+  {
+    "type": "building",
+    "id": "building_nuclear_plant",
+    "name": "Nuclear Plant",
+    "description": "Clean power: +6 production and no emissions.",
+    "icon": "NP",
+    "cost": 620,
+    "maintenance": 3,
+    "yields": {
+      "production": 6
+    },
+    "district": "district_industrial_zone",
+    "requiresTech": "tech_nuclear_fission"
+  },
+  {
+    "type": "building",
+    "id": "building_data_center",
+    "name": "Data Center",
+    "description": "+6 science.",
+    "icon": "DC",
+    "cost": 700,
+    "maintenance": 3,
+    "yields": {
+      "science": 6
+    },
+    "district": "district_campus",
+    "requiresBuilding": "building_research_lab",
+    "requiresTech": "tech_computers"
   }
 ]

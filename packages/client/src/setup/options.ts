@@ -46,6 +46,8 @@ export interface NewGameOptions {
   diplomatic: boolean;
   /** Natural disasters and climate change. */
   disasters: boolean;
+  /** Nuclear weapons. */
+  nukes: boolean;
   turnLimit: number | null;
   speed: string;
   difficulty: string;
@@ -77,6 +79,7 @@ export const DEFAULT_OPTIONS: NewGameOptions = {
   congress: true,
   diplomatic: true,
   disasters: true,
+  nukes: true,
   turnLimit: null,
   speed: 'speed_standard',
   difficulty: 'difficulty_prince',
@@ -106,6 +109,7 @@ export function makeSetup(o: NewGameOptions): GameSetup {
       ...(o.congress === false ? { congress: false } : {}),
       ...(o.diplomatic === false ? { diplomatic: false } : {}),
       ...(o.disasters === false ? { disasters: false } : {}),
+      ...(o.nukes === false ? { nukes: false } : {}),
       turnLimit: o.turnLimit,
       speed: o.speed,
       difficulty: o.difficulty,

@@ -292,6 +292,7 @@ export {
   titlesSpent,
 } from './governors/governors';
 export { climateOf, disastersOn, emissionsPerTurn } from './disasters/disasters';
+export { blastTiles, nukeProblem, nukesOn } from './nukes/nukes';
 export {
   ballotCost,
   congressOn,
