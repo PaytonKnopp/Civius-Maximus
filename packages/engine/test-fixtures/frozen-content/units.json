@@ -54,7 +54,7 @@
     "cost": 60,
     "upkeep": 0,
     "icon": "Tr",
-    "model": "settler",
+    "model": "trader",
     "requiresCivic": "civic_foreign_trade",
     "actions": ["trade_route"]
   },
@@ -151,7 +151,7 @@
     "strength": 25,
     "cost": 65,
     "icon": "Sp",
-    "model": "warrior",
+    "model": "spear",
     "requiresTech": "tech_bronze_working",
     "upgradesTo": "unit_pikeman"
   },
@@ -165,7 +165,7 @@
     "strength": 28,
     "cost": 80,
     "icon": "Ho",
-    "model": "cavalry",
+    "model": "horseman",
     "requiresTech": "tech_horseback_riding",
     "upgradesTo": "unit_cavalry"
   },
@@ -179,7 +179,7 @@
     "strength": 35,
     "cost": 90,
     "icon": "Sw",
-    "model": "warrior",
+    "model": "sword",
     "requiresTech": "tech_iron_working",
     "upgradesTo": "unit_musketman"
   },
@@ -209,7 +209,7 @@
     "strength": 41,
     "cost": 180,
     "icon": "Pk",
-    "model": "warrior",
+    "model": "pike",
     "requiresTech": "tech_military_tactics",
     "upgradesTo": "unit_pike_and_shot"
   },
@@ -223,7 +223,7 @@
     "strength": 30,
     "cost": 180,
     "icon": "Cb",
-    "model": "archer",
+    "model": "crossbow",
     "requiresTech": "tech_machinery",
     "rangedStrength": 40,
     "range": 2,
@@ -239,7 +239,7 @@
     "strength": 48,
     "cost": 180,
     "icon": "Kn",
-    "model": "cavalry",
+    "model": "knight",
     "requiresTech": "tech_stirrups",
     "upgradesTo": "unit_tank"
   },
@@ -253,7 +253,7 @@
     "strength": 39,
     "cost": 90,
     "icon": "Lg",
-    "model": "warrior",
+    "model": "sword",
     "requiresTech": "tech_iron_working",
     "civ": "civ_rome",
     "replaces": "unit_swordsman"
@@ -268,7 +268,7 @@
     "strength": 31,
     "cost": 70,
     "icon": "WC",
-    "model": "cavalry",
+    "model": "chariot",
     "requiresTech": "tech_horseback_riding",
     "civ": "civ_egypt",
     "replaces": "unit_horseman"
@@ -283,7 +283,7 @@
     "strength": 50,
     "cost": 180,
     "icon": "CC",
-    "model": "cavalry",
+    "model": "knight",
     "requiresTech": "tech_stirrups",
     "civ": "civ_macedon",
     "replaces": "unit_knight"
@@ -300,7 +300,7 @@
     "range": 2,
     "cost": 170,
     "icon": "Ks",
-    "model": "cavalry",
+    "model": "horseman",
     "requiresTech": "tech_machinery",
     "movesAfterAttack": true,
     "civ": "civ_mongols",
@@ -333,7 +333,7 @@
     "strength": 48,
     "cost": 180,
     "icon": "MC",
-    "model": "cavalry",
+    "model": "knight",
     "requiresTech": "tech_stirrups",
     "killYields": {
       "gold": 20
@@ -351,7 +351,7 @@
     "strength": 37,
     "cost": 90,
     "icon": "Sa",
-    "model": "warrior",
+    "model": "sword",
     "requiresTech": "tech_iron_working",
     "ignoresWounds": true,
     "civ": "civ_japan",
@@ -367,7 +367,7 @@
     "strength": 55,
     "cost": 240,
     "icon": "Mu",
-    "model": "rifle",
+    "model": "musket",
     "requiresTech": "tech_gunpowder",
     "upgradesTo": "unit_line_infantry"
   },
@@ -381,7 +381,7 @@
     "strength": 55,
     "cost": 250,
     "icon": "PS",
-    "model": "warrior",
+    "model": "pike",
     "requiresTech": "tech_metal_casting",
     "upgradesTo": "unit_at_crew"
   },
@@ -411,7 +411,7 @@
     "strength": 55,
     "cost": 240,
     "icon": "Ca",
-    "model": "ship",
+    "model": "frigate",
     "requiresTech": "tech_cartography",
     "deepWater": true,
     "upgradesTo": "unit_ironclad"
@@ -428,7 +428,7 @@
     "range": 2,
     "cost": 280,
     "icon": "Fr",
-    "model": "ship",
+    "model": "frigate",
     "requiresTech": "tech_square_rigging",
     "deepWater": true
   },
@@ -444,7 +444,7 @@
     "range": 2,
     "cost": 280,
     "icon": "Pv",
-    "model": "ship",
+    "model": "frigate",
     "requiresTech": "tech_square_rigging",
     "deepWater": true,
     "civ": "civ_england",
@@ -554,7 +554,7 @@
     "strength": 70,
     "cost": 430,
     "icon": "In",
-    "model": "rifle",
+    "model": "infantry",
     "requiresTech": "tech_replaceable_parts"
   },
   {
@@ -569,7 +569,7 @@
     "range": 1,
     "cost": 430,
     "icon": "MG",
-    "model": "rifle",
+    "model": "infantry",
     "requiresTech": "tech_replaceable_parts"
   },
   {
@@ -584,7 +584,7 @@
     "range": 2,
     "cost": 450,
     "icon": "Ar",
-    "model": "cannon",
+    "model": "artillery",
     "requiresTech": "tech_steel"
   },
   {
@@ -597,7 +597,7 @@
     "strength": 70,
     "cost": 430,
     "icon": "AT",
-    "model": "rifle",
+    "model": "infantry",
     "requiresTech": "tech_combustion"
   },
   {
@@ -623,7 +623,7 @@
     "strength": 80,
     "cost": 430,
     "icon": "De",
-    "model": "steamship",
+    "model": "destroyer",
     "requiresTech": "tech_combustion",
     "deepWater": true
   }

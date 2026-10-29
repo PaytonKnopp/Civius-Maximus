@@ -36,6 +36,11 @@ export interface MapSettings {
   wrapX: boolean;
   resources: 'sparse' | 'standard' | 'abundant';
   startBalance: 'normal' | 'balanced';
+  /** World settings (standard when absent): see `rules.mapgen.world`. */
+  age?: 'new' | 'standard' | 'old' | undefined;
+  temperature?: 'cool' | 'standard' | 'hot' | undefined;
+  rainfall?: 'arid' | 'standard' | 'wet' | undefined;
+  seaLevel?: 'low' | 'standard' | 'high' | undefined;
 }
 
 /** What a player's civ prefers to start near. Each matching tile within 2 adds `weight`. */

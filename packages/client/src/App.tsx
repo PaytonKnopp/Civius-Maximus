@@ -1,5 +1,4 @@
-import { type CompiledContent, resolveText } from '@cx/content';
-import type { EngineContext, GameSetup, GameState, MapSettings } from '@cx/engine';
+import type { EngineContext, GameSetup, GameState } from '@cx/engine';
 import { type GameHandle, makeSave, readSave } from '@cx/host';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadContent } from './content';
@@ -15,6 +14,16 @@ import {
   storeSave,
 } from './game/storage';
 import { Gallery } from './Gallery';
+import {
+  DEFAULT_OPTIONS,
+  loadLastOptions,
+  makeSetup,
+  type NewGameOptions,
+  randomSeed,
+  sanitize,
+  saveLastOptions,
+} from './setup/options';
+import { SetupScreen } from './setup/SetupScreen';
 import { SoundSettings } from './ui/SoundSettings';
 import { MapLab } from './lab/MapLab';
 import { Icon } from './ui/Icon';
@@ -22,96 +31,34 @@ import type { Quality } from './map/renderer';
 import { inviteLink, OnlineDialog, type OnlineOptions } from './online/OnlineDialog';
 import { networkFromUrl } from './online/transports';
 
-const randomSeed = () => Math.random().toString(36).slice(2, 8);
 let nextStart = 0;
 const startId = () => `start-${++nextStart}`;
 
-interface NewGameOptions {
-  script: string;
-  size: string;
-  /** Human players' names: one for single player, more for hotseat. */
-  humans: string[];
-  rivals: number;
-  seed: string;
-  wrapX: boolean;
-  resources: MapSettings['resources'];
-  camps: boolean;
-  domination: boolean;
-  religion: boolean;
-  cityStates: boolean;
-  science: boolean;
-  culture: boolean;
-  turnLimit: number | null;
-  speed: string;
-  difficulty: string;
-}
-
-function makeSetup(o: NewGameOptions): GameSetup {
-  return {
-    gameId: `local-${o.seed}`,
-    settings: {
-      seed: o.seed,
-      camps: o.camps,
-      domination: o.domination,
-      religion: o.religion,
-      cityStates: o.cityStates,
-      science: o.science,
-      culture: o.culture,
-      turnLimit: o.turnLimit,
-      speed: o.speed,
-      difficulty: o.difficulty,
-      map: {
-        script: o.script,
-        size: o.size,
-        wrapX: o.wrapX,
-        resources: o.resources,
-        startBalance: 'normal',
-      },
-    },
-    players: [
-      ...o.humans.map((name, i) => ({
-        id: `p${i + 1}`,
-        name: name.trim() || `Player ${i + 1}`,
-        kind: 'human' as const,
-      })),
-      ...Array.from({ length: o.rivals }, (_, i) => ({
-        id: `p${o.humans.length + i + 1}`,
-        name: `Rival ${i + 1}`,
-        kind: 'ai' as const,
-      })),
-    ],
-  };
-}
-
 /** A new online game: the humans (host first) and AI rivals, every rule on. */
 function makeOnlineSetup(names: string[], o: OnlineOptions): GameSetup {
+  const rules = o.rules;
   return makeSetup({
+    ...DEFAULT_OPTIONS,
     script: o.script,
     size: o.size,
     humans: names,
     rivals: o.rivals,
     seed: randomSeed(),
-    wrapX: true,
-    resources: 'standard',
-    camps: true,
-    domination: true,
-    religion: true,
-    cityStates: true,
-    science: true,
-    culture: true,
-    turnLimit: null,
+    camps: rules?.camps ?? true,
+    domination: rules?.domination ?? true,
+    religion: rules?.religion ?? true,
+    cityStates: rules?.cityStates ?? true,
+    science: rules?.science ?? true,
+    culture: rules?.culture ?? true,
+    turnLimit: o.turnLimit ?? null,
     speed: o.speed,
     difficulty: o.difficulty,
+    ...(o.startEra ? { startEra: o.startEra } : {}),
   });
 }
 
 /** `#join=ABC123` (an invite link) opens the Join screen with the code. */
 const joinCodeFromUrl = () => /^#join=(\w+)$/.exec(location.hash)?.[1];
-
-/** Content entries in their display order. */
-function byOrder<T extends { id: string; order: number }>(map: Record<string, T>): T[] {
-  return Object.values(map).sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : 1));
-}
 
 function hasWebGL2() {
   try {
@@ -133,27 +80,13 @@ export function App() {
     history.replaceState(null, '', s === 'lab' ? '#lab' : location.pathname + location.search);
     setScreenState(s);
   };
-  const [options, setOptions] = useState<NewGameOptions>({
-    script: 'continents',
-    size: 'small',
-    humans: ['You'],
-    rivals: 3,
-    seed: randomSeed(),
-    wrapX: true,
-    resources: 'standard',
-    camps: true,
-    domination: true,
-    religion: true,
-    cityStates: true,
-    science: true,
-    culture: true,
-    turnLimit: null,
-    speed: 'speed_standard',
-    difficulty: 'difficulty_prince',
-  });
+  // The setup screen opens on the last setup used; a quick game always uses the defaults.
+  const [options, setOptions] = useState<NewGameOptions>(() =>
+    sanitize(content, { ...DEFAULT_OPTIONS, ...loadLastOptions(), seed: randomSeed() }),
+  );
   const [start, setStart] = useState<GameStart>(() => ({
     id: startId(),
-    setup: makeSetup(options),
+    setup: makeSetup({ ...DEFAULT_OPTIONS, seed: randomSeed() }),
   }));
   const [dialog, setDialog] = useState<'new' | 'saves' | null>(null);
   // Online play: the host/join dialog, opened from the home screen or an invite link.
@@ -195,6 +128,7 @@ export function App() {
         quality={quality}
         onGame={onGame}
         onExit={backHome}
+        covered={home || dialog !== null || online !== null}
       />
       {home && !dialog && !online && (
         <HomeScreen
@@ -266,12 +200,13 @@ export function App() {
         </div>
       </header>
       {dialog === 'new' && (
-        <NewGameDialog
+        <SetupScreen
           content={content}
           initial={options}
           onCancel={() => setDialog(null)}
           onStart={(o) => {
             setOptions(o);
+            saveLastOptions(o);
             setStart({ id: startId(), setup: makeSetup(o) });
             setDialog(null);
             setHome(false);
@@ -365,284 +300,6 @@ function OnlineCode({ code }: { code: string }) {
     >
       {copied ? 'Link copied' : `🌐 ${code}`}
     </button>
-  );
-}
-
-function NewGameDialog({
-  content,
-  initial,
-  onCancel,
-  onStart,
-}: {
-  content: CompiledContent;
-  initial: NewGameOptions;
-  onCancel: () => void;
-  onStart: (o: NewGameOptions) => void;
-}) {
-  const [o, setO] = useState({ ...initial, seed: randomSeed() });
-  const sizes = [...content.ids.mapSize].sort(
-    (a, b) => content.entities.mapSize[a]!.order - content.entities.mapSize[b]!.order,
-  );
-  const total = o.humans.length + o.rivals;
-  const hotseat = o.humans.length > 1;
-  return (
-    <div className="dialog-backdrop" role="presentation" onClick={onCancel}>
-      <form
-        className="dialog"
-        role="dialog"
-        aria-labelledby="new-game-title"
-        onClick={(e) => e.stopPropagation()}
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (total >= 2) onStart(o);
-        }}
-      >
-        <h2 id="new-game-title">New game</h2>
-        <fieldset className="players-field">
-          <legend>
-            Players{' '}
-            <span className="muted small-text">
-              {hotseat ? 'Hotseat: pass the device each turn' : 'Single player'}
-            </span>
-          </legend>
-          {o.humans.map((name, i) => (
-            <div key={i} className="player-row">
-              <input
-                aria-label={`Player ${i + 1} name`}
-                value={name}
-                maxLength={24}
-                onChange={(e) =>
-                  setO({ ...o, humans: o.humans.map((n, k) => (k === i ? e.target.value : n)) })
-                }
-              />
-              {o.humans.length > 1 && (
-                <button
-                  type="button"
-                  className="ghost small"
-                  aria-label={`Remove ${name || `player ${i + 1}`}`}
-                  onClick={() => setO({ ...o, humans: o.humans.filter((_, k) => k !== i) })}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
-          {o.humans.length < 8 && (
-            <button
-              type="button"
-              className="ghost small add-player"
-              onClick={() => setO({ ...o, humans: [...o.humans, `Player ${o.humans.length + 1}`] })}
-            >
-              + Add a player (hotseat)
-            </button>
-          )}
-        </fieldset>
-        <label htmlFor="ng-script">Map type</label>
-        <select
-          id="ng-script"
-          value={o.script}
-          onChange={(e) => setO({ ...o, script: e.target.value })}
-        >
-          {content.ids.mapScript.map((id) => (
-            <option key={id} value={id}>
-              {content.entities.mapScript[id]!.name}
-            </option>
-          ))}
-        </select>
-        <div className="row">
-          <div>
-            <label htmlFor="ng-size">Map size</label>
-            <select
-              id="ng-size"
-              value={o.size}
-              onChange={(e) =>
-                setO({
-                  ...o,
-                  size: e.target.value,
-                  rivals: Math.max(
-                    0,
-                    content.entities.mapSize[e.target.value]!.players - o.humans.length,
-                  ),
-                })
-              }
-            >
-              {sizes.map((id) => (
-                <option key={id} value={id}>
-                  {content.entities.mapSize[id]!.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="ng-rivals">AI rivals</label>
-            <input
-              id="ng-rivals"
-              type="number"
-              min={0}
-              max={15}
-              value={o.rivals}
-              onChange={(e) =>
-                setO({ ...o, rivals: Math.max(0, Math.min(15, Number(e.target.value) || 0)) })
-              }
-            />
-          </div>
-        </div>
-        <div className="row">
-          <div>
-            <label htmlFor="ng-resources">Resources</label>
-            <select
-              id="ng-resources"
-              value={o.resources}
-              onChange={(e) =>
-                setO({ ...o, resources: e.target.value as MapSettings['resources'] })
-              }
-            >
-              <option value="sparse">Sparse</option>
-              <option value="standard">Standard</option>
-              <option value="abundant">Abundant</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="ng-limit">Turn limit</label>
-            <select
-              id="ng-limit"
-              value={o.turnLimit ?? ''}
-              onChange={(e) =>
-                setO({ ...o, turnLimit: e.target.value ? Number(e.target.value) : null })
-              }
-            >
-              <option value="">None</option>
-              {[60, 100, 150, 200, 250].map((n) => (
-                <option key={n} value={n}>
-                  {n} turns
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="row">
-          <div>
-            <label htmlFor="ng-speed">Game speed</label>
-            <select
-              id="ng-speed"
-              value={o.speed}
-              title={resolveText(content, content.entities.gameSpeed[o.speed]?.description ?? '')}
-              onChange={(e) => setO({ ...o, speed: e.target.value })}
-            >
-              {byOrder(content.entities.gameSpeed).map((s) => (
-                <option key={s.id} value={s.id}>
-                  {resolveText(content, s.name)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="ng-difficulty">Difficulty</label>
-            <select
-              id="ng-difficulty"
-              value={o.difficulty}
-              title={resolveText(
-                content,
-                content.entities.difficulty[o.difficulty]?.description ?? '',
-              )}
-              onChange={(e) => setO({ ...o, difficulty: e.target.value })}
-            >
-              {byOrder(content.entities.difficulty).map((d) => (
-                <option key={d.id} value={d.id}>
-                  {resolveText(content, d.name)}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <p className="hint">
-          {resolveText(content, content.entities.difficulty[o.difficulty]?.description ?? '')}
-        </p>
-        <label htmlFor="ng-seed">Seed</label>
-        <input
-          id="ng-seed"
-          value={o.seed}
-          onChange={(e) => setO({ ...o, seed: e.target.value })}
-          spellCheck={false}
-        />
-        <label className="check" htmlFor="ng-wrap">
-          <input
-            id="ng-wrap"
-            type="checkbox"
-            checked={o.wrapX}
-            onChange={(e) => setO({ ...o, wrapX: e.target.checked })}
-          />
-          Wrap east–west
-        </label>
-        <label className="check" htmlFor="ng-camps">
-          <input
-            id="ng-camps"
-            type="checkbox"
-            checked={o.camps}
-            onChange={(e) => setO({ ...o, camps: e.target.checked })}
-          />
-          Hostile camps (raiders)
-        </label>
-        <label className="check" htmlFor="ng-city-states">
-          <input
-            id="ng-city-states"
-            type="checkbox"
-            checked={o.cityStates}
-            onChange={(e) => setO({ ...o, cityStates: e.target.checked })}
-          />
-          City-states (envoys, suzerains and their bonuses)
-        </label>
-        <label className="check" htmlFor="ng-domination">
-          <input
-            id="ng-domination"
-            type="checkbox"
-            checked={o.domination}
-            onChange={(e) => setO({ ...o, domination: e.target.checked })}
-          />
-          Domination victory (hold every rival&apos;s original capital)
-        </label>
-        <label className="check" htmlFor="ng-religion">
-          <input
-            id="ng-religion"
-            type="checkbox"
-            checked={o.religion}
-            onChange={(e) => setO({ ...o, religion: e.target.checked })}
-          />
-          Religious victory (your religion followed in most of every rival&apos;s settlements)
-        </label>
-        <label className="check" htmlFor="ng-science">
-          <input
-            id="ng-science"
-            type="checkbox"
-            checked={o.science}
-            onChange={(e) => setO({ ...o, science: e.target.checked })}
-          />
-          Science victory (the space projects)
-        </label>
-        <label className="check" htmlFor="ng-culture">
-          <input
-            id="ng-culture"
-            type="checkbox"
-            checked={o.culture}
-            onChange={(e) => setO({ ...o, culture: e.target.checked })}
-          />
-          Culture victory (tourism)
-        </label>
-        <p className="hint">
-          The last civilization standing always wins. With a turn limit, the highest score wins when
-          it&apos;s reached.
-        </p>
-        {total < 2 && <p className="error">A game needs at least two players.</p>}
-        <div className="dialog-actions">
-          <button type="button" className="ghost" onClick={onCancel}>
-            Cancel
-          </button>
-          <button type="submit" className="primary" disabled={total < 2}>
-            Start game
-          </button>
-        </div>
-      </form>
-    </div>
   );
 }
 

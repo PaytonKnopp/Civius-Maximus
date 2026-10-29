@@ -23,6 +23,7 @@ import { cityStateHandlers, cityStatesTurn, placeCityStates } from './citystates
 import { upgradeHandlers } from './units/upgrades';
 import { cultureTurn } from './culture/tourism';
 import { scienceTurn } from './science/space';
+import { applyStartEra } from './progress/startEra';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
 
@@ -175,6 +176,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     tourism: {},
     history: [],
   };
+  applyStartEra(state, ctx);
   spawnStartingUnits(state, ctx);
   placeStartingCamps(state, ctx, random);
   const placed = produce(state, (draft) => {

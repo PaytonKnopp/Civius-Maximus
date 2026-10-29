@@ -42,8 +42,17 @@ export class MapGenerationError extends Error {}
  */
 export function generateMap(input: GenerateInput, random: Random): GenerateResult {
   const { content, settings } = input;
-  const script = content.entities.mapScript[settings.script];
-  if (!script) throw new MapGenerationError(`Unknown map script "${settings.script}"`);
+  const chosen = content.entities.mapScript[settings.script];
+  if (!chosen) throw new MapGenerationError(`Unknown map script "${settings.script}"`);
+  // Shuffle: any other map type, picked by the seed.
+  const others = content.ids.mapScript.filter(
+    (id) => content.entities.mapScript[id]!.algorithm !== 'shuffle',
+  );
+  const base =
+    chosen.algorithm === 'shuffle'
+      ? content.entities.mapScript[others[random.int(others.length)]!]!
+      : chosen;
+  const script = worldAdjusted(base, settings, content);
   const size = content.entities.mapSize[settings.size];
   if (!size) throw new MapGenerationError(`Unknown map size "${settings.size}"`);
 
@@ -61,7 +70,10 @@ export function generateMap(input: GenerateInput, random: Random): GenerateResul
   random.shuffle(inland);
   const lakes = new Set<number>();
   for (const i of inland) {
-    if (lakes.size >= Math.floor(inland.length / mg.landTilesPerLake)) break;
+    if (
+      lakes.size >= Math.floor((inland.length * script.lakePercent) / (mg.landTilesPerLake * 100))
+    )
+      break;
     if (neighbors(grid, i).some((n) => lakes.has(n) || !land[n])) continue;
     lakes.add(i);
     land[i] = false;
@@ -77,6 +89,7 @@ export function generateMap(input: GenerateInput, random: Random): GenerateResul
   const hills = topOf(hillCandidates, (i) => bumps.at(...colRow(grid, i)), script.hillPercent);
 
   // 3. Climate. Moisture is ranked across land, so terrain proportions are the same on every map.
+  const world = worldShifts(settings, content);
   const tempNoise = noiseField(seed(), grid, 4, 3);
   const moistNoise = noiseField(seed(), grid, 6, 4);
   const moistRank = new Map<number, number>();
@@ -92,11 +105,15 @@ export function generateMap(input: GenerateInput, random: Random): GenerateResul
       (Math.abs(row * 2 - (grid.height - 1)) * 100) / Math.max(1, grid.height - 1),
     );
     const temperature = clamp(
-      100 - latitude + Math.floor(((tempNoise.at(col, row) - 512) * 18) / 512),
+      100 - latitude + Math.floor(((tempNoise.at(col, row) - 512) * 18) / 512) + world.temperature,
       0,
       100,
     );
-    const moisture = moistRank.get(i) ?? Math.floor((moistNoise.at(col, row) * 100) / 1023);
+    const moisture = clamp(
+      (moistRank.get(i) ?? Math.floor((moistNoise.at(col, row) * 100) / 1023)) + world.moisture,
+      0,
+      100,
+    );
     return { latitude, temperature, moisture };
   });
 
@@ -169,7 +186,7 @@ export function generateMap(input: GenerateInput, random: Random): GenerateResul
       if (f.requiresRiver && !isOnRiver(grid, rivers, i)) continue;
       if (!inRange(g.temperature, c.temperature) || !inRange(g.moisture, c.moisture)) continue;
       if (!inRange(g.latitude, c.latitude)) continue;
-      if (random.chance(g.chance)) {
+      if (random.chance(Math.floor((g.chance * world.features) / 100))) {
         t.feature = f.id;
         break;
       }
@@ -183,7 +200,93 @@ export function generateMap(input: GenerateInput, random: Random): GenerateResul
 
   // 8. Start positions.
   const starts = placeStarts(map, content, script, input.players, settings.startBalance, random);
+
+  // 9. Natural wonders, away from each other and from every start.
+  placeNaturalWonders(map, content, size.naturalWonders, Object.values(starts), random);
   return { map, starts };
+}
+
+/** Climate shifts from the world settings (all zero, and 100% features, when standard). */
+function worldShifts(settings: MapSettings, content: CompiledContent) {
+  const w = content.rules.mapgen.world;
+  return {
+    temperature:
+      !w || !settings.temperature || settings.temperature === 'standard'
+        ? 0
+        : w.temperature[settings.temperature],
+    moisture:
+      !w || !settings.rainfall || settings.rainfall === 'standard'
+        ? 0
+        : w.rainfall[settings.rainfall].moisture,
+    features:
+      !w || !settings.rainfall || settings.rainfall === 'standard'
+        ? 100
+        : w.rainfall[settings.rainfall].features,
+  };
+}
+
+/** The map script with the world settings' land, mountain and hill changes applied. */
+function worldAdjusted(
+  script: MapScriptDef,
+  settings: MapSettings,
+  content: CompiledContent,
+): MapScriptDef {
+  const w = content.rules.mapgen.world;
+  if (!w) return script;
+  const age = settings.age && settings.age !== 'standard' ? w.age[settings.age] : null;
+  const sea =
+    settings.seaLevel && settings.seaLevel !== 'standard' ? w.seaLevel[settings.seaLevel] : 0;
+  if (!age && !sea) return script;
+  return {
+    ...script,
+    landPercent: clamp(script.landPercent + sea, 5, 90),
+    mountainPercent: clamp(
+      Math.floor((script.mountainPercent * (age?.mountains ?? 100)) / 100),
+      0,
+      50,
+    ),
+    hillPercent: clamp(Math.floor((script.hillPercent * (age?.hills ?? 100)) / 100), 0, 60),
+  };
+}
+
+/** Places up to `count` natural wonders on tiles that suit them (docs/03, "Natural wonders"). */
+function placeNaturalWonders(
+  map: MapState,
+  content: CompiledContent,
+  count: number,
+  starts: number[],
+  random: Random,
+) {
+  const wonders = content.ids.feature
+    .map((id) => content.entities.feature[id]!)
+    .filter((f) => f.naturalWonder);
+  if (count <= 0 || wonders.length === 0) return;
+  const spacing = content.rules.mapgen.naturalWonderSpacing;
+  const order = [...wonders];
+  random.shuffle(order);
+  const placed: number[] = [];
+  const water = (i: number) => content.entities.terrain[map.tiles[i]!.terrain]?.water === true;
+  for (const nw of order) {
+    if (placed.length >= count) break;
+    const fits = indices(map.tiles.length).filter((i) => {
+      const t = map.tiles[i]!;
+      if (t.settlement || (t.feature && content.entities.feature[t.feature]?.naturalWonder))
+        return false;
+      if (!nw.validTerrains.includes(t.terrain) || !nw.validElevations.includes(t.elevation))
+        return false;
+      const row = Math.floor(i / map.width);
+      if (row < 2 || row >= map.height - 2) return false;
+      if (nw.naturalWonder!.coastal && !neighbors(map, i).some(water)) return false;
+      if (starts.some((s) => distance(map, s, i) < 3)) return false;
+      return placed.every((p) => distance(map, p, i) >= spacing);
+    });
+    if (fits.length === 0) continue;
+    const tile = fits[random.int(fits.length)]!;
+    const t = map.tiles[tile]!;
+    t.feature = nw.id;
+    t.resource = null;
+    placed.push(tile);
+  }
 }
 
 // --- Landmass shapes ---------------------------------------------------------------------------
@@ -203,9 +306,51 @@ function landHeights(
     return indices(count).map(at);
   }
 
+  if (script.algorithm === 'inland_sea') {
+    // Land all round a great sea in the middle.
+    const middle = Math.floor(grid.height / 2) * grid.width + Math.floor(grid.width / 2);
+    const reach = Math.max(1, Math.floor(Math.min(grid.width, grid.height) * 0.45));
+    return indices(count).map((i) => {
+      const d = distance(grid, i, middle);
+      const rise = Math.min(1023, Math.floor((d * 1023) / reach));
+      return Math.floor((at(i) * 40 + rise * 60) / 100);
+    });
+  }
+
+  if (script.algorithm === 'mirror') {
+    // Two halves, each the other's reflection: the same land for every side.
+    const half = continentHeights(grid, script, random, at, maxDistance);
+    return indices(count).map((i) => {
+      const [col, row] = colRow(grid, i);
+      const west = col < grid.width / 2 ? col : grid.width - 1 - col;
+      return half[row * grid.width + west]!;
+    });
+  }
+
+  if (script.algorithm === 'continents_islands') {
+    // Continents, with islands scattered in the oceans between them.
+    const islands = noiseField(seed(), grid, 14, 3);
+    const main = continentHeights(grid, script, random, at, maxDistance);
+    return indices(count).map((i) =>
+      Math.max(main[i]!, Math.floor((islands.at(...colRow(grid, i)) * 80) / 100)),
+    );
+  }
+
+  return continentHeights(grid, script, random, at, maxDistance);
+}
+
+/** Continents (or one, for pangaea and lakes) around random centers, with ocean between. */
+function continentHeights(
+  grid: Grid,
+  script: MapScriptDef,
+  random: Random,
+  at: (i: number) => number,
+  maxDistance: number,
+): number[] {
+  const count = grid.width * grid.height;
   const centerRow = Math.floor(grid.height / 2);
   const centers: number[] = [];
-  const n = script.algorithm === 'pangaea' ? 1 : script.continents;
+  const n = script.algorithm === 'pangaea' || script.algorithm === 'lakes' ? 1 : script.continents;
   const offset = random.int(grid.width);
   for (let k = 0; k < n; k++) {
     const col = (offset + Math.floor((k * grid.width) / n)) % grid.width;

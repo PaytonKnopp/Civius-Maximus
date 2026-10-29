@@ -154,5 +154,334 @@
       "latitude": [93, 100],
       "order": 5
     }
+  },
+  {
+    "type": "feature",
+    "id": "nw_great_reef",
+    "name": "Great Barrier Reef",
+    "color": "#3fb7a8",
+    "yields": {
+      "food": 3,
+      "science": 2
+    },
+    "impassable": false,
+    "appeal": 5,
+    "validTerrains": ["coast"],
+    "validElevations": ["flat"],
+    "naturalWonder": {
+      "description": "The largest living structure on Earth, a maze of coral teeming with life. Its waters feed and teach whoever settles beside it.",
+      "adjacentYields": {
+        "science": 1
+      },
+      "coastal": false,
+      "model": "reef"
+    },
+    "moveCostExtra": 1
+  },
+  {
+    "type": "feature",
+    "id": "nw_kilimanjaro",
+    "name": "Kilimanjaro",
+    "color": "#e8e4dc",
+    "yields": {},
+    "impassable": true,
+    "appeal": 4,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["mountain"],
+    "naturalWonder": {
+      "description": "A lone snow-capped volcano rising from the plains. The rains it gathers make the land around it fertile.",
+      "adjacentYields": {
+        "food": 2
+      },
+      "coastal": false,
+      "model": "peak"
+    }
+  },
+  {
+    "type": "feature",
+    "id": "nw_everest",
+    "name": "Everest",
+    "color": "#f2f2f6",
+    "yields": {},
+    "impassable": true,
+    "appeal": 4,
+    "validTerrains": ["tundra", "snow", "plains"],
+    "validElevations": ["mountain"],
+    "naturalWonder": {
+      "description": "The roof of the world. Pilgrims and climbers alike come to stand in its shadow.",
+      "adjacentYields": {
+        "faith": 1,
+        "production": 1
+      },
+      "coastal": false,
+      "model": "peak"
+    }
+  },
+  {
+    "type": "feature",
+    "id": "nw_uluru",
+    "name": "Uluru",
+    "color": "#c0583a",
+    "yields": {},
+    "impassable": true,
+    "appeal": 4,
+    "validTerrains": ["desert"],
+    "validElevations": ["flat"],
+    "naturalWonder": {
+      "description": "A vast red monolith in the desert, sacred for tens of thousands of years.",
+      "adjacentYields": {
+        "faith": 2
+      },
+      "coastal": false,
+      "model": "monolith"
+    }
+  },
+  {
+    "type": "feature",
+    "id": "nw_grand_canyon",
+    "name": "Grand Canyon",
+    "color": "#b8643e",
+    "yields": {},
+    "impassable": true,
+    "appeal": 4,
+    "validTerrains": ["desert", "plains"],
+    "validElevations": ["flat"],
+    "naturalWonder": {
+      "description": "A mile-deep gorge carved by a river over millions of years: a record of the Earth itself.",
+      "adjacentYields": {
+        "science": 1,
+        "culture": 1
+      },
+      "coastal": false,
+      "model": "canyon"
+    }
+  },
+  {
+    "type": "feature",
+    "id": "nw_fuji",
+    "name": "Mount Fuji",
+    "color": "#e9eef2",
+    "yields": {},
+    "impassable": true,
+    "appeal": 4,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["mountain"],
+    "naturalWonder": {
+      "description": "A perfect cone above the sea, painted and praised for centuries.",
+      "adjacentYields": {
+        "faith": 1,
+        "culture": 1
+      },
+      "coastal": true,
+      "model": "peak"
+    }
+  },
+  {
+    "type": "feature",
+    "id": "nw_victoria_falls",
+    "name": "Victoria Falls",
+    "color": "#7fb6d8",
+    "yields": {},
+    "impassable": true,
+    "appeal": 4,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["flat"],
+    "naturalWonder": {
+      "description": "The smoke that thunders: a curtain of water a mile wide. Travelers come from far away to see it.",
+      "adjacentYields": {
+        "food": 1,
+        "gold": 1,
+        "culture": 1
+      },
+      "coastal": false,
+      "model": "falls"
+    }
+  },
+  {
+    "type": "feature",
+    "id": "nw_matterhorn",
+    "name": "Matterhorn",
+    "color": "#d8dce4",
+    "yields": {},
+    "impassable": true,
+    "appeal": 4,
+    "validTerrains": ["tundra", "snow"],
+    "validElevations": ["mountain"],
+    "naturalWonder": {
+      "description": "A sharp pyramid of rock above the glaciers, the hardest climb of the age.",
+      "adjacentYields": {
+        "production": 2
+      },
+      "coastal": false,
+      "model": "peak"
+    }
+  },
+  {
+    "type": "feature",
+    "id": "nw_dead_sea",
+    "name": "Dead Sea",
+    "color": "#5fb0b8",
+    "yields": {
+      "faith": 2,
+      "culture": 2
+    },
+    "impassable": false,
+    "appeal": 4,
+    "validTerrains": ["desert"],
+    "validElevations": ["flat"],
+    "naturalWonder": {
+      "description": "A salt lake so dense nobody sinks, said to heal the sick.",
+      "adjacentYields": {},
+      "coastal": false,
+      "model": "lake"
+    },
+    "moveCostExtra": 1
+  },
+  {
+    "type": "feature",
+    "id": "nw_galapagos",
+    "name": "Galápagos Islands",
+    "color": "#6ea86a",
+    "yields": {
+      "science": 2,
+      "food": 1
+    },
+    "impassable": false,
+    "appeal": 5,
+    "validTerrains": ["coast"],
+    "validElevations": ["flat"],
+    "naturalWonder": {
+      "description": "Isolated islands whose strange creatures changed how we understand life.",
+      "adjacentYields": {
+        "science": 1
+      },
+      "coastal": false,
+      "model": "islands"
+    },
+    "moveCostExtra": 1
+  },
+  {
+    "type": "feature",
+    "id": "nw_ha_long",
+    "name": "Ha Long Bay",
+    "color": "#4f9e88",
+    "yields": {
+      "culture": 2,
+      "gold": 2,
+      "food": 1
+    },
+    "impassable": false,
+    "appeal": 5,
+    "validTerrains": ["coast"],
+    "validElevations": ["flat"],
+    "naturalWonder": {
+      "description": "Thousands of limestone pillars rising from emerald water.",
+      "adjacentYields": {},
+      "coastal": false,
+      "model": "bay"
+    },
+    "moveCostExtra": 1
+  },
+  {
+    "type": "feature",
+    "id": "nw_yosemite",
+    "name": "Yosemite",
+    "color": "#8a8f86",
+    "yields": {},
+    "impassable": true,
+    "appeal": 4,
+    "validTerrains": ["grassland", "plains", "tundra"],
+    "validElevations": ["flat", "hills"],
+    "naturalWonder": {
+      "description": "Granite cliffs, giant trees and falling water: a valley that made people protect wild land.",
+      "adjacentYields": {
+        "gold": 1,
+        "science": 1
+      },
+      "coastal": false,
+      "model": "cliffs"
+    }
+  },
+  {
+    "type": "feature",
+    "id": "nw_pantanal",
+    "name": "Pantanal",
+    "color": "#4e8a46",
+    "yields": {
+      "food": 2,
+      "culture": 2
+    },
+    "impassable": false,
+    "appeal": 4,
+    "validTerrains": ["grassland"],
+    "validElevations": ["flat"],
+    "naturalWonder": {
+      "description": "The world's greatest wetland, alive with birds, caimans and jaguars.",
+      "adjacentYields": {},
+      "coastal": false,
+      "model": "wetland"
+    },
+    "moveCostExtra": 1
+  },
+  {
+    "type": "feature",
+    "id": "nw_torres_del_paine",
+    "name": "Torres del Paine",
+    "color": "#bcc2ca",
+    "yields": {},
+    "impassable": true,
+    "appeal": 4,
+    "validTerrains": ["tundra", "plains"],
+    "validElevations": ["mountain"],
+    "naturalWonder": {
+      "description": "Granite towers above turquoise lakes at the end of the world.",
+      "adjacentYields": {
+        "food": 1,
+        "production": 1
+      },
+      "coastal": false,
+      "model": "peak"
+    }
+  },
+  {
+    "type": "feature",
+    "id": "nw_giants_causeway",
+    "name": "Giant's Causeway",
+    "color": "#55585e",
+    "yields": {},
+    "impassable": true,
+    "appeal": 4,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["flat"],
+    "naturalWonder": {
+      "description": "Forty thousand stone columns stepping into the sea, as if built by giants.",
+      "adjacentYields": {
+        "culture": 1,
+        "faith": 1
+      },
+      "coastal": true,
+      "model": "columns"
+    }
+  },
+  {
+    "type": "feature",
+    "id": "nw_eye_of_sahara",
+    "name": "Eye of the Sahara",
+    "color": "#c89a5a",
+    "yields": {
+      "production": 2,
+      "science": 2
+    },
+    "impassable": false,
+    "appeal": 4,
+    "validTerrains": ["desert"],
+    "validElevations": ["flat"],
+    "naturalWonder": {
+      "description": "Rings of rock thirty miles wide, seen best from the sky. It hides rich minerals.",
+      "adjacentYields": {},
+      "coastal": false,
+      "model": "rings"
+    },
+    "moveCostExtra": 1
   }
 ]

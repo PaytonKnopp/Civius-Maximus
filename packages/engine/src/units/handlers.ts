@@ -16,6 +16,7 @@ import { canTraverse, fullMoves, hasRoom } from './movement';
 import { findPath, type PathStep } from './pathfind';
 import { exploreVisible, lineOfSight, sightOf } from './vision';
 import { unitSnapshot } from '../draft';
+import { startEraUnits } from '../progress/startEra';
 
 type UnitAction<T extends Action['type']> = Extract<Action, { type: T }>;
 
@@ -234,7 +235,8 @@ export function spawnStartingUnits(state: GameState, ctx: EngineContext) {
     );
     const handicap = state.players[player]!.handicap;
     const extra = handicap ? (ctx.content.entities.difficulty?.[handicap]?.aiStartUnits ?? []) : [];
-    for (const type of [...ctx.content.rules.units.startingUnits, ...extra]) {
+    const era = startEraUnits(state, ctx);
+    for (const type of [...ctx.content.rules.units.startingUnits, ...era, ...extra]) {
       const id = `u${state.nextEntityId}`;
       const probe = { id, owner: player, type };
       const tile = near.find(

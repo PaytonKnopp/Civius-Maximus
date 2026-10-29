@@ -16,7 +16,7 @@ import {
  * textures). Emitters belong to an owner id (a settlement), so they follow it in and out.
  */
 
-export type EmitterKind = 'smoke' | 'chimney' | 'fire' | 'dust' | 'spark';
+export type EmitterKind = 'smoke' | 'chimney' | 'fire' | 'dust' | 'spark' | 'mist';
 
 export interface Emitter {
   kind: EmitterKind;
@@ -87,6 +87,17 @@ const KINDS: Record<
     colors: [0xffb347, 0xff7b2e, 0xffd27a, 0xe8501e],
     alpha: 0.9,
     additive: true,
+  },
+  mist: {
+    rate: 3,
+    life: [2.4, 3.6],
+    size: [0.1, 0.16],
+    grow: 0.12,
+    rise: 0.06,
+    spread: 0.14,
+    colors: [0xf4f8fc, 0xe8f0f6],
+    alpha: 0.32,
+    additive: false,
   },
   dust: {
     rate: 0,

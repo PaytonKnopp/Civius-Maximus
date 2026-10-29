@@ -460,6 +460,17 @@ export class World3D implements MapRenderer {
     if (this.data && this.sampler && this.settlementData) {
       this.settlements.set(this.settlementData.views, this.settlementData.territory);
     }
+    if (this.data && this.sampler) {
+      const { map, content } = this.data;
+      const wonders: { tile: number; model: string }[] = [];
+      map.tiles.forEach((t, tile) => {
+        const model = t.feature
+          ? content.entities.feature[t.feature]?.naturalWonder?.model
+          : undefined;
+        if (model) wonders.push({ tile, model });
+      });
+      this.settlements.setNaturalWonders(wonders);
+    }
   }
 
   setUnits(units: UnitView[], moves?: { unit: string; path: number[] }[]) {
@@ -673,7 +684,13 @@ export class World3D implements MapRenderer {
   }
 
   private buildProps(group: Group, tiles: number[], q: (typeof QUALITY)[Quality]): Prop[] {
-    const instances = placeProps(this.data!.map, tiles, { trees: q.trees, scatter: q.scatter });
+    // Natural wonders have their own landmark models instead of trees and rocks.
+    const { map, content } = this.data!;
+    const plain = tiles.filter((t) => {
+      const f = map.tiles[t]!.feature;
+      return !f || !content.entities.feature[f]?.naturalWonder;
+    });
+    const instances = placeProps(map, plain, { trees: q.trees, scatter: q.scatter });
     const byKind = new Map<PropKind, typeof instances>();
     for (const p of instances) {
       const list = byKind.get(p.kind) ?? [];

@@ -440,12 +440,14 @@ interface Props {
   quality: Quality;
   /** Called once the game exists (the app saves it from there). */
   onGame?: (game: GameHandle) => void;
+  /** Something covers the game (the title screen, setup, a dialog): leader screens wait. */
+  covered?: boolean;
   /** Leaves the game for the home screen (an online game that ended or lost its host). */
   onExit?: () => void;
 }
 
 /** The main game view: the map, your units and settlements, and the controls to play a turn. */
-export function GameScreen({ content, start, mode, quality, onGame, onExit }: Props) {
+export function GameScreen({ content, start, mode, quality, onGame, onExit, covered }: Props) {
   const ctx: EngineContext = useMemo(() => ({ content }), [content]);
   // One background worker for the slow part of each turn (End Turn and the AI seats).
   const runner = useMemo(() => createAiRunner(), []);
@@ -1762,7 +1764,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
           onClose={() => setGameOverSeen(true)}
         />
       )}
-      {!passTo && state.turn <= 1 && me.alive && !introSeen.has(viewer) && (
+      {!covered && !passTo && state.turn <= 1 && me.alive && !introSeen.has(viewer) && (
         <LeaderIntro
           ctx={ctx}
           state={state}
@@ -1770,7 +1772,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
           onBegin={() => setIntroSeen((seen) => new Set(seen).add(viewer))}
         />
       )}
-      {speech && !passTo && state.players[speech.player] && (
+      {speech && !covered && !passTo && state.players[speech.player] && (
         <LeaderSpeech
           ctx={ctx}
           state={state}
