@@ -25,8 +25,12 @@
       }
     ],
     "placement": {
-      "terrains": ["desert"],
-      "features": ["floodplains"]
+      "terrains": [
+        "desert"
+      ],
+      "features": [
+        "floodplains"
+      ]
     },
     "model": "pyramid",
     "requiresTech": "tech_masonry"
@@ -85,8 +89,13 @@
       }
     ],
     "placement": {
-      "terrains": ["grassland", "plains"],
-      "elevations": ["flat"]
+      "terrains": [
+        "grassland",
+        "plains"
+      ],
+      "elevations": [
+        "flat"
+      ]
     },
     "model": "stones",
     "requiresTech": "tech_astrology"
@@ -114,7 +123,10 @@
           "owner": "self"
         },
         "condition": {
-          "tile_has_improvement": ["improvement_camp", "improvement_pasture"]
+          "tile_has_improvement": [
+            "improvement_camp",
+            "improvement_pasture"
+          ]
         }
       }
     ],
@@ -156,7 +168,9 @@
       }
     ],
     "placement": {
-      "elevations": ["hills"]
+      "elevations": [
+        "hills"
+      ]
     },
     "model": "temple",
     "requiresCivic": "civic_mysticism"
@@ -190,11 +204,21 @@
     ],
     "placement": {
       "water": true,
-      "terrains": ["coast"],
-      "elevations": ["flat"],
+      "terrains": [
+        "coast"
+      ],
+      "elevations": [
+        "flat"
+      ],
       "nextToAny": [
         {
-          "terrain": ["grassland", "plains", "desert", "tundra", "snow"]
+          "terrain": [
+            "grassland",
+            "plains",
+            "desert",
+            "tundra",
+            "snow"
+          ]
         }
       ]
     },
@@ -205,7 +229,7 @@
     "type": "wonder",
     "id": "wonder_great_library",
     "name": "Great Library",
-    "description": "+3 science here. +1 science in every settlement with a Library. Built next to a Campus.",
+    "description": "+3 science here. +1 science in every settlement with a Library. Built next to a Campus. Holds 2 great works of writing.",
     "icon": "Gr",
     "cost": 250,
     "era": "era_classical",
@@ -235,7 +259,10 @@
       ]
     },
     "model": "library",
-    "requiresCivic": "civic_recorded_history"
+    "requiresCivic": "civic_recorded_history",
+    "slots": {
+      "writing": 2
+    }
   },
   {
     "type": "wonder",
@@ -260,7 +287,9 @@
       }
     ],
     "placement": {
-      "elevations": ["flat"]
+      "elevations": [
+        "flat"
+      ]
     },
     "model": "arena",
     "requiresCivic": "civic_games_and_recreation"
@@ -307,7 +336,9 @@
       }
     ],
     "placement": {
-      "terrains": ["desert"]
+      "terrains": [
+        "desert"
+      ]
     },
     "model": "rock_city",
     "requiresTech": "tech_mathematics"
@@ -346,7 +377,7 @@
     "type": "wonder",
     "id": "wonder_taj_mahal",
     "name": "Taj Mahal",
-    "description": "+4 culture and +3 tourism here. +1 happiness in every settlement.",
+    "description": "+4 culture and +3 tourism here. +1 happiness in every settlement. Holds 2 great works of art.",
     "icon": "TM",
     "cost": 520,
     "era": "era_renaissance",
@@ -366,7 +397,10 @@
       }
     ],
     "model": "temple",
-    "requiresCivic": "civic_humanism"
+    "requiresCivic": "civic_humanism",
+    "slots": {
+      "art": 2
+    }
   },
   {
     "type": "wonder",
@@ -453,7 +487,7 @@
     "type": "wonder",
     "id": "wonder_broadway",
     "name": "Broadway",
-    "description": "+6 culture and +5 tourism here.",
+    "description": "+6 culture and +5 tourism here. Holds a great work of writing and one of music.",
     "icon": "Br",
     "cost": 950,
     "era": "era_modern",
@@ -463,6 +497,10 @@
     },
     "effects": [],
     "model": "arena",
-    "requiresCivic": "civic_mass_media"
+    "requiresCivic": "civic_mass_media",
+    "slots": {
+      "writing": 1,
+      "music": 1
+    }
   }
 ]

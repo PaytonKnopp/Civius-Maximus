@@ -51,6 +51,22 @@
   },
   {
     "type": "greatPersonClass",
+    "id": "gp_artist",
+    "name": "Great Artist",
+    "icon": "🎨",
+    "baseCost": 60,
+    "costStep": 60
+  },
+  {
+    "type": "greatPersonClass",
+    "id": "gp_musician",
+    "name": "Great Musician",
+    "icon": "🎵",
+    "baseCost": 60,
+    "costStep": 60
+  },
+  {
+    "type": "greatPersonClass",
     "id": "gp_admiral",
     "name": "Great Admiral",
     "icon": "⚓",
@@ -457,13 +473,12 @@
     "name": "Homer",
     "class": "gp_writer",
     "era": "era_ancient",
-    "description": "+150 culture toward your current civic.",
+    "description": "Creates two great works of writing, one at a time, each in an empty slot where it's made: The Iliad and The Odyssey.",
     "activate": [
       {
-        "kind": "yields",
-        "yields": {
-          "culture": 150
-        }
+        "kind": "create_works",
+        "work": "writing",
+        "works": ["The Iliad", "The Odyssey"]
       }
     ]
   },
@@ -473,25 +488,12 @@
     "name": "Ovid",
     "class": "gp_writer",
     "era": "era_classical",
-    "description": "+1 culture in every settlement, for good, and +100 culture.",
+    "description": "Creates two great works of writing, one at a time, each in an empty slot where it's made: Metamorphoses and The Art of Love.",
     "activate": [
       {
-        "kind": "yields",
-        "yields": {
-          "culture": 100
-        }
-      }
-    ],
-    "effects": [
-      {
-        "effect": "modify_yield",
-        "params": {
-          "yield": "culture",
-          "amount": 1
-        },
-        "target": {
-          "scope": "settlements"
-        }
+        "kind": "create_works",
+        "work": "writing",
+        "works": ["Metamorphoses", "The Art of Love"]
       }
     ]
   },
@@ -501,13 +503,57 @@
     "name": "Murasaki Shikibu",
     "class": "gp_writer",
     "era": "era_medieval",
-    "description": "+350 culture toward your current civic.",
+    "description": "Creates two great works of writing, one at a time, each in an empty slot where it's made: The Tale of Genji and The Diary of Lady Murasaki.",
     "activate": [
       {
-        "kind": "yields",
-        "yields": {
-          "culture": 350
-        }
+        "kind": "create_works",
+        "work": "writing",
+        "works": ["The Tale of Genji", "The Diary of Lady Murasaki"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_cervantes",
+    "name": "Miguel de Cervantes",
+    "class": "gp_writer",
+    "era": "era_renaissance",
+    "description": "Creates two great works of writing, one at a time, each in an empty slot where it's made: Don Quixote and Exemplary Novels.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "writing",
+        "works": ["Don Quixote", "Exemplary Novels"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_tolstoy",
+    "name": "Leo Tolstoy",
+    "class": "gp_writer",
+    "era": "era_industrial",
+    "description": "Creates two great works of writing, one at a time, each in an empty slot where it's made: War and Peace and Anna Karenina.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "writing",
+        "works": ["War and Peace", "Anna Karenina"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_tagore",
+    "name": "Rabindranath Tagore",
+    "class": "gp_writer",
+    "era": "era_modern",
+    "description": "Creates two great works of writing, one at a time, each in an empty slot where it's made: Gitanjali and The Home and the World.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "writing",
+        "works": ["Gitanjali", "The Home and the World"]
       }
     ]
   },
@@ -571,6 +617,190 @@
         "target": {
           "scope": "player"
         }
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_giotto",
+    "name": "Giotto",
+    "class": "gp_artist",
+    "era": "era_medieval",
+    "description": "Creates three great works of art, one at a time, each in an empty slot where it's made: The Lamentation, The Kiss of Judas and Ognissanti Madonna.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "art",
+        "works": ["The Lamentation", "The Kiss of Judas", "Ognissanti Madonna"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_leonardo",
+    "name": "Leonardo da Vinci",
+    "class": "gp_artist",
+    "era": "era_renaissance",
+    "description": "Creates three great works of art, one at a time, each in an empty slot where it's made: Mona Lisa, The Last Supper and Lady with an Ermine.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "art",
+        "works": ["Mona Lisa", "The Last Supper", "Lady with an Ermine"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_rembrandt",
+    "name": "Rembrandt",
+    "class": "gp_artist",
+    "era": "era_renaissance",
+    "description": "Creates three great works of art, one at a time, each in an empty slot where it's made: The Night Watch, The Anatomy Lesson and The Jewish Bride.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "art",
+        "works": ["The Night Watch", "The Anatomy Lesson", "The Jewish Bride"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_hokusai",
+    "name": "Katsushika Hokusai",
+    "class": "gp_artist",
+    "era": "era_industrial",
+    "description": "Creates three great works of art, one at a time, each in an empty slot where it's made: The Great Wave off Kanagawa, Fine Wind, Clear Morning and Thunderstorm Beneath the Summit.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "art",
+        "works": [
+          "The Great Wave off Kanagawa",
+          "Fine Wind, Clear Morning",
+          "Thunderstorm Beneath the Summit"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_van_gogh",
+    "name": "Vincent van Gogh",
+    "class": "gp_artist",
+    "era": "era_industrial",
+    "description": "Creates three great works of art, one at a time, each in an empty slot where it's made: The Starry Night, Sunflowers and Café Terrace at Night.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "art",
+        "works": ["The Starry Night", "Sunflowers", "Café Terrace at Night"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_kahlo",
+    "name": "Frida Kahlo",
+    "class": "gp_artist",
+    "era": "era_modern",
+    "description": "Creates three great works of art, one at a time, each in an empty slot where it's made: The Two Fridas, The Broken Column and Self-Portrait with Monkey.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "art",
+        "works": ["The Two Fridas", "The Broken Column", "Self-Portrait with Monkey"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_mozart",
+    "name": "Wolfgang Amadeus Mozart",
+    "class": "gp_musician",
+    "era": "era_renaissance",
+    "description": "Creates two great works of music, one at a time, each in an empty slot where it's made: The Magic Flute and Requiem.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "music",
+        "works": ["The Magic Flute", "Requiem"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_beethoven",
+    "name": "Ludwig van Beethoven",
+    "class": "gp_musician",
+    "era": "era_industrial",
+    "description": "Creates two great works of music, one at a time, each in an empty slot where it's made: Symphony No. 9 and Moonlight Sonata.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "music",
+        "works": ["Symphony No. 9", "Moonlight Sonata"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_chopin",
+    "name": "Frédéric Chopin",
+    "class": "gp_musician",
+    "era": "era_industrial",
+    "description": "Creates two great works of music, one at a time, each in an empty slot where it's made: Nocturnes and Ballade No. 1.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "music",
+        "works": ["Nocturnes", "Ballade No. 1"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_tchaikovsky",
+    "name": "Pyotr Ilyich Tchaikovsky",
+    "class": "gp_musician",
+    "era": "era_industrial",
+    "description": "Creates two great works of music, one at a time, each in an empty slot where it's made: Swan Lake and The Nutcracker.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "music",
+        "works": ["Swan Lake", "The Nutcracker"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_armstrong",
+    "name": "Louis Armstrong",
+    "class": "gp_musician",
+    "era": "era_modern",
+    "description": "Creates two great works of music, one at a time, each in an empty slot where it's made: West End Blues and Potato Head Blues.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "music",
+        "works": ["West End Blues", "Potato Head Blues"]
+      }
+    ]
+  },
+  {
+    "type": "greatPerson",
+    "id": "gp_fitzgerald",
+    "name": "Ella Fitzgerald",
+    "class": "gp_musician",
+    "era": "era_modern",
+    "description": "Creates two great works of music, one at a time, each in an empty slot where it's made: A-Tisket, A-Tasket and Lady Be Good.",
+    "activate": [
+      {
+        "kind": "create_works",
+        "work": "music",
+        "works": ["A-Tisket, A-Tasket", "Lady Be Good"]
       }
     ]
   }

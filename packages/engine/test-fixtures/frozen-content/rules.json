@@ -427,5 +427,26 @@
         "label": "Open revolt"
       }
     ]
+  },
+  "greatWorks": {
+    "yields": {
+      "writing": {
+        "culture": 2,
+        "tourism": 2
+      },
+      "art": {
+        "culture": 3,
+        "tourism": 3
+      },
+      "music": {
+        "culture": 4,
+        "tourism": 4
+      },
+      "relic": {
+        "faith": 4,
+        "tourism": 8
+      }
+    },
+    "themingPercent": 100
   }
 }

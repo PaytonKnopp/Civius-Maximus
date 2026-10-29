@@ -20,6 +20,7 @@ import { spawnUnit } from '../settlements/handlers';
 import type { GameState, PlayerId } from '../state';
 import { ownedUnit } from '../units/handlers';
 import { scaleCost } from '../speed';
+import { makeWork, workProblem, worksToMake } from '../greatworks/greatworks';
 
 /**
  * Great people (docs/04-advanced-systems.md, "Great people"): districts and buildings earn
@@ -144,6 +145,7 @@ export function activateProblem(
   state: GameState,
   unitId: string,
   player: PlayerId,
+  ctx: EngineContext,
 ): RuleError | undefined {
   const u = ownedUnit(state, player, unitId);
   if ('code' in u) return u;
@@ -151,6 +153,8 @@ export function activateProblem(
   const s = settlementAt(state, u.tile);
   if (!s || s.owner !== player)
     return { code: 'not_in_settlement', message: 'Activate it in one of your settlements' };
+  const person = ctx.content.entities.greatPerson[u.person];
+  if (person) return workProblem(ctx, state, person, u, s);
   return undefined;
 }
 
@@ -187,8 +191,8 @@ export const greatPeopleHandlers = {
   } satisfies ActionHandler<A<'recruit_great_person'>>,
 
   activate_great_person: {
-    validate(state, action) {
-      return activateProblem(state, action.unit, action.player);
+    validate(state, action, ctx) {
+      return activateProblem(state, action.unit, action.player, ctx);
     },
     apply(draft, action, ctx, emit) {
       const snap = current(draft);
@@ -196,8 +200,11 @@ export const greatPeopleHandlers = {
       const person = ctx.content.entities.greatPerson[u.person!]!;
       const s = settlementAt(snap, u.tile)!;
       const p = draft.players[action.player]!;
+      // Writers, artists and musicians make one work at a time and stay until they've made all.
+      if (worksToMake(person, u) && makeWork(draft, ctx, person, action.unit, s.id, emit)) return;
       delete draft.units[action.unit];
       for (const a of person.activate) {
+        if (a.kind === 'create_works') continue;
         if (a.kind === 'boosts') {
           for (let i = 0; i < a.count; i++) grantBoost(draft, ctx, action.player, emit);
         } else if (a.kind === 'promote') {

@@ -11,6 +11,7 @@ import { activateProblem } from '../greatpeople/greatpeople';
 import { isSoldier } from './cities';
 import { fixedYieldsValue } from './values';
 import { holdable } from '../loyalty/loyalty';
+import { freeHolder, worksToMake } from '../greatworks/greatworks';
 import { missionary, prophet } from './religion';
 import { moveSettler, settleHere } from './settle';
 import { type Role, type Turn, unitPower, unitRole } from './turn';
@@ -282,9 +283,24 @@ function soldier(t: Turn, u: UnitState, plan: Plan) {
 /** Great people: activate in the settlement they stand in, or walk to the nearest one. */
 function useGreatPerson(t: Turn, u: UnitState) {
   if (prophet(t, u)) return;
-  if (!activateProblem(t.state, u.id, t.player)) {
+  if (!activateProblem(t.state, u.id, t.player, t.ctx)) {
     t.act({ type: 'activate_great_person', player: t.player, unit: u.id });
     return;
+  }
+  // Writers, artists and musicians need an empty slot of their kind: go to the nearest one.
+  const person = u.person ? t.ctx.content.entities.greatPerson[u.person] : undefined;
+  const make = person ? worksToMake(person, u) : undefined;
+  if (make) {
+    const room = t
+      .mySettlements()
+      .filter((s) => freeHolder(t.ctx, t.state, s, make.kind))
+      .sort(
+        (a, b) =>
+          distance(t.state.map, u.tile, a.tile) - distance(t.state.map, u.tile, b.tile) ||
+          (a.id < b.id ? -1 : 1),
+      )[0];
+    if (room && goNear(t, u, room.tile, 0)) return;
+    return hold(t, u);
   }
   const home = nearestOwnSettlement(t, u);
   if (home && goNear(t, u, home.tile, 0)) return;

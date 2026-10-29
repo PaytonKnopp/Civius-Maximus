@@ -83,7 +83,7 @@ export function UnitPanel({
   const found: Action = { type: 'found_settlement', player: viewer, unit: unit.id };
   const command = commandOf(ctx, unit);
   const person = unit.person ? ctx.content.entities.greatPerson[unit.person] : undefined;
-  const activateBlocked = person ? activateProblem(state, unit.id, viewer) : undefined;
+  const activateBlocked = person ? activateProblem(state, unit.id, viewer, ctx) : undefined;
   const prophet = !!person && !!ctx.content.entities.greatPersonClass[person.class]?.foundsReligion;
   const religionBlocked = prophet
     ? religionFoundingProblem(ctx, state, viewer, unit.id)

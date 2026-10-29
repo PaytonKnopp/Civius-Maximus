@@ -288,6 +288,18 @@ export {
   titlesSpent,
 } from './governors/governors';
 export {
+  freeHolder,
+  greatWorkYields,
+  type Holder,
+  holdersIn,
+  holderWorks,
+  storedWorks,
+  WORK_KIND_NAMES,
+  workProblem,
+  worksIn,
+  worksToMake,
+} from './greatworks/greatworks';
+export {
   type LoyaltyLine,
   type LoyaltyReport,
   loyaltyNow,

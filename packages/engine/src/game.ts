@@ -25,6 +25,7 @@ import { cultureTurn } from './culture/tourism';
 import { scienceTurn } from './science/space';
 import { agesHandlers, agesTurn, awardMoments, newAgeState } from './eras/ages';
 import { governorHandlers, governorsTurn } from './governors/governors';
+import { greatWorksHandlers, greatWorksTurn } from './greatworks/greatworks';
 import { freeCitiesTurn, loyaltyTurn } from './loyalty/loyalty';
 import { applyStartEra } from './progress/startEra';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
@@ -196,6 +197,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
 const handlers: Handlers = {
   ...agesHandlers,
   ...governorHandlers,
+  ...greatWorksHandlers,
   ...unitHandlers,
   ...settlementHandlers,
   ...progressHandlers,
@@ -248,6 +250,7 @@ const turnSteps: TurnStep[] = [
   { id: 'trade', order: 120, run: tradeTurn },
   { id: 'greatPeople', order: 115, run: greatPeopleTurn },
   { id: 'religion', order: 125, run: religionTurn },
+  { id: 'greatWorks', order: 127, run: (draft) => greatWorksTurn(draft) },
   { id: 'culture', order: 128, run: cultureTurn },
   { id: 'science', order: 129, run: scienceTurn },
   { id: 'ages', order: 135, run: agesTurn },

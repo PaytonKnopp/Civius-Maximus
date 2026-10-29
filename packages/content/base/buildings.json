@@ -3,7 +3,7 @@
     "type": "building",
     "id": "building_palace",
     "name": "Palace",
-    "description": "The seat of your government. Granted to your first settlement.",
+    "description": "The seat of your government. Granted to your first settlement. One slot for any great work.",
     "icon": "Pa",
     "cost": 0,
     "yields": {
@@ -12,7 +12,10 @@
       "culture": 3,
       "gold": 5
     },
-    "happiness": 2
+    "happiness": 2,
+    "slots": {
+      "any": 1
+    }
   },
   {
     "type": "building",
@@ -239,7 +242,7 @@
     "type": "building",
     "id": "building_amphitheater",
     "name": "Amphitheater",
-    "description": "Plays and poetry.",
+    "description": "Plays and poetry: +2 Great Writer points, and 2 slots for great works of writing.",
     "icon": "Am",
     "cost": 150,
     "maintenance": 1,
@@ -259,7 +262,10 @@
           "scope": "player"
         }
       }
-    ]
+    ],
+    "slots": {
+      "writing": 2
+    }
   },
   {
     "type": "building",
@@ -576,7 +582,10 @@
         "effect": "grant_promotion",
         "params": {
           "promotion": "promo_ordu_trained",
-          "unitClass": ["class_light_cavalry", "class_heavy_cavalry"]
+          "unitClass": [
+            "class_light_cavalry",
+            "class_heavy_cavalry"
+          ]
         },
         "target": {
           "scope": "settlements"
@@ -658,7 +667,7 @@
     "type": "building",
     "id": "building_museum",
     "name": "Museum",
-    "description": "+3 culture and +2 tourism.",
+    "description": "+3 culture and +2 tourism, +2 Great Artist points, and 3 slots for great works of art.",
     "icon": "Mu",
     "cost": 290,
     "maintenance": 2,
@@ -672,15 +681,18 @@
       {
         "effect": "great_person_points",
         "params": {
-          "class": "gp_writer",
-          "amount": 1
+          "class": "gp_artist",
+          "amount": 2
         },
         "target": {
           "scope": "player"
         }
       }
     ],
-    "requiresCivic": "civic_humanism"
+    "requiresCivic": "civic_humanism",
+    "slots": {
+      "art": 3
+    }
   },
   {
     "type": "building",
@@ -841,7 +853,7 @@
     "type": "building",
     "id": "building_broadcast_center",
     "name": "Broadcast Center",
-    "description": "+4 culture and +3 tourism.",
+    "description": "+4 culture and +3 tourism, +2 Great Musician points, and 2 slots for great works of music.",
     "icon": "BC",
     "cost": 480,
     "maintenance": 4,
@@ -851,13 +863,28 @@
     },
     "requiresBuilding": "building_museum",
     "district": "district_theater",
-    "requiresTech": "tech_radio"
+    "requiresTech": "tech_radio",
+    "slots": {
+      "music": 2
+    },
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_musician",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",
     "id": "building_film_studio",
     "name": "Film Studio",
-    "description": "+4 culture and +6 tourism.",
+    "description": "+4 culture and +6 tourism, +2 Great Musician points, and 2 slots for great works of music.",
     "icon": "FS",
     "cost": 480,
     "maintenance": 4,
@@ -869,7 +896,22 @@
     "district": "district_theater",
     "civ": "civ_america",
     "replaces": "building_broadcast_center",
-    "requiresTech": "tech_radio"
+    "requiresTech": "tech_radio",
+    "slots": {
+      "music": 2
+    },
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_musician",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
   },
   {
     "type": "building",

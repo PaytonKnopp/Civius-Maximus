@@ -166,7 +166,10 @@
         }
       }
     ],
-    "bonusMoments": ["moment_wonder", "moment_district"]
+    "bonusMoments": [
+      "moment_wonder",
+      "moment_district"
+    ]
   },
   {
     "type": "dedication",
@@ -197,7 +200,9 @@
         }
       }
     ],
-    "bonusMoments": ["moment_settlement"]
+    "bonusMoments": [
+      "moment_settlement"
+    ]
   },
   {
     "type": "dedication",
@@ -216,7 +221,9 @@
         }
       }
     ],
-    "bonusMoments": ["moment_tech"]
+    "bonusMoments": [
+      "moment_tech"
+    ]
   },
   {
     "type": "dedication",
@@ -235,7 +242,9 @@
         }
       }
     ],
-    "bonusMoments": ["moment_civic"]
+    "bonusMoments": [
+      "moment_civic"
+    ]
   },
   {
     "type": "dedication",
@@ -263,7 +272,9 @@
         }
       }
     ],
-    "bonusMoments": ["moment_trade_route"]
+    "bonusMoments": [
+      "moment_trade_route"
+    ]
   },
   {
     "type": "dedication",
@@ -282,7 +293,11 @@
         }
       }
     ],
-    "bonusMoments": ["moment_pantheon", "moment_religion", "moment_great_person"]
+    "bonusMoments": [
+      "moment_pantheon",
+      "moment_religion",
+      "moment_great_person"
+    ]
   },
   {
     "type": "dedication",
@@ -313,7 +328,10 @@
         }
       }
     ],
-    "bonusMoments": ["moment_kill", "moment_capture"]
+    "bonusMoments": [
+      "moment_kill",
+      "moment_capture"
+    ]
   },
   {
     "type": "dedication",
@@ -327,7 +345,11 @@
           "percent": -30,
           "toward": {
             "kind": "unit",
-            "unitClass": ["class_recon", "class_naval_melee", "class_naval_ranged"]
+            "unitClass": [
+              "class_recon",
+              "class_naval_melee",
+              "class_naval_ranged"
+            ]
           }
         },
         "target": {
@@ -335,7 +357,10 @@
         }
       }
     ],
-    "bonusMoments": ["moment_natural_wonder", "moment_suzerain"]
+    "bonusMoments": [
+      "moment_natural_wonder",
+      "moment_suzerain"
+    ]
   },
   {
     "type": "moment",
@@ -483,5 +508,14 @@
     "score": 2,
     "trigger": "settlement_joined",
     "once": "never"
+  },
+  {
+    "type": "moment",
+    "id": "moment_great_work",
+    "name": "A great work is created",
+    "score": 1,
+    "trigger": "great_work",
+    "once": "never",
+    "cap": 3
   }
 ]
