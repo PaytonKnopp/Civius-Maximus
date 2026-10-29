@@ -15,6 +15,8 @@ let installed = false;
 export function installAudio() {
   if (installed || typeof window === 'undefined') return;
   installed = true;
+  // For the screenshot scripts and the console: window.cxAudio.play('wonder').
+  (window as unknown as { cxAudio: unknown }).cxAudio = { audio, music, play };
   const first = () => {
     audio.start();
     music.start();
