@@ -22,6 +22,7 @@ import {
 } from '@cx/engine';
 import { resolveText } from '@cx/content';
 import { useEffect, useState } from 'react';
+import { LeaderHead } from '../ui/LeaderCard';
 import { DealDialog, describeDeal } from './DealDialog';
 import { civName, type Colors, cssColor } from './model';
 
@@ -85,7 +86,9 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
   return (
     <aside className="player-panel" aria-label={name}>
       <div className="player-panel-head">
-        <span className="swatch big" style={{ background: cssColor(colors.main) }} />
+        <span className="panel-head-portrait" style={{ borderColor: cssColor(colors.main) }}>
+          <LeaderHead content={ctx.content} leader={p.leader} civ={p.civ} size={58} />
+        </span>
         <div>
           <h3>{name}</h3>
           <p className="unit-sub">
@@ -98,6 +101,11 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
           ✕
         </button>
       </div>
+      {leader?.quotes && p.kind === 'ai' && other !== viewer && p.alive && (
+        <q className="leader-quote panel-quote">
+          {resolveText(ctx.content, war ? leader.quotes.war : leader.quotes.greeting)}
+        </q>
+      )}
       <p className="hint" title={score.lines.map((l) => `${l.label}: ${l.amount}`).join('\n')}>
         Score {score.total}
         {domination.needed > 0 && ` · holds ${domination.held}/${domination.needed} rival capitals`}

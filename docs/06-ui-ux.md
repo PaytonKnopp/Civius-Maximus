@@ -53,6 +53,12 @@ right. The next-action button sits over a clickable minimap (terrain, borders, f
 your units) with the lens picker on its frame. Every panel and full screen shares one frame:
 sea-blue lacquer, a brass edge and corner flourishes; titles are gold Cinzel.
 
+**Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
+few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
+show each leader's face. A rival's diplomacy panel shows their portrait and a line in their
+voice (a greeting, or a threat at war). When a rival declares war, makes peace or falls, they
+speak to you over their portrait. Every line is original (`leader.quotes`, `leader.intro`).
+
 ## Map lenses and filters (lots of them, by design)
 
 | Lens | Shows |

@@ -82,7 +82,9 @@ import { GraphsScreen, HistoryChart } from './GraphsScreen';
 import { HelpScreen } from './HelpScreen';
 import { HINTS, hintFor, hintsOn, markSeen, seenHints, setHints } from './hints';
 import { type Lens, LENSES, lensFor } from './lenses';
+import { LeaderIntro, LeaderSpeech, type SpeechLine } from './LeaderSpeech';
 import { Minimap } from './Minimap';
+import { LeaderHead } from '../ui/LeaderCard';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -430,6 +432,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
   } | null>(null);
   const [striking, setStriking] = useState(false);
   const [gameOverSeen, setGameOverSeen] = useState(false);
+  // Leader screens: your leader's intro at the start, rivals speaking at war, peace and defeat.
+  const [introSeen, setIntroSeen] = useState<Set<PlayerId>>(() => new Set());
+  const [speech, setSpeech] = useState<{ player: PlayerId; line: SpeechLine } | null>(null);
 
   /** Hotseat: the next player took the device. Their view, their summary, their capital. */
   const beginTurn = (player: PlayerId) => {
@@ -612,6 +617,16 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
         if (e.visibleTo !== 'all' && !e.visibleTo.includes(viewer)) continue;
         const text = noticeFor(content, s, e, viewerRef.current);
         if (text) notify(text);
+        const ai = (p: PlayerId) => s.players[p]?.kind === 'ai';
+        if (e.type === 'war_declared' && e.target === viewer && ai(e.by))
+          setSpeech({ player: e.by, line: 'war' });
+        else if (e.type === 'war_declared' && e.by === viewer && ai(e.target))
+          setSpeech({ player: e.target, line: 'war' });
+        else if (e.type === 'peace_made' && e.players.includes(viewer)) {
+          const other = e.players[0] === viewer ? e.players[1] : e.players[0];
+          if (ai(other)) setSpeech({ player: other, line: 'peace' });
+        } else if (e.type === 'player_defeated' && e.by === viewer && ai(e.player))
+          setSpeech({ player: e.player, line: 'defeat' });
         if (!view) continue;
         if (e.type === 'combat') {
           view.animateAttack(
@@ -1252,7 +1267,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
               title={`${pl.name} · score ${scoreOf(ctx, state, p).total}${war ? ' · at war' : ''}${rel === 'allies' ? ' · allies' : rel === 'friends' ? ' · friends' : ''}${offer ? ' · has an offer for you' : ''}${pl.turnEnded ? ' (turn ended)' : ''}`}
               onClick={() => setPlayerPanel(playerPanel === p ? null : p)}
             >
-              <span className="swatch" style={{ background: cssColor(colors[p]!.main) }} />
+              <span className="chip-head" style={{ borderColor: cssColor(colors[p]!.main) }}>
+                <LeaderHead content={content} leader={pl.leader} civ={pl.civ} size={24} />
+              </span>
               {(hotseat || online) && pl.kind === 'human'
                 ? `${p === viewer ? '▸ ' : ''}${pl.name} · ${civName(content, state, p)}`
                 : p === viewer
@@ -1648,6 +1665,23 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
             setOverlay({ kind: 'graphs' });
           }}
           onClose={() => setGameOverSeen(true)}
+        />
+      )}
+      {!passTo && state.turn <= 1 && me.alive && !introSeen.has(viewer) && (
+        <LeaderIntro
+          ctx={ctx}
+          state={state}
+          player={viewer}
+          onBegin={() => setIntroSeen((seen) => new Set(seen).add(viewer))}
+        />
+      )}
+      {speech && !passTo && state.players[speech.player] && (
+        <LeaderSpeech
+          ctx={ctx}
+          state={state}
+          player={speech.player}
+          line={speech.line}
+          onClose={() => setSpeech(null)}
         />
       )}
       {passTo && (

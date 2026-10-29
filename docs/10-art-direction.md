@@ -75,6 +75,15 @@ All art is referenced from content files, so swapping a placeholder for real art
 cannon, tank, steamship, commander (with a banner) and robed (missionaries, great people). The
 Map Lab's "Unit models" switch puts one of each on the map, for checking new art.
 
+**Built so far (V1 final, F4): leaders and emblems.** Every leader has an illustrated portrait
+drawn in vector from traits in content (`leader.portrait`: face shape, skin, eyes, hair style,
+beard, headwear from laurels and crowns to a mian or a bicorne, clothes from togas to kimonos,
+jewelry, expression), lit from the upper left over a wash of the civ's colors, with a painted
+grain at large sizes (`ui/Portrait.tsx`). Painted art replaces any of them by setting
+`portrait.image` ([portrait-style-guide.md](portrait-style-guide.md) has the look and a prompt
+template). Every civ has an emblem, a symbol on a heraldic shield in its colors (`civ.emblem`,
+26 symbols, `ui/Emblem.tsx`). `#gallery` in the URL shows every leader and emblem.
+
 **Built so far (V1 final, F3): units, cities and effects.** Every unit is a squad of chunky
 figures with gear by era: bronze helmets, round shields and spears; crested helmets, tower shields
 and swords; plumed knights on barded horses; tricorns and muskets; shakos and rifles; steel

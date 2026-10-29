@@ -71,6 +71,9 @@ for (const page of [host, guest]) {
     null,
     { timeout: 60000 },
   );
+  // Each player's leader intro opens the game.
+  await page.waitForSelector('.leader-intro');
+  await page.click('.leader-intro .primary');
   await page.keyboard.press('Enter');
   await page.waitForSelector('.unit-panel');
   await page.keyboard.press('b');

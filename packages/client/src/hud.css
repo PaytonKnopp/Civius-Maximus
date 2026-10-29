@@ -1157,3 +1157,106 @@ button.primary:hover:not(:disabled) {
   justify-content: center;
   padding: 0 16px 32px;
 }
+
+.chip-head {
+  display: inline-flex;
+  border-radius: 50%;
+  border: 2px solid;
+  margin: -3px 2px -3px -6px;
+}
+
+.chip-head .leader-head {
+  border: none;
+}
+
+.panel-head-portrait {
+  display: inline-flex;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid;
+}
+
+.panel-head-portrait .leader-head {
+  border-color: var(--gold);
+}
+
+.panel-quote {
+  margin: 4px 0 8px;
+  max-width: none;
+  text-align: left;
+}
+
+.leader-backdrop {
+  z-index: 55;
+  background: radial-gradient(ellipse at 50% 40%, rgba(20, 34, 46, 0.6), rgba(3, 6, 9, 0.92) 70%);
+}
+
+.leader-intro,
+.leader-speech {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  max-width: min(860px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 28px 30px;
+  background:
+    var(--corner-tl) top 5px left 5px / 22px no-repeat,
+    var(--corner-tr) top 5px right 5px / 22px no-repeat,
+    var(--corner-bl) bottom 5px left 5px / 22px no-repeat,
+    var(--corner-br) bottom 5px right 5px / 22px no-repeat,
+    linear-gradient(180deg, rgba(24, 40, 54, 0.96), rgba(9, 17, 24, 0.97));
+  border: 1px solid var(--gold-lo);
+  border-top: 2px solid var(--gold);
+  border-radius: 10px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+}
+
+.leader-speech {
+  flex-direction: column;
+  gap: 14px;
+  max-width: 420px;
+}
+
+.leader-speech.war .game-over-kicker {
+  color: #e36b55;
+}
+
+.leader-intro-text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.leader-intro-body {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.55;
+  color: #efe4c8;
+}
+
+.leader-intro .kit p,
+.leader-intro .kit li {
+  font-size: 13px;
+}
+
+.leader-intro .primary {
+  align-self: flex-start;
+  padding: 10px 22px;
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 640px) {
+  .leader-intro {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 18px;
+  }
+  .leader-intro .primary {
+    align-self: stretch;
+  }
+}

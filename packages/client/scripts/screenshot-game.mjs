@@ -31,6 +31,10 @@ await page.goto(url, { waitUntil: 'networkidle' });
 await page.waitForSelector('canvas');
 await rendering(page);
 await page.waitForTimeout(1000);
+// Your leader's intro opens the game.
+await page.waitForSelector('.leader-intro');
+await page.screenshot({ path: `${out}/game-intro.png` });
+await page.click('.leader-intro .primary');
 await page.screenshot({ path: `${out}/game-start.png` });
 
 // The first unit is the settler: found the capital where it stands.
@@ -171,6 +175,9 @@ await phone.goto(url, { waitUntil: 'networkidle' });
 await phone.waitForSelector('canvas');
 await rendering(phone);
 await phone.waitForTimeout(800);
+await phone.waitForSelector('.leader-intro');
+await phone.screenshot({ path: `${out}/game-phone-intro.png` });
+await phone.click('.leader-intro .primary');
 await phone.screenshot({ path: `${out}/game-phone-start.png` });
 await phone.click('.next-action');
 await phone.waitForSelector('.unit-panel');
