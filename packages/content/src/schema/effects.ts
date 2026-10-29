@@ -485,6 +485,22 @@ const ModifyLoyaltyPressure = z.strictObject({
   condition: Condition.optional(),
 });
 
+/** Diplomatic favor a turn (World Congress). */
+const DiplomaticFavor = z.strictObject({
+  effect: z.literal('diplomatic_favor'),
+  params: z.strictObject({ amount: z.int() }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
+/** Diplomatic victory points, for as long as the source lasts (e.g. a wonder). */
+const DiplomaticPoints = z.strictObject({
+  effect: z.literal('diplomatic_points'),
+  params: z.strictObject({ amount: z.int() }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
 /** Items of this kind can also be bought with faith (same price as in gold). */
 const PurchaseWithFaith = z.strictObject({
   effect: z.literal('purchase_with_faith'),
@@ -528,6 +544,8 @@ export const Effect = z.discriminatedUnion('effect', [
   CommanderBonus,
   ModifyLoyalty,
   ModifyLoyaltyPressure,
+  DiplomaticFavor,
+  DiplomaticPoints,
 ]);
 export type Effect = z.infer<typeof Effect>;
 export const EFFECT_TYPES = Effect.options.map((o) => o.shape.effect.value);

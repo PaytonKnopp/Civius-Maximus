@@ -867,6 +867,30 @@ export const ICONS: Record<string, IconDef> = {
     ],
   },
   envoy: { bg: C.influence, glyph: SCROLL },
+  // A domed hall with columns.
+  congress: {
+    bg: '#2f6f8f',
+    glyph: [
+      s('M5.4 9.6Q5.8 4.4 12 4.4Q18.2 4.4 18.6 9.6Z'),
+      s('M4.6 10.4h14.8v1.6H4.6Z'),
+      s('M6 12.8h1.8v4.6H6ZM9.4 12.8h1.8v4.6H9.4ZM12.8 12.8h1.8v4.6h-1.8ZM16.2 12.8H18v4.6h-1.8Z'),
+      s('M4 18.2h16v1.8H4Z'),
+    ],
+  },
+  // A brimmed hat over an eye mask.
+  spy: {
+    bg: '#4a3f5c',
+    glyph: [
+      s(ellipse(12, 10.2, 8.2, 1.6)),
+      s('M7.6 9.6Q8 5.2 12 5.2Q16 5.2 16.4 9.6Z'),
+      s(
+        'M6.6 13.2Q12 11.6 17.4 13.2L16.8 16.2Q14.6 15.2 12 16.6Q9.4 15.2 7.2 16.2Z' +
+          ellipse(9.6, 14.3, 1.3, 0.8) +
+          ellipse(14.4, 14.3, 1.3, 0.8),
+        true,
+      ),
+    ],
+  },
   war: { bg: C.military, glyph: SWORDS },
   peace: {
     bg: '#4f8f5a',

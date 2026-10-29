@@ -7,6 +7,7 @@ import type { EffectSource } from '../effects/yields';
 import { tileTouchesRiver } from '../map/hex';
 import type { GameState, PlayerId, PlayerState, SettlementState, Track } from '../state';
 import { ageSources } from '../eras/ages';
+import { congressSources } from '../congress/congress';
 import { governorOf, governorSources } from '../governors/governors';
 
 /**
@@ -127,6 +128,7 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
   out.push(...ageSources(ctx, p));
   // Established governors (their settlement-scope effects only where they serve).
   out.push(...governorSources(ctx, p));
+  out.push(...congressSources(ctx, p));
   const gov = content.entities.government[p.government];
   if (gov && gov.effects.length > 0)
     out.push({ id: gov.id, label: resolveText(content, gov.name), effects: gov.effects });

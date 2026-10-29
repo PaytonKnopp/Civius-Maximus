@@ -1,0 +1,447 @@
+[
+  {
+    "type": "resolution",
+    "id": "res_world_leader",
+    "name": "Name a World Leader",
+    "description": "The world chooses one civ to lead it until the next session.",
+    "target": "player",
+    "always": true,
+    "options": [
+      {
+        "id": "leader",
+        "name": "World Leader",
+        "description": "+2 diplomatic victory points for the civ chosen.",
+        "effects": [],
+        "points": 2
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_trade_sanctions",
+    "name": "Trade Sanctions",
+    "description": "A vote on one civ's trade with the world.",
+    "target": "player",
+    "options": [
+      {
+        "id": "sanction",
+        "name": "Sanction",
+        "description": "−20% gold in every settlement of the civ chosen.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "gold",
+              "percent": -20
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "bane"
+      },
+      {
+        "id": "favor",
+        "name": "Favored Partner",
+        "description": "+20% gold in every settlement of the civ chosen.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "gold",
+              "percent": 20
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "boon",
+        "favoredBy": "gold"
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_arms_limits",
+    "name": "Arms Limits",
+    "description": "A vote on one civ's armies.",
+    "target": "player",
+    "options": [
+      {
+        "id": "limit",
+        "name": "Limit Arms",
+        "description": "−25% production toward soldiers for the civ chosen.",
+        "effects": [
+          {
+            "effect": "modify_production",
+            "params": {
+              "percent": -25,
+              "toward": {
+                "kind": "unit",
+                "military": true
+              }
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "bane"
+      },
+      {
+        "id": "arm",
+        "name": "Arm the Guardian",
+        "description": "+25% production toward soldiers for the civ chosen.",
+        "effects": [
+          {
+            "effect": "modify_production",
+            "params": {
+              "percent": 25,
+              "toward": {
+                "kind": "unit",
+                "military": true
+              }
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "boon",
+        "favoredBy": "aggression"
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_heritage",
+    "name": "Heritage Accord",
+    "description": "A vote on one civ's place in the world's eyes.",
+    "target": "player",
+    "options": [
+      {
+        "id": "shun",
+        "name": "Cultural Boycott",
+        "description": "−25% tourism from the civ chosen.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "tourism",
+              "percent": -25
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "bane"
+      },
+      {
+        "id": "celebrate",
+        "name": "World Heritage",
+        "description": "+25% tourism from the civ chosen.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "tourism",
+              "percent": 25
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "boon",
+        "favoredBy": "culture"
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_refugees",
+    "name": "Refugee Treaty",
+    "description": "A vote on one civ's people.",
+    "target": "player",
+    "options": [
+      {
+        "id": "burden",
+        "name": "Share the Burden",
+        "description": "−1 happiness in every settlement of the civ chosen.",
+        "effects": [
+          {
+            "effect": "modify_happiness",
+            "params": {
+              "amount": -1
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "bane"
+      },
+      {
+        "id": "welcome",
+        "name": "Safe Haven",
+        "description": "+1 happiness in every settlement of the civ chosen.",
+        "effects": [
+          {
+            "effect": "modify_happiness",
+            "params": {
+              "amount": 1
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "boon",
+        "favoredBy": "expansion"
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_patronage",
+    "name": "Patronage of the Arts",
+    "description": "How the world treats its writers, artists and musicians.",
+    "target": "none",
+    "options": [
+      {
+        "id": "fund",
+        "name": "Fund the Arts",
+        "description": "+50% Great Writer, Artist and Musician points for every civ.",
+        "effects": [
+          {
+            "effect": "great_person_points_percent",
+            "params": {
+              "class": "gp_writer",
+              "percent": 50
+            },
+            "target": {
+              "scope": "player"
+            }
+          },
+          {
+            "effect": "great_person_points_percent",
+            "params": {
+              "class": "gp_artist",
+              "percent": 50
+            },
+            "target": {
+              "scope": "player"
+            }
+          },
+          {
+            "effect": "great_person_points_percent",
+            "params": {
+              "class": "gp_musician",
+              "percent": 50
+            },
+            "target": {
+              "scope": "player"
+            }
+          }
+        ],
+        "favoredBy": "culture"
+      },
+      {
+        "id": "cut",
+        "name": "Cut the Purse",
+        "description": "−50% Great Writer, Artist and Musician points for every civ.",
+        "effects": [
+          {
+            "effect": "great_person_points_percent",
+            "params": {
+              "class": "gp_writer",
+              "percent": -50
+            },
+            "target": {
+              "scope": "player"
+            }
+          },
+          {
+            "effect": "great_person_points_percent",
+            "params": {
+              "class": "gp_artist",
+              "percent": -50
+            },
+            "target": {
+              "scope": "player"
+            }
+          },
+          {
+            "effect": "great_person_points_percent",
+            "params": {
+              "class": "gp_musician",
+              "percent": -50
+            },
+            "target": {
+              "scope": "player"
+            }
+          }
+        ],
+        "favoredBy": "aggression"
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_academies",
+    "name": "Academic Charter",
+    "description": "Where the world puts its learning.",
+    "target": "none",
+    "options": [
+      {
+        "id": "campus",
+        "name": "Open Academies",
+        "description": "+2 science in every settlement with a Campus, for every civ.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "science",
+              "amount": 2
+            },
+            "target": {
+              "scope": "settlements"
+            },
+            "condition": {
+              "settlement_has_district": "district_campus"
+            }
+          }
+        ],
+        "favoredBy": "science"
+      },
+      {
+        "id": "theater",
+        "name": "Public Theaters",
+        "description": "+2 culture in every settlement with a Theater Square, for every civ.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "culture",
+              "amount": 2
+            },
+            "target": {
+              "scope": "settlements"
+            },
+            "condition": {
+              "settlement_has_district": "district_theater"
+            }
+          }
+        ],
+        "favoredBy": "culture"
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_faith",
+    "name": "Accord of Faiths",
+    "description": "The world's stance on its temples.",
+    "target": "none",
+    "options": [
+      {
+        "id": "bless",
+        "name": "Freedom of Worship",
+        "description": "+25% faith for every civ.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "faith",
+              "percent": 25
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "favoredBy": "faith"
+      },
+      {
+        "id": "tax",
+        "name": "Temple Tax",
+        "description": "−25% faith and +10% gold for every civ.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "faith",
+              "percent": -25
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          },
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "gold",
+              "percent": 10
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "favoredBy": "gold"
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_public_works",
+    "name": "Public Works",
+    "description": "What the world builds next.",
+    "target": "none",
+    "options": [
+      {
+        "id": "districts",
+        "name": "Civic Building",
+        "description": "+15% production toward districts for every civ.",
+        "effects": [
+          {
+            "effect": "modify_production",
+            "params": {
+              "percent": 15,
+              "toward": {
+                "kind": "district"
+              }
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "favoredBy": "expansion"
+      },
+      {
+        "id": "wonders",
+        "name": "Monuments of the Age",
+        "description": "+15% production toward wonders for every civ.",
+        "effects": [
+          {
+            "effect": "modify_production",
+            "params": {
+              "percent": 15,
+              "toward": {
+                "kind": "wonder"
+              }
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "favoredBy": "wonders"
+      }
+    ]
+  }
+]
