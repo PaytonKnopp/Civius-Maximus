@@ -83,6 +83,7 @@ import { HelpScreen } from './HelpScreen';
 import { HINTS, hintFor, hintsOn, markSeen, seenHints, setHints } from './hints';
 import { type Lens, LENSES, lensFor } from './lenses';
 import { LeaderIntro, LeaderSpeech, type SpeechLine } from './LeaderSpeech';
+import { AgesScreen } from './AgesScreen';
 import { Minimap } from './Minimap';
 import { music, play, type Sfx } from '../audio';
 import { LeaderHead } from '../ui/LeaderCard';
@@ -161,6 +162,12 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
       return e.player === me ? 'government' : null;
     case 'turn_started':
       return 'turn';
+    case 'age_started':
+      return e.player === me ? 'era' : null;
+    case 'natural_wonder_found':
+      return e.player === me ? 'boost' : null;
+    case 'historic_moment':
+      return e.player === me ? 'notify' : null;
     case 'unit_moved': {
       if (e.owner !== me) return null;
       const type = s.units[e.unit]?.type ?? '';
@@ -231,6 +238,24 @@ function noticeFor(
       const wonder = resolveText(content, content.entities.wonder[e.wonder]?.name ?? e.wonder);
       return e.owner === ME
         ? `${wonder} was built elsewhere: ${name(e.settlement)} got ${Math.floor(e.gold / 100)} gold back`
+        : undefined;
+    }
+    case 'historic_moment': {
+      if (e.player !== ME) return undefined;
+      const m = content.entities.moment[e.moment];
+      return `+${e.score} era score: ${m ? resolveText(content, m.name) : e.moment}`;
+    }
+    case 'age_started': {
+      const age = content.entities.age[e.age];
+      const name = age ? resolveText(content, age.name) : e.age;
+      return e.player === ME
+        ? `A ${name} begins! (${e.score} era score last era) Choose your dedication.`
+        : `${civName(content, state, e.player)} enters a ${name}`;
+    }
+    case 'natural_wonder_found': {
+      const f = content.entities.feature[e.feature];
+      return e.player === ME
+        ? `You found ${f ? resolveText(content, f.name) : e.feature}!`
         : undefined;
     }
     case 'war_declared':
@@ -491,6 +516,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     | { kind: 'religion'; prophet?: string }
     | { kind: 'cityStates' }
     | { kind: 'victories' }
+    | { kind: 'ages' }
     | { kind: 'graphs' }
     | { kind: 'help' }
     | null
@@ -1014,6 +1040,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     else if (n.kind === 'research') setOverlay({ kind: 'tree', tree: 'tech' });
     else if (n.kind === 'civic') setOverlay({ kind: 'tree', tree: 'civic' });
     else if (n.kind === 'policies') openGovernment();
+    else if (n.kind === 'dedication') setOverlay({ kind: 'ages' });
     else if (n.kind === 'end') {
       act({ type: 'end_turn', player: viewer });
       select(null);
@@ -1195,6 +1222,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       else if (e.key === 'r') setOverlay({ kind: 'religion' });
       else if (e.key === 'i') setOverlay({ kind: 'cityStates' });
       else if (e.key === 'v') setOverlay({ kind: 'victories' });
+      else if (e.key === 'e') setOverlay({ kind: 'ages' });
       else if (e.key === 'h') setOverlay({ kind: 'graphs' });
       else if (e.key === '?') setOverlay({ kind: 'help' });
       else if (e.key === 'l') setLens((l) => LENSES[(LENSES.indexOf(l) + 1) % LENSES.length]!);
@@ -1339,12 +1367,30 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               onClick={() => setOverlay({ kind: 'help' })}
             />
           </nav>
-          <div className="turn-pill" aria-live="polite">
+          <button
+            type="button"
+            className="turn-pill"
+            aria-live="polite"
+            title="Eras and ages (E): era score, dedications, timeline"
+            onClick={() => setOverlay({ kind: 'ages' })}
+          >
             <span className="turn-label">Turn</span>
             <span className="turn-number">{state.turn}</span>
-            <span className="era">{era ? `${resolveText(content, era.name)} Era` : ''}</span>
+            <span className="era">{era ? resolveText(content, era.name) : ''}</span>
+            {me.ages && (
+              <span
+                className="age-chip"
+                style={{ borderColor: content.entities.age[me.ages.age]?.color }}
+              >
+                {resolveText(content, content.entities.age[me.ages.age]?.name ?? '').replace(
+                  / Age$/,
+                  '',
+                )}{' '}
+                {me.ages.score}
+              </span>
+            )}
             <span className="fps">{fps} fps</span>
-          </div>
+          </button>
         </div>
       </header>
 
@@ -1641,6 +1687,15 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             return ok;
           }}
           prophet={overlay.prophet}
+          onClose={() => setOverlay(null)}
+        />
+      )}
+      {overlay?.kind === 'ages' && (
+        <AgesScreen
+          ctx={ctx}
+          state={state}
+          viewer={viewer}
+          act={act}
           onClose={() => setOverlay(null)}
         />
       )}

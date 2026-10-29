@@ -55,6 +55,8 @@ export interface GameState {
   tourism: Record<PlayerId, Record<PlayerId, number>>;
   /** Each civ's numbers at the end of every turn, for graphs (docs/06-ui-ux.md, "Graphs"). */
   history: HistoryEntry[];
+  /** World-first historic moments already claimed (`moment:key`, e.g. the first into an era). */
+  worldMoments?: string[];
   /** The great people race (docs/04-advanced-systems.md, "Great people"). */
   greatPeople: {
     /** Points per player, per great person class. */
@@ -388,6 +390,8 @@ export interface PlayerState {
   kills: number;
   /** The last turn this player declared a war (some abilities last a while after). */
   declaredWarTurn: number | null;
+  /** Era score and the age (absent for city-states and raiders). */
+  ages?: AgeState;
   /** The tech tree (paid with science) and the civics tree (paid with culture). */
   techs: Track;
   civics: Track;
@@ -408,6 +412,30 @@ export interface PlayerState {
 }
 
 /** Progress through one tree. Amounts are in hundredths. */
+/** A player's era score and age (docs/04-advanced-systems.md, "Eras and ages"). */
+export interface AgeState {
+  /** The era this age covers (an `era` content id). */
+  era: string;
+  /** An `age` content id. */
+  age: string;
+  /** `dedication` content ids chosen for this era. */
+  dedications: string[];
+  /** Dedications still to choose. */
+  pending: number;
+  /** Era score earned in this era. */
+  score: number;
+  /** Moments counted this era, by `moment` id (for caps). */
+  counts: Record<string, number>;
+  /** Once-per-player moments already earned. */
+  once: string[];
+  /** Natural wonders (feature ids) this player has found. */
+  seen: string[];
+  /** Every moment earned, oldest first. */
+  timeline: { turn: number; moment: string; score: number; era: string }[];
+  /** The age each past era had: era id → age id. */
+  history: Record<string, string>;
+}
+
 export interface Track {
   /** Finished, in the order they were finished. */
   done: string[];

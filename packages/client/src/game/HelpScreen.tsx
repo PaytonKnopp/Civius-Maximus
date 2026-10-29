@@ -16,6 +16,7 @@ const KEYS: [string, string][] = [
   ['R', 'Religion'],
   ['I', 'City-states'],
   ['V', 'Victories'],
+  ['E', 'Eras and ages: era score, dedications, timeline'],
   ['H', 'Graphs'],
   ['L', 'Next map lens'],
   ['?', 'This screen'],

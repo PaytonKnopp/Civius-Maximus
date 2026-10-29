@@ -23,6 +23,7 @@ import { cityStateHandlers, cityStatesTurn, placeCityStates } from './citystates
 import { upgradeHandlers } from './units/upgrades';
 import { cultureTurn } from './culture/tourism';
 import { scienceTurn } from './science/space';
+import { agesHandlers, agesTurn, awardMoments, newAgeState } from './eras/ages';
 import { applyStartEra } from './progress/startEra';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
@@ -177,6 +178,8 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     history: [],
   };
   applyStartEra(state, ctx);
+  for (const id of state.playerOrder)
+    state.players[id]!.ages = newAgeState(ctx, state.players[id]!, state.settings.startEra);
   spawnStartingUnits(state, ctx);
   placeStartingCamps(state, ctx, random);
   const placed = produce(state, (draft) => {
@@ -189,6 +192,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
 }
 
 const handlers: Handlers = {
+  ...agesHandlers,
   ...unitHandlers,
   ...settlementHandlers,
   ...progressHandlers,
@@ -242,6 +246,7 @@ const turnSteps: TurnStep[] = [
   { id: 'religion', order: 125, run: religionTurn },
   { id: 'culture', order: 128, run: cultureTurn },
   { id: 'science', order: 129, run: scienceTurn },
+  { id: 'ages', order: 135, run: agesTurn },
   { id: 'history', order: 140, run: (draft, ctx) => historyTurn(draft, ctx) },
 ];
 
@@ -310,6 +315,11 @@ export function applyAction(state: GameState, action: Action, ctx: EngineContext
   // step, so their many small snapshots copy only what they change, not the whole turn's work.
   if (next.turn !== state.turn && next.status === 'playing') {
     next = produce(next, (draft) => raidersTurn(draft, ctx, emit));
+  }
+  // Historic moments: era score for what just happened, and natural wonders just found.
+  if (next.status === 'playing') {
+    const happened = [...events];
+    next = produce(next, (draft) => awardMoments(draft, ctx, happened, emit));
   }
   return { ok: true, state: next, events };
 }
