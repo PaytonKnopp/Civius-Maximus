@@ -15,6 +15,7 @@ import {
   storeSave,
 } from './game/storage';
 import { Gallery } from './Gallery';
+import { SoundSettings } from './ui/SoundSettings';
 import { MapLab } from './lab/MapLab';
 import { Icon } from './ui/Icon';
 import type { Quality } from './map/renderer';
@@ -337,6 +338,10 @@ function GameMenu(props: {
           <button type="button" role="menuitem" onClick={pick(props.onHome)}>
             Title screen
           </button>
+          <div className="menu-section">
+            <h4>Sound</h4>
+            <SoundSettings />
+          </div>
         </div>
       )}
     </div>

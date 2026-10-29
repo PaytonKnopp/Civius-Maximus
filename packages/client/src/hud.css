@@ -1260,3 +1260,38 @@ button.primary:hover:not(:disabled) {
     align-self: stretch;
   }
 }
+
+.menu-section {
+  margin-top: 6px;
+  padding: 8px 6px 2px;
+  border-top: 1px solid rgba(201, 161, 79, 0.3);
+}
+
+.menu-section h4 {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--gold-hi);
+}
+
+.sound-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 200px;
+}
+
+.sound-row {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.sound-row input[type='range'] {
+  width: 100%;
+  accent-color: var(--gold);
+}

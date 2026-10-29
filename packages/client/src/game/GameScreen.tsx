@@ -84,6 +84,7 @@ import { HINTS, hintFor, hintsOn, markSeen, seenHints, setHints } from './hints'
 import { type Lens, LENSES, lensFor } from './lenses';
 import { LeaderIntro, LeaderSpeech, type SpeechLine } from './LeaderSpeech';
 import { Minimap } from './Minimap';
+import { music, play, type Sfx } from '../audio';
 import { LeaderHead } from '../ui/LeaderCard';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
@@ -103,6 +104,81 @@ function toPathView(steps: ReturnType<typeof findPath>): PathView | null {
 }
 
 /** A notification for the viewer, or undefined if the event isn't worth one. */
+/** The sound for an event, as the viewer hears it (docs/06-ui-ux.md, "Music and sound"). */
+function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
+  switch (e.type) {
+    case 'settlement_founded':
+      return e.owner === me ? 'found' : null;
+    case 'item_completed':
+      return e.owner === me ? 'build' : null;
+    case 'item_bought':
+      return 'buy';
+    case 'tech_researched':
+      return e.player === me ? 'research' : null;
+    case 'civic_completed':
+      return e.player === me ? 'civic' : null;
+    case 'boost_earned':
+      return e.player === me ? 'boost' : null;
+    case 'settlement_grew':
+      return s.settlements[e.settlement]?.owner === me ? 'grow' : null;
+    case 'border_grew':
+      return null;
+    case 'combat': {
+      // Guns and cannon from the age of gunpowder on; blades and arrows before.
+      const type = e.attacker.kind === 'unit' ? e.attacker.unitType : '';
+      if (/cannon|artillery|bombard|frigate|ironclad|destroyer|privateer/.test(type))
+        return 'cannon';
+      if (
+        /musket|infantry|rifle|machine_gun|guard|pike_and_shot|at_crew|cavalry|rough_rider/.test(
+          type,
+        )
+      )
+        return 'gun';
+      return e.mode === 'ranged' ? 'ranged' : 'melee';
+    }
+    case 'unit_killed':
+      return 'killed';
+    case 'settlement_captured':
+    case 'civilian_captured':
+      return 'captured';
+    case 'unit_promoted':
+      return 'promote';
+    case 'war_declared':
+      return e.target === me || e.by === me ? 'war' : null;
+    case 'peace_made':
+      return e.players.includes(me) ? 'peace' : null;
+    case 'deal_accepted':
+      return e.from === me || e.to === me ? 'deal' : null;
+    case 'wonder_completed':
+      return e.owner === me ? 'wonder' : 'notify';
+    case 'great_person_born':
+    case 'great_person_activated':
+      return 'great_person';
+    case 'religion_founded':
+    case 'pantheon_founded':
+      return 'religion';
+    case 'government_changed':
+      return e.player === me ? 'government' : null;
+    case 'turn_started':
+      return 'turn';
+    case 'unit_moved': {
+      if (e.owner !== me) return null;
+      const type = s.units[e.unit]?.type ?? '';
+      if (/galley|caravel|frigate|privateer|ironclad|destroyer|ship|boat/.test(type))
+        return 'move_ship';
+      if (/horse|cavalry|knight|chariot|keshig|companion|mandekalu|rough_rider/.test(type))
+        return 'move_horse';
+      return 'move';
+    }
+    case 'settlement_razing':
+      return 'burning';
+    case 'game_ended':
+      return e.winner === me ? 'victory' : 'defeat';
+    default:
+      return null;
+  }
+}
+
 function noticeFor(
   content: CompiledContent,
   state: GameState,
@@ -515,6 +591,11 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
   );
   const me = state.players[viewer]!;
   const era = playerEra(ctx, me);
+  // The music follows your era and your civ's culture.
+  const architecture = ctx.content.entities.civ[me.civ]?.architecture ?? 'mediterranean';
+  useEffect(() => {
+    music.setEra(era?.order ?? 1, architecture);
+  }, [era?.order, architecture]);
   // A hint counts as seen when it first shows, and stays up until dismissed or the turn ends.
   const [hintNow, setHintNow] = useState<{ id: string; turn: number } | null>(null);
   const hintsFree =
@@ -617,6 +698,10 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
         if (e.visibleTo !== 'all' && !e.visibleTo.includes(viewer)) continue;
         const text = noticeFor(content, s, e, viewerRef.current);
         if (text) notify(text);
+        const cue = soundFor(e, viewer, s);
+        if (cue) play(cue);
+        if (cue === 'wonder' || cue === 'victory' || cue === 'defeat' || cue === 'era')
+          music.duck(4);
         const ai = (p: PlayerId) => s.players[p]?.kind === 'ai';
         if (e.type === 'war_declared' && e.target === viewer && ai(e.by))
           setSpeech({ player: e.by, line: 'war' });
@@ -685,6 +770,16 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
   useEffect(() => {
     viewRef.current?.setSelected(selection?.kind === 'unit' ? selection.id : null);
   }, [selection, units]);
+  // A sound when you pick something: a soldier's clink, a civilian's pluck, a city's bell.
+  const selectedKey = selection ? `${selection.kind}:${selection.id}` : '';
+  useEffect(() => {
+    if (!selection) return;
+    if (selection.kind === 'unit') {
+      const u = game.state.units[selection.id];
+      const layer = u ? ctx.content.entities.unitClass[unitDef(ctx, u).class]?.layer : undefined;
+      play(layer === 'civilian' ? 'select_civilian' : 'select');
+    } else play('open');
+  }, [selectedKey]);
   useEffect(() => {
     viewRef.current?.setPath(path, unit?.tile ?? null);
   }, [path, unit?.tile]);
