@@ -1,5 +1,6 @@
 import { type BufferGeometry, Color } from 'three';
 import { G, house, scaled, seeded } from './parts';
+import { moreWonderParts } from './wonders3d';
 
 /**
  * District and wonder models: low-poly, flat-shaded parts merged into the settlement's mesh like
@@ -483,6 +484,9 @@ export function wonderParts(
       break;
     }
     default: {
+      // Water wonders stand on the sea surface.
+      if (moreWonderParts(model, out, at, model === 'colossus' ? Math.max(0, ground) : y, rot))
+        break;
       const [ox, oz] = at(0, 0);
       out.push(
         scaled(G.box, PALE, ox, y + 0.03, oz, 0.3, 0.06, 0.3, rot),

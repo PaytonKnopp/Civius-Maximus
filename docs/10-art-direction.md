@@ -99,8 +99,12 @@ stone towns in the civ's style; taller Renaissance streets; brick rows, chimneys
 concrete blocks and glass towers. Walls ring a city that has them and lose stretches when
 damaged. Particle effects (`map3d/effects3d.ts`, two draw calls): chimney and factory smoke,
 fire and black smoke over burning or badly damaged cities, dust and sparks where a blow lands.
-The Map Lab's "Buildings" switch shows every style and age side by side. Wonder landmarks grow
-with the wonder list (F17). Each natural wonder has its own landmark (F7,
+The Map Lab's "Buildings" switch shows every style and age side by side. Every world wonder
+has its own landmark (`map3d/districts3d.ts` and `map3d/wonders3d.ts`): pyramids, ziggurat,
+lighthouse, mausoleum, rows of terracotta soldiers, temples, domes and minarets, Khmer towers in
+a moat, a stepped pyramid, mountain terraces, a gothic front, curved stone walls, mud-brick
+towers, palaces, a shipyard, a white castle, a porcelain pagoda, a giant sundial, onion domes,
+a clock tower, a lattice tower, a stadium, a dam, sail-like shells and a needle tower. Each natural wonder has its own landmark (F7,
 `map3d/naturalWonders3d.ts`): great summits with snow and mist, a coral reef, the red monolith,
 terraced canyon walls, a waterfall with spray, salt flats, islets, limestone pillars, granite
 cliffs with pines, a wetland, basalt columns stepping into the sea and desert rings.

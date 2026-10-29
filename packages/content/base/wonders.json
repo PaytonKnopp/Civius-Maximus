@@ -198,7 +198,7 @@
         }
       ]
     },
-    "model": "statue",
+    "model": "colossus",
     "requiresTech": "tech_shipbuilding"
   },
   {
@@ -342,7 +342,7 @@
         }
       }
     ],
-    "model": "temple",
+    "model": "onion",
     "requiresCivic": "civic_reformed_church"
   },
   {
@@ -368,7 +368,7 @@
         }
       }
     ],
-    "model": "temple",
+    "model": "taj",
     "requiresCivic": "civic_humanism",
     "slots": {
       "art": 2
@@ -398,7 +398,7 @@
         }
       }
     ],
-    "model": "library",
+    "model": "clock_tower",
     "requiresTech": "tech_economics"
   },
   {
@@ -425,7 +425,7 @@
         }
       }
     ],
-    "model": "statue",
+    "model": "lattice_tower",
     "requiresTech": "tech_steel"
   },
   {
@@ -483,5 +483,1126 @@
       "writing": 1,
       "music": 1
     }
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_etemenanki",
+    "name": "Etemenanki",
+    "description": "+2 science here. Marsh and floodplains you own give +1 science. Built next to a river, marsh or floodplains.",
+    "icon": "Et",
+    "cost": 200,
+    "era": "era_ancient",
+    "yields": {
+      "science": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_feature": ["marsh", "floodplains", "floodplains_grassland", "floodplains_plains"]
+        }
+      }
+    ],
+    "placement": {
+      "nextToAny": [
+        {
+          "river": true
+        },
+        {
+          "feature": ["marsh", "floodplains", "floodplains_grassland", "floodplains_plains"]
+        }
+      ]
+    },
+    "model": "ziggurat",
+    "requiresTech": "tech_writing"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_great_bath",
+    "name": "Great Bath",
+    "description": "+2 faith here. +1 happiness in every settlement on a river. Built on a river.",
+    "icon": "GB",
+    "cost": 180,
+    "era": "era_ancient",
+    "yields": {
+      "faith": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_on_river": true
+        }
+      }
+    ],
+    "placement": {
+      "self": {
+        "river": true
+      }
+    },
+    "model": "bath",
+    "requiresTech": "tech_pottery"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_great_lighthouse",
+    "name": "Great Lighthouse",
+    "description": "+2 gold here. Naval melee units start with Helmsman (+1 movement). +2 great admiral points. Built on the coast.",
+    "icon": "GL",
+    "cost": 220,
+    "era": "era_classical",
+    "yields": {
+      "gold": 2
+    },
+    "effects": [
+      {
+        "effect": "grant_promotion",
+        "params": {
+          "promotion": "promo_helmsman",
+          "unitClass": "class_naval_melee"
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_admiral",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "placement": {
+      "nextToAny": [
+        {
+          "terrain": "coast"
+        }
+      ]
+    },
+    "model": "lighthouse",
+    "requiresTech": "tech_celestial_navigation"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_mausoleum",
+    "name": "Mausoleum at Halicarnassus",
+    "description": "+2 culture here. Settlements with a Harbor +1 production. Built on the coast.",
+    "icon": "MH",
+    "cost": 220,
+    "era": "era_classical",
+    "yields": {
+      "culture": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_district": "district_harbor"
+        }
+      }
+    ],
+    "placement": {
+      "nextToAny": [
+        {
+          "terrain": "coast"
+        }
+      ]
+    },
+    "model": "mausoleum",
+    "requiresTech": "tech_construction"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_terracotta_army",
+    "name": "Terracotta Army",
+    "description": "+2 great general points. Commanders gain XP 25% faster. Built on flat land.",
+    "icon": "TA",
+    "cost": 260,
+    "era": "era_classical",
+    "yields": {},
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_general",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "commander_bonus",
+        "params": {
+          "xpPercent": 25
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["flat"]
+    },
+    "model": "terracotta",
+    "requiresTech": "tech_construction"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_parthenon",
+    "name": "Parthenon",
+    "description": "+3 culture and +1 tourism here. +1 great writer and +1 great artist point. Built on hills. Holds a great work of art and one of writing.",
+    "icon": "Pa",
+    "cost": 240,
+    "era": "era_classical",
+    "yields": {
+      "culture": 3,
+      "tourism": 1
+    },
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_writer",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_artist",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["hills"]
+    },
+    "model": "parthenon",
+    "requiresCivic": "civic_drama_and_poetry",
+    "slots": {
+      "art": 1,
+      "writing": 1
+    }
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_statue_of_zeus",
+    "name": "Statue of Zeus",
+    "description": "+2 faith and +1 gold here. Anti-cavalry units +5 strength against cavalry, and +25% production toward them.",
+    "icon": "SZ",
+    "cost": 220,
+    "era": "era_classical",
+    "yields": {
+      "faith": 2,
+      "gold": 1
+    },
+    "effects": [
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": 5,
+          "unitClass": "class_anti_cavalry",
+          "vs": {
+            "classes": ["class_light_cavalry", "class_heavy_cavalry"]
+          }
+        },
+        "target": {
+          "scope": "units"
+        }
+      },
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 25,
+          "toward": {
+            "unitClass": "class_anti_cavalry"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "model": "zeus",
+    "requiresCivic": "civic_military_training"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_hagia_sophia",
+    "name": "Hagia Sophia",
+    "description": "+4 faith and +1 tourism here. +50% great prophet points. +1 faith in every settlement with a Shrine.",
+    "icon": "HS",
+    "cost": 330,
+    "era": "era_medieval",
+    "yields": {
+      "faith": 4,
+      "tourism": 1
+    },
+    "effects": [
+      {
+        "effect": "great_person_points_percent",
+        "params": {
+          "class": "gp_prophet",
+          "percent": 50
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_shrine"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["flat"]
+    },
+    "model": "domed_church",
+    "requiresCivic": "civic_divine_right"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_angkor_wat",
+    "name": "Angkor Wat",
+    "description": "+2 faith here. Settlements with a Holy Site +2 food.",
+    "icon": "AW",
+    "cost": 330,
+    "era": "era_medieval",
+    "yields": {
+      "faith": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_district": "district_holy_site"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["flat"]
+    },
+    "model": "angkor",
+    "requiresCivic": "civic_civil_service"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_chichen_itza",
+    "name": "Chichen Itza",
+    "description": "+2 culture here. Rainforest you own gives +1 culture and +1 production. Built next to rainforest.",
+    "icon": "CI",
+    "cost": 330,
+    "era": "era_medieval",
+    "yields": {
+      "culture": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_feature": "rainforest"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_feature": "rainforest"
+        }
+      }
+    ],
+    "placement": {
+      "nextToAny": [
+        {
+          "feature": "rainforest"
+        }
+      ]
+    },
+    "model": "step_pyramid",
+    "requiresTech": "tech_military_tactics"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_machu_picchu",
+    "name": "Machu Picchu",
+    "description": "+4 gold here. Commercial Hubs +1 gold and Industrial Zones +1 production for each neighboring mountain. Built next to a mountain.",
+    "icon": "MP",
+    "cost": 340,
+    "era": "era_medieval",
+    "yields": {
+      "gold": 4
+    },
+    "effects": [
+      {
+        "effect": "extra_adjacency",
+        "params": {
+          "district": "district_commercial_hub",
+          "adjacency": {
+            "yield": "gold",
+            "amount": 1,
+            "per": {
+              "elevation": "mountain"
+            },
+            "label": "Mountains (Machu Picchu)"
+          }
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "extra_adjacency",
+        "params": {
+          "district": "district_industrial_zone",
+          "adjacency": {
+            "yield": "production",
+            "amount": 1,
+            "per": {
+              "elevation": "mountain"
+            },
+            "label": "Mountains (Machu Picchu)"
+          }
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["hills"],
+      "nextToAny": [
+        {
+          "elevation": "mountain"
+        }
+      ]
+    },
+    "model": "terraces",
+    "requiresTech": "tech_engineering"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_notre_dame",
+    "name": "Notre-Dame",
+    "description": "+3 faith, +2 culture and +1 tourism here. +1 happiness in every settlement with a Temple. Holds 2 relics.",
+    "icon": "ND",
+    "cost": 360,
+    "era": "era_medieval",
+    "yields": {
+      "faith": 3,
+      "culture": 2,
+      "tourism": 1
+    },
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_temple"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["flat"]
+    },
+    "model": "gothic",
+    "requiresTech": "tech_apprenticeship",
+    "slots": {
+      "relic": 2
+    }
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_great_zimbabwe",
+    "name": "Great Zimbabwe",
+    "description": "+4 gold here. +1 trade route. Trade routes give +2 gold to the settlement they start from.",
+    "icon": "GZ",
+    "cost": 330,
+    "era": "era_medieval",
+    "yields": {
+      "gold": 4
+    },
+    "effects": [
+      {
+        "effect": "extra_trade_route",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "trade_route_bonus",
+        "params": {
+          "origin": {
+            "gold": 2
+          }
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "model": "stone_walls",
+    "requiresCivic": "civic_guilds"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_djenne",
+    "name": "Great Mosque of Djenné",
+    "description": "+2 faith and +2 science here. Settlements with a Holy Site +1 science. Built next to a river.",
+    "icon": "GD",
+    "cost": 340,
+    "era": "era_medieval",
+    "yields": {
+      "faith": 2,
+      "science": 2
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_district": "district_holy_site"
+        }
+      }
+    ],
+    "placement": {
+      "nextToAny": [
+        {
+          "river": true
+        }
+      ]
+    },
+    "model": "mud_mosque",
+    "requiresTech": "tech_education"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_alhambra",
+    "name": "Alhambra",
+    "description": "+2 culture and +1 happiness here. +1 military policy slot. Built on hills.",
+    "icon": "Al",
+    "cost": 360,
+    "era": "era_medieval",
+    "yields": {
+      "culture": 2,
+      "happiness": 1
+    },
+    "effects": [
+      {
+        "effect": "extra_policy_slot",
+        "params": {
+          "slot": "military"
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["hills"]
+    },
+    "model": "alhambra",
+    "requiresTech": "tech_military_tactics"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_kilwa_kisiwani",
+    "name": "Kilwa Kisiwani",
+    "description": "+3 gold here. International trade routes +2 gold. Built on the coast.",
+    "icon": "KK",
+    "cost": 320,
+    "era": "era_medieval",
+    "yields": {
+      "gold": 3
+    },
+    "effects": [
+      {
+        "effect": "trade_route_bonus",
+        "params": {
+          "international": true,
+          "origin": {
+            "gold": 2
+          }
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "placement": {
+      "nextToAny": [
+        {
+          "terrain": "coast"
+        }
+      ]
+    },
+    "model": "mosque_domes",
+    "requiresCivic": "civic_feudalism"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_forbidden_city",
+    "name": "Forbidden City",
+    "description": "+3 culture here. +1 wildcard policy slot. Built on flat land.",
+    "icon": "FC",
+    "cost": 480,
+    "era": "era_renaissance",
+    "yields": {
+      "culture": 3
+    },
+    "effects": [
+      {
+        "effect": "extra_policy_slot",
+        "params": {
+          "slot": "wildcard"
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["flat"]
+    },
+    "model": "palace",
+    "requiresCivic": "civic_diplomatic_service"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_venetian_arsenal",
+    "name": "Venetian Arsenal",
+    "description": "+3 production here. +50% production toward naval units. +2 great admiral points. Built on the coast.",
+    "icon": "VA",
+    "cost": 480,
+    "era": "era_renaissance",
+    "yields": {
+      "production": 3
+    },
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "unitClass": ["class_naval_melee", "class_naval_ranged"]
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_admiral",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "placement": {
+      "nextToAny": [
+        {
+          "terrain": "coast"
+        }
+      ]
+    },
+    "model": "shipyard",
+    "requiresTech": "tech_cartography"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_himeji_castle",
+    "name": "Himeji Castle",
+    "description": "+2 culture and +1 tourism here. Units +4 strength when defending. Built on hills.",
+    "icon": "Hi",
+    "cost": 480,
+    "era": "era_renaissance",
+    "yields": {
+      "culture": 2,
+      "tourism": 1
+    },
+    "effects": [
+      {
+        "effect": "modify_strength",
+        "params": {
+          "amount": 4,
+          "when": "defend"
+        },
+        "target": {
+          "scope": "units"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["hills"]
+    },
+    "model": "castle",
+    "requiresTech": "tech_gunpowder"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_porcelain_tower",
+    "name": "Porcelain Tower",
+    "description": "+3 science and +1 tourism here. +25% great scientist points. +1 science in every settlement with a University.",
+    "icon": "PT",
+    "cost": 470,
+    "era": "era_renaissance",
+    "yields": {
+      "science": 3,
+      "tourism": 1
+    },
+    "effects": [
+      {
+        "effect": "great_person_points_percent",
+        "params": {
+          "class": "gp_scientist",
+          "percent": 25
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_university"
+        }
+      }
+    ],
+    "model": "pagoda",
+    "requiresTech": "tech_printing"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_potala_palace",
+    "name": "Potala Palace",
+    "description": "+4 faith and +2 culture here. +1 diplomatic policy slot. Built on hills next to a mountain.",
+    "icon": "PP",
+    "cost": 480,
+    "era": "era_renaissance",
+    "yields": {
+      "faith": 4,
+      "culture": 2
+    },
+    "effects": [
+      {
+        "effect": "extra_policy_slot",
+        "params": {
+          "slot": "diplomatic"
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["hills"],
+      "nextToAny": [
+        {
+          "elevation": "mountain"
+        }
+      ]
+    },
+    "model": "potala",
+    "requiresCivic": "civic_reformed_church"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_jantar_mantar",
+    "name": "Jantar Mantar",
+    "description": "+4 science here. +1 science in every settlement with a Campus. Built on flat land.",
+    "icon": "JM",
+    "cost": 450,
+    "era": "era_renaissance",
+    "yields": {
+      "science": 4
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_district": "district_campus"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["flat"]
+    },
+    "model": "observatory",
+    "requiresTech": "tech_astronomy"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_hermitage",
+    "name": "Hermitage",
+    "description": "+3 culture and +2 tourism here. +2 great artist points. Holds 4 great works of art.",
+    "icon": "He",
+    "cost": 720,
+    "era": "era_industrial",
+    "yields": {
+      "culture": 3,
+      "tourism": 2
+    },
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_artist",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["flat"]
+    },
+    "model": "baroque",
+    "requiresCivic": "civic_natural_history",
+    "slots": {
+      "art": 4
+    }
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_ruhr_valley",
+    "name": "Ruhr Valley",
+    "description": "+5 production here. +10% production in every settlement with an Industrial Zone. Built on a river.",
+    "icon": "RV",
+    "cost": 740,
+    "era": "era_industrial",
+    "yields": {
+      "production": 5
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_district": "district_industrial_zone"
+        }
+      }
+    ],
+    "placement": {
+      "self": {
+        "river": true
+      }
+    },
+    "model": "factory",
+    "requiresTech": "tech_industrialization"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_oxford_university",
+    "name": "Oxford University",
+    "description": "+4 science here. +2 great scientist points. +1 science in every settlement with a University. Holds 2 great works of writing.",
+    "icon": "OU",
+    "cost": 700,
+    "era": "era_industrial",
+    "yields": {
+      "science": 4
+    },
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_scientist",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_university"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["flat"]
+    },
+    "model": "college",
+    "requiresTech": "tech_scientific_theory",
+    "slots": {
+      "writing": 2
+    }
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_cristo_redentor",
+    "name": "Cristo Redentor",
+    "description": "+4 faith and +3 tourism here. +1 tourism in every settlement with a Holy Site. Built on hills.",
+    "icon": "CR",
+    "cost": 900,
+    "era": "era_modern",
+    "yields": {
+      "faith": 4,
+      "tourism": 3
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "tourism",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_district": "district_holy_site"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["hills"]
+    },
+    "model": "redeemer",
+    "requiresCivic": "civic_mass_media"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_maracana",
+    "name": "Estádio do Maracanã",
+    "description": "+4 culture and +4 tourism here. +2 happiness in every settlement. Built on flat land.",
+    "icon": "EM",
+    "cost": 950,
+    "era": "era_modern",
+    "yields": {
+      "culture": 4,
+      "tourism": 4
+    },
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "placement": {
+      "elevations": ["flat"]
+    },
+    "model": "stadium",
+    "requiresCivic": "civic_urbanization"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_hoover_dam",
+    "name": "Hoover Dam",
+    "description": "+4 production here. +3 production in every settlement on a river. Built on a river.",
+    "icon": "HD",
+    "cost": 950,
+    "era": "era_modern",
+    "yields": {
+      "production": 4
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 3
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_on_river": true
+        }
+      }
+    ],
+    "placement": {
+      "self": {
+        "river": true
+      }
+    },
+    "model": "dam",
+    "requiresTech": "tech_electricity"
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_sydney_opera_house",
+    "name": "Sydney Opera House",
+    "description": "+6 culture and +4 tourism here. +2 great musician points. Built on the coast. Holds 3 great works of music.",
+    "icon": "SO",
+    "cost": 1150,
+    "era": "era_atomic",
+    "yields": {
+      "culture": 6,
+      "tourism": 4
+    },
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_musician",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "placement": {
+      "nextToAny": [
+        {
+          "terrain": "coast"
+        }
+      ]
+    },
+    "model": "shells",
+    "requiresCivic": "civic_consumerism",
+    "slots": {
+      "music": 3
+    }
+  },
+  {
+    "type": "wonder",
+    "id": "wonder_cn_tower",
+    "name": "CN Tower",
+    "description": "+4 influence and +3 tourism here. +1 tourism and +1 happiness in every settlement.",
+    "icon": "CN",
+    "cost": 1400,
+    "era": "era_information",
+    "yields": {
+      "influence": 4,
+      "tourism": 3
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "tourism",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "model": "spire",
+    "requiresTech": "tech_telecommunications"
   }
 ]
