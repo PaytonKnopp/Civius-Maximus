@@ -1086,5 +1086,268 @@
     "district": "district_holy_site",
     "requiresBuilding": "building_temple",
     "worship": true
+  },
+  {
+    "type": "building",
+    "id": "building_stave_church",
+    "name": "Stave Church",
+    "description": "A wooden church: +3 faith, +1 happiness, and woods worked here +1 production.",
+    "icon": "St",
+    "cost": 120,
+    "maintenance": 1,
+    "yields": {
+      "faith": 3
+    },
+    "happiness": 1,
+    "district": "district_holy_site",
+    "requiresBuilding": "building_shrine",
+    "requiresCivic": "civic_theology",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_prophet",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "civ": "civ_norse",
+    "localEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles"
+        },
+        "condition": {
+          "tile_feature": "woods"
+        }
+      }
+    ],
+    "replaces": "building_temple"
+  },
+  {
+    "type": "building",
+    "id": "building_ikanda",
+    "name": "Ikanda",
+    "description": "A military kraal: +2 production; melee units trained here start with Vanguard, anti-cavalry with Spearhead.",
+    "icon": "Ik",
+    "cost": 90,
+    "maintenance": 1,
+    "yields": {
+      "production": 2
+    },
+    "district": "district_encampment",
+    "requiresTech": "tech_bronze_working",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_general",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "civ": "civ_zulu",
+    "localEffects": [
+      {
+        "effect": "grant_promotion",
+        "params": {
+          "promotion": "promo_vanguard",
+          "unitClass": "class_melee"
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "grant_promotion",
+        "params": {
+          "promotion": "promo_spearhead",
+          "unitClass": "class_anti_cavalry"
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "replaces": "building_barracks"
+  },
+  {
+    "type": "building",
+    "id": "building_tlachtli",
+    "name": "Tlachtli",
+    "description": "A ball court: +2 happiness, +2 faith and +1 culture.",
+    "icon": "Tl",
+    "cost": 150,
+    "maintenance": 1,
+    "happiness": 2,
+    "yields": {
+      "culture": 1,
+      "faith": 2
+    },
+    "district": "district_entertainment",
+    "requiresCivic": "civic_games_and_recreation",
+    "civ": "civ_aztec",
+    "replaces": "building_arena"
+  },
+  {
+    "type": "building",
+    "id": "building_cothon",
+    "name": "Cothon",
+    "description": "A round military harbor: +1 food, +2 gold, and +50% production toward naval units here.",
+    "icon": "Co",
+    "cost": 110,
+    "maintenance": 1,
+    "yields": {
+      "food": 1,
+      "gold": 2
+    },
+    "requiresTech": "tech_celestial_navigation",
+    "district": "district_harbor",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_admiral",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "civ": "civ_carthage",
+    "localEffects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "unitClass": ["class_naval_melee", "class_naval_ranged"]
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "replaces": "building_lighthouse"
+  },
+  {
+    "type": "building",
+    "id": "building_madrasa",
+    "name": "Madrasa",
+    "description": "A college of law and learning: +4 science and +2 faith.",
+    "icon": "Md",
+    "cost": 220,
+    "maintenance": 2,
+    "yields": {
+      "science": 4,
+      "faith": 2
+    },
+    "requiresBuilding": "building_library",
+    "requiresTech": "tech_education",
+    "cityOnly": true,
+    "district": "district_campus",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_scientist",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "civ": "civ_ayyubid",
+    "replaces": "building_university"
+  },
+  {
+    "type": "building",
+    "id": "building_lavra",
+    "name": "Lavra",
+    "description": "A great monastery: +3 faith and +1 culture, and +1 more great prophet point.",
+    "icon": "Lv",
+    "cost": 55,
+    "maintenance": 1,
+    "yields": {
+      "faith": 3,
+      "culture": 1
+    },
+    "requiresTech": "tech_astrology",
+    "district": "district_holy_site",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_prophet",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "civ": "civ_russia",
+    "replaces": "building_shrine"
+  },
+  {
+    "type": "building",
+    "id": "building_grand_bazaar",
+    "name": "Grand Bazaar",
+    "description": "A covered market: +7 gold and +1 happiness.",
+    "icon": "GB",
+    "cost": 290,
+    "maintenance": 2,
+    "yields": {
+      "gold": 7
+    },
+    "requiresBuilding": "building_marketplace",
+    "district": "district_commercial_hub",
+    "requiresTech": "tech_banking",
+    "happiness": 1,
+    "civ": "civ_ottoman",
+    "replaces": "building_bank"
+  },
+  {
+    "type": "building",
+    "id": "building_nemeton",
+    "name": "Nemeton",
+    "description": "A sacred grove: +3 faith and +1 culture.",
+    "icon": "Ne",
+    "cost": 55,
+    "maintenance": 1,
+    "yields": {
+      "faith": 3,
+      "culture": 1
+    },
+    "requiresTech": "tech_astrology",
+    "district": "district_holy_site",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_prophet",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "civ": "civ_celts",
+    "replaces": "building_shrine"
   }
 ]

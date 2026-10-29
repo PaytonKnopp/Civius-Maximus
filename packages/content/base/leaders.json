@@ -897,5 +897,889 @@
       "defeat": "Fifty years under heaven pass like a dream. So be it."
     },
     "intro": "Oda Nobunaga, the warlord who set out to unify a land at war with itself. Your samurai are disciplined and your guns are many. Bring all of Japan under one rule."
+  },
+  {
+    "type": "leader",
+    "id": "leader_harald",
+    "name": "Harald Hardrada",
+    "title": "King of Norway",
+    "ability": {
+      "name": "The Hard Ruler",
+      "description": "Naval melee units +5 strength. Every pillage or plunder also gives 15 culture and 15 faith.",
+      "effects": [
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 5,
+            "unitClass": "class_naval_melee"
+          },
+          "target": {
+            "scope": "units"
+          }
+        },
+        {
+          "effect": "pillage_bonus",
+          "params": {
+            "yields": {
+              "culture": 15,
+              "faith": 15
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Saga of the Sea",
+      "description": "Respects a strong fleet. Scorns the weak at sea.",
+      "rules": [
+        {
+          "metric": "units",
+          "domain": "sea",
+          "when": "more",
+          "amount": 4,
+          "label": "Respects your fleet"
+        },
+        {
+          "metric": "units",
+          "domain": "sea",
+          "when": "less",
+          "amount": -2,
+          "label": "Your fleet is a joke to him"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 7,
+      "expansion": 6,
+      "science": 4,
+      "culture": 4,
+      "wonders": 3,
+      "faith": 5,
+      "gold": 5,
+      "naval": 9,
+      "diplomacy": 3,
+      "districts": 5
+    },
+    "portrait": {
+      "skin": "#e8c4a8",
+      "hair": "#c8a060",
+      "eyes": "#4a6a8a",
+      "face": "square",
+      "hairStyle": "long",
+      "beard": "full",
+      "headwear": "helmet",
+      "outfit": "furs",
+      "outfitColor": "#4a5a6a",
+      "trim": "#b0b0b0",
+      "accessory": "none",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "I have sailed from Miklagard to the edge of the world. Your shores are only the next.",
+      "war": "The longships are already on the water. Ready your walls.",
+      "peace": "Even the hardest ruler knows when the plunder is not worth the oars.",
+      "defeat": "A good saga ends in a good death. Sing mine well."
+    },
+    "intro": "Harald Sigurdsson, called Hardrada: exile, mercenary captain of the Varangian Guard, and king of Norway. Your ships go where others fear the swell, and every coast is a door. Take the sea, and the land will follow.",
+    "civ": "civ_norse"
+  },
+  {
+    "type": "leader",
+    "id": "leader_shaka",
+    "name": "Shaka",
+    "title": "King of the Zulu",
+    "ability": {
+      "name": "Horns of the Buffalo",
+      "description": "Commanders give +3 strength to units in their radius and gain XP 50% faster. Melee and anti-cavalry units +3 strength when attacking.",
+      "effects": [
+        {
+          "effect": "commander_bonus",
+          "params": {
+            "strength": 3,
+            "xpPercent": 50
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 3,
+            "when": "attack",
+            "unitClass": ["class_melee", "class_anti_cavalry"]
+          },
+          "target": {
+            "scope": "units"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Iron Discipline",
+      "description": "Respects strong armies. Despises the weak.",
+      "rules": [
+        {
+          "metric": "army",
+          "when": "more",
+          "amount": 3,
+          "label": "Respects your army"
+        },
+        {
+          "metric": "army",
+          "when": "less",
+          "amount": -4,
+          "label": "Despises your weakness"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 9,
+      "expansion": 6,
+      "science": 3,
+      "culture": 3,
+      "wonders": 2,
+      "faith": 3,
+      "gold": 4,
+      "naval": 2,
+      "diplomacy": 3,
+      "districts": 4
+    },
+    "portrait": {
+      "skin": "#5a3a28",
+      "hair": "#1a1410",
+      "eyes": "#2a1a10",
+      "face": "oval",
+      "hairStyle": "short",
+      "beard": "none",
+      "headwear": "none",
+      "outfit": "wrap",
+      "outfitColor": "#c8a070",
+      "trim": "#e8e0d0",
+      "accessory": "beads",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "You stand before the king of the Zulu. Stand straight, then.",
+      "war": "The horns close around you. There is no way out but through my warriors.",
+      "peace": "Peace, for now. My regiments will drill while we talk.",
+      "defeat": "Even the buffalo falls at last. But not before it tramples many."
+    },
+    "intro": "Shaka kaSenzangakhona, king of the Zulu: a soldier who remade an army and an army that remade a nation. Drill your regiments, close the horns around your enemies, and let no one forget your name.",
+    "civ": "civ_zulu"
+  },
+  {
+    "type": "leader",
+    "id": "leader_montezuma",
+    "name": "Montezuma",
+    "title": "Huey Tlatoani of the Mexica",
+    "ability": {
+      "name": "Flower Wars",
+      "description": "Your soldiers have a 25% chance to capture the melee, anti-cavalry and ranged units they defeat. Capturing a settlement heals every unit you have.",
+      "effects": [
+        {
+          "effect": "capture_on_kill",
+          "params": {
+            "unitClass": ["class_melee", "class_anti_cavalry", "class_ranged"],
+            "percent": 25
+          },
+          "target": {
+            "scope": "units"
+          }
+        },
+        {
+          "effect": "on_capture",
+          "params": {
+            "healUnits": true
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Tribute of Jade",
+      "description": "Covets the wonders of others. Respects warriors.",
+      "rules": [
+        {
+          "metric": "wonders",
+          "when": "more",
+          "amount": -3,
+          "label": "Covets your wonders"
+        },
+        {
+          "metric": "army",
+          "when": "more",
+          "amount": 2,
+          "label": "Respects your warriors"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 8,
+      "expansion": 7,
+      "science": 4,
+      "culture": 5,
+      "wonders": 6,
+      "faith": 6,
+      "gold": 4,
+      "naval": 2,
+      "diplomacy": 3,
+      "districts": 5
+    },
+    "portrait": {
+      "skin": "#b07a50",
+      "hair": "#1a1410",
+      "eyes": "#2a1a10",
+      "face": "square",
+      "hairStyle": "bob",
+      "beard": "none",
+      "headwear": "feathers",
+      "outfit": "tunic",
+      "outfitColor": "#1f7a6b",
+      "trim": "#d4a94e",
+      "accessory": "necklace",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "The Fifth Sun shines on Tenochtitlan. You may approach the speaker.",
+      "war": "The flowers of war are blooming. You will make a fine offering.",
+      "peace": "The gods are fed for now. We may trade.",
+      "defeat": "The sun sets on the Mexica. It will rise again."
+    },
+    "intro": "Moctezuma Ilhuicamina, Huey Tlatoani of the Mexica: the speaker who built an empire of tribute on a lake. Your warriors take captives, not lives, and your city floats on gardens. Feed the sun, and the world will pay you tribute.",
+    "civ": "civ_aztec"
+  },
+  {
+    "type": "leader",
+    "id": "leader_hannibal",
+    "name": "Hannibal Barca",
+    "title": "General of Carthage",
+    "ability": {
+      "name": "Over the Mountains",
+      "description": "Units +5 strength fighting on hills. Cavalry +3 strength.",
+      "effects": [
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 5,
+            "on": {
+              "elevations": ["hills"]
+            }
+          },
+          "target": {
+            "scope": "units"
+          }
+        },
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 3,
+            "unitClass": ["class_light_cavalry", "class_heavy_cavalry"]
+          },
+          "target": {
+            "scope": "units"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Barcid Oath",
+      "description": "Hates those who break the peace without warning. Respects a worthy foe.",
+      "rules": [
+        {
+          "metric": "surpriseWars",
+          "when": "any",
+          "amount": -3,
+          "label": "Fights without honor"
+        },
+        {
+          "metric": "army",
+          "when": "more",
+          "amount": 2,
+          "label": "A worthy foe"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 7,
+      "expansion": 5,
+      "science": 4,
+      "culture": 4,
+      "wonders": 3,
+      "faith": 3,
+      "gold": 8,
+      "naval": 7,
+      "diplomacy": 5,
+      "districts": 5
+    },
+    "portrait": {
+      "skin": "#b0805a",
+      "hair": "#2a1a10",
+      "eyes": "#3a2618",
+      "face": "long",
+      "hairStyle": "curly",
+      "beard": "short",
+      "headwear": "helmet",
+      "outfit": "armor",
+      "outfitColor": "#5a2a7a",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "I have crossed rivers, sea and mountains to stand where no one thought I could. Speak.",
+      "war": "I swore an oath as a boy. You have just become part of it.",
+      "peace": "A truce. Carthage trades with everyone who keeps their word.",
+      "defeat": "I never lost my nerve. Only my allies."
+    },
+    "intro": "Hannibal Barca, general of Carthage: the man who brought elephants over the Alps. Your merchants sail every sea and your armies go where maps say they cannot. Make the mountains your road.",
+    "civ": "civ_carthage"
+  },
+  {
+    "type": "leader",
+    "id": "leader_saladin",
+    "name": "Saladin",
+    "title": "Sultan of Egypt and Syria",
+    "ability": {
+      "name": "Chivalry of the Sultan",
+      "description": "Cavalry +4 strength when defending. Every city +2 faith.",
+      "effects": [
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 4,
+            "when": "defend",
+            "unitClass": ["class_light_cavalry", "class_heavy_cavalry"]
+          },
+          "target": {
+            "scope": "units"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "faith",
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_kind": "city"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Defender of the Faithful",
+      "description": "Honors those who keep the peace. Detests those who break it without cause.",
+      "rules": [
+        {
+          "metric": "surpriseWars",
+          "when": "any",
+          "amount": -4,
+          "label": "Breaks the peace without cause"
+        },
+        {
+          "metric": "atPeace",
+          "when": "any",
+          "amount": 3,
+          "label": "Keeps the peace"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 5,
+      "expansion": 5,
+      "science": 7,
+      "culture": 5,
+      "wonders": 4,
+      "faith": 9,
+      "gold": 5,
+      "naval": 3,
+      "diplomacy": 7,
+      "districts": 6
+    },
+    "portrait": {
+      "skin": "#b08a62",
+      "hair": "#1a1410",
+      "eyes": "#2a1a10",
+      "face": "long",
+      "hairStyle": "short",
+      "beard": "full",
+      "headwear": "turban",
+      "outfit": "robe",
+      "outfitColor": "#2a5a3a",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "neutral"
+    },
+    "quotes": {
+      "greeting": "Peace be upon you. My tent is open to honest guests.",
+      "war": "I take no joy in this. But I have never lost a war I was given no choice in.",
+      "peace": "Mercy is the better part of strength. Let us end this.",
+      "defeat": "I leave nothing behind but my name. Let it be a good one."
+    },
+    "intro": "Salah ad-Din Yusuf ibn Ayyub, sultan of Egypt and Syria: a ruler famous even among his enemies for his justice. Your scholars teach in the shadow of your mosques, and your horsemen hold the line. Rule with mercy, and fight with honor.",
+    "civ": "civ_ayyubid"
+  },
+  {
+    "type": "leader",
+    "id": "leader_catherine",
+    "name": "Catherine the Great",
+    "title": "Empress of All the Russias",
+    "ability": {
+      "name": "Patron of the Hermitage",
+      "description": "+50% great writer, artist and musician points. +1 wildcard policy slot.",
+      "effects": [
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_writer",
+            "percent": 50
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_artist",
+            "percent": 50
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_musician",
+            "percent": 50
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "extra_policy_slot",
+          "params": {
+            "slot": "wildcard"
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Enlightened Empress",
+      "description": "Admires civs with great wonders. Thinks those with none uncultured.",
+      "rules": [
+        {
+          "metric": "wonders",
+          "when": "more",
+          "amount": 3,
+          "label": "Admires your wonders"
+        },
+        {
+          "metric": "wonders",
+          "when": "none",
+          "amount": -2,
+          "label": "Thinks you uncultured"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 5,
+      "expansion": 8,
+      "science": 6,
+      "culture": 8,
+      "wonders": 7,
+      "faith": 4,
+      "gold": 5,
+      "naval": 4,
+      "diplomacy": 6,
+      "districts": 5
+    },
+    "portrait": {
+      "skin": "#f0d0b8",
+      "hair": "#a89a8a",
+      "eyes": "#4a5a7a",
+      "face": "round",
+      "hairStyle": "updo",
+      "beard": "none",
+      "headwear": "crown",
+      "outfit": "gown",
+      "outfitColor": "#c8c8e8",
+      "trim": "#d4a94e",
+      "accessory": "pearls",
+      "expression": "smile"
+    },
+    "quotes": {
+      "greeting": "Welcome to the Russian court. Do sit; we have much to discuss, and all of it in French.",
+      "war": "I would rather have written you a letter. You have left me only the army.",
+      "peace": "Splendid. An empress collects friends as she collects paintings.",
+      "defeat": "History will be kinder to me than you have been."
+    },
+    "intro": "Catherine II, called the Great: empress of a frontier that never seems to end. You fill your palaces with art and your borders with new land. Be enlightened, be ambitious, and let the world come to admire Russia.",
+    "civ": "civ_russia"
+  },
+  {
+    "type": "leader",
+    "id": "leader_ashoka",
+    "name": "Ashoka",
+    "title": "Emperor of the Maurya",
+    "ability": {
+      "name": "Edicts of the Law",
+      "description": "While celebrating, settlements +3 faith and +2 culture.",
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "faith",
+            "amount": 3
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "celebrating": true
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "culture",
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "celebrating": true
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Wheel of the Law",
+      "description": "Loves those who keep the peace. Hates warmongers.",
+      "rules": [
+        {
+          "metric": "atPeace",
+          "when": "any",
+          "amount": 4,
+          "label": "Walks the path of peace"
+        },
+        {
+          "metric": "surpriseWars",
+          "when": "any",
+          "amount": -5,
+          "label": "A warmonger"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 3,
+      "expansion": 6,
+      "science": 5,
+      "culture": 7,
+      "wonders": 6,
+      "faith": 9,
+      "gold": 5,
+      "naval": 3,
+      "diplomacy": 8,
+      "districts": 6
+    },
+    "portrait": {
+      "skin": "#8a5a3a",
+      "hair": "#1a1410",
+      "eyes": "#2a1a10",
+      "face": "oval",
+      "hairStyle": "tied",
+      "beard": "mustache",
+      "headwear": "crown",
+      "outfit": "wrap",
+      "outfitColor": "#e88a2b",
+      "trim": "#d4a94e",
+      "accessory": "necklace",
+      "expression": "neutral"
+    },
+    "quotes": {
+      "greeting": "All people are my children. You are welcome here, child.",
+      "war": "I have seen what war does at Kalinga. You leave me no other road, and I grieve it.",
+      "peace": "Good. The law of righteousness is the only true conquest.",
+      "defeat": "I conquered once and repented. Perhaps you will too."
+    },
+    "intro": "Ashoka Maurya, emperor of almost all of India: the conqueror who turned his back on conquest. Your edicts are carved in stone across the land, and your people celebrate in peace. Rule by the law, and the world will follow it.",
+    "civ": "civ_maurya"
+  },
+  {
+    "type": "leader",
+    "id": "leader_suleiman",
+    "name": "Suleiman the Magnificent",
+    "title": "Sultan of the Ottomans",
+    "ability": {
+      "name": "The Lawgiver",
+      "description": "+1 happiness and +2 loyalty in every settlement.",
+      "effects": [
+        {
+          "effect": "modify_happiness",
+          "params": {
+            "amount": 1
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        },
+        {
+          "effect": "modify_loyalty",
+          "params": {
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Magnificence",
+      "description": "Admires grand wonders. Dislikes those who start wars without warning.",
+      "rules": [
+        {
+          "metric": "wonders",
+          "when": "more",
+          "amount": 2,
+          "label": "Admires your wonders"
+        },
+        {
+          "metric": "surpriseWars",
+          "when": "any",
+          "amount": -3,
+          "label": "Starts wars without warning"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 7,
+      "expansion": 6,
+      "science": 5,
+      "culture": 6,
+      "wonders": 7,
+      "faith": 6,
+      "gold": 6,
+      "naval": 5,
+      "diplomacy": 5,
+      "districts": 6
+    },
+    "portrait": {
+      "skin": "#d8b090",
+      "hair": "#2a1a10",
+      "eyes": "#3a2618",
+      "face": "long",
+      "hairStyle": "short",
+      "beard": "full",
+      "headwear": "turban",
+      "outfit": "kaftan",
+      "outfitColor": "#8a1520",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "neutral"
+    },
+    "quotes": {
+      "greeting": "You have come to the Sublime Porte. Few arrive with nothing to ask.",
+      "war": "The bombards have not been cast for ornament.",
+      "peace": "Let it be written down and sealed. The law binds us both.",
+      "defeat": "Even the magnificent are only men."
+    },
+    "intro": "Suleiman I, the Magnificent to his rivals and the Lawgiver to his people: sultan of an empire on three continents. Your guns break any wall and your law holds every city you take. Be just, be magnificent, and be feared.",
+    "civ": "civ_ottoman"
+  },
+  {
+    "type": "leader",
+    "id": "leader_pachacuti",
+    "name": "Pachacuti",
+    "title": "Sapa Inca",
+    "ability": {
+      "name": "Earth-Shaker",
+      "description": "Campuses +1 science for each neighboring mountain. Settlements grow 10% faster.",
+      "effects": [
+        {
+          "effect": "extra_adjacency",
+          "params": {
+            "district": "district_campus",
+            "adjacency": {
+              "yield": "science",
+              "amount": 1,
+              "per": {
+                "elevation": "mountain"
+              },
+              "label": "Mountains (Earth-Shaker)"
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "modify_growth",
+          "params": {
+            "percent": 10
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Children of the Sun",
+      "description": "Likes peaceful neighbors. Wary of big armies.",
+      "rules": [
+        {
+          "metric": "atPeace",
+          "when": "any",
+          "amount": 2,
+          "label": "A peaceful neighbor"
+        },
+        {
+          "metric": "army",
+          "when": "more",
+          "amount": -3,
+          "label": "Your army is too close for comfort"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 5,
+      "expansion": 7,
+      "science": 6,
+      "culture": 5,
+      "wonders": 6,
+      "faith": 6,
+      "gold": 4,
+      "naval": 2,
+      "diplomacy": 5,
+      "districts": 7
+    },
+    "portrait": {
+      "skin": "#a8784e",
+      "hair": "#1a1410",
+      "eyes": "#2a1a10",
+      "face": "square",
+      "hairStyle": "short",
+      "beard": "none",
+      "headwear": "circlet",
+      "outfit": "tunic",
+      "outfitColor": "#c8a030",
+      "trim": "#7a2a1a",
+      "accessory": "earrings",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "From Qusqu the four quarters of the world are ruled. You stand in one of them.",
+      "war": "The mountains will not hide you, and my roads reach everywhere.",
+      "peace": "Good. There is enough work in the terraces for all of us.",
+      "defeat": "The world turns over. Pachacuti knows; it was my name."
+    },
+    "intro": "Pachacuti Inca Yupanqui, the Sapa Inca: the \"earth-shaker\" who turned a mountain kingdom into an empire of roads. Your terraces climb the hills and your runners cross the peaks. Shake the earth, and build on what falls.",
+    "civ": "civ_inca"
+  },
+  {
+    "type": "leader",
+    "id": "leader_boudica",
+    "name": "Boudica",
+    "title": "Queen of the Iceni",
+    "ability": {
+      "name": "Fury of the Iceni",
+      "description": "Units +4 strength fighting in woods or rainforest, and +3 strength attacking settlements.",
+      "effects": [
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 4,
+            "on": {
+              "features": ["woods", "rainforest"]
+            }
+          },
+          "target": {
+            "scope": "units"
+          }
+        },
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 3,
+            "when": "attack",
+            "vs": {
+              "settlement": true
+            }
+          },
+          "target": {
+            "scope": "units"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Never Conquered",
+      "description": "Distrusts big armies and conquerors.",
+      "rules": [
+        {
+          "metric": "army",
+          "when": "more",
+          "amount": -3,
+          "label": "Your legions loom over her"
+        },
+        {
+          "metric": "captures",
+          "when": "more",
+          "amount": -3,
+          "label": "A conqueror, like Rome"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 8,
+      "expansion": 5,
+      "science": 3,
+      "culture": 5,
+      "wonders": 3,
+      "faith": 7,
+      "gold": 4,
+      "naval": 3,
+      "diplomacy": 4,
+      "districts": 5
+    },
+    "portrait": {
+      "skin": "#f0d4bc",
+      "hair": "#b84a1a",
+      "eyes": "#4a6a4a",
+      "face": "heart",
+      "hairStyle": "long",
+      "beard": "none",
+      "headwear": "circlet",
+      "outfit": "tunic",
+      "outfitColor": "#2a5a2a",
+      "trim": "#c8a030",
+      "accessory": "necklace",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "I am Boudica of the Iceni. I bow to no one, and I do not expect you to bow to me.",
+      "war": "Every wrong is remembered in the woods. Today they are answered.",
+      "peace": "Peace, then, while you keep your word. The tribes will know if you do not.",
+      "defeat": "They took my land, but they never took me."
+    },
+    "intro": "Boudica, queen of the Iceni: the widow who led the tribes against an empire and burned its cities. Your warriors know every grove and your druids keep the old ways. Rally the tribes, and let no one rule you.",
+    "civ": "civ_celts"
   }
 ]

@@ -975,6 +975,7 @@ export const UnitDef = z.strictObject({
       'horseman',
       'knight',
       'chariot',
+      'elephant',
       'musket',
       'infantry',
       'artillery',

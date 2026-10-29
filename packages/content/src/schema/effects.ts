@@ -509,6 +509,13 @@ const PurchaseWithFaith = z.strictObject({
   condition: Condition.optional(),
 });
 
+/** Extra yields (whole points) each time the player's soldiers pillage or plunder a route. */
+const PillageBonus = z.strictObject({
+  effect: z.literal('pillage_bonus'),
+  params: z.strictObject({ yields: YieldMap }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
 export const Effect = z.discriminatedUnion('effect', [
   ModifyYield,
   YieldPerAdjacent,
@@ -546,6 +553,7 @@ export const Effect = z.discriminatedUnion('effect', [
   ModifyLoyaltyPressure,
   DiplomaticFavor,
   DiplomaticPoints,
+  PillageBonus,
 ]);
 export type Effect = z.infer<typeof Effect>;
 export const EFFECT_TYPES = Effect.options.map((o) => o.shape.effect.value);

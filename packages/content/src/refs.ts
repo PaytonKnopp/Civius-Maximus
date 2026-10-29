@@ -136,6 +136,9 @@ export function effectRefs(out: Refs, e: Effect, path: PathSegment[]) {
     case 'yield_per_follower':
       out.push({ path: [...at, 'yield'], kind: 'yield', id: e.params.yield });
       break;
+    case 'pillage_bonus':
+      yieldKeys(out, e.params.yields, [...at, 'yields']);
+      break;
     case 'free_building':
       ids(out, 'building', e.params.building, [...at, 'building']);
       break;

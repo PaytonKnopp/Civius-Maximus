@@ -213,4 +213,37 @@ describe('leader and civ abilities', () => {
     const rome = tileYields(ctx, owned('p1'), tile).total.food ?? 0;
     expect(egypt - rome).toBe(100);
   });
+
+  it('The Hard Ruler: pillaging also gives the Norse culture and faith', () => {
+    let s = as(testState(FIELD), 'p1', 'civ_norse', 'leader_harald');
+    s = settle(s, 'p2', at(s, 6, 2)).s;
+    s = structuredClone(
+      produce(s, (d) => {
+        d.map.tiles[at(s, 5, 2)]!.improvement = 'improvement_farm';
+        d.wars.push('p1|p2');
+      }),
+    );
+    const warrior = addUnit(s, 'p1', 'unit_warrior', at(s, 5, 2)).id;
+    const faith = s.players.p1!.faith;
+    const after = act(s, { type: 'pillage', player: 'p1', unit: warrior }).state;
+    expect(after.players.p1!.faith - faith).toBe(1500);
+  });
+
+  it('Roads of the Four Quarters: Inca hills +1 food, and terrace farms for the Inca only', () => {
+    const s = produce(testState(FIELD), (d) => {
+      d.map.tiles[at(d as GameState, 2, 2)]!.elevation = 'hills';
+    });
+    const tile = at(s, 2, 2);
+    const owned = (st: GameState, owner: string) =>
+      produce(st, (d) => {
+        d.map.tiles[tile]!.owner = owner;
+      });
+    const inca = as(s, 'p1', 'civ_inca', 'leader_pachacuti');
+    const food = (st: GameState) => tileYields(ctx, st, tile).total.food ?? 0;
+    expect(food(owned(inca, 'p1')) - food(owned(s, 'p1'))).toBe(100);
+    const terrace = (st: GameState) =>
+      improvementsFor(ctx, owned(st, 'p1'), tile, 'p1').includes('improvement_terrace_farm');
+    expect(terrace(inca)).toBe(true);
+    expect(terrace(s)).toBe(false);
+  });
 });
