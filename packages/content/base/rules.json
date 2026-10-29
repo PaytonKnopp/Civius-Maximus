@@ -379,5 +379,21 @@
     "tradeRoutePercent": 25,
     "religionPercent": 25,
     "friendsPercent": 25
+  },
+  "governors": {
+    "establishTurns": 5,
+    "titleCivics": [
+      "civic_code_of_laws",
+      "civic_political_philosophy",
+      "civic_recorded_history",
+      "civic_civil_service",
+      "civic_guilds",
+      "civic_diplomatic_service",
+      "civic_humanism",
+      "civic_nationalism",
+      "civic_enlightenment",
+      "civic_ideology",
+      "civic_urbanization"
+    ]
   }
 }

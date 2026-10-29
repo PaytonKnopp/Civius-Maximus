@@ -351,6 +351,36 @@ forces new crisis policies. Off by default, for groups that like chaos.
 - Governors are data: name, portrait, promotion tree. Your friends can be governors.
 - If the Loyalty module is on, governors also add loyalty to their city.
 
+### Built so far (V1 final, F9)
+
+- **Seven governors** (`governor` content), each with a base ability and four promotions. Two
+  promotions are open at once; each unlocks one more.
+  - Aurelia the Architect builds: production toward buildings, districts and wonders.
+  - Bram the Steward grows: growth, food and happiness.
+  - Celestine the Envoy speaks abroad: influence, culture and happiness.
+  - Daven the Warden defends: soldiers, walls and strength for every unit.
+  - Elowen the Scholar studies: science, culture and great scientist and writer points.
+  - Fenwick the Treasurer counts coin: gold, an extra trade route and cheaper buying.
+  - Ysolde the Abbess tends the faithful: faith, culture and great prophet points.
+- **Titles** come from 11 civics (`rules.governors.titleCivics`), from Code of Laws to
+  Urbanization. Each title appoints a governor or buys one promotion.
+- **Posting:**
+  - A governor is posted to one of your settlements and takes **5 turns** to settle in
+    (`rules.governors.establishTurns`). Moving them starts the count again.
+  - One governor per settlement; posting a second one there sends the first home.
+  - A settlement that's lost loses its governor.
+- **Effect scope:** a governor's settlement-scope effects apply only where they serve (the
+  `settlement_has_governor` condition). Player-scope effects, such as unit strength, great
+  person points and trade routes, apply empire-wide.
+- **On screen:** the Governors screen (key **O**, a title badge on its button) and a governor
+  line on the settlement panel.
+- **AI:** appoints while it has more settlements than governors, otherwise promotes. It favours
+  governors that suit its leader and posts them to its capital first, then its largest
+  settlements.
+- **Deviation from the outline above:** four promotions, not six. Seven governors with four each
+  is already 35 titles' worth of choices against 11 titles, so a deeper tree would mostly sit
+  unused. Loyalty from governors comes with F10.
+
 ---
 
 ## Tourism & great works (culture victory)

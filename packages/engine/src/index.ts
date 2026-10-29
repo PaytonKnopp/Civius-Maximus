@@ -280,3 +280,10 @@ export {
 export { spaceProblem, spaceProgress } from './science/space';
 
 export { ageSources, dedicationProblem, newAgeState, thresholds } from './eras/ages';
+export {
+  governorOf,
+  governorSources,
+  titlesAvailable,
+  titlesEarned,
+  titlesSpent,
+} from './governors/governors';

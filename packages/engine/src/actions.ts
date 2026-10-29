@@ -87,6 +87,20 @@ export const Action = z.discriminatedUnion('type', [
   }),
   /** Pay gold to turn a town into a city. */
   z.strictObject({ type: z.literal('upgrade_town'), player: PlayerRef, settlement: SettlementRef }),
+  /** Governors (docs/04-advanced-systems.md, "Governors"): spend a title on one, promote one, post one. */
+  z.strictObject({ type: z.literal('appoint_governor'), player: PlayerRef, governor: ContentRef }),
+  z.strictObject({
+    type: z.literal('promote_governor'),
+    player: PlayerRef,
+    governor: ContentRef,
+    promotion: ContentRef,
+  }),
+  z.strictObject({
+    type: z.literal('assign_governor'),
+    player: PlayerRef,
+    governor: ContentRef,
+    settlement: SettlementRef,
+  }),
   /** Pick the dedications for this era's age (docs/04-advanced-systems.md, "Eras and ages"). */
   z.strictObject({
     type: z.literal('choose_dedications'),

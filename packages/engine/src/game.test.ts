@@ -312,7 +312,7 @@ describe('replays', () => {
         readPackageDir(new URL('../test-fixtures/frozen-content', import.meta.url).pathname),
       ]).content!;
       expect(runReplay(played().replay, { content: frozen }).hash).toMatchInlineSnapshot(
-        `"424fc9417ddd74480731b34b45"`,
+        `"06cdb15347d77a248cc4e38943"`,
       );
     },
   );

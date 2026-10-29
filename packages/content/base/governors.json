@@ -1,0 +1,795 @@
+[
+  {
+    "type": "governor",
+    "id": "gov_architect",
+    "name": "Aurelia",
+    "title": "the Architect",
+    "color": "#c9833a",
+    "description": "Builds faster in her settlement: +20% production toward buildings and districts.",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 20,
+          "toward": {
+            "kind": "building"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 20,
+          "toward": {
+            "kind": "district"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "promotions": [
+      {
+        "id": "architect_masonry",
+        "name": "Master Mason",
+        "description": "+25% production toward wonders.",
+        "effects": [
+          {
+            "effect": "modify_production",
+            "params": {
+              "percent": 25,
+              "toward": {
+                "kind": "wonder"
+              }
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "architect_foundry",
+        "name": "Foundry Works",
+        "description": "+2 production.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "production",
+              "amount": 2
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "architect_aqueducts",
+        "name": "Aqueduct Engineer",
+        "description": "Grows 15% faster.",
+        "effects": [
+          {
+            "effect": "modify_growth",
+            "params": {
+              "percent": 15
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "requires": ["architect_foundry"]
+      },
+      {
+        "id": "architect_grand",
+        "name": "Grand Works",
+        "description": "+15% production for everything.",
+        "effects": [
+          {
+            "effect": "modify_production",
+            "params": {
+              "percent": 15,
+              "toward": {}
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "requires": ["architect_masonry"]
+      }
+    ],
+    "portrait": {
+      "skin": "#d8a982",
+      "hair": "#5a3a22",
+      "eyes": "#4a3626",
+      "face": "oval",
+      "hairStyle": "updo",
+      "beard": "none",
+      "headwear": "circlet",
+      "outfit": "robe",
+      "outfitColor": "#8a4a2a",
+      "trim": "#d4a94e",
+      "accessory": "necklace",
+      "expression": "smile"
+    }
+  },
+  {
+    "type": "governor",
+    "id": "gov_steward",
+    "name": "Bram",
+    "title": "the Steward",
+    "color": "#7aa84a",
+    "description": "Keeps the granaries full: his settlement grows 15% faster.",
+    "effects": [
+      {
+        "effect": "modify_growth",
+        "params": {
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "promotions": [
+      {
+        "id": "steward_granary",
+        "name": "Granary Keeper",
+        "description": "+2 food.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "food",
+              "amount": 2
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "steward_festival",
+        "name": "Harvest Festival",
+        "description": "+1 happiness.",
+        "effects": [
+          {
+            "effect": "modify_happiness",
+            "params": {
+              "amount": 1
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "steward_breadbasket",
+        "name": "Breadbasket",
+        "description": "+15% food.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "food",
+              "percent": 15
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "requires": ["steward_granary"]
+      },
+      {
+        "id": "steward_markets",
+        "name": "Country Markets",
+        "description": "+2 gold and +1 happiness.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "gold",
+              "amount": 2
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          },
+          {
+            "effect": "modify_happiness",
+            "params": {
+              "amount": 1
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "requires": ["steward_festival"]
+      }
+    ],
+    "portrait": {
+      "skin": "#c79a74",
+      "hair": "#8a6a4a",
+      "eyes": "#4a3626",
+      "face": "round",
+      "hairStyle": "short",
+      "beard": "full",
+      "headwear": "none",
+      "outfit": "tunic",
+      "outfitColor": "#5a7a3a",
+      "trim": "#c9a14f",
+      "accessory": "none",
+      "expression": "smile"
+    }
+  },
+  {
+    "type": "governor",
+    "id": "gov_envoy",
+    "name": "Celestine",
+    "title": "the Envoy",
+    "color": "#4a8ac0",
+    "description": "Speaks for you abroad: +2 influence from her settlement.",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "influence",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "promotions": [
+      {
+        "id": "envoy_letters",
+        "name": "Letters of Credence",
+        "description": "+2 more influence.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "influence",
+              "amount": 2
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "envoy_salons",
+        "name": "Salons",
+        "description": "+2 culture.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "culture",
+              "amount": 2
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "envoy_peace",
+        "name": "Peacemaker",
+        "description": "+2 happiness.",
+        "effects": [
+          {
+            "effect": "modify_happiness",
+            "params": {
+              "amount": 2
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "requires": ["envoy_letters"]
+      },
+      {
+        "id": "envoy_court",
+        "name": "Court of Nations",
+        "description": "+20% influence and culture.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "influence",
+              "percent": 20
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          },
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "culture",
+              "percent": 20
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "requires": ["envoy_salons"]
+      }
+    ],
+    "portrait": {
+      "skin": "#e6c0a0",
+      "hair": "#2a1e18",
+      "eyes": "#4a3626",
+      "face": "heart",
+      "hairStyle": "long",
+      "beard": "none",
+      "headwear": "diadem",
+      "outfit": "gown",
+      "outfitColor": "#2f5a8a",
+      "trim": "#e8dcc0",
+      "accessory": "pearls",
+      "expression": "neutral"
+    }
+  },
+  {
+    "type": "governor",
+    "id": "gov_warden",
+    "name": "Daven",
+    "title": "the Warden",
+    "color": "#9a3a32",
+    "description": "Holds the border: +30% production toward soldiers in his settlement.",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 30,
+          "toward": {
+            "kind": "unit",
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "promotions": [
+      {
+        "id": "warden_walls",
+        "name": "Stonewright",
+        "description": "+50% production toward walls and castles.",
+        "effects": [
+          {
+            "effect": "modify_production",
+            "params": {
+              "percent": 50,
+              "toward": {
+                "kind": "building",
+                "building": ["building_walls", "building_castle", "building_star_fort"]
+              }
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "warden_drill",
+        "name": "Drill Sergeant",
+        "description": "Every unit you have gets +1 strength.",
+        "effects": [
+          {
+            "effect": "modify_strength",
+            "params": {
+              "amount": 1
+            },
+            "target": {
+              "scope": "units"
+            }
+          }
+        ]
+      },
+      {
+        "id": "warden_garrison",
+        "name": "Garrison Town",
+        "description": "+2 production and +1 happiness.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "production",
+              "amount": 2
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          },
+          {
+            "effect": "modify_happiness",
+            "params": {
+              "amount": 1
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "requires": ["warden_walls"]
+      },
+      {
+        "id": "warden_marshal",
+        "name": "Field Marshal",
+        "description": "Every unit you have gets +2 more strength.",
+        "effects": [
+          {
+            "effect": "modify_strength",
+            "params": {
+              "amount": 2
+            },
+            "target": {
+              "scope": "units"
+            }
+          }
+        ],
+        "requires": ["warden_drill"]
+      }
+    ],
+    "portrait": {
+      "skin": "#b88a66",
+      "hair": "#3a2a1e",
+      "eyes": "#4a3626",
+      "face": "square",
+      "hairStyle": "cropped",
+      "beard": "short",
+      "headwear": "helmet",
+      "outfit": "armor",
+      "outfitColor": "#8e2b22",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "stern"
+    }
+  },
+  {
+    "type": "governor",
+    "id": "gov_scholar",
+    "name": "Elowen",
+    "title": "the Scholar",
+    "color": "#5a9ad0",
+    "description": "Gathers the learned: +15% science in her settlement.",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "promotions": [
+      {
+        "id": "scholar_library",
+        "name": "Keeper of Books",
+        "description": "+3 science.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "science",
+              "amount": 3
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "scholar_patron",
+        "name": "Patron of the Arts",
+        "description": "+15% culture.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "culture",
+              "percent": 15
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "scholar_minds",
+        "name": "Gathering of Minds",
+        "description": "+2 great scientist points a turn.",
+        "effects": [
+          {
+            "effect": "great_person_points",
+            "params": {
+              "class": "gp_scientist",
+              "amount": 2
+            },
+            "target": {
+              "scope": "player"
+            }
+          }
+        ],
+        "requires": ["scholar_library"]
+      },
+      {
+        "id": "scholar_muses",
+        "name": "House of Muses",
+        "description": "+2 great writer points a turn.",
+        "effects": [
+          {
+            "effect": "great_person_points",
+            "params": {
+              "class": "gp_writer",
+              "amount": 2
+            },
+            "target": {
+              "scope": "player"
+            }
+          }
+        ],
+        "requires": ["scholar_patron"]
+      }
+    ],
+    "portrait": {
+      "skin": "#f0d0b8",
+      "hair": "#c0a060",
+      "eyes": "#4a6a8a",
+      "face": "long",
+      "hairStyle": "braids",
+      "beard": "none",
+      "headwear": "none",
+      "outfit": "robe",
+      "outfitColor": "#3a5a8a",
+      "trim": "#e8dcc0",
+      "accessory": "necklace",
+      "expression": "neutral"
+    }
+  },
+  {
+    "type": "governor",
+    "id": "gov_treasurer",
+    "name": "Fenwick",
+    "title": "the Treasurer",
+    "color": "#d4a94e",
+    "description": "Counts every coin: +15% gold in his settlement.",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "promotions": [
+      {
+        "id": "treasurer_market",
+        "name": "Market Warden",
+        "description": "+3 gold.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "gold",
+              "amount": 3
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "treasurer_routes",
+        "name": "Master of Caravans",
+        "description": "One more trade route.",
+        "effects": [
+          {
+            "effect": "extra_trade_route",
+            "params": {
+              "amount": 1
+            },
+            "target": {
+              "scope": "player"
+            }
+          }
+        ]
+      },
+      {
+        "id": "treasurer_purse",
+        "name": "Purse Strings",
+        "description": "Buying in his settlement costs 20% less.",
+        "effects": [
+          {
+            "effect": "modify_purchase_cost",
+            "params": {
+              "percent": -20
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "requires": ["treasurer_market"]
+      },
+      {
+        "id": "treasurer_bank",
+        "name": "Banking House",
+        "description": "+25% gold.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "gold",
+              "percent": 25
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "requires": ["treasurer_routes"]
+      }
+    ],
+    "portrait": {
+      "skin": "#e2bc98",
+      "hair": "#9a9a9a",
+      "eyes": "#4a3626",
+      "face": "long",
+      "hairStyle": "short",
+      "beard": "mustache",
+      "headwear": "cap",
+      "outfit": "coat",
+      "outfitColor": "#3a3a2a",
+      "trim": "#d4a94e",
+      "accessory": "medal",
+      "expression": "neutral"
+    }
+  },
+  {
+    "type": "governor",
+    "id": "gov_abbot",
+    "name": "Ysolde",
+    "title": "the Abbess",
+    "color": "#9a7ac0",
+    "description": "Tends the faithful: +15% faith in her settlement.",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "promotions": [
+      {
+        "id": "abbot_pilgrims",
+        "name": "Pilgrims' Road",
+        "description": "+3 faith.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "faith",
+              "amount": 3
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "abbot_choir",
+        "name": "Cathedral Choir",
+        "description": "+1 happiness and +2 culture.",
+        "effects": [
+          {
+            "effect": "modify_happiness",
+            "params": {
+              "amount": 1
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          },
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "culture",
+              "amount": 2
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ]
+      },
+      {
+        "id": "abbot_prophets",
+        "name": "House of Prophets",
+        "description": "+2 great prophet points a turn.",
+        "effects": [
+          {
+            "effect": "great_person_points",
+            "params": {
+              "class": "gp_prophet",
+              "amount": 2
+            },
+            "target": {
+              "scope": "player"
+            }
+          }
+        ],
+        "requires": ["abbot_pilgrims"]
+      },
+      {
+        "id": "abbot_relics",
+        "name": "Hall of Relics",
+        "description": "+25% faith.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "faith",
+              "percent": 25
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "requires": ["abbot_choir"]
+      }
+    ],
+    "portrait": {
+      "skin": "#c8946a",
+      "hair": "#2a1e18",
+      "eyes": "#4a3626",
+      "face": "oval",
+      "hairStyle": "long",
+      "beard": "none",
+      "headwear": "veil",
+      "outfit": "robe",
+      "outfitColor": "#5a4a7a",
+      "trim": "#e8dcc0",
+      "accessory": "beads",
+      "expression": "smile"
+    }
+  }
+]

@@ -7,6 +7,7 @@ import type { EffectSource } from '../effects/yields';
 import { tileTouchesRiver } from '../map/hex';
 import type { GameState, PlayerId, PlayerState, SettlementState, Track } from '../state';
 import { ageSources } from '../eras/ages';
+import { governorOf, governorSources } from '../governors/governors';
 
 /**
  * Where a player's effects come from (docs/05-modding.md, "The effects system"): their
@@ -79,6 +80,7 @@ export function settlementFacts(state: GameState, s: SettlementState): Settlemen
     districts: s.districts.map((d) => d.id),
     onRiver: tileTouchesRiver(state.map, state.map.tiles, s.tile),
     unitsTrained: s.unitsTrained,
+    ...(governorOf(state, s.id) ? { governor: governorOf(state, s.id)! } : {}),
   };
 }
 
@@ -123,6 +125,8 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
     out.push({ id: level.id, label: resolveText(content, level.name), effects: level.aiEffects });
   // The age and its dedications (docs/04-advanced-systems.md, "Eras and ages").
   out.push(...ageSources(ctx, p));
+  // Established governors (their settlement-scope effects only where they serve).
+  out.push(...governorSources(ctx, p));
   const gov = content.entities.government[p.government];
   if (gov && gov.effects.length > 0)
     out.push({ id: gov.id, label: resolveText(content, gov.name), effects: gov.effects });
