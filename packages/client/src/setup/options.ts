@@ -48,6 +48,8 @@ export interface NewGameOptions {
   disasters: boolean;
   /** Nuclear weapons. */
   nukes: boolean;
+  /** Theological combat between religious units (D9: off by default). */
+  theologicalCombat?: boolean;
   turnLimit: number | null;
   speed: string;
   difficulty: string;
@@ -110,6 +112,7 @@ export function makeSetup(o: NewGameOptions): GameSetup {
       ...(o.diplomatic === false ? { diplomatic: false } : {}),
       ...(o.disasters === false ? { disasters: false } : {}),
       ...(o.nukes === false ? { nukes: false } : {}),
+      ...(o.theologicalCombat ? { theologicalCombat: true } : {}),
       turnLimit: o.turnLimit,
       speed: o.speed,
       difficulty: o.difficulty,

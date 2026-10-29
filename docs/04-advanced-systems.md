@@ -214,8 +214,7 @@ because each one is unique.
   reaches 40.
 - **Missionaries:** bought for 100 faith in a settlement following a religion (or in your own
   holy city), they spread that religion: on or next to a settlement, **Preach** adds 60
-  pressure (3 times, once a turn). Apostles, inquisitors and theological combat aren't built
-  (D9's toggle stays off).
+  pressure (3 times, once a turn).
 - **Religious victory** (a new-game option, on by default): checked every turn.
 - The AI takes the pantheon that suits its land, builds a Holy Site while a religion can still
   be founded, founds one with its prophet, and buys a few missionaries to preach where they'd
@@ -223,6 +222,29 @@ because each one is unique.
 - The Religion screen (R, or the 🙏 chip): pantheon choice, your religion, the founding form,
   every religion with its followers and victory progress. Settlements show what they follow
   and the pressure on them (hover).
+
+### Built in V1 final (F16)
+
+- **Worship beliefs:** founding a religion also picks a **worship belief** (8, each once a
+  game), which lets its followers' settlements build that worship building in a Holy Site
+  with a Temple: Cathedral, Mosque, Pagoda, Meeting House, Stupa, Synagogue, Wat, Gurdwara
+  (190 production; +3 faith and one more bonus each, or +5 faith for the Synagogue). A settlement that stops following the religion
+  can't start one.
+- **Apostles** (200 faith, Theology): preach with 1.5× a missionary's pressure, 3 times.
+- **Inquisitors** (120 faith, Reformed Church): on or next to your own settlement, **Remove
+  heresy** strips 75% of every other religion's pressure there and its followers lose that
+  faith (3 times). They don't preach.
+- **Theological combat** stays the D9 setup option, **off by default**. With it on, a religious
+  unit can challenge a rival religion's unit next to it, at peace or at war: missionaries 100
+  strength, apostles 110, inquisitors 75, with the same damage formula as combat. The loser is
+  lost, and the winner's religion gains 150 pressure (the loser's loses 150) in every settlement
+  within 3 tiles. **Gurus** (120 faith, Theology) heal religious units of their faith next to
+  them by 30 each turn; with the option off there's nothing for them to heal, so they can't be
+  bought.
+- Faith-bought units now need their tech or civic.
+- The AI picks a worship belief, buys an inquisitor when another religion takes hold at home,
+  else the strongest preacher it can (apostles once it has Theology), and with the option on
+  challenges rival preachers it would beat.
 
 ---
 

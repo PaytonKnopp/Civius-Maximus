@@ -532,6 +532,11 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
                   'Atomic Bombs and Nuclear Missiles in the late game.',
                 )}
                 {toggle(
+                  'theologicalCombat',
+                  'Theological combat',
+                  'Apostles and other religious units can fight rival faiths; gurus heal them.',
+                )}
+                {toggle(
                   'espionage',
                   'Espionage',
                   'Spies that guard your settlements or work against others.',

@@ -11,6 +11,7 @@ import {
   religionsOf,
   spreadProblem,
 } from '../religion/rules';
+import { heresyProblem, theologyTargets } from '../religion/theology';
 import { tileFacts } from '../settlements/rules';
 import type { SettlementState, UnitState } from '../state';
 import { countsAs } from '../uniques';
@@ -18,10 +19,10 @@ import { goNear, hold, nearestOwnSettlement } from './military';
 import type { Turn } from './turn';
 import { effectValue, yieldWeight } from './values';
 
-/** A pantheon as soon as there's the faith for one, and missionaries once there's a religion. */
+/** A pantheon as soon as there's the faith for one, and religious units once there's a religion. */
 export function manageReligion(t: Turn) {
   choosePantheon(t);
-  buyMissionaries(t);
+  buyReligiousUnits(t);
 }
 
 function choosePantheon(t: Turn) {
@@ -79,6 +80,7 @@ export function prophet(t: Turn, u: UnitState): boolean {
     const founder = bestBelief(t, freeBeliefs(t.ctx, t.state, 'founder'));
     const follower = bestBelief(t, freeBeliefs(t.ctx, t.state, 'follower'));
     if (!founder || !follower) return false;
+    const worship = bestBelief(t, freeBeliefs(t.ctx, t.state, 'worship'));
     return t.act({
       type: 'found_religion',
       player: t.player,
@@ -86,6 +88,7 @@ export function prophet(t: Turn, u: UnitState): boolean {
       name: religionName(t),
       founder: founder.id,
       follower: follower.id,
+      ...(worship ? { worship: worship.id } : {}),
     });
   }
   if (problem.code !== 'needs_holy_site') return false;
@@ -113,18 +116,48 @@ function religionName(t: Turn): string {
   for (let i = 2; ; i++) if (!taken.has(`${stem} ${i}`.toLowerCase())) return `${stem} ${i}`;
 }
 
-/** Missionaries: a few at a time, bought in a settlement that follows our religion. */
-function buyMissionaries(t: Turn) {
+const religiousDef = (t: Turn, type: string) => t.ctx.content.entities.unit[type]?.religious;
+
+/** Whether another religion has (or is winning) a hold on one of our settlements. */
+function heresyAtHome(t: Turn, religion: string): SettlementState | undefined {
+  return t.mySettlements().find((s) => {
+    if (s.religion !== null && s.religion !== religion) return true;
+    const ours = s.pressure[religion] ?? 0;
+    return Object.entries(s.pressure).some(([r, n]) => r !== religion && n > ours && n > 0);
+  });
+}
+
+/**
+ * Religious units, a few at a time, bought in a settlement that follows our religion: an
+ * inquisitor when another religion is taking hold at home, else the strongest preacher we can
+ * buy (an apostle once we have Theology, a missionary before).
+ */
+function buyReligiousUnits(t: Turn) {
   const religion = t.p.religion;
   if (religion === null) return;
-  const unit = t.ctx.content.ids.unit.find((id) => t.ctx.content.entities.unit[id]!.faithCost > 0);
-  if (!unit) return;
-  const have = t.myUnits().filter((u) => u.religion !== undefined).length;
-  if (have >= 1 + Math.floor(t.me.faith / 4)) return;
   const home = nearestFollower(t);
-  if (!spreadTarget(t, home?.tile, religion, unit)) return;
-  if (!home || faithUnitProblem(t.ctx, t.state, t.player, home.id, unit)) return;
-  t.act({ type: 'buy_faith_unit', player: t.player, settlement: home.id, unit });
+  if (!home) return;
+  const mine = t.myUnits().filter((u) => u.religion !== undefined);
+  if (mine.length >= 1 + Math.floor(t.me.faith / 4)) return;
+  const units = t.ctx.content.ids.unit.filter(
+    (id) =>
+      t.ctx.content.entities.unit[id]!.faithCost > 0 &&
+      !faithUnitProblem(t.ctx, t.state, t.player, home.id, id),
+  );
+  const buy = (unit: string) =>
+    t.act({ type: 'buy_faith_unit', player: t.player, settlement: home.id, unit });
+  if (heresyAtHome(t, religion) && !mine.some((u) => religiousDef(t, u.type)?.removesHeresy)) {
+    const inquisitor = units.find((id) => religiousDef(t, id)?.removesHeresy);
+    if (inquisitor) return void buy(inquisitor);
+  }
+  const preacher = units
+    .filter((id) => religiousDef(t, id)?.spread !== 0)
+    .sort(
+      (a, b) =>
+        (religiousDef(t, b)?.strength ?? 0) - (religiousDef(t, a)?.strength ?? 0) ||
+        (a < b ? -1 : 1),
+    )[0];
+  if (preacher && spreadTarget(t, home.tile, religion, preacher)) buy(preacher);
 }
 
 /** Our holy city if we hold it, else our first settlement following our religion. */
@@ -164,21 +197,75 @@ function spreadTarget(
   return best?.s;
 }
 
-/** A missionary: preach where it stands, or walk to the next settlement worth preaching in. */
+/** Fight a rival religious unit next to this one if we'd come off better. Returns true if it did. */
+function theology(t: Turn, u: UnitState): boolean {
+  const ours = religiousDef(t, u.type)?.strength ?? 0;
+  if (ours <= 0 || u.health * 2 < t.ctx.content.rules.combat.maxHealth) return false;
+  const target = theologyTargets(t.ctx, t.state, u)
+    .map((id) => t.state.units[id]!)
+    .filter((o) => (religiousDef(t, o.type)?.strength ?? 0) <= ours && o.health <= u.health)
+    .sort((a, b) => a.health - b.health || (a.id < b.id ? -1 : 1))[0];
+  return (
+    target !== undefined &&
+    t.act({ type: 'theological_combat', player: t.player, unit: u.id, target: target.id })
+  );
+}
+
+/** An inquisitor: purge other religions from our settlements, nearest first. */
+function inquisitor(t: Turn, u: UnitState) {
+  const purge = (id: string) =>
+    !heresyProblem(t.ctx, t.state, t.player, u.id, id) &&
+    t.act({ type: 'remove_heresy', player: t.player, unit: u.id, settlement: id });
+  const target = t
+    .mySettlements()
+    .filter((s) => heresyProblem(t.ctx, t.state, t.player, u.id, s.id)?.code !== 'nothing')
+    .sort(
+      (a, b) =>
+        distance(t.state.map, u.tile, a.tile) - distance(t.state.map, u.tile, b.tile) ||
+        (a.id < b.id ? -1 : 1),
+    )[0];
+  if (!target) return hold(t, u);
+  if (purge(target.id)) return;
+  if (goNear(t, u, target.tile, 1) || goNear(t, u, target.tile, 0)) {
+    if (t.state.units[u.id]) purge(target.id);
+    return;
+  }
+  hold(t, u);
+}
+
+/** A guru: stay with the most hurt of our religious units. */
+function guru(t: Turn, u: UnitState) {
+  const max = t.ctx.content.rules.combat.maxHealth;
+  const hurt = t
+    .myUnits()
+    .filter((o) => o.id !== u.id && o.religion === u.religion && o.health < max)
+    .sort((a, b) => a.health - b.health || (a.id < b.id ? -1 : 1))[0];
+  if (hurt && goNear(t, u, hurt.tile, 1)) return;
+  hold(t, u);
+}
+
+/**
+ * A religious unit. Missionaries and apostles preach where they stand or walk to the next
+ * settlement worth preaching in, fighting rival preachers they'd beat on the way.
+ */
 export function missionary(t: Turn, u: UnitState) {
   if (t.threatNear(u.tile, 2) > 0) {
     const home = nearestOwnSettlement(t, u);
     if (home && home.tile !== u.tile && goNear(t, u, home.tile, 0)) return;
   }
+  if (theology(t, u)) return;
+  const def = religiousDef(t, u.type);
+  if (def?.removesHeresy) return inquisitor(t, u);
+  if (def && def.heals > 0) return guru(t, u);
   const target = spreadTarget(t, u.tile, u.religion!, u.type);
   if (!target) return hold(t, u);
-  if (!spreadProblem(t.state, t.player, u.id, target.id)) {
+  if (!spreadProblem(t.state, t.player, u.id, target.id, t.ctx)) {
     t.act({ type: 'spread_religion', player: t.player, unit: u.id, settlement: target.id });
     return;
   }
   if (goNear(t, u, target.tile, 1) || goNear(t, u, target.tile, 0)) {
     const moved = t.state.units[u.id];
-    if (moved && !spreadProblem(t.state, t.player, u.id, target.id))
+    if (moved && !spreadProblem(t.state, t.player, u.id, target.id, t.ctx))
       t.act({ type: 'spread_religion', player: t.player, unit: u.id, settlement: target.id });
     return;
   }

@@ -170,6 +170,8 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
       return e.settlements.some((id) => s.settlements[id]?.owner === me) ? 'war' : null;
     case 'nuke_launched':
       return 'war';
+    case 'theological_combat':
+      return e.attackerOwner === me || e.defenderOwner === me ? 'religion' : null;
     case 'loyalty_falling':
       return e.owner === me ? 'notify' : null;
     case 'unit_promoted':
@@ -298,6 +300,18 @@ function noticeFor(
         ? `Your ${weapon} struck${hit ? ` ${hit}` : ''}: ${e.units} unit${e.units === 1 ? '' : 's'} lost`
         : `${civName(content, state, e.player)} used a ${weapon}${hit ? ` on ${hit}` : ''}!`;
     }
+    case 'theological_combat': {
+      const mine = e.attackerOwner === ME;
+      const other = civName(content, state, mine ? e.defenderOwner : e.attackerOwner);
+      const won = e.lost === null ? null : e.lost === (mine ? e.defender : e.attacker);
+      if (won === null)
+        return `A theological debate with ${other} ended with neither side giving way`;
+      return won
+        ? `Your faithful won a theological debate with ${other}: your religion gains ground nearby`
+        : `${other}'s faithful won a theological debate: their religion gains ground nearby`;
+    }
+    case 'heresy_removed':
+      return `Other religions were driven out of ${name(e.settlement)}`;
     case 'sea_level_rose':
       return `The seas are rising: ${e.tiles.length} tile${e.tiles.length === 1 ? '' : 's'} of low coastal land went under (X)`;
     case 'climate_phase': {

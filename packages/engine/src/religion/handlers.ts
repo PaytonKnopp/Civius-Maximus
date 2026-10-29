@@ -71,6 +71,12 @@ export const religionHandlers = {
         return { code: 'unknown', message: 'Pick a follower belief' };
       if (taken.has(action.founder) || taken.has(action.follower))
         return { code: 'belief_taken', message: 'Another religion already has that belief' };
+      if (action.worship !== undefined) {
+        if (e[action.worship]?.kind !== 'worship')
+          return { code: 'unknown', message: 'Pick a worship belief' };
+        if (taken.has(action.worship))
+          return { code: 'belief_taken', message: 'Another religion already has that belief' };
+      }
       const name = action.name.trim().toLowerCase();
       if (religionsOf(state).some((r) => r.name.trim().toLowerCase() === name))
         return { code: 'name_taken', message: 'A religion already has that name' };
@@ -86,7 +92,7 @@ export const religionHandlers = {
         name: action.name.trim(),
         founder: action.player,
         holyCity: s.id,
-        beliefs: [action.founder, action.follower],
+        beliefs: [action.founder, action.follower, ...(action.worship ? [action.worship] : [])],
         founded: snap.turn,
       };
       const p = draft.players[action.player]!;
@@ -108,14 +114,16 @@ export const religionHandlers = {
   } satisfies ActionHandler<A<'found_religion'>>,
 
   spread_religion: {
-    validate(state, action) {
-      return spreadProblem(state, action.player, action.unit, action.settlement);
+    validate(state, action, ctx) {
+      return spreadProblem(state, action.player, action.unit, action.settlement, ctx);
     },
     apply(draft, action, ctx, emit) {
       const u = draft.units[action.unit]!;
       const s = draft.settlements[action.settlement]!;
-      s.pressure[u.religion!] =
-        (s.pressure[u.religion!] ?? 0) + ctx.content.rules.religion.missionaryPressure;
+      const spread =
+        ctx.content.entities.unit[u.type]?.religious?.spread ??
+        ctx.content.rules.religion.missionaryPressure;
+      s.pressure[u.religion!] = (s.pressure[u.religion!] ?? 0) + spread;
       u.moves = 0;
       u.charges = (u.charges ?? 1) - 1;
       emit({
@@ -143,7 +151,8 @@ export const religionHandlers = {
       if (!id) return;
       draft.players[action.player]!.faith -= faithUnitCost(ctx, view(draft), def.faithCost);
       draft.units[id]!.religion = religion;
-      draft.units[id]!.charges = ctx.content.rules.religion.missionaryCharges;
+      draft.units[id]!.charges =
+        def.religious?.charges ?? ctx.content.rules.religion.missionaryCharges;
       emit({
         type: 'item_bought',
         settlement: action.settlement,

@@ -248,10 +248,12 @@ export function spreadProblem(
   player: PlayerId,
   unitId: string,
   settlementId: string,
+  ctx?: EngineContext,
 ): RuleError | undefined {
   const u = ownedUnit(state, player, unitId);
   if ('code' in u) return u;
-  if (!u.religion || !u.charges)
+  const spread = ctx?.content.entities.unit[u.type]?.religious?.spread;
+  if (!u.religion || !u.charges || spread === 0)
     return { code: 'not_missionary', message: "That unit can't spread a religion" };
   const s = state.settlements[settlementId];
   if (!s) return { code: 'no_such_settlement', message: 'That settlement no longer exists' };
@@ -289,6 +291,20 @@ export function faithUnitProblem(
   const def = ctx.content.entities.unit[unit];
   if (!def || def.faithCost <= 0)
     return { code: 'not_faith_unit', message: "That can't be bought with faith" };
+  if (def.religious && def.religious.heals > 0 && state.settings.theologicalCombat !== true)
+    return { code: 'off', message: 'Only useful with theological combat, which is off' };
+  if (
+    (def.requiresTech && !p.techs.done.includes(def.requiresTech)) ||
+    (def.requiresCivic && !p.civics.done.includes(def.requiresCivic))
+  ) {
+    const need = def.requiresCivic
+      ? ctx.content.entities.civic[def.requiresCivic]?.name
+      : ctx.content.entities.tech[def.requiresTech!]?.name;
+    return {
+      code: 'locked',
+      message: `Needs ${need ? resolveText(ctx.content, need) : 'more progress'}`,
+    };
+  }
   if (faithUnitReligion(state, s) === null)
     return { code: 'no_religion', message: `${s.name} doesn't follow a religion yet` };
   const cost = faithUnitCost(ctx, state, def.faithCost);

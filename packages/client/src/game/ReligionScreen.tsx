@@ -189,7 +189,7 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
   );
 }
 
-/** Naming a religion and picking its founder and follower beliefs. */
+/** Naming a religion and picking its founder, follower and worship beliefs. */
 function FoundReligion({
   ctx,
   state,
@@ -207,10 +207,12 @@ function FoundReligion({
   const t = (text: string) => resolveText(content, text);
   const founders = freeBeliefs(ctx, state, 'founder');
   const followers = freeBeliefs(ctx, state, 'follower');
+  const worships = freeBeliefs(ctx, state, 'worship');
   const civ = content.entities.civ[state.players[viewer]!.civ];
   const [name, setName] = useState(civ ? `${t(civ.adjective)} Faith` : 'The Faith');
   const [founder, setFounder] = useState(founders[0]?.id ?? '');
   const [follower, setFollower] = useState(followers[0]?.id ?? '');
+  const [worship, setWorship] = useState(worships[0]?.id ?? '');
   const action: Action = {
     type: 'found_religion',
     player: viewer,
@@ -218,6 +220,7 @@ function FoundReligion({
     name: name.trim(),
     founder,
     follower,
+    ...(worship ? { worship } : {}),
   };
   const why = name.trim() ? validateAction(state, action, ctx)?.message : 'Give it a name';
   const pick = (
@@ -259,6 +262,14 @@ function FoundReligion({
         setFollower,
         'follower',
       )}
+      {worships.length > 0 &&
+        pick(
+          'Worship belief (a building its followers can raise)',
+          worships,
+          worship,
+          setWorship,
+          'worship',
+        )}
       <button
         type="button"
         className="primary"

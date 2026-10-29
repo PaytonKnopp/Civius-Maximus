@@ -118,6 +118,19 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         settlement: SettlementId;
         outcome: 'success' | 'escaped' | 'caught';
       }
+    | {
+        type: 'theological_combat';
+        attacker: UnitId;
+        defender: UnitId;
+        attackerOwner: PlayerId;
+        defenderOwner: PlayerId;
+        tile: number;
+        dealt: number;
+        taken: number;
+        /** The unit that was lost, if one was. */
+        lost: UnitId | null;
+      }
+    | { type: 'heresy_removed'; player: PlayerId; settlement: SettlementId }
     | { type: 'pantheon_founded'; player: PlayerId; belief: string }
     /** A player found a city-state (and got `envoys` free envoys there for being first). */
     | { type: 'city_state_met'; cityState: PlayerId; player: PlayerId; envoys: number }

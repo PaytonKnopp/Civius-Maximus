@@ -293,6 +293,7 @@ export {
 } from './governors/governors';
 export { climateOf, disastersOn, emissionsPerTurn } from './disasters/disasters';
 export { blastTiles, nukeProblem, nukesOn } from './nukes/nukes';
+export { heresyProblem, theologyOn, theologyProblem, theologyTargets } from './religion/theology';
 export {
   ballotCost,
   congressOn,

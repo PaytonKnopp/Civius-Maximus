@@ -354,6 +354,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'belief':
       effectList(out, entity.effects, ['effects']);
+      ids(out, 'building', entity.building, ['building']);
       break;
     case 'cityStateType':
       ids(out, 'district', entity.district, ['district']);

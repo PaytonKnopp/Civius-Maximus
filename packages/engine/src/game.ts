@@ -30,6 +30,7 @@ import { espionageHandlers, espionageTurn } from './espionage/espionage';
 import { congressHandlers, congressTurn } from './congress/congress';
 import { disastersTurn } from './disasters/disasters';
 import { falloutTurn, nukeHandlers } from './nukes/nukes';
+import { gurusTurn, theologyHandlers } from './religion/theology';
 import { freeCitiesTurn, loyaltyTurn } from './loyalty/loyalty';
 import { applyStartEra } from './progress/startEra';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
@@ -205,6 +206,7 @@ const handlers: Handlers = {
   ...espionageHandlers,
   ...congressHandlers,
   ...nukeHandlers,
+  ...theologyHandlers,
   ...unitHandlers,
   ...settlementHandlers,
   ...progressHandlers,
@@ -257,6 +259,7 @@ const turnSteps: TurnStep[] = [
   { id: 'trade', order: 120, run: tradeTurn },
   { id: 'greatPeople', order: 115, run: greatPeopleTurn },
   { id: 'religion', order: 125, run: religionTurn },
+  { id: 'gurus', order: 126, run: gurusTurn },
   { id: 'greatWorks', order: 127, run: (draft) => greatWorksTurn(draft) },
   { id: 'culture', order: 128, run: cultureTurn },
   { id: 'science', order: 129, run: scienceTurn },

@@ -29,6 +29,7 @@ export interface OnlineOptions {
     diplomatic?: boolean;
     disasters?: boolean;
     nukes?: boolean;
+    theologicalCombat?: boolean;
   };
   turnLimit?: number | null;
 }
@@ -46,6 +47,7 @@ const RULES: [keyof NonNullable<OnlineOptions['rules']>, string][] = [
   ['diplomatic', 'Diplomatic victory'],
   ['disasters', 'Climate and disasters'],
   ['nukes', 'Nuclear weapons'],
+  ['theologicalCombat', 'Theological combat'],
 ];
 
 interface Props {
@@ -110,6 +112,7 @@ export function OnlineDialog(props: Props) {
       diplomatic: true,
       disasters: true,
       nukes: true,
+      theologicalCombat: false,
     },
     turnLimit: null,
   });

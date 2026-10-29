@@ -399,6 +399,8 @@ export interface GameSettings {
   loyalty?: boolean | undefined;
   /** Espionage: spies and their missions (on unless false). */
   espionage?: boolean | undefined;
+  /** Theological combat between religious units (D9: off unless true). */
+  theologicalCombat?: boolean | undefined;
   /** Nuclear weapons can be built and used (on unless false). */
   nukes?: boolean | undefined;
   /** Natural disasters and climate change (on unless false). */

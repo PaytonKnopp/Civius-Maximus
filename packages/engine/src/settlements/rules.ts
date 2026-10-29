@@ -869,6 +869,14 @@ export function itemProblem(
     return { code: 'needs_coast', message: 'Needs a settlement on the coast' };
   if (b.cityOnly && s.kind === 'town')
     return { code: 'city_only', message: 'Only cities can have this' };
+  if (b.worship) {
+    const beliefs = s.religion ? (state.religions[s.religion]?.beliefs ?? []) : [];
+    if (!beliefs.some((id) => ctx.content.entities.belief[id]?.building === b.id))
+      return {
+        code: 'needs_worship',
+        message: 'Needs a religion here whose worship belief builds it',
+      };
+  }
   if (b.district && !s.districts.some((d) => countsAs(ctx, 'district', d.id, b.district!))) {
     const needed = ctx.content.entities.district[b.district];
     return {
