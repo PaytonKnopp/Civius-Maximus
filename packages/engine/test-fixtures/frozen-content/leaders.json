@@ -1781,5 +1781,906 @@
     },
     "intro": "Boudica, queen of the Iceni: the widow who led the tribes against an empire and burned its cities. Your warriors know every grove and your druids keep the old ways. Rally the tribes, and let no one rule you.",
     "civ": "civ_celts"
+  },
+  {
+    "type": "leader",
+    "id": "leader_charlemagne",
+    "name": "Charlemagne",
+    "title": "Emperor of the West",
+    "ability": {
+      "name": "Peers of the Realm",
+      "description": "+1 military policy slot. Heavy cavalry +4 strength.",
+      "effects": [
+        {
+          "effect": "extra_policy_slot",
+          "params": {
+            "slot": "military"
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 4,
+            "unitClass": "class_heavy_cavalry"
+          },
+          "target": {
+            "scope": "units"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Father of Europe",
+      "description": "Admires mounted knights. Dislikes those who start wars without warning.",
+      "rules": [
+        {
+          "metric": "units",
+          "unitClass": "class_heavy_cavalry",
+          "when": "more",
+          "amount": 3,
+          "label": "Admires your knights"
+        },
+        {
+          "metric": "surpriseWars",
+          "when": "any",
+          "amount": -3,
+          "label": "Starts wars without warning"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 7,
+      "expansion": 7,
+      "science": 6,
+      "culture": 6,
+      "wonders": 5,
+      "faith": 7,
+      "gold": 4,
+      "naval": 3,
+      "diplomacy": 5,
+      "districts": 5
+    },
+    "portrait": {
+      "skin": "#e8c8a8",
+      "hair": "#d8d0c0",
+      "eyes": "#4a5a7a",
+      "face": "square",
+      "hairStyle": "short",
+      "beard": "long",
+      "headwear": "crown",
+      "outfit": "robe",
+      "outfitColor": "#2a3a8a",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "You come before the emperor of the Franks. Kneel or stand, but be quick.",
+      "war": "My paladins are saddled. You should have chosen your words better.",
+      "peace": "Good. There are schools to build and books to copy.",
+      "defeat": "An empire is a book. Someone else will write the next chapter."
+    },
+    "intro": "Charles the Great, king of the Franks and emperor of the West: the warrior who could barely write and filled his court with scholars. Your knights ride in front and your scribes follow behind. Unite the lands, and light the lamps of learning.",
+    "civ": "civ_franks"
+  },
+  {
+    "type": "leader",
+    "id": "leader_cyrus",
+    "name": "Cyrus the Great",
+    "title": "King of Kings",
+    "ability": {
+      "name": "King of the Four Corners",
+      "description": "Units +2 strength for 10 turns after declaring war. Capturing a settlement gives a boost per district in it.",
+      "effects": [
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 2,
+            "afterDeclaringWar": 10
+          },
+          "target": {
+            "scope": "units"
+          }
+        },
+        {
+          "effect": "on_capture",
+          "params": {
+            "boostsPerDistrict": 1
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Tolerant Conqueror",
+      "description": "Respects fellow conquerors. Scorns the weak.",
+      "rules": [
+        {
+          "metric": "captures",
+          "when": "more",
+          "amount": 3,
+          "label": "A conqueror, like him"
+        },
+        {
+          "metric": "army",
+          "when": "less",
+          "amount": -3,
+          "label": "Weak and ripe for conquest"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 7,
+      "expansion": 7,
+      "science": 5,
+      "culture": 6,
+      "wonders": 5,
+      "faith": 4,
+      "gold": 7,
+      "naval": 3,
+      "diplomacy": 6,
+      "districts": 5
+    },
+    "portrait": {
+      "skin": "#c8986a",
+      "hair": "#1a1410",
+      "eyes": "#2a1a10",
+      "face": "long",
+      "hairStyle": "curly",
+      "beard": "long",
+      "headwear": "tall_crown",
+      "outfit": "robe",
+      "outfitColor": "#5a2a7a",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "neutral"
+    },
+    "quotes": {
+      "greeting": "I am Cyrus, king of the world. My gates are open, if you come in friendship.",
+      "war": "I have taken cities with an open hand before. Yours I will take with a closed one.",
+      "peace": "Let your gods and mine both be honored. Peace.",
+      "defeat": "Do not begrudge me this little earth that covers my body."
+    },
+    "intro": "Cyrus II of Persia, king of kings: the conqueror who let the peoples he conquered keep their gods and go home. Your roads bind an empire of many nations. Conquer, and let the conquered thank you for it.",
+    "civ": "civ_persia"
+  },
+  {
+    "type": "leader",
+    "id": "leader_sejong",
+    "name": "Sejong the Great",
+    "title": "King of Joseon",
+    "ability": {
+      "name": "Letters for the People",
+      "description": "Settlements with a Library +1 science. +50% great scientist points.",
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "science",
+            "amount": 1
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_has_building": "building_library"
+          }
+        },
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_scientist",
+            "percent": 50
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Scholar King",
+      "description": "Likes peaceful neighbors. Distrusts big armies.",
+      "rules": [
+        {
+          "metric": "atPeace",
+          "when": "any",
+          "amount": 3,
+          "label": "Keeps the peace"
+        },
+        {
+          "metric": "army",
+          "when": "more",
+          "amount": -2,
+          "label": "Your army worries him"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 3,
+      "expansion": 5,
+      "science": 10,
+      "culture": 6,
+      "wonders": 5,
+      "faith": 3,
+      "gold": 5,
+      "naval": 4,
+      "diplomacy": 7,
+      "districts": 8
+    },
+    "portrait": {
+      "skin": "#e0c098",
+      "hair": "#1a1410",
+      "eyes": "#2a1a10",
+      "face": "round",
+      "hairStyle": "topknot",
+      "beard": "chin",
+      "headwear": "cap",
+      "outfit": "dragon_robe",
+      "outfitColor": "#c82a2a",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "smile"
+    },
+    "quotes": {
+      "greeting": "Welcome. Tell me what your scholars are working on; I am always curious.",
+      "war": "I would rather invent than destroy. You have given me something new to invent.",
+      "peace": "Wise. Let us both go back to our books.",
+      "defeat": "The letters I made will outlive us both."
+    },
+    "intro": "Sejong of Joseon, called the Great: the king who gave his people an alphabet so that anyone could learn to read. Your scholars measure the rain and the stars. Learn everything, and teach everyone.",
+    "civ": "civ_korea"
+  },
+  {
+    "type": "leader",
+    "id": "leader_theodora",
+    "name": "Theodora",
+    "title": "Empress of the Romans",
+    "ability": {
+      "name": "From the Hippodrome",
+      "description": "Settlements with an Arena +2 happiness. Settlements with a Holy Site +2 faith.",
+      "effects": [
+        {
+          "effect": "modify_happiness",
+          "params": {
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_has_building": "building_arena"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "faith",
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_has_district": "district_holy_site"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Purple-Born Politics",
+      "description": "Admires a full treasury. Distrusts surprise wars.",
+      "rules": [
+        {
+          "metric": "gold",
+          "when": "more",
+          "amount": 2,
+          "label": "Admires your treasury"
+        },
+        {
+          "metric": "surpriseWars",
+          "when": "any",
+          "amount": -3,
+          "label": "Cannot be trusted"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 5,
+      "expansion": 5,
+      "science": 5,
+      "culture": 7,
+      "wonders": 7,
+      "faith": 8,
+      "gold": 6,
+      "naval": 6,
+      "diplomacy": 7,
+      "districts": 5
+    },
+    "portrait": {
+      "skin": "#e0bc98",
+      "hair": "#1a1410",
+      "eyes": "#2a1a10",
+      "face": "heart",
+      "hairStyle": "updo",
+      "beard": "none",
+      "headwear": "crown",
+      "outfit": "gown",
+      "outfitColor": "#6a1a6a",
+      "trim": "#d4a94e",
+      "accessory": "pearls",
+      "expression": "neutral"
+    },
+    "quotes": {
+      "greeting": "The empress receives you. Mind the purple; it is not for everyone.",
+      "war": "Royalty is a good burial shroud. I will not run from you.",
+      "peace": "A sensible choice. The city has seen enough riots.",
+      "defeat": "I stayed when others fled. That is all anyone can ask."
+    },
+    "intro": "Theodora, empress of the Romans in Constantinople: an actress from the Hippodrome who rose to rule beside Justinian. Your fleets burn with fire no one can put out, and your faith fills the domes. Keep your nerve, and keep the city.",
+    "civ": "civ_byzantium"
+  },
+  {
+    "type": "leader",
+    "id": "leader_isabella",
+    "name": "Isabella",
+    "title": "Queen of Castile",
+    "ability": {
+      "name": "Patron of Explorers",
+      "description": "Naval melee units start with Helmsman (+1 movement). International trade routes +3 gold.",
+      "effects": [
+        {
+          "effect": "grant_promotion",
+          "params": {
+            "promotion": "promo_helmsman",
+            "unitClass": "class_naval_melee"
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        },
+        {
+          "effect": "trade_route_bonus",
+          "params": {
+            "international": true,
+            "origin": {
+              "gold": 3
+            }
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Crown of Castile",
+      "description": "Sees rivals at sea. Respects a full treasury.",
+      "rules": [
+        {
+          "metric": "units",
+          "domain": "sea",
+          "when": "more",
+          "amount": -2,
+          "label": "A rival at sea"
+        },
+        {
+          "metric": "gold",
+          "when": "more",
+          "amount": 2,
+          "label": "Respects your wealth"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 6,
+      "expansion": 8,
+      "science": 5,
+      "culture": 5,
+      "wonders": 5,
+      "faith": 8,
+      "gold": 7,
+      "naval": 8,
+      "diplomacy": 5,
+      "districts": 5
+    },
+    "portrait": {
+      "skin": "#f0d0b0",
+      "hair": "#a86a3a",
+      "eyes": "#4a6a5a",
+      "face": "oval",
+      "hairStyle": "bob",
+      "beard": "none",
+      "headwear": "crown",
+      "outfit": "gown",
+      "outfitColor": "#7a1a1a",
+      "trim": "#d4a94e",
+      "accessory": "collar",
+      "expression": "neutral"
+    },
+    "quotes": {
+      "greeting": "You are received by the queen of Castile. Spain listens; it does not wait.",
+      "war": "I have pawned my jewels for a war before. Do not think I will not again.",
+      "peace": "Agreed. Our ships have better places to sail.",
+      "defeat": "I gave the world a new world. Remember that."
+    },
+    "intro": "Isabella I, queen of Castile: the monarch who united a kingdom and sent ships across an ocean no one had crossed. Your missions reach the frontier and your fleets reach everywhere else. Look past the horizon, and claim what lies beyond.",
+    "civ": "civ_spain"
+  },
+  {
+    "type": "leader",
+    "id": "leader_pericles",
+    "name": "Pericles",
+    "title": "First Citizen of Athens",
+    "ability": {
+      "name": "School of Hellas",
+      "description": "Settlements with a Theater Square +2 culture. +1 wildcard policy slot.",
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "culture",
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_has_district": "district_theater"
+          }
+        },
+        {
+          "effect": "extra_policy_slot",
+          "params": {
+            "slot": "wildcard"
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Delian League",
+      "description": "Likes peaceful neighbors and admires great wonders.",
+      "rules": [
+        {
+          "metric": "atPeace",
+          "when": "any",
+          "amount": 2,
+          "label": "A peaceful neighbor"
+        },
+        {
+          "metric": "wonders",
+          "when": "more",
+          "amount": 2,
+          "label": "Admires your wonders"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 4,
+      "expansion": 5,
+      "science": 6,
+      "culture": 10,
+      "wonders": 8,
+      "faith": 4,
+      "gold": 5,
+      "naval": 6,
+      "diplomacy": 7,
+      "districts": 6
+    },
+    "portrait": {
+      "skin": "#d8b08a",
+      "hair": "#6a5a4a",
+      "eyes": "#3a4a5a",
+      "face": "long",
+      "hairStyle": "curly",
+      "beard": "full",
+      "headwear": "helmet",
+      "outfit": "toga",
+      "outfitColor": "#f0f0e8",
+      "trim": "#2a5a9a",
+      "accessory": "none",
+      "expression": "neutral"
+    },
+    "quotes": {
+      "greeting": "Welcome to Athens. Here we argue, vote and build. Which have you come for?",
+      "war": "We do not seek war, but we do not fear it. The assembly has voted.",
+      "peace": "Good. Our time is better spent on the Acropolis.",
+      "defeat": "What we leave behind is not carved in stone, but woven into the lives of others."
+    },
+    "intro": "Pericles, first citizen of Athens: the general and orator who built the Parthenon and made his city the school of Greece. Your theaters fill and your temples rise on every hill. Build beautifully, and argue well.",
+    "civ": "civ_greece"
+  },
+  {
+    "type": "leader",
+    "id": "leader_six_sky",
+    "name": "Lady Six Sky",
+    "title": "Queen of Sa'aal",
+    "ability": {
+      "name": "Warrior Queen of Sa'aal",
+      "description": "Farms +0.5 science. Units +3 strength fighting in rainforest or woods.",
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "science",
+            "amount": 0.5
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_has_improvement": "improvement_farm"
+          }
+        },
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 3,
+            "on": {
+              "features": ["rainforest", "woods"]
+            }
+          },
+          "target": {
+            "scope": "units"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Watcher of the Sky",
+      "description": "Covets great wonders. Likes peaceful neighbors.",
+      "rules": [
+        {
+          "metric": "wonders",
+          "when": "more",
+          "amount": -2,
+          "label": "Covets your wonders"
+        },
+        {
+          "metric": "atPeace",
+          "when": "any",
+          "amount": 2,
+          "label": "A peaceful neighbor"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 6,
+      "expansion": 4,
+      "science": 8,
+      "culture": 6,
+      "wonders": 6,
+      "faith": 6,
+      "gold": 4,
+      "naval": 2,
+      "diplomacy": 4,
+      "districts": 8
+    },
+    "portrait": {
+      "skin": "#a8784e",
+      "hair": "#1a1410",
+      "eyes": "#2a1a10",
+      "face": "oval",
+      "hairStyle": "long",
+      "beard": "none",
+      "headwear": "feathers",
+      "outfit": "wrap",
+      "outfitColor": "#2a7a5a",
+      "trim": "#c8a030",
+      "accessory": "beads",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "The sky has turned and brought you here. I am Lady Six Sky of Sa'aal.",
+      "war": "The stars have shown me the day. It is today.",
+      "peace": "Peace, then, until the calendar says otherwise.",
+      "defeat": "The count goes on without me. It always does."
+    },
+    "intro": "Lady Six Sky, queen of Sa'aal: the warrior queen who refounded a fallen city and won its wars for decades. Your farmers feed your astronomers, and your cities stay close to the throne. Read the sky, and act before others can.",
+    "civ": "civ_maya"
+  },
+  {
+    "type": "leader",
+    "id": "leader_hammurabi",
+    "name": "Hammurabi",
+    "title": "King of Babylon",
+    "ability": {
+      "name": "Law of the Land",
+      "description": "Boosts give 40% more of a tech or civic. All science 15% lower.",
+      "effects": [
+        {
+          "effect": "modify_boost",
+          "params": {
+            "percent": 40
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "science",
+            "percent": -15
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Code of Laws",
+      "description": "Hates surprise wars. Likes those who keep the peace.",
+      "rules": [
+        {
+          "metric": "surpriseWars",
+          "when": "any",
+          "amount": -4,
+          "label": "Breaks the law of nations"
+        },
+        {
+          "metric": "atPeace",
+          "when": "any",
+          "amount": 2,
+          "label": "Keeps the peace"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 5,
+      "expansion": 6,
+      "science": 9,
+      "culture": 5,
+      "wonders": 6,
+      "faith": 4,
+      "gold": 5,
+      "naval": 2,
+      "diplomacy": 6,
+      "districts": 8
+    },
+    "portrait": {
+      "skin": "#b08a62",
+      "hair": "#1a1410",
+      "eyes": "#2a1a10",
+      "face": "square",
+      "hairStyle": "curly",
+      "beard": "long",
+      "headwear": "cap",
+      "outfit": "robe",
+      "outfitColor": "#2a4a8a",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "I am Hammurabi, who set the law in stone so the strong would not oppress the weak.",
+      "war": "An eye for an eye. You struck first.",
+      "peace": "Let it be written and witnessed. The law binds us.",
+      "defeat": "The law will outlast the king."
+    },
+    "intro": "Hammurabi, king of Babylon: the ruler who carved his laws on a pillar for all to see. Your scribes keep the records and your scholars read the stars. Write it down, and the world will run by your rules.",
+    "civ": "civ_babylon"
+  },
+  {
+    "type": "leader",
+    "id": "leader_pedro",
+    "name": "Pedro II",
+    "title": "Emperor of Brazil",
+    "ability": {
+      "name": "The Magnanimous",
+      "description": "+20% great scientist, engineer, merchant, writer, artist and musician points.",
+      "effects": [
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_scientist",
+            "percent": 20
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_engineer",
+            "percent": 20
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_merchant",
+            "percent": 20
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_writer",
+            "percent": 20
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_artist",
+            "percent": 20
+          },
+          "target": {
+            "scope": "player"
+          }
+        },
+        {
+          "effect": "great_person_points_percent",
+          "params": {
+            "class": "gp_musician",
+            "percent": 20
+          },
+          "target": {
+            "scope": "player"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Patron of the Arts and Sciences",
+      "description": "Admires great wonders. Dislikes big armies.",
+      "rules": [
+        {
+          "metric": "wonders",
+          "when": "more",
+          "amount": 2,
+          "label": "Admires your wonders"
+        },
+        {
+          "metric": "army",
+          "when": "more",
+          "amount": -2,
+          "label": "Too many soldiers for his taste"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 3,
+      "expansion": 6,
+      "science": 8,
+      "culture": 8,
+      "wonders": 7,
+      "faith": 4,
+      "gold": 5,
+      "naval": 5,
+      "diplomacy": 7,
+      "districts": 6
+    },
+    "portrait": {
+      "skin": "#f0d0b0",
+      "hair": "#e8e8e8",
+      "eyes": "#4a5a7a",
+      "face": "long",
+      "hairStyle": "short",
+      "beard": "long",
+      "headwear": "none",
+      "outfit": "suit",
+      "outfitColor": "#1a1a1a",
+      "trim": "#d4a94e",
+      "accessory": "medal",
+      "expression": "smile"
+    },
+    "quotes": {
+      "greeting": "Welcome! Have you brought any books? Or a telephone? I collect both.",
+      "war": "I am a patient man. You have found the end of my patience.",
+      "peace": "Splendid. Let us sponsor something together instead.",
+      "defeat": "I would rather have been a schoolteacher anyway."
+    },
+    "intro": "Pedro II, emperor of Brazil: the scholar-king who reigned for half a century and spent it on schools, science and the arts. Your forests are rich and your great people many. Be generous, and be remembered.",
+    "civ": "civ_brazil"
+  },
+  {
+    "type": "leader",
+    "id": "leader_menelik",
+    "name": "Menelik II",
+    "title": "Emperor of Ethiopia",
+    "ability": {
+      "name": "Victor of Adwa",
+      "description": "Units +4 strength fighting on hills. Hills tiles +1 faith.",
+      "effects": [
+        {
+          "effect": "modify_strength",
+          "params": {
+            "amount": 4,
+            "on": {
+              "elevations": ["hills"]
+            }
+          },
+          "target": {
+            "scope": "units"
+          }
+        },
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "faith",
+            "amount": 1
+          },
+          "target": {
+            "scope": "tiles"
+          },
+          "condition": {
+            "tile_elevation": "hills"
+          }
+        }
+      ]
+    },
+    "agenda": {
+      "name": "Never Colonized",
+      "description": "Hates conquerors. Likes peaceful neighbors.",
+      "rules": [
+        {
+          "metric": "captures",
+          "when": "more",
+          "amount": -4,
+          "label": "A colonizer"
+        },
+        {
+          "metric": "atPeace",
+          "when": "any",
+          "amount": 2,
+          "label": "A peaceful neighbor"
+        }
+      ]
+    },
+    "personality": {
+      "aggression": 5,
+      "expansion": 6,
+      "science": 5,
+      "culture": 5,
+      "wonders": 5,
+      "faith": 8,
+      "gold": 5,
+      "naval": 2,
+      "diplomacy": 6,
+      "districts": 5
+    },
+    "portrait": {
+      "skin": "#6a4a30",
+      "hair": "#1a1410",
+      "eyes": "#2a1a10",
+      "face": "long",
+      "hairStyle": "short",
+      "beard": "full",
+      "headwear": "crown",
+      "outfit": "coat",
+      "outfitColor": "#2a2a5a",
+      "trim": "#d4a94e",
+      "accessory": "medal",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "You are welcome in the highlands. Keep to the roads; the mountains are ours.",
+      "war": "Others came with rifles and promises. They went home with neither.",
+      "peace": "Peace. Ethiopia has outlasted every empire that came for it.",
+      "defeat": "You have won a battle, not the highlands."
+    },
+    "intro": "Menelik II, emperor of Ethiopia: the king who modernized an ancient realm and defeated an invading army at Adwa. Your highlands are your fortress and your faith is older than most kingdoms. Hold the heights, and let no one take them.",
+    "civ": "civ_ethiopia"
   }
 ]

@@ -1349,5 +1349,265 @@
     ],
     "civ": "civ_celts",
     "replaces": "building_shrine"
+  },
+  {
+    "type": "building",
+    "id": "building_palace_school",
+    "name": "Palace School",
+    "description": "A court school: +2 science and +1 culture.",
+    "icon": "PS",
+    "cost": 90,
+    "maintenance": 1,
+    "yields": {
+      "science": 2,
+      "culture": 1
+    },
+    "requiresTech": "tech_writing",
+    "district": "district_campus",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_scientist",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "civ": "civ_franks",
+    "replaces": "building_library"
+  },
+  {
+    "type": "building",
+    "id": "building_apadana",
+    "name": "Apadana",
+    "description": "A great audience hall: +2 culture, +1 happiness and +1 loyalty a turn.",
+    "icon": "Ap",
+    "cost": 60,
+    "yields": {
+      "culture": 2
+    },
+    "localEffects": [
+      {
+        "effect": "modify_loyalty",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "happiness": 1,
+    "civ": "civ_persia",
+    "replaces": "building_monument"
+  },
+  {
+    "type": "building",
+    "id": "building_hyanggyo",
+    "name": "Hyanggyo",
+    "description": "A provincial academy: +3 science, and +1 more great scientist point.",
+    "icon": "Hy",
+    "cost": 90,
+    "maintenance": 1,
+    "yields": {
+      "science": 3
+    },
+    "requiresTech": "tech_writing",
+    "district": "district_campus",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_scientist",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "civ": "civ_korea",
+    "replaces": "building_library"
+  },
+  {
+    "type": "building",
+    "id": "building_hippodrome",
+    "name": "Hippodrome",
+    "description": "Chariot races: +3 happiness and +2 culture.",
+    "icon": "Hi",
+    "cost": 150,
+    "maintenance": 1,
+    "happiness": 3,
+    "yields": {
+      "culture": 2
+    },
+    "district": "district_entertainment",
+    "requiresCivic": "civic_games_and_recreation",
+    "civ": "civ_byzantium",
+    "replaces": "building_arena"
+  },
+  {
+    "type": "building",
+    "id": "building_alcazar",
+    "name": "Alcázar",
+    "description": "A royal fortress: +100 outer defense, +2 culture and +1 happiness.",
+    "icon": "Az",
+    "cost": 120,
+    "walls": 100,
+    "requiresBuilding": "building_walls",
+    "requiresTech": "tech_military_tactics",
+    "yields": {
+      "culture": 2
+    },
+    "happiness": 1,
+    "civ": "civ_spain",
+    "replaces": "building_castle"
+  },
+  {
+    "type": "building",
+    "id": "building_odeon",
+    "name": "Odeon",
+    "description": "A music hall: +4 culture, +2 great writer points and +1 great musician point.",
+    "icon": "Od",
+    "cost": 150,
+    "maintenance": 1,
+    "yields": {
+      "culture": 4
+    },
+    "district": "district_theater",
+    "requiresCivic": "civic_drama_and_poetry",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_writer",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_musician",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "slots": {
+      "writing": 2
+    },
+    "civ": "civ_greece",
+    "replaces": "building_amphitheater"
+  },
+  {
+    "type": "building",
+    "id": "building_e_group",
+    "name": "E-Group",
+    "description": "An observatory of temples aligned to the sun: +2 science and +1 faith.",
+    "icon": "EG",
+    "cost": 90,
+    "maintenance": 1,
+    "yields": {
+      "science": 2,
+      "faith": 1
+    },
+    "requiresTech": "tech_writing",
+    "district": "district_campus",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_scientist",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "civ": "civ_maya",
+    "replaces": "building_library"
+  },
+  {
+    "type": "building",
+    "id": "building_edubba",
+    "name": "Edubba",
+    "description": "A tablet house where scribes are trained: +3 science and +1 more great scientist point.",
+    "icon": "Ed",
+    "cost": 90,
+    "maintenance": 1,
+    "yields": {
+      "science": 3
+    },
+    "requiresTech": "tech_writing",
+    "district": "district_campus",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_scientist",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "civ": "civ_babylon",
+    "replaces": "building_library"
+  },
+  {
+    "type": "building",
+    "id": "building_samba_school",
+    "name": "Samba School",
+    "description": "Music and parades: +2 happiness, +2 culture and +1 great musician point.",
+    "icon": "SS",
+    "cost": 150,
+    "maintenance": 1,
+    "happiness": 2,
+    "yields": {
+      "culture": 2
+    },
+    "district": "district_entertainment",
+    "requiresCivic": "civic_games_and_recreation",
+    "civ": "civ_brazil",
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_musician",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "replaces": "building_arena"
+  },
+  {
+    "type": "building",
+    "id": "building_gebbi",
+    "name": "Gebbi",
+    "description": "A royal compound: +100 outer defense, +2 faith and +1 culture.",
+    "icon": "Gb",
+    "cost": 120,
+    "walls": 100,
+    "requiresBuilding": "building_walls",
+    "requiresTech": "tech_military_tactics",
+    "yields": {
+      "faith": 2,
+      "culture": 1
+    },
+    "civ": "civ_ethiopia",
+    "replaces": "building_castle"
   }
 ]
