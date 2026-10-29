@@ -411,10 +411,7 @@
           "scope": "settlements"
         },
         "condition": {
-          "settlement_has_building": [
-            "building_shrine",
-            "building_temple"
-          ]
+          "settlement_has_building": ["building_shrine", "building_temple"]
         }
       }
     ]
@@ -481,10 +478,7 @@
       {
         "kind": "create_works",
         "work": "writing",
-        "works": [
-          "The Iliad",
-          "The Odyssey"
-        ]
+        "works": ["The Iliad", "The Odyssey"]
       }
     ]
   },
@@ -499,10 +493,7 @@
       {
         "kind": "create_works",
         "work": "writing",
-        "works": [
-          "Metamorphoses",
-          "The Art of Love"
-        ]
+        "works": ["Metamorphoses", "The Art of Love"]
       }
     ]
   },
@@ -517,10 +508,7 @@
       {
         "kind": "create_works",
         "work": "writing",
-        "works": [
-          "The Tale of Genji",
-          "The Diary of Lady Murasaki"
-        ]
+        "works": ["The Tale of Genji", "The Diary of Lady Murasaki"]
       }
     ]
   },
@@ -535,10 +523,7 @@
       {
         "kind": "create_works",
         "work": "writing",
-        "works": [
-          "Don Quixote",
-          "Exemplary Novels"
-        ]
+        "works": ["Don Quixote", "Exemplary Novels"]
       }
     ]
   },
@@ -553,10 +538,7 @@
       {
         "kind": "create_works",
         "work": "writing",
-        "works": [
-          "War and Peace",
-          "Anna Karenina"
-        ]
+        "works": ["War and Peace", "Anna Karenina"]
       }
     ]
   },
@@ -571,10 +553,7 @@
       {
         "kind": "create_works",
         "work": "writing",
-        "works": [
-          "Gitanjali",
-          "The Home and the World"
-        ]
+        "works": ["Gitanjali", "The Home and the World"]
       }
     ]
   },
@@ -652,11 +631,7 @@
       {
         "kind": "create_works",
         "work": "art",
-        "works": [
-          "The Lamentation",
-          "The Kiss of Judas",
-          "Ognissanti Madonna"
-        ]
+        "works": ["The Lamentation", "The Kiss of Judas", "Ognissanti Madonna"]
       }
     ]
   },
@@ -671,11 +646,7 @@
       {
         "kind": "create_works",
         "work": "art",
-        "works": [
-          "Mona Lisa",
-          "The Last Supper",
-          "Lady with an Ermine"
-        ]
+        "works": ["Mona Lisa", "The Last Supper", "Lady with an Ermine"]
       }
     ]
   },
@@ -690,11 +661,7 @@
       {
         "kind": "create_works",
         "work": "art",
-        "works": [
-          "The Night Watch",
-          "The Anatomy Lesson",
-          "The Jewish Bride"
-        ]
+        "works": ["The Night Watch", "The Anatomy Lesson", "The Jewish Bride"]
       }
     ]
   },
@@ -728,11 +695,7 @@
       {
         "kind": "create_works",
         "work": "art",
-        "works": [
-          "The Starry Night",
-          "Sunflowers",
-          "Café Terrace at Night"
-        ]
+        "works": ["The Starry Night", "Sunflowers", "Café Terrace at Night"]
       }
     ]
   },
@@ -747,11 +710,7 @@
       {
         "kind": "create_works",
         "work": "art",
-        "works": [
-          "The Two Fridas",
-          "The Broken Column",
-          "Self-Portrait with Monkey"
-        ]
+        "works": ["The Two Fridas", "The Broken Column", "Self-Portrait with Monkey"]
       }
     ]
   },
@@ -766,10 +725,7 @@
       {
         "kind": "create_works",
         "work": "music",
-        "works": [
-          "The Magic Flute",
-          "Requiem"
-        ]
+        "works": ["The Magic Flute", "Requiem"]
       }
     ]
   },
@@ -784,10 +740,7 @@
       {
         "kind": "create_works",
         "work": "music",
-        "works": [
-          "Symphony No. 9",
-          "Moonlight Sonata"
-        ]
+        "works": ["Symphony No. 9", "Moonlight Sonata"]
       }
     ]
   },
@@ -802,10 +755,7 @@
       {
         "kind": "create_works",
         "work": "music",
-        "works": [
-          "Nocturnes",
-          "Ballade No. 1"
-        ]
+        "works": ["Nocturnes", "Ballade No. 1"]
       }
     ]
   },
@@ -820,10 +770,7 @@
       {
         "kind": "create_works",
         "work": "music",
-        "works": [
-          "Swan Lake",
-          "The Nutcracker"
-        ]
+        "works": ["Swan Lake", "The Nutcracker"]
       }
     ]
   },
@@ -838,10 +785,7 @@
       {
         "kind": "create_works",
         "work": "music",
-        "works": [
-          "West End Blues",
-          "Potato Head Blues"
-        ]
+        "works": ["West End Blues", "Potato Head Blues"]
       }
     ]
   },
@@ -856,10 +800,7 @@
       {
         "kind": "create_works",
         "work": "music",
-        "works": [
-          "A-Tisket, A-Tasket",
-          "Lady Be Good"
-        ]
+        "works": ["A-Tisket, A-Tasket", "Lady Be Good"]
       }
     ]
   }

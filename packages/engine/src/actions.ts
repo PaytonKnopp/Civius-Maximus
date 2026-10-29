@@ -174,6 +174,13 @@ export const Action = z.discriminatedUnion('type', [
     work: z.string().min(1).max(64),
     settlement: z.string().min(1).max(64),
   }),
+  /** Swap two of your great works of the same kind (to theme a building). */
+  z.strictObject({
+    type: z.literal('swap_great_works'),
+    player: PlayerRef,
+    a: z.string().min(1).max(64),
+    b: z.string().min(1).max(64),
+  }),
   /** Upgrade a unit to its newer version, for gold, in your own territory. */
   z.strictObject({ type: z.literal('upgrade_unit'), player: PlayerRef, unit: UnitRef }),
   /** A trader in one of your settlements starts a trade route to another settlement. */

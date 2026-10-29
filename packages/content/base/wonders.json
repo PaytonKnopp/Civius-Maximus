@@ -25,12 +25,8 @@
       }
     ],
     "placement": {
-      "terrains": [
-        "desert"
-      ],
-      "features": [
-        "floodplains"
-      ]
+      "terrains": ["desert"],
+      "features": ["floodplains"]
     },
     "model": "pyramid",
     "requiresTech": "tech_masonry"
@@ -89,13 +85,8 @@
       }
     ],
     "placement": {
-      "terrains": [
-        "grassland",
-        "plains"
-      ],
-      "elevations": [
-        "flat"
-      ]
+      "terrains": ["grassland", "plains"],
+      "elevations": ["flat"]
     },
     "model": "stones",
     "requiresTech": "tech_astrology"
@@ -123,10 +114,7 @@
           "owner": "self"
         },
         "condition": {
-          "tile_has_improvement": [
-            "improvement_camp",
-            "improvement_pasture"
-          ]
+          "tile_has_improvement": ["improvement_camp", "improvement_pasture"]
         }
       }
     ],
@@ -168,9 +156,7 @@
       }
     ],
     "placement": {
-      "elevations": [
-        "hills"
-      ]
+      "elevations": ["hills"]
     },
     "model": "temple",
     "requiresCivic": "civic_mysticism"
@@ -204,21 +190,11 @@
     ],
     "placement": {
       "water": true,
-      "terrains": [
-        "coast"
-      ],
-      "elevations": [
-        "flat"
-      ],
+      "terrains": ["coast"],
+      "elevations": ["flat"],
       "nextToAny": [
         {
-          "terrain": [
-            "grassland",
-            "plains",
-            "desert",
-            "tundra",
-            "snow"
-          ]
+          "terrain": ["grassland", "plains", "desert", "tundra", "snow"]
         }
       ]
     },
@@ -287,9 +263,7 @@
       }
     ],
     "placement": {
-      "elevations": [
-        "flat"
-      ]
+      "elevations": ["flat"]
     },
     "model": "arena",
     "requiresCivic": "civic_games_and_recreation"
@@ -336,9 +310,7 @@
       }
     ],
     "placement": {
-      "terrains": [
-        "desert"
-      ]
+      "terrains": ["desert"]
     },
     "model": "rock_city",
     "requiresTech": "tech_mathematics"

@@ -102,6 +102,7 @@ export type {
   CitizenFocus,
   GameSettings,
   GameState,
+  GreatWorkState,
   PlayerId,
   PlayerState,
   SettlementId,

@@ -170,11 +170,7 @@
       "civilian": 1,
       "support": 1
     },
-    "startingUnits": [
-      "unit_settler",
-      "unit_warrior",
-      "unit_scout"
-    ],
+    "startingUnits": ["unit_settler", "unit_warrior", "unit_scout"],
     "embarkFromStart": false,
     "embarkedSight": 1,
     "freeUpkeep": 3,
@@ -219,10 +215,7 @@
     "strengthScale": 0.04,
     "randomPercent": 20,
     "maxHealth": 100,
-    "fortify": [
-      3,
-      6
-    ],
+    "fortify": [3, 6],
     "flanking": 2,
     "support": 2,
     "woundedPer10": 1,
@@ -251,13 +244,7 @@
       "capturePopulationLoss": 25
     },
     "minWarTurns": 10,
-    "promotionXp": [
-      15,
-      30,
-      50,
-      75,
-      105
-    ],
+    "promotionXp": [15, 30, 50, 75, 105],
     "warSupport": {
       "surprise": 3,
       "kill": 1,
@@ -342,51 +329,27 @@
     "units": [
       {
         "era": "era_ancient",
-        "units": [
-          "unit_warrior",
-          "unit_warrior",
-          "unit_slinger"
-        ]
+        "units": ["unit_warrior", "unit_warrior", "unit_slinger"]
       },
       {
         "era": "era_classical",
-        "units": [
-          "unit_spearman",
-          "unit_archer",
-          "unit_horseman"
-        ]
+        "units": ["unit_spearman", "unit_archer", "unit_horseman"]
       },
       {
         "era": "era_medieval",
-        "units": [
-          "unit_swordsman",
-          "unit_crossbowman",
-          "unit_horseman"
-        ]
+        "units": ["unit_swordsman", "unit_crossbowman", "unit_horseman"]
       },
       {
         "era": "era_renaissance",
-        "units": [
-          "unit_musketman",
-          "unit_bombard",
-          "unit_knight"
-        ]
+        "units": ["unit_musketman", "unit_bombard", "unit_knight"]
       },
       {
         "era": "era_industrial",
-        "units": [
-          "unit_line_infantry",
-          "unit_field_cannon",
-          "unit_cavalry"
-        ]
+        "units": ["unit_line_infantry", "unit_field_cannon", "unit_cavalry"]
       },
       {
         "era": "era_modern",
-        "units": [
-          "unit_infantry",
-          "unit_machine_gun",
-          "unit_cavalry"
-        ]
+        "units": ["unit_infantry", "unit_machine_gun", "unit_cavalry"]
       }
     ]
   },

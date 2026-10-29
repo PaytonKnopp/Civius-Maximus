@@ -85,10 +85,8 @@ describe('great works', () => {
       ctx,
     );
     expect(full.ok).toBe(false);
-    s = produce(s, (d) => {
-      d.greatWorks![iliad!]!.holder = 'building_palace';
-      d.greatWorks![metamorphoses!]!.holder = 'building_amphitheater';
-    });
+    s = act(s, { type: 'swap_great_works', player: 'p1', a: iliad!, b: metamorphoses! }).state;
+    expect(s.greatWorks![iliad!]!.holder).toBe('building_palace');
     expect(holderWorks(s, s.settlements[capital]!, amphitheater).themed).toBe(true);
     // Themed: the Amphitheater's two works yield double (+2 tourism each, so +4 more).
     expect(tourism(s) - before).toBe(2 * 100 + 4 * 100);

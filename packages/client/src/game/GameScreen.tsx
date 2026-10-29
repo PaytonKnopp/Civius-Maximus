@@ -87,6 +87,7 @@ import { type Lens, LENSES, lensFor } from './lenses';
 import { LeaderIntro, LeaderSpeech, type SpeechLine } from './LeaderSpeech';
 import { AgesScreen } from './AgesScreen';
 import { GovernorsScreen } from './GovernorsScreen';
+import { GreatWorksScreen } from './GreatWorksScreen';
 import { Minimap } from './Minimap';
 import { music, play, type Sfx } from '../audio';
 import { LeaderHead } from '../ui/LeaderCard';
@@ -161,6 +162,7 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
       return e.owner === me ? 'wonder' : 'notify';
     case 'great_person_born':
     case 'great_person_activated':
+    case 'great_work_created':
       return 'great_person';
     case 'religion_founded':
     case 'pantheon_founded':
@@ -258,6 +260,13 @@ function noticeFor(
       return e.player === ME
         ? `A ${name} begins! (${e.score} era score last era) Choose your dedication.`
         : `${civName(content, state, e.player)} enters a ${name}`;
+    }
+    case 'great_work_created': {
+      const person = content.entities.greatPerson[e.person];
+      const who = person ? resolveText(content, person.name) : e.person;
+      return e.player === ME
+        ? `${who} created ${e.name}, now on display in ${name(e.settlement)}`
+        : `${who} created ${e.name} for ${civName(content, state, e.player)}`;
     }
     case 'governor_established': {
       if (e.player !== ME) return undefined;
@@ -542,6 +551,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     | { kind: 'victories' }
     | { kind: 'ages' }
     | { kind: 'governors' }
+    | { kind: 'greatWorks' }
     | { kind: 'graphs' }
     | { kind: 'help' }
     | null
@@ -1249,6 +1259,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       else if (e.key === 'v') setOverlay({ kind: 'victories' });
       else if (e.key === 'e') setOverlay({ kind: 'ages' });
       else if (e.key === 'o') setOverlay({ kind: 'governors' });
+      else if (e.key === 'k') setOverlay({ kind: 'greatWorks' });
       else if (e.key === 'h') setOverlay({ kind: 'graphs' });
       else if (e.key === '?') setOverlay({ kind: 'help' });
       else if (e.key === 'l') setLens((l) => LENSES[(LENSES.indexOf(l) + 1) % LENSES.length]!);
@@ -1363,6 +1374,11 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               icon="greatPeople"
               label="Great people (P)"
               onClick={() => setOverlay({ kind: 'greatPeople' })}
+            />
+            <ScreenButton
+              icon="tourism"
+              label="Great works (K)"
+              onClick={() => setOverlay({ kind: 'greatWorks' })}
             />
             <ScreenButton
               icon="religion"
@@ -1719,6 +1735,15 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             return ok;
           }}
           prophet={overlay.prophet}
+          onClose={() => setOverlay(null)}
+        />
+      )}
+      {overlay?.kind === 'greatWorks' && (
+        <GreatWorksScreen
+          ctx={ctx}
+          state={state}
+          viewer={viewer}
+          act={act}
           onClose={() => setOverlay(null)}
         />
       )}

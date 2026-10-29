@@ -221,6 +221,7 @@ export function greatWorksTurn(draft: Draft<GameState>) {
 }
 
 type MoveWork = Extract<Action, { type: 'move_great_work' }>;
+type SwapWorks = Extract<Action, { type: 'swap_great_works' }>;
 
 export const greatWorksHandlers = {
   move_great_work: {
@@ -254,4 +255,24 @@ export const greatWorksHandlers = {
       w.holder = holder;
     },
   } satisfies ActionHandler<MoveWork>,
+
+  swap_great_works: {
+    validate(state, action) {
+      const a = state.greatWorks?.[action.a];
+      const b = state.greatWorks?.[action.b];
+      const mine = (w: GreatWorkState | undefined) =>
+        !!w && state.settlements[w.settlement]?.owner === action.player;
+      if (!mine(a) || !mine(b) || action.a === action.b)
+        return { code: 'not_yours', message: 'Swap two of your own great works' };
+      if (a!.kind !== b!.kind)
+        return { code: 'kinds', message: 'Only works of the same kind can swap places' };
+      return undefined;
+    },
+    apply(draft, action) {
+      const a = draft.greatWorks![action.a]!;
+      const b = draft.greatWorks![action.b]!;
+      [a.settlement, b.settlement] = [b.settlement, a.settlement];
+      [a.holder, b.holder] = [b.holder, a.holder];
+    },
+  } satisfies ActionHandler<SwapWorks>,
 };

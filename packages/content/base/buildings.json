@@ -582,10 +582,7 @@
         "effect": "grant_promotion",
         "params": {
           "promotion": "promo_ordu_trained",
-          "unitClass": [
-            "class_light_cavalry",
-            "class_heavy_cavalry"
-          ]
+          "unitClass": ["class_light_cavalry", "class_heavy_cavalry"]
         },
         "target": {
           "scope": "settlements"
