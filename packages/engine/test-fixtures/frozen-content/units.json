@@ -230,7 +230,7 @@
     "icon": "Ho",
     "model": "horseman",
     "requiresTech": "tech_horseback_riding",
-    "upgradesTo": "unit_cavalry"
+    "upgradesTo": "unit_courser"
   },
   {
     "type": "unit",
@@ -244,7 +244,7 @@
     "icon": "Sw",
     "model": "sword",
     "requiresTech": "tech_iron_working",
-    "upgradesTo": "unit_musketman"
+    "upgradesTo": "unit_man_at_arms"
   },
   {
     "type": "unit",
@@ -493,7 +493,8 @@
     "icon": "Fr",
     "model": "frigate",
     "requiresTech": "tech_square_rigging",
-    "deepWater": true
+    "deepWater": true,
+    "upgradesTo": "unit_battleship"
   },
   {
     "type": "unit",
@@ -649,7 +650,8 @@
     "cost": 450,
     "icon": "Ar",
     "model": "artillery",
-    "requiresTech": "tech_steel"
+    "requiresTech": "tech_steel",
+    "upgradesTo": "unit_rocket_artillery"
   },
   {
     "type": "unit",
@@ -662,7 +664,8 @@
     "cost": 430,
     "icon": "AT",
     "model": "infantry",
-    "requiresTech": "tech_combustion"
+    "requiresTech": "tech_combustion",
+    "upgradesTo": "unit_modern_at"
   },
   {
     "type": "unit",
@@ -1175,5 +1178,93 @@
     "upgradesTo": "unit_infantry",
     "civ": "civ_ethiopia",
     "replaces": "unit_line_infantry"
+  },
+  {
+    "type": "unit",
+    "sight": 2,
+    "id": "unit_quadrireme",
+    "name": "Quadrireme",
+    "class": "class_naval_ranged",
+    "movement": 3,
+    "strength": 20,
+    "rangedStrength": 25,
+    "range": 1,
+    "cost": 120,
+    "icon": "Qu",
+    "model": "ship",
+    "requiresTech": "tech_shipbuilding",
+    "upgradesTo": "unit_frigate"
+  },
+  {
+    "type": "unit",
+    "sight": 2,
+    "id": "unit_man_at_arms",
+    "name": "Man-at-Arms",
+    "class": "class_melee",
+    "movement": 2,
+    "strength": 45,
+    "cost": 160,
+    "icon": "MA",
+    "model": "sword",
+    "requiresTech": "tech_apprenticeship",
+    "upgradesTo": "unit_musketman"
+  },
+  {
+    "type": "unit",
+    "sight": 2,
+    "id": "unit_courser",
+    "name": "Courser",
+    "class": "class_light_cavalry",
+    "movement": 5,
+    "strength": 44,
+    "cost": 200,
+    "icon": "Cu",
+    "model": "horseman",
+    "requiresTech": "tech_machinery",
+    "upgradesTo": "unit_cavalry"
+  },
+  {
+    "type": "unit",
+    "sight": 2,
+    "id": "unit_battleship",
+    "name": "Battleship",
+    "class": "class_naval_ranged",
+    "movement": 5,
+    "strength": 60,
+    "rangedStrength": 70,
+    "range": 3,
+    "cost": 430,
+    "icon": "Bs",
+    "model": "steamship",
+    "requiresTech": "tech_steel",
+    "deepWater": true
+  },
+  {
+    "type": "unit",
+    "sight": 2,
+    "id": "unit_modern_at",
+    "name": "Modern AT",
+    "class": "class_anti_cavalry",
+    "movement": 3,
+    "strength": 85,
+    "cost": 580,
+    "icon": "MT",
+    "model": "infantry",
+    "requiresTech": "tech_composites"
+  },
+  {
+    "type": "unit",
+    "sight": 2,
+    "id": "unit_rocket_artillery",
+    "name": "Rocket Artillery",
+    "class": "class_siege",
+    "movement": 3,
+    "strength": 70,
+    "rangedStrength": 105,
+    "range": 3,
+    "cost": 640,
+    "icon": "RA",
+    "model": "artillery",
+    "requiresTech": "tech_guidance_systems"
   }
 ]

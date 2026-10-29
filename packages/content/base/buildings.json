@@ -1609,5 +1609,245 @@
     },
     "civ": "civ_ethiopia",
     "replaces": "building_castle"
+  },
+  {
+    "type": "building",
+    "id": "building_stable",
+    "name": "Stable",
+    "description": "Horse lines: +1 production; light cavalry trained here start with Raider, heavy cavalry with Charge.",
+    "icon": "Sb",
+    "cost": 90,
+    "maintenance": 1,
+    "yields": {
+      "production": 1
+    },
+    "district": "district_encampment",
+    "requiresTech": "tech_horseback_riding",
+    "localEffects": [
+      {
+        "effect": "grant_promotion",
+        "params": {
+          "promotion": "promo_raider",
+          "unitClass": "class_light_cavalry"
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "grant_promotion",
+        "params": {
+          "promotion": "promo_charge",
+          "unitClass": "class_heavy_cavalry"
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_general",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "building",
+    "id": "building_armory",
+    "name": "Armory",
+    "description": "+2 production and +25% production toward soldiers here.",
+    "icon": "Ay",
+    "cost": 160,
+    "maintenance": 1,
+    "yields": {
+      "production": 2
+    },
+    "district": "district_encampment",
+    "requiresBuilding": "building_barracks",
+    "requiresTech": "tech_military_tactics",
+    "localEffects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 25,
+          "toward": {
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_general",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "building",
+    "id": "building_military_academy",
+    "name": "Military Academy",
+    "description": "+3 production and +25% more production toward soldiers here; +2 great general points.",
+    "icon": "MA",
+    "cost": 330,
+    "maintenance": 2,
+    "yields": {
+      "production": 3
+    },
+    "district": "district_encampment",
+    "requiresBuilding": "building_armory",
+    "requiresTech": "tech_military_science",
+    "localEffects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 25,
+          "toward": {
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_general",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "building",
+    "id": "building_shipyard",
+    "name": "Shipyard",
+    "description": "+2 production and +25% production toward naval units here; +1 great admiral point.",
+    "icon": "Sy",
+    "cost": 250,
+    "maintenance": 2,
+    "yields": {
+      "production": 2
+    },
+    "district": "district_harbor",
+    "requiresBuilding": "building_lighthouse",
+    "requiresTech": "tech_square_rigging",
+    "localEffects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 25,
+          "toward": {
+            "unitClass": ["class_naval_melee", "class_naval_ranged"]
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_admiral",
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "building",
+    "id": "building_seaport",
+    "name": "Seaport",
+    "description": "+3 gold, and coast worked here gives +1 food.",
+    "icon": "Sp",
+    "cost": 380,
+    "maintenance": 2,
+    "yields": {
+      "gold": 3
+    },
+    "district": "district_harbor",
+    "requiresBuilding": "building_shipyard",
+    "requiresTech": "tech_electricity",
+    "localEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles"
+        },
+        "condition": {
+          "tile_terrain": "coast"
+        }
+      }
+    ]
+  },
+  {
+    "type": "building",
+    "id": "building_zoo",
+    "name": "Zoo",
+    "description": "+2 happiness and +1 culture.",
+    "icon": "Zo",
+    "cost": 290,
+    "maintenance": 1,
+    "happiness": 2,
+    "yields": {
+      "culture": 1
+    },
+    "district": "district_entertainment",
+    "requiresBuilding": "building_arena",
+    "requiresCivic": "civic_natural_history"
+  },
+  {
+    "type": "building",
+    "id": "building_sewer",
+    "name": "Sewer",
+    "description": "+1 happiness and +15% growth here.",
+    "icon": "Sw",
+    "cost": 260,
+    "maintenance": 2,
+    "happiness": 1,
+    "district": "district_aqueduct",
+    "requiresTech": "tech_sanitation",
+    "localEffects": [
+      {
+        "effect": "modify_growth",
+        "params": {
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   }
 ]

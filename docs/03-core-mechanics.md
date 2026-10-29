@@ -373,7 +373,10 @@ last player standing wins. Puppets wait for the loyalty and settlement-limit wor
   decision).
 - **Built so far (M9):** 32 promotions for the 8 combat classes, with original names (D47).
 - **Unit upgrades (V1 part 9):** each unit names what it becomes (Warrior → Swordsman →
-  Musketman → Line Infantry → Infantry; uniques follow the unit they replace). Once you can
+  Man-at-Arms → Musketman → Line Infantry → Infantry; uniques follow the unit they replace).
+  V1 final F17 filled the gaps in the lines: Quadrireme (early naval ranged, → Frigate →
+  Battleship), Courser (Horseman → Courser → Cavalry), Modern AT (after the Anti-Tank Crew)
+  and Rocket Artillery (after Artillery). Once you can
   build the newer one, the old one leaves the build list (one already queued becomes the new
   one, keeping its progress), and units in your territory with moves left can **upgrade** for
   2 gold per point of production between them (at least 20), keeping their experience.
@@ -613,6 +616,18 @@ Districts are Civ 6's signature system and the main source of city planning.
   building it gets its production back as gold and drops it from the queue.
 - 11 buildings now belong to districts (Library and University in the Campus, Shrine and Temple
   in the Holy Site, and so on); a district building needs its district first.
+- **The full wonder list (V1 final F17):** 45 world wonders from every era, each with its own
+  landmark in 3D: Etemenanki and the Great Bath (Ancient); the Great Lighthouse, Mausoleum at
+  Halicarnassus, Terracotta Army, Parthenon and Statue of Zeus (Classical); Hagia Sophia, Angkor
+  Wat, Chichen Itza, Machu Picchu (on hills next to a mountain), Notre-Dame, Great Zimbabwe, the
+  Great Mosque of Djenné, the Alhambra and Kilwa Kisiwani (Medieval); the Forbidden City,
+  Venetian Arsenal, Himeji Castle, Porcelain Tower, Potala Palace and Jantar Mantar
+  (Renaissance); the Hermitage, Ruhr Valley and Oxford University (Industrial); Cristo
+  Redentor, the Maracanã and Hoover Dam (Modern); the Sydney Opera House (Atomic) and the CN
+  Tower (Information), with the earlier fifteen. Effects are built from the shared effects
+  list (`wonders.json`).
+- **More buildings (V1 final F17):** Stable, Armory and Military Academy in the Encampment;
+  Shipyard and Seaport in the Harbor; Zoo in the Entertainment Complex; Sewer in the Aqueduct.
 - **Specialists:** each building in a district opens one specialist slot. Specialists give the
   district's specialist yields (e.g. +2🔬 in a Campus) instead of working a tile, and are assigned
   by the citizen focus like tiles.
