@@ -525,6 +525,10 @@ export class MapView implements MapRenderer {
     // The 2D view shows the result (flashes and bars) without a lunge.
   }
 
+  animateDisaster() {
+    // The 2D view shows the result (the flash and the notice) without plumes.
+  }
+
   setSelected(unit: string | null) {
     this.selectedUnit = unit;
     this.setUnits([...this.unitTokens.values()].map((t) => t.view));

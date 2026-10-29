@@ -26,6 +26,15 @@ export function naturalWonderParts(
     }
   };
   switch (model) {
+    case 'vent': {
+      // A volcano's crater on its mountain: dark basalt, a glow of lava, a plume of smoke.
+      parts.push(
+        scaled(G.cone, 0x3a302c, x, y + 0.08, z, 0.3, 0.22, 0.3),
+        scaled(G.cone, 0xd8562a, x, y + 0.16, z, 0.1, 0.08, 0.1),
+      );
+      emitters.push({ kind: 'smoke', at: [x, y + 0.3, z] });
+      break;
+    }
     case 'peak': {
       // A great summit: rock body, ridges, a deep snow cap.
       parts.push(

@@ -452,6 +452,17 @@ export class World3D implements MapRenderer {
     );
   }
 
+  animateDisaster(tiles: readonly number[], visual: 'mist' | 'dust' | 'fire' | 'smoke') {
+    if (!this.data) return;
+    const w = this.data.map.width;
+    for (const tile of tiles.slice(0, 19)) {
+      const [x, z] = center3(tile % w, Math.floor(tile / w));
+      const y = Math.max(0, this.heightAt(x, z)) + 0.15;
+      this.settlements.effects.burst(visual, [x, y, z], 6);
+      if (visual === 'fire') this.settlements.effects.burst('smoke', [x, y + 0.2, z], 6);
+    }
+  }
+
   setHighlights(highlights: TileHighlight[]) {
     if (this.data) this.settlements.setHighlights(highlights);
   }
@@ -464,9 +475,8 @@ export class World3D implements MapRenderer {
       const { map, content } = this.data;
       const wonders: { tile: number; model: string }[] = [];
       map.tiles.forEach((t, tile) => {
-        const model = t.feature
-          ? content.entities.feature[t.feature]?.naturalWonder?.model
-          : undefined;
+        const f = t.feature ? content.entities.feature[t.feature] : undefined;
+        const model = f?.naturalWonder?.model ?? f?.landmark;
         if (model) wonders.push({ tile, model });
       });
       this.settlements.setNaturalWonders(wonders);

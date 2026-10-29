@@ -54,6 +54,7 @@ function makeOnlineSetup(names: string[], o: OnlineOptions): GameSetup {
     espionage: rules?.espionage ?? true,
     congress: rules?.congress ?? true,
     diplomatic: rules?.diplomatic ?? true,
+    disasters: rules?.disasters ?? true,
     turnLimit: o.turnLimit ?? null,
     speed: o.speed,
     difficulty: o.difficulty,

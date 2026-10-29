@@ -291,6 +291,7 @@ export {
   titlesEarned,
   titlesSpent,
 } from './governors/governors';
+export { climateOf, disastersOn, emissionsPerTurn } from './disasters/disasters';
 export {
   ballotCost,
   congressOn,

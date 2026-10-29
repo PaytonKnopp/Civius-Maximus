@@ -157,6 +157,17 @@
   },
   {
     "type": "feature",
+    "id": "volcano",
+    "name": "Volcano",
+    "color": "#a8402c",
+    "impassable": true,
+    "appeal": -1,
+    "validTerrains": ["grassland", "plains", "desert", "tundra", "snow"],
+    "validElevations": ["mountain"],
+    "landmark": "vent"
+  },
+  {
+    "type": "feature",
     "id": "nw_great_reef",
     "name": "Great Barrier Reef",
     "color": "#3fb7a8",

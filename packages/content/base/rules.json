@@ -162,7 +162,11 @@
         "high": -8
       }
     },
-    "naturalWonderSpacing": 5
+    "naturalWonderSpacing": 5,
+    "volcanoes": {
+      "feature": "volcano",
+      "percent": 6
+    }
   },
   "units": {
     "stacking": {
@@ -499,5 +503,38 @@
       "perAlliance": 1,
       "perFriendship": 1
     }
+  },
+  "disasters": {
+    "intensity": 100,
+    "repairTurns": 5,
+    "maxFertility": 2
+  },
+  "climate": {
+    "phases": [
+      {
+        "name": "Warming",
+        "at": 150,
+        "submerged": 15,
+        "disasters": 25
+      },
+      {
+        "name": "Rising Seas",
+        "at": 400,
+        "submerged": 35,
+        "disasters": 50
+      },
+      {
+        "name": "Climate Crisis",
+        "at": 800,
+        "submerged": 60,
+        "disasters": 100
+      },
+      {
+        "name": "Drowned Coasts",
+        "at": 1400,
+        "submerged": 90,
+        "disasters": 150
+      }
+    ]
   }
 }

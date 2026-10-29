@@ -867,6 +867,18 @@ export const ICONS: Record<string, IconDef> = {
     ],
   },
   envoy: { bg: C.influence, glyph: SCROLL },
+  // A thermometer.
+  climate: {
+    bg: '#b5562d',
+    glyph: [
+      s(
+        'M10.4 5.6a1.6 1.6 0 0 1 3.2 0v7.6a3.6 3.6 0 1 1-3.2 0Z' +
+          'M11.6 6.2v7.8a2.2 2.2 0 1 0 .8 0V6.2Z',
+        true,
+      ),
+      s('M15.2 6.4h2.6v1.2h-2.6ZM15.2 9h2v1.2h-2ZM15.2 11.6h2.6v1.2h-2.6Z'),
+    ],
+  },
   // A domed hall with columns.
   congress: {
     bg: '#2f6f8f',

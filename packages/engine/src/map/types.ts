@@ -18,6 +18,10 @@ export interface MapTile {
   district: string | null;
   /** A `wonder` content id, once the wonder is built. */
   wonder: string | null;
+  /** Lasting extra yields left by disasters (silt, ash), by yield. */
+  fertile?: Record<string, number>;
+  /** Its improvement was damaged by a disaster: out of use until this turn. */
+  pillaged?: number;
 }
 
 export interface MapState {

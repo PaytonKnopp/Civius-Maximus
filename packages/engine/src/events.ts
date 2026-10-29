@@ -61,6 +61,18 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         player: PlayerId;
         settlement: SettlementId;
       }
+    | {
+        type: 'disaster';
+        disaster: string;
+        /** Where it started, and every tile it hit. */
+        tile: number;
+        tiles: number[];
+        /** Improvements damaged, and settlements hit. */
+        pillaged: number;
+        settlements: SettlementId[];
+      }
+    | { type: 'sea_level_rose'; phase: number; tiles: number[] }
+    | { type: 'climate_phase'; phase: number; emissions: number }
     | { type: 'congress_founded'; by: PlayerId }
     /** A session meets this turn: everyone votes on `agenda`. */
     | { type: 'congress_session'; turn: number; agenda: string[] }

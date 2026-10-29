@@ -262,6 +262,10 @@
                 ]
               }
             },
+            "landmark": {
+              "type": "string",
+              "minLength": 1
+            },
             "color": {
               "type": "string",
               "pattern": "^#[0-9a-fA-F]{6}$"
@@ -7103,6 +7107,12 @@
                 }
               },
               "additionalProperties": false
+            },
+            "emissions": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
             },
             "localEffects": {
               "default": [],
@@ -74096,6 +74106,153 @@
           "properties": {
             "type": {
               "type": "string",
+              "const": "disaster"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "chance": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "origin": {
+              "type": "object",
+              "properties": {
+                "feature": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    {
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      }
+                    }
+                  ]
+                },
+                "terrain": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    {
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      }
+                    }
+                  ]
+                },
+                "river": {
+                  "type": "boolean"
+                },
+                "coastal": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "radius": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "spreadFeature": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                }
+              ]
+            },
+            "pillage": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "damage": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "fertility": {
+              "default": {},
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "additionalProperties": {
+                "type": "number",
+                "multipleOf": 0.5
+              }
+            },
+            "foodLoss": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "populationLoss": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "visual": {
+              "default": "dust",
+              "type": "string",
+              "enum": [
+                "mist",
+                "dust",
+                "fire",
+                "smoke"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "name",
+            "description",
+            "chance",
+            "origin",
+            "radius"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
               "const": "rules"
             },
             "id": {
@@ -78989,6 +79146,25 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 9007199254740991
+                },
+                "volcanoes": {
+                  "type": "object",
+                  "properties": {
+                    "feature": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "percent": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  },
+                  "required": [
+                    "feature",
+                    "percent"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
@@ -79001,6 +79177,83 @@
                 "polarRows",
                 "resourceDensity",
                 "start"
+              ],
+              "additionalProperties": false
+            },
+            "disasters": {
+              "default": {
+                "intensity": 100,
+                "repairTurns": 5,
+                "maxFertility": 2
+              },
+              "type": "object",
+              "properties": {
+                "intensity": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 400
+                },
+                "repairTurns": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "maxFertility": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "intensity",
+                "repairTurns",
+                "maxFertility"
+              ],
+              "additionalProperties": false
+            },
+            "climate": {
+              "default": {
+                "phases": []
+              },
+              "type": "object",
+              "properties": {
+                "phases": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "at": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "submerged": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "disasters": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "at",
+                      "submerged",
+                      "disasters"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "phases"
               ],
               "additionalProperties": false
             }
@@ -79422,6 +79675,10 @@
                     "mountain"
                   ]
                 }
+              },
+              "landmark": {
+                "type": "string",
+                "minLength": 1
               },
               "color": {
                 "type": "string",
@@ -86264,6 +86521,12 @@
                   }
                 },
                 "additionalProperties": false
+              },
+              "emissions": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
               },
               "localEffects": {
                 "default": [],
@@ -153257,6 +153520,153 @@
             "properties": {
               "type": {
                 "type": "string",
+                "const": "disaster"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "chance": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "origin": {
+                "type": "object",
+                "properties": {
+                  "feature": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$"
+                        }
+                      }
+                    ]
+                  },
+                  "terrain": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$"
+                        }
+                      }
+                    ]
+                  },
+                  "river": {
+                    "type": "boolean"
+                  },
+                  "coastal": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "radius": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4
+              },
+              "spreadFeature": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                  }
+                ]
+              },
+              "pillage": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "damage": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "fertility": {
+                "default": {},
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "additionalProperties": {
+                  "type": "number",
+                  "multipleOf": 0.5
+                }
+              },
+              "foodLoss": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "populationLoss": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 5
+              },
+              "visual": {
+                "default": "dust",
+                "type": "string",
+                "enum": [
+                  "mist",
+                  "dust",
+                  "fire",
+                  "smoke"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "name",
+              "description",
+              "chance",
+              "origin",
+              "radius"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
                 "const": "rules"
               },
               "id": {
@@ -158150,6 +158560,25 @@
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 9007199254740991
+                  },
+                  "volcanoes": {
+                    "type": "object",
+                    "properties": {
+                      "feature": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "percent": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "feature",
+                      "percent"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
@@ -158162,6 +158591,83 @@
                   "polarRows",
                   "resourceDensity",
                   "start"
+                ],
+                "additionalProperties": false
+              },
+              "disasters": {
+                "default": {
+                  "intensity": 100,
+                  "repairTurns": 5,
+                  "maxFertility": 2
+                },
+                "type": "object",
+                "properties": {
+                  "intensity": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 400
+                  },
+                  "repairTurns": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "maxFertility": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "intensity",
+                  "repairTurns",
+                  "maxFertility"
+                ],
+                "additionalProperties": false
+              },
+              "climate": {
+                "default": {
+                  "phases": []
+                },
+                "type": "object",
+                "properties": {
+                  "phases": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "at": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "submerged": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "disasters": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "at",
+                        "submerged",
+                        "disasters"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "phases"
                 ],
                 "additionalProperties": false
               }

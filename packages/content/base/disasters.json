@@ -1,0 +1,84 @@
+[
+  {
+    "type": "disaster",
+    "id": "disaster_flood",
+    "name": "River Flood",
+    "description": "The river bursts its banks across its floodplains: improvements there may be damaged, but the silt leaves +1 food behind.",
+    "chance": 30,
+    "origin": {
+      "feature": ["floodplains", "floodplains_grassland", "floodplains_plains"]
+    },
+    "radius": 2,
+    "spreadFeature": ["floodplains", "floodplains_grassland", "floodplains_plains"],
+    "pillage": 50,
+    "damage": 15,
+    "fertility": {
+      "food": 1
+    },
+    "visual": "mist"
+  },
+  {
+    "type": "disaster",
+    "id": "disaster_storm",
+    "name": "Great Storm",
+    "description": "A storm off the sea batters the coast: improvements may be damaged and units caught in it are hurt.",
+    "chance": 20,
+    "origin": {
+      "coastal": true
+    },
+    "radius": 2,
+    "pillage": 30,
+    "damage": 25,
+    "visual": "mist"
+  },
+  {
+    "type": "disaster",
+    "id": "disaster_dust",
+    "name": "Dust Storm",
+    "description": "A dust storm sweeps the desert: improvements may be damaged, but the dust it drops leaves +1 production.",
+    "chance": 15,
+    "origin": {
+      "terrain": "desert"
+    },
+    "radius": 2,
+    "pillage": 25,
+    "damage": 20,
+    "fertility": {
+      "production": 1
+    },
+    "visual": "dust"
+  },
+  {
+    "type": "disaster",
+    "id": "disaster_drought",
+    "name": "Drought",
+    "description": "A dry year away from the rivers: settlements it reaches lose half their stored food.",
+    "chance": 15,
+    "origin": {
+      "terrain": ["grassland", "plains"],
+      "river": false
+    },
+    "radius": 2,
+    "foodLoss": 50,
+    "visual": "dust"
+  },
+  {
+    "type": "disaster",
+    "id": "disaster_eruption",
+    "name": "Volcanic Eruption",
+    "description": "A volcano erupts: everything around it is damaged and nearby settlements lose a citizen, but the ash leaves +1 food and +1 production.",
+    "chance": 25,
+    "origin": {
+      "feature": "volcano"
+    },
+    "radius": 1,
+    "pillage": 60,
+    "damage": 50,
+    "fertility": {
+      "food": 1,
+      "production": 1
+    },
+    "populationLoss": 1,
+    "visual": "fire"
+  }
+]

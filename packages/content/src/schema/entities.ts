@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Elevation, Id, ResourceClass, Text, YieldMap } from './common';
+import { Elevation, Id, IdOrIds, ResourceClass, Text, YieldMap } from './common';
 
 /** An inclusive range on a 0-100 scale (temperature, moisture, latitude). */
 const Range100 = z
@@ -74,6 +74,8 @@ export const FeatureDef = z.strictObject({
   requiresRiver: z.boolean().default(false),
   validTerrains: z.array(Id).min(1),
   validElevations: z.array(Elevation).min(1).default(['flat']),
+  /** A small 3D landmark for an ordinary feature (e.g. a volcano's smoking vent). */
+  landmark: z.string().min(1).optional(),
   /** Placeholder map color until art exists. */
   color: z
     .string()
@@ -693,7 +695,71 @@ export const RulesDef = z.strictObject({
       .optional(),
     /** Natural wonders keep at least this many tiles from each other and from starts. */
     naturalWonderSpacing: z.int().min(1).default(5),
+    /** Volcanoes: this feature on `percent` of mountains, placed last (after natural wonders). */
+    volcanoes: z.strictObject({ feature: Id, percent: z.int().min(0).max(100) }).optional(),
   }),
+  /** Natural disasters (docs/04-advanced-systems.md, "Climate & disasters"). */
+  disasters: z
+    .strictObject({
+      /** Percent of every disaster's base chance (100 = as written). */
+      intensity: z.int().min(0).max(400),
+      /** Turns until a damaged improvement is back in use. */
+      repairTurns: z.int().min(1),
+      /** Most extra yield of one kind a tile can get from disasters. */
+      maxFertility: z.int().min(0),
+    })
+    .default({ intensity: 100, repairTurns: 5, maxFertility: 2 }),
+  /** Climate change: emissions build up, and each phase raises the seas and makes disasters likelier. */
+  climate: z
+    .strictObject({
+      phases: z.array(
+        z.strictObject({
+          name: Text,
+          /** World emissions that start this phase. */
+          at: z.int().min(1),
+          /** Percent of low coastal land under water by this phase. */
+          submerged: z.int().min(0).max(100),
+          /** Percent more disasters during this phase. */
+          disasters: z.int().min(0),
+        }),
+      ),
+    })
+    .default({ phases: [] }),
+});
+
+/** A natural disaster (docs/04-advanced-systems.md, "Climate & disasters"). */
+export const DisasterDef = z.strictObject({
+  type: z.literal('disaster'),
+  id: Id,
+  name: Text,
+  description: Text,
+  /** Chance each turn somewhere in the world, per thousand (scaled by intensity and climate). */
+  chance: z.int().min(0).max(1000),
+  /** Where it can start. */
+  origin: z.strictObject({
+    feature: IdOrIds.optional(),
+    terrain: IdOrIds.optional(),
+    /** On a river (true), or away from rivers (false). */
+    river: z.boolean().optional(),
+    /** Land touching water. */
+    coastal: z.boolean().optional(),
+  }),
+  /** How far it reaches from where it starts. */
+  radius: z.int().min(0).max(4),
+  /** Only tiles with one of these features are hit (a flood stays on its floodplains). */
+  spreadFeature: IdOrIds.optional(),
+  /** Percent of the improvements it hits that are damaged until repaired. */
+  pillage: z.int().min(0).max(100).default(0),
+  /** Damage to every unit it hits. */
+  damage: z.int().min(0).max(100).default(0),
+  /** Lasting extra yields on the tiles it hits (fresh silt, ash). */
+  fertility: YieldMap.default({}),
+  /** Percent of stored food lost by settlements it hits. */
+  foodLoss: z.int().min(0).max(100).default(0),
+  /** Citizens lost by settlements it hits (never the last). */
+  populationLoss: z.int().min(0).max(5).default(0),
+  /** How the map shows it: a plume over each tile it hits. */
+  visual: z.enum(['mist', 'dust', 'fire', 'smoke']).default('dust'),
 });
 
 /** A family of units sharing rules: domain, stacking layer, whether it fights. */
@@ -1041,6 +1107,8 @@ export const BuildingDef = z.strictObject({
   walls: z.int().min(0).default(0),
   /** Slots for great works. */
   slots: GreatWorkSlots,
+  /** Emissions a turn toward climate change (when disasters are on). */
+  emissions: z.int().min(0).default(0),
   /** Effects on the settlement it's in. */
   localEffects: z.array(Effect).default([]),
   /** Effects on the whole empire. */
@@ -1875,6 +1943,7 @@ export const ENTITY_SCHEMAS = {
   governor: GovernorDef,
   spyMission: SpyMissionDef,
   resolution: ResolutionDef,
+  disaster: DisasterDef,
   rules: RulesDef,
 } as const;
 
@@ -1901,6 +1970,7 @@ export type MomentDef = z.infer<typeof MomentDef>;
 export type GovernorDef = z.infer<typeof GovernorDef>;
 export type SpyMissionDef = z.infer<typeof SpyMissionDef>;
 export type ResolutionDef = z.infer<typeof ResolutionDef>;
+export type DisasterDef = z.infer<typeof DisasterDef>;
 export type UnitClassDef = z.infer<typeof UnitClassDef>;
 export type UnitDef = z.infer<typeof UnitDef>;
 export type ImprovementDef = z.infer<typeof ImprovementDef>;
@@ -1962,6 +2032,7 @@ export interface EntityByType {
   governor: GovernorDef;
   spyMission: SpyMissionDef;
   resolution: ResolutionDef;
+  disaster: DisasterDef;
   rules: RulesDef;
 }
 export type AnyEntity = EntityByType[EntityType];

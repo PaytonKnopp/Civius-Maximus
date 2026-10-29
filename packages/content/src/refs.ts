@@ -241,6 +241,12 @@ export function collectRefs(entity: AnyEntity): Ref[] {
     case 'spyMission':
       requirements(out, entity);
       break;
+    case 'disaster':
+      ids(out, 'feature', entity.origin.feature, ['origin', 'feature']);
+      ids(out, 'terrain', entity.origin.terrain, ['origin', 'terrain']);
+      ids(out, 'feature', entity.spreadFeature, ['spreadFeature']);
+      yieldKeys(out, entity.fertility, ['fertility']);
+      break;
     case 'resolution':
       entity.options.forEach((o, i) => effectList(out, o.effects, ['options', i, 'effects']));
       break;
