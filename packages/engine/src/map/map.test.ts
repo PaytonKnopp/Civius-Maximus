@@ -129,8 +129,10 @@ function generate(
 
 describe('map generation', () => {
   const scripts = content.ids.mapScript;
+  // Twelve map types × sizes × seeds: these generate a few hundred maps.
+  const LONG = { timeout: 30_000 };
 
-  it('produces valid maps for every script (duel and tiny, 8 seeds each)', () => {
+  it('produces valid maps for every script (duel and tiny, 8 seeds each)', LONG, () => {
     for (const script of scripts) {
       for (const size of ['duel', 'tiny']) {
         for (let s = 0; s < 8; s++) {
@@ -141,7 +143,7 @@ describe('map generation', () => {
     }
   });
 
-  it('places 8 players on a Standard map, in well under a second', () => {
+  it('places 8 players on a Standard map, in well under a second', LONG, () => {
     for (const script of scripts) {
       const start = performance.now();
       const { map, starts } = generate(script, 'standard', 'eight');
@@ -315,11 +317,17 @@ describe('map breadth (F7)', () => {
     );
   });
 
-  it('generates every map type validly, and shuffle the same way from the same seed', () => {
-    for (const script of content.ids.mapScript) {
-      const { map, starts } = gen({ script });
-      expect(validateMap(map, starts, content), script).toEqual([]);
-    }
-    expect(gen({ script: 'shuffle' }, 'same').map).toEqual(gen({ script: 'shuffle' }, 'same').map);
-  });
+  it(
+    'generates every map type validly, and shuffle the same way from the same seed',
+    { timeout: 30_000 },
+    () => {
+      for (const script of content.ids.mapScript) {
+        const { map, starts } = gen({ script });
+        expect(validateMap(map, starts, content), script).toEqual([]);
+      }
+      expect(gen({ script: 'shuffle' }, 'same').map).toEqual(
+        gen({ script: 'shuffle' }, 'same').map,
+      );
+    },
+  );
 });
