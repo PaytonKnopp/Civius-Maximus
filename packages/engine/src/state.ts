@@ -205,6 +205,8 @@ export interface CampState {
   units: UnitId[];
   /** The turn it trains its next raider. */
   nextUnit: number;
+  /** Players befriending it: turns spent so far, and the last turn they spent one. */
+  befriend?: Record<PlayerId, { turns: number; last: number }>;
 }
 
 /** Something a city can produce. */
@@ -322,6 +324,8 @@ export interface UnitState {
   cargo?: UnitState[];
   /** Commanders: out of action after a retreat until this turn. */
   recovering?: number;
+  /** A city-state's soldier levied by its suzerain: whose it is, and the turn it goes back. */
+  levied?: { from: PlayerId; until: number };
 }
 
 export interface Ballot {
@@ -399,6 +403,8 @@ export interface GameSettings {
   loyalty?: boolean | undefined;
   /** Espionage: spies and their missions (on unless false). */
   espionage?: boolean | undefined;
+  /** Tribal villages (goody huts) on the map (on unless false). */
+  huts?: boolean | undefined;
   /** Theological combat between religious units (D9: off unless true). */
   theologicalCombat?: boolean | undefined;
   /** Nuclear weapons can be built and used (on unless false). */

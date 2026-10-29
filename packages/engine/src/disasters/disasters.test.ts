@@ -1,4 +1,5 @@
 import { produce } from 'immer';
+import { falloutTurn } from '../nukes/nukes';
 import { describe, expect, it } from 'vitest';
 import type { EngineContext } from '../context';
 import type { GameEvent } from '../events';
@@ -41,6 +42,8 @@ function run(s: GameState, c: EngineContext, turns = 1) {
   const events: GameEvent[] = [];
   for (let i = 0; i < turns; i++) {
     s = produce(s, (d) => {
+      // Damage is repaired in the fallout step, just before disasters (as in a game's turn).
+      falloutTurn(d);
       disastersTurn(d, c, (e) => events.push(e));
       d.turn++;
     });

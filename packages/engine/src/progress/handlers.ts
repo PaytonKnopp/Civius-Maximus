@@ -188,19 +188,21 @@ export function boostPercent(ctx: EngineContext, state: GameState, player: Playe
 }
 
 /**
- * A free boost (from an ability): toward the cheapest tech or civic the player can work on now
- * that isn't boosted yet. Does nothing if there's none.
+ * A free boost (from an ability or a tribal village): toward the cheapest tech or civic (or only
+ * `only`) the player can work on now that isn't boosted yet. Returns its id, or undefined if
+ * there's none.
  */
 export function grantBoost(
   draft: Draft<GameState>,
   ctx: EngineContext,
   player: PlayerId,
   emit: Emit,
-) {
+  only?: TreeKind,
+): string | undefined {
   const snap = view(draft);
   const p = snap.players[player]!;
   let best: { kind: TreeKind; id: string; cost: number } | undefined;
-  for (const kind of ['tech', 'civic'] as const) {
+  for (const kind of only ? [only] : (['tech', 'civic'] as const)) {
     const track = trackOf(p, kind);
     for (const id of availableNodes(ctx, p, kind)) {
       if (track.boosted.includes(id)) continue;
@@ -209,12 +211,13 @@ export function grantBoost(
         best = { kind, id, cost };
     }
   }
-  if (!best) return;
+  if (!best) return undefined;
   const track = trackOf(draft.players[player]!, best.kind);
   track.boosted.push(best.id);
   track.progress[best.id] =
     (track.progress[best.id] ?? 0) + percentOf(best.cost, boostPercent(ctx, snap, player));
   emit({ type: 'boost_earned', player, kind: best.kind, id: best.id, visibleTo: [player] });
+  return best.id;
 }
 
 // --- The empire's turn -----------------------------------------------------------------------

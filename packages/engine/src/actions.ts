@@ -298,6 +298,23 @@ export const Action = z.discriminatedUnion('type', [
     /** A worship belief (its building), when any are left. */
     worship: ContentRef.optional(),
   }),
+  /** A soldier at war wrecks the enemy improvement it stands on, for gold and health. */
+  z.strictObject({ type: z.literal('pillage'), player: PlayerRef, unit: UnitRef }),
+  /** A soldier at war with a route's owner, on the route's way, ends it for gold. */
+  z.strictObject({
+    type: z.literal('plunder_route'),
+    player: PlayerRef,
+    unit: UnitRef,
+    route: z.string().min(1).max(64),
+  }),
+  /** Spend influence this turn toward befriending a hostile camp into a city-state. */
+  z.strictObject({
+    type: z.literal('befriend_camp'),
+    player: PlayerRef,
+    camp: z.string().min(1).max(64),
+  }),
+  /** As its suzerain, pay gold to command a city-state's soldiers for a while. */
+  z.strictObject({ type: z.literal('levy_military'), player: PlayerRef, cityState: PlayerRef }),
   /** A religious unit fights a neighbouring one of another religion (theological combat). */
   z.strictObject({
     type: z.literal('theological_combat'),

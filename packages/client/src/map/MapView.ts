@@ -308,6 +308,7 @@ export class MapView implements MapRenderer {
       const wonder = d.territory.wonders[i];
       if (d.territory.roads[i]) this.drawRoad(g, i, cx, cy, fog === 1);
       if (d.territory.camps[i]) this.drawCamp(g, cx, cy);
+      else if (d.territory.huts?.[i]) this.drawHut(g, cx, cy);
       else if (district) this.drawDistrict(g, district.color, cx, cy);
       else if (wonder) this.drawWonder(g, cx, cy);
       else if (model) this.drawImprovement(g, model, cx, cy);
@@ -346,6 +347,22 @@ export class MapView implements MapRenderer {
       .fill(0x5a4a38)
       .circle(cx + 1, cy + 10, 3)
       .fill(0xff7a2a);
+  }
+
+  /** A tribal village: two round thatched huts on a sandy patch, ringed in gold. */
+  private drawHut(g: Graphics, cx: number, cy: number) {
+    g.circle(cx, cy, HEX * 0.42)
+      .fill({ color: 0x5a4a30, alpha: 0.8 })
+      .stroke({ width: 2, color: 0xe0b040 });
+    for (const [dx, s] of [
+      [-6, 7],
+      [6, 6],
+    ] as const) {
+      g.rect(cx + dx - s * 0.7, cy, s * 1.4, s * 0.9)
+        .fill(0x9a7a52)
+        .poly([cx + dx - s, cy + 1, cx + dx, cy - s, cx + dx + s, cy + 1])
+        .fill(0xd8b868);
+    }
   }
 
   /** A wonder: a gold-rimmed stepped monument. */

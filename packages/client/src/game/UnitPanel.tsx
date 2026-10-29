@@ -12,6 +12,10 @@ import {
   MP,
   nextPromotionXp,
   packableUnits,
+  pillageGold,
+  pillageProblem,
+  plunderableRoutes,
+  plunderGold,
   type PlayerId,
   religionFoundingProblem,
   routesOf,
@@ -105,6 +109,10 @@ export function UnitPanel({
         .sort((a, b) => (a.id < b.id ? -1 : 1))
     : [];
   const preaches = religious?.spread !== 0;
+  // Pillaging shows while it's possible (or would be with moves left).
+  const pillageWhy = mine ? pillageProblem(ctx, state, viewer, unit.id) : undefined;
+  const canPillage = mine && (!pillageWhy || pillageWhy.code === 'no_moves');
+  const plunder = mine && unit.moves > 0 ? plunderableRoutes(ctx, state, unit) : [];
   const rivals = religion && mine ? theologyTargets(ctx, state, unit) : [];
   const upgradeTo = mine
     ? (obsoletedBy(ctx, state, viewer, unit.type) ?? upgradeTarget(ctx, state, viewer, unit.type))
@@ -514,6 +522,34 @@ export function UnitPanel({
               </button>
             </>
           )}
+          {canPillage && (
+            <button
+              type="button"
+              disabled={!!pillageWhy}
+              title={
+                pillageWhy?.message ??
+                `Wreck this improvement for ${ctx.content.rules.combat.pillage.turns} turns: +${whole(pillageGold(ctx, state, viewer))} gold and +${ctx.content.rules.combat.pillage.heal} health`
+              }
+              onClick={() => act({ type: 'pillage', player: viewer, unit: unit.id })}
+            >
+              Pillage <Icon name="gold" size={16} />
+              {whole(pillageGold(ctx, state, viewer))}
+            </button>
+          )}
+          {plunder.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              title={`End ${civName(ctx.content, state, r.owner)}'s trade route and take its goods`}
+              onClick={() =>
+                act({ type: 'plunder_route', player: viewer, unit: unit.id, route: r.id })
+              }
+            >
+              Plunder {civName(ctx.content, state, r.owner)}&apos;s route{' '}
+              <Icon name="gold" size={16} />
+              {whole(plunderGold(ctx, state, viewer))}
+            </button>
+          ))}
           {def.actions.includes('found_settlement') && (
             <button
               type="button"

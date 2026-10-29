@@ -30,12 +30,14 @@ export interface OnlineOptions {
     disasters?: boolean;
     nukes?: boolean;
     theologicalCombat?: boolean;
+    huts?: boolean;
   };
   turnLimit?: number | null;
 }
 
 const RULES: [keyof NonNullable<OnlineOptions['rules']>, string][] = [
   ['camps', 'Hostile camps'],
+  ['huts', 'Tribal villages'],
   ['cityStates', 'City-states'],
   ['domination', 'Domination victory'],
   ['religion', 'Religious victory'],
@@ -113,6 +115,7 @@ export function OnlineDialog(props: Props) {
       disasters: true,
       nukes: true,
       theologicalCombat: false,
+      huts: true,
     },
     turnLimit: null,
   });

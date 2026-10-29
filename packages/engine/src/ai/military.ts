@@ -1,5 +1,6 @@
 import { FREE, unitClassOf, unitDef } from '../context';
 import { getBit } from '../bitset';
+import { pillageProblem, plunderableRoutes } from '../combat/pillage';
 import { attackTargets, previewAttack } from '../combat/strength';
 import { distance, tilesWithin } from '../map/hex';
 import type { SettlementState, UnitState } from '../state';
@@ -48,6 +49,7 @@ export function manageUnits(t: Turn) {
       continue;
     }
     const role = unitRole(t.ctx, unit);
+    if (isSoldier(role) && raid(t, unit)) continue;
     if (role === 'settler') continue;
     else if (role === 'explorer') explore(t, unit);
     else if (isSoldier(role)) soldier(t, unit, plan);
@@ -57,6 +59,18 @@ export function manageUnits(t: Turn) {
   }
   // Units that moved next to something worth hitting.
   attackPass(t, ['ranged', 'siege', 'naval', 'melee']);
+}
+
+/**
+ * A soldier at war standing on an enemy's trade route or improvement takes what it can there:
+ * plundering first (it ends the route), else pillaging (only while the fight isn't next door).
+ * Returns true if it did.
+ */
+function raid(t: Turn, u: UnitState): boolean {
+  const route = plunderableRoutes(t.ctx, t.state, u)[0];
+  if (route) return t.act({ type: 'plunder_route', player: t.player, unit: u.id, route: route.id });
+  if (pillageProblem(t.ctx, t.state, t.player, u.id) || t.threatNear(u.tile, 1) > 0) return false;
+  return t.act({ type: 'pillage', player: t.player, unit: u.id });
 }
 
 /** Spend XP when it doesn't cost a needed move (a promotion heals and ends the unit's turn). */
@@ -219,7 +233,10 @@ function fieldTarget(t: Turn, field: Set<string>): Plan['target'] {
   // Otherwise a known hostile camp near home, if the army is big enough to take it.
   if (field.size >= 2) {
     const camp = Object.values(t.state.camps)
-      .filter((c) => t.isExplored(c.tile) && nearHome(c.tile) <= 8)
+      // Not one we're befriending.
+      .filter(
+        (c) => t.isExplored(c.tile) && nearHome(c.tile) <= 8 && !c.befriend?.[t.player]?.turns,
+      )
       .sort((a, b) => nearHome(a.tile) - nearHome(b.tile) || (a.id < b.id ? -1 : 1))[0];
     if (camp) return { tile: camp.tile, kind: 'camp' };
   }
@@ -446,12 +463,14 @@ function explore(t: Turn, u: UnitState, homeRange?: number): boolean {
         let unknown = 0;
         for (const n of tilesWithin(map, tile, sight)) if (!getBit(explored, n)) unknown++;
         let score = unknown * 10 - distance(map, u.tile, tile) * 3;
+        // Tribal villages are worth a detour.
+        if (map.tiles[tile]!.hut) score += 150;
         if (camps.some((c) => distance(map, c, tile) <= 2)) score -= 200;
         if (others.some((o) => distance(map, o, tile) <= 4)) score -= 40;
         if (t.threatNear(tile, 1) > 0) score -= 200;
         return { tile, unknown, score };
       })
-      .filter((x) => x.unknown > 0 && x.score > 0)
+      .filter((x) => (x.unknown > 0 || map.tiles[x.tile]!.hut) && x.score > 0)
       .sort((a, b) => b.score - a.score || a.tile - b.tile);
     const orders = u.orders;
     if (orders?.kind === 'move' && ranked.some((x) => x.tile === orders.target)) return true;

@@ -475,6 +475,7 @@ function townShowcase(
     wonders: Array(n).fill(null),
     features: map.tiles.map((t) => t.feature ?? null),
     camps: Array<boolean>(n).fill(false),
+    huts: Array<boolean>(n).fill(false),
     roads: Array<boolean>(n).fill(false),
   };
   const land = tilesWithin(map, start, 14).filter((t) => {

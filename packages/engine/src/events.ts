@@ -131,6 +131,31 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         lost: UnitId | null;
       }
     | { type: 'heresy_removed'; player: PlayerId; settlement: SettlementId }
+    | { type: 'pillaged'; player: PlayerId; owner: PlayerId; tile: number; gold: number }
+    | {
+        type: 'route_plundered';
+        player: PlayerId;
+        owner: PlayerId;
+        route: string;
+        tile: number;
+        gold: number;
+      }
+    /** A player spent a turn befriending a camp (`turns` of `of` done). */
+    | { type: 'camp_befriending'; player: PlayerId; camp: string; turns: number; of: number }
+    /** A befriended camp became a city-state, led by the player who befriended it. */
+    | { type: 'camp_befriended'; player: PlayerId; cityState: PlayerId; tile: number }
+    | { type: 'levied'; player: PlayerId; cityState: PlayerId; units: number; until: number }
+    | { type: 'levy_ended'; player: PlayerId; cityState: PlayerId }
+    /** A civ unit found a tribal village (`reward` is the `huts` reward id). */
+    | {
+        type: 'hut_found';
+        player: PlayerId;
+        unit: UnitId;
+        tile: number;
+        reward: string;
+        /** What a boost or a free unit was for (a tech, civic or unit content id). */
+        detail?: string;
+      }
     | { type: 'pantheon_founded'; player: PlayerId; belief: string }
     /** A player found a city-state (and got `envoys` free envoys there for being first). */
     | { type: 'city_state_met'; cityState: PlayerId; player: PlayerId; envoys: number }

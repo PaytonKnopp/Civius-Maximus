@@ -50,6 +50,8 @@ export interface NewGameOptions {
   nukes: boolean;
   /** Theological combat between religious units (D9: off by default). */
   theologicalCombat?: boolean;
+  /** Tribal villages (goody huts). */
+  huts?: boolean;
   turnLimit: number | null;
   speed: string;
   difficulty: string;
@@ -82,6 +84,7 @@ export const DEFAULT_OPTIONS: NewGameOptions = {
   diplomatic: true,
   disasters: true,
   nukes: true,
+  huts: true,
   turnLimit: null,
   speed: 'speed_standard',
   difficulty: 'difficulty_prince',
@@ -113,6 +116,7 @@ export function makeSetup(o: NewGameOptions): GameSetup {
       ...(o.disasters === false ? { disasters: false } : {}),
       ...(o.nukes === false ? { nukes: false } : {}),
       ...(o.theologicalCombat ? { theologicalCombat: true } : {}),
+      ...(o.huts === false ? { huts: false } : {}),
       turnLimit: o.turnLimit,
       speed: o.speed,
       difficulty: o.difficulty,

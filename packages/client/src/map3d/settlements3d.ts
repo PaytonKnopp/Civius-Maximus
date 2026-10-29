@@ -28,7 +28,7 @@ import {
   palace,
   walls,
 } from './architecture';
-import { campParts, districtParts, districtStacks, wonderParts } from './districts3d';
+import { campParts, districtParts, districtStacks, hutParts, wonderParts } from './districts3d';
 import { type Emitter, EffectsLayer } from './effects3d';
 import { naturalWonderParts } from './naturalWonders3d';
 import { G, house, part, scaled, seeded } from './parts';
@@ -522,6 +522,8 @@ export class SettlementLayer {
   private drawn = new Map<string, Drawn>();
   /** Hostile camps, one small group each (by tile). */
   private camps = new Map<number, Drawn>();
+  /** Tribal villages, likewise. */
+  private huts = new Map<number, Drawn>();
   /** Roads, one small group per road tile (so east-west wrap can move each). */
   private roads = new Map<number, Drawn>();
   /** Natural wonder landmarks, by tile. */
@@ -602,7 +604,8 @@ export class SettlementLayer {
       this.drawn.delete(id);
       this.effects.set(id, []);
     }
-    this.setCamps(territory.camps);
+    this.setMarkers(this.camps, territory.camps, campParts);
+    this.setMarkers(this.huts, territory.huts ?? [], hutParts);
     this.setRoads(territory.roads);
   }
 
@@ -675,19 +678,20 @@ export class SettlementLayer {
     }
   }
 
-  private setCamps(camps: boolean[]) {
+  /** One small model per marked tile (camps, villages), dimmed under fog. */
+  private setMarkers(store: Map<number, Drawn>, marks: boolean[], model: typeof campParts) {
     const want = new Set<number>();
-    camps.forEach((c, t) => c && want.add(t));
-    for (const [t, d] of this.camps) {
+    marks.forEach((c, t) => c && want.add(t));
+    for (const [t, d] of store) {
       const key = `${this.world.fog(t)}`;
       if (want.has(t) && d.key === key) continue;
       this.dispose(d);
-      this.camps.delete(t);
+      store.delete(t);
     }
     for (const t of want) {
-      if (this.camps.has(t)) continue;
+      if (store.has(t)) continue;
       const [x, z] = this.world.center(t);
-      const parts = campParts(x, z, Math.max(0, this.world.height(x, z)) - 0.005, t);
+      const parts = model(x, z, Math.max(0, this.world.height(x, z)) - 0.005, t);
       const merged = mergeGeometries(parts);
       for (const p of parts) p.dispose();
       const group = new Group();
@@ -702,7 +706,7 @@ export class SettlementLayer {
         group.add(new Mesh(merged, buildingMaterial));
       }
       this.group.add(group);
-      this.camps.set(t, { key: `${this.world.fog(t)}`, group, x });
+      store.set(t, { key: `${this.world.fog(t)}`, group, x });
     }
   }
 
@@ -849,6 +853,7 @@ export class SettlementLayer {
     const shift = (x: number) => Math.round((cameraX - x) / w) * w;
     for (const d of this.drawn.values()) d.group.position.x = shift(d.x);
     for (const d of this.camps.values()) d.group.position.x = shift(d.x);
+    for (const d of this.huts.values()) d.group.position.x = shift(d.x);
     for (const d of this.roads.values()) d.group.position.x = shift(d.x);
     for (const d of this.wonders.values()) d.group.position.x = shift(d.x);
     this.highlights.children.forEach((c, i) => {
@@ -862,6 +867,8 @@ export class SettlementLayer {
     this.drawn.clear();
     for (const d of this.camps.values()) this.dispose(d);
     this.camps.clear();
+    for (const d of this.huts.values()) this.dispose(d);
+    this.huts.clear();
     for (const d of this.roads.values()) this.dispose(d);
     this.roads.clear();
     for (const d of this.wonders.values()) this.dispose(d);

@@ -415,6 +415,7 @@ export class World3D implements MapRenderer {
           territory.districts[i] ||
           territory.wonders[i] ||
           territory.camps[i] ||
+          territory.huts?.[i] ||
           (t.feature !== null && territory.features[i] === null)
         )
           centers.add(i);

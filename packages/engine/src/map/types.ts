@@ -24,6 +24,8 @@ export interface MapTile {
   pillaged?: number;
   /** Nuclear fallout: the tile yields nothing until this turn. */
   fallout?: number;
+  /** A tribal village (goody hut): the first civ unit to step here takes a reward. */
+  hut?: boolean;
 }
 
 export interface MapState {

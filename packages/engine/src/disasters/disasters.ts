@@ -237,12 +237,12 @@ function strike(
   });
 }
 
-/** Turn step: repairs, emissions and sea level, then any disasters this turn. */
+/**
+ * Turn step: emissions and sea level, then any disasters this turn (damaged improvements are
+ * repaired by `falloutTurn`, whatever the settings).
+ */
 export function disastersTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   if (!disastersOn(draft) || draft.status !== 'playing') return;
-  const next = draft.turn + 1;
-  for (const t of draft.map.tiles)
-    if (t.pillaged !== undefined && t.pillaged <= next) delete t.pillaged;
   climateTurn(draft, ctx, emit);
   // A few quiet turns while the first settlements find their feet.
   if (draft.turn < 10) return;

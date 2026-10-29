@@ -494,6 +494,11 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
               </div>
               <div className="setup-toggles">
                 {toggle('camps', 'Hostile camps', 'Raider camps that spawn units until cleared.')}
+                {toggle(
+                  'huts',
+                  'Tribal villages',
+                  'Villages in the wilds: the first unit to reach one finds a gift.',
+                )}
                 {toggle('cityStates', 'City-states', 'Minor powers to win over with envoys.')}
                 {toggle('domination', 'Domination victory', "Hold every rival's original capital.")}
                 {toggle(

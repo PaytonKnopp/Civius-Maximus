@@ -495,6 +495,39 @@ export function wonderParts(
 }
 
 /** A hostile camp: hide tents inside a rough palisade, a fire, a war banner. */
+/** A tribal village (goody hut): round thatched huts, a carved post and a cooking fire. */
+export function hutParts(x: number, z: number, ground: number, seed: number): BufferGeometry[] {
+  const r = seeded(seed * 17 + 3);
+  const rot = r() * Math.PI * 2;
+  const at = placer(x, z, rot);
+  const out: BufferGeometry[] = [];
+  const y = ground;
+  out.push(scaled(G.hex, 0x7a6a48, x, y + 0.004, z, 0.4, 0.02, 0.4));
+  for (const [dx, dz, s] of [
+    [-0.13, -0.08, 0.1],
+    [0.14, -0.04, 0.085],
+    [0.0, 0.16, 0.08],
+  ] as const) {
+    const [hx, hz] = at(dx, dz);
+    out.push(
+      scaled(G.cyl, 0x9a7a52, hx, y + s * 0.5, hz, s, s, s),
+      scaled(G.cone, 0xc8a860, hx, y + s * 1.35, hz, s * 1.25, s * 0.9, s * 1.25),
+    );
+  }
+  const [fx, fz] = at(0.03, -0.01);
+  out.push(
+    scaled(G.cyl, 0x2a2622, fx, y + 0.01, fz, 0.04, 0.02, 0.04),
+    scaled(G.cone, 0xff9a3a, fx, y + 0.04, fz, 0.025, 0.06, 0.025),
+  );
+  const [px, pz] = at(0.2, 0.16);
+  out.push(
+    scaled(G.cyl, 0x6a4a2a, px, y + 0.15, pz, 0.018, 0.3, 0.018),
+    scaled(G.box, 0x3a8a8a, px, y + 0.22, pz, 0.05, 0.03, 0.05, rot),
+    scaled(G.box, 0xd0a030, px, y + 0.28, pz, 0.07, 0.025, 0.025, rot),
+  );
+  return out;
+}
+
 export function campParts(x: number, z: number, ground: number, seed: number): BufferGeometry[] {
   const r = seeded(seed * 13 + 7);
   const rot = r() * Math.PI * 2;

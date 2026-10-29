@@ -143,6 +143,7 @@ export function territoryView(
       for (const c of Object.values(state.camps)) if (fog[c.tile] !== 0) out[c.tile] = true;
       return out;
     })(),
+    huts: state.map.tiles.map((t, i) => fog[i] !== 0 && !!t.hut),
     roads: state.map.tiles.map((_, i) => fog[i] !== 0 && hasRoad(state, i)),
   };
 }

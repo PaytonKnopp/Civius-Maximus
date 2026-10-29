@@ -923,7 +923,8 @@ export function townUpgradeCost(ctx: EngineContext, state: GameState, player: Pl
 export function unitUpkeep(ctx: EngineContext, state: GameState, player: PlayerId): Fixed {
   let total = 0;
   for (const u of Object.values(state.units)) {
-    if (u.owner !== player) continue;
+    // Levied soldiers are kept by their city-state.
+    if (u.owner !== player || u.levied) continue;
     total += toFixed(unitDef(ctx, u).upkeep);
     for (const packed of u.cargo ?? []) total += toFixed(unitDef(ctx, packed).upkeep);
   }

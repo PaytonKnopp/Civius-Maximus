@@ -137,6 +137,20 @@ same actions shift **war support** toward your enemy (see
   desert tile of the origin; new Roman settlements get a road to the capital.
 - Not yet: plundering routes, sea routes, road building by other means.
 
+### Plunder and the sea (V1 final, F16)
+
+- **Sea routes:** a settlement with a **Harbor** sends routes over shallow water as well as land,
+  up to 20 tiles (land-only routes stay at 15). Deep ocean stays closed to traders.
+- **Plundering:** a soldier of a civ at war with a route's owner, standing anywhere on the way
+  the route runs, can **Plunder** it: the route ends, the trader is lost, and the plunderer gets
+  50 gold + 15 per era. (A war between the two ends of a route already ends it; plundering is
+  for routes to third parties and home routes.)
+- **Pillaging:** a land soldier at war standing on an enemy's improvement can **Pillage** it (3
+  moves): the improvement is out of use for 10 turns, and the pillager gets 20 gold + 10 per
+  era and 25 health. Pillaged improvements come back on their own (see D85).
+- The AI plunders and pillages where its soldiers stand when it's at war, and its traders use
+  sea routes where they're shorter.
+
 ---
 
 ## Great people
@@ -295,6 +309,22 @@ feel populated and give players something to compete over even when there's no w
 - The City-states screen (I, or the 🏛 chip) and a card in a city-state's settlement panel;
   a new-game option turns them off. Not yet: levies, luxuries for the suzerain, war support
   for envoy holders, quests beyond the two.
+
+### Befriending camps and levies (V1 final, F16)
+
+- **Befriending** (Civ VII): any civ that has found a hostile camp can spend 30 influence a
+  turn toward befriending it (once a turn each). Others can court the same camp; the first to
+  reach 4 turns wins it. The camp's raiders go home and the camp becomes a **new city-state**
+  (a kind not on the map yet), with 3 envoys for its befriender, who is its suzerain. With
+  city-states off, camps can only be cleared. The City-states screen lists every camp you've
+  found with its progress and who else is courting it.
+- **Levies** (Civ VI): a suzerain can pay 40 gold per soldier to command a city-state's
+  soldiers for 30 turns. The city-state keeps paying their upkeep (and counts them toward the
+  soldiers it keeps, so it doesn't build replacements). They go back early if the levier stops
+  being suzerain or goes to war with it.
+- The AI befriends camps within 10 tiles of home before buying more envoys (and doesn't attack
+  a camp it's befriending), and levies a city-state's soldiers when it's at war with gold to
+  spare.
 
 ---
 
@@ -484,6 +514,30 @@ forces new crisis policies. Off by default, for groups that like chaos.
   eruptions, storms, and CO₂-driven global warming with rising sea levels in the late game.
   Built in V1 final F14; see "Climate & disasters" below.
 - **Corporations/monopolies:** control luxury resources for empire-wide bonuses.
+- **Tribal villages (goody huts):** built in V1 final F16; see "Tribal villages" below.
+
+---
+
+## Tribal villages
+
+A new-game option (on by default, as in Civ): one village per 40 land tiles is placed at the
+start in the wilds, at least 4 tiles from every start, camp, city-state and other village. The
+first unit of a civ to step on one takes a reward, picked by weight from those open by then
+(`rules.huts.rewards`, so mods can change them):
+
+| Reward | Weight | What it gives |
+|---|---|---|
+| A cache of old coins | 30 | 40 gold |
+| A chieftain's hoard | 10 | 90 gold (from turn 25) |
+| Relics from a forgotten shrine | 15 | 30 faith |
+| Old star charts | 15 | a boost toward a tech you can research |
+| Tales told by the elders | 15 | a boost toward a civic you can work on |
+| Wandering families who join you | 10 | +1 population in your nearest settlement (from turn 10) |
+| A guide who offers to lead the way | 10 | a free Scout |
+| Maps of the lands around | 10 | the land 6 tiles around is revealed |
+
+Gold and faith scale with game speed. Villages show on the map in 2D and 3D once explored; AI
+scouts make a detour for them.
 
 ---
 

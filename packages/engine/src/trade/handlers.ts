@@ -9,7 +9,7 @@ import { spawnUnit } from '../settlements/handlers';
 import type { GameState, PlayerId, TradeRoute } from '../state';
 import { ownedUnit } from '../units/handlers';
 import { isWater } from '../units/movement';
-import { routeProblem, tradePath, traderOrigin } from './rules';
+import { routePath, routeProblem, tradePath, traderOrigin } from './rules';
 
 type A<T extends Action['type']> = Extract<Action, { type: T }>;
 
@@ -49,7 +49,7 @@ export const tradeHandlers = {
       const unit = snap.units[action.unit]!;
       const from = traderOrigin(snap, unit)!;
       const to = snap.settlements[action.to]!;
-      const path = tradePath(ctx, snap, from.tile, to.tile, ctx.content.rules.trade.range)!;
+      const path = routePath(ctx, snap, from, to)!;
       delete draft.units[action.unit];
       const route: TradeRoute = {
         id: `r${draft.nextEntityId++}`,
