@@ -12,9 +12,11 @@ import {
   itemCost,
   itemDef,
   itemProblem,
+  purchasableTiles,
   purchaseCost,
   settlementLimit,
   settlementYields,
+  tilePurchaseCost,
   tileYields,
   townUpgradeCost,
 } from '../settlements/rules';
@@ -22,6 +24,7 @@ import type { BuildItem, SettlementState } from '../state';
 import { routesOf, tradeCapacity } from '../trade/rules';
 import { obsoletedBy } from '../units/upgrades';
 import { hasSettleSite } from './settle';
+import { wantsNuke } from './nukes';
 import { type Role, type Turn, unitPower, unitRole } from './turn';
 import { effectValue, fixedYieldsValue, happinessWeight, yieldsValue, yieldWeight } from './values';
 
@@ -178,7 +181,7 @@ function turnsFor(t: Turn, s: SettlementState, item: BuildItem): number {
 function unitItems(t: Turn, s: SettlementState): BuildItem[] {
   return t.memo(`units:${s.id}`, () =>
     t.ctx.content.ids.unit
-      // The AI leaves nuclear weapons alone.
+      // Nuclear weapons only through `urgentBuild`'s deterrent (see ai/nukes.ts).
       .filter((id) => !t.ctx.content.entities.unit[id]!.nuke)
       .map((id) => ({ kind: 'unit' as const, id }))
       .filter((item) => !itemProblem(t.ctx, t.state, s, item)),
@@ -222,6 +225,15 @@ function urgentBuild(t: Turn, s: SettlementState): BuildItem | undefined {
   const scout = units.find((i) => role(i) === 'explorer');
   const curious = t.state.turn <= 40 || (t.state.turn <= 150 && t.metRivals().length === 0);
   if (scout && explorers === 0 && curious && s.capital && !queued(t, scout.id)) return scout;
+  // 7. A nuclear deterrent, in the capital, for aggressive leaders at war (ai/nukes.ts).
+  if (s.capital && wantsNuke(t)) {
+    const nuke = t.ctx.content.ids.unit
+      .filter((id) => t.ctx.content.entities.unit[id]!.nuke)
+      .map((id) => ({ kind: 'unit' as const, id }))
+      .filter((item) => !itemProblem(t.ctx, t.state, s, item))
+      .pop();
+    if (nuke && !queued(t, nuke.id)) return nuke;
+  }
   return undefined;
 }
 
@@ -429,6 +441,7 @@ function buyThings(t: Turn) {
     }
   }
   const rich = reserve(t) * 2 + toFixed(100 + t.me.gold * 10);
+  if (buyResourceTile(t, rich)) return;
   for (const s of cities) {
     const head = s.queue[0];
     if (!head || !isBuyable(head) || !itemDef(t.ctx, head)) continue;
@@ -439,4 +452,29 @@ function buyThings(t: Turn) {
       return;
     }
   }
+}
+
+/**
+ * With gold to spare, buy a tile with a luxury or strategic resource next to a settlement
+ * (luxuries first, then the cheapest). Returns true if it bought one.
+ */
+function buyResourceTile(t: Turn, rich: number): boolean {
+  let best: { s: string; tile: number; cost: number; luxury: boolean } | undefined;
+  for (const s of t.mySettlements()) {
+    for (const tile of purchasableTiles(t.ctx, t.state, s)) {
+      const res = t.state.map.tiles[tile]!.resource;
+      const cls = res ? t.ctx.content.entities.resource[res]?.class : undefined;
+      if (cls !== 'luxury' && cls !== 'strategic') continue;
+      const cost = tilePurchaseCost(t.ctx, t.state, s, tile);
+      const luxury = cls === 'luxury';
+      if (
+        !best ||
+        (luxury && !best.luxury) ||
+        (luxury === best.luxury && (cost < best.cost || (cost === best.cost && tile < best.tile)))
+      )
+        best = { s: s.id, tile, cost, luxury };
+    }
+  }
+  if (!best || t.p.gold < best.cost + rich) return false;
+  return t.act({ type: 'buy_tile', player: t.player, settlement: best.s, tile: best.tile });
 }

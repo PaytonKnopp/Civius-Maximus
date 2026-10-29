@@ -781,3 +781,22 @@ new-game toggle (on by default), and a Victories screen (V) with everyone's prog
   projects done on it in order: Launch a Satellite, Moon Landing, Mars Colony, then the
   Exoplanet Expedition, which arrives 10 turns later and wins.
 - **Culture:** see "Tourism & great works".
+
+### AI and balance (V1 final F18)
+
+- The AI plays every system: research and civics, governments and policies, governors, ages and
+  dedications, religion (pantheons, founding, worship beliefs, missionaries, apostles,
+  inquisitors, theological combat when it's on), great people and works, trade routes (by land
+  and sea), city-states (envoys, befriending camps, levies), espionage, the World Congress,
+  war and peace, pillaging and plundering, tribal villages, and settling. It never touches
+  cosmetic or convenience actions (renaming, sleeping units, moving great works for theming).
+- New in F18: aggressive leaders (aggression 6 or more) at war with a civ build one nuclear
+  weapon (two at 8 or more) in their capital, and launch it at a settlement of 6 or more
+  people, or a capital, when the blast falls only on enemy or unowned land. With gold to
+  spare, the AI buys tiles with luxury or strategic resources, luxuries first.
+- **Balance check:** four 6-player games with 330-turn limits on small continents maps. The
+  Medieval era came around turn 70–90, the Renaissance 113–124, the Industrial 135–166, the
+  Modern 166–198, the Atomic 232–252 and the Information era 267–311. Two ended in a
+  diplomatic victory (turns 307 and 329) and two on score at the turn limit; no civ ran
+  away with a game. Victories come late, as in Civ. A science win needs roughly 340–380 turns
+  at this pace, so games with no turn limit are where science and culture wins happen.

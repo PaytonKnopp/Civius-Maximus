@@ -5,6 +5,7 @@ import { applyAction } from '../game';
 import { itemProblem, tileYields } from '../settlements/rules';
 import { spaceProblem, spaceStep } from '../science/space';
 import type { GameState } from '../state';
+import { playAiTurn } from '../ai';
 import { act, addUnit, at, ctx, testState } from '../testing/world';
 import { canTraverse } from '../units/movement';
 import { falloutTurn, nukeProblem } from './nukes';
@@ -99,5 +100,22 @@ describe('nukes', () => {
     expect(itemProblem(ctx, off, capital, { kind: 'unit', id: 'unit_atomic_bomb' })?.code).not.toBe(
       undefined,
     );
+  });
+
+  it('are used by the AI on a big enemy city in range', () => {
+    const { s: start, theirs } = atWar();
+    let s = produce(start, (d) => {
+      d.wars.push('p1|p2');
+    });
+    const events: string[] = [];
+    s = playAiTurn(ctx, s, 'p1', (a) => {
+      const r = applyAction(s, a, ctx);
+      if (!r.ok) return undefined;
+      s = r.state;
+      events.push(...r.events.map((e) => e.type));
+      return s;
+    });
+    expect(events).toContain('nuke_launched');
+    expect(s.settlements[theirs]!.population).toBeLessThan(8);
   });
 });

@@ -5,6 +5,7 @@ import { manageCityStates } from './citystates';
 import { manageDiplomacy } from './diplomacy';
 import { manageProgress, recruitGreatPeople, upgradeUnits } from './economy';
 import { manageUnits } from './military';
+import { useNukes } from './nukes';
 import { manageReligion } from './religion';
 import { bestSites } from './settle';
 import { type Act, Turn } from './turn';
@@ -37,6 +38,7 @@ export function playAiTurn(
   manageProgress(t);
   manageReligion(t);
   strikeFromSettlements(t);
+  useNukes(t);
   upgradeUnits(t);
   manageUnits(t);
   manageTowns(t);
