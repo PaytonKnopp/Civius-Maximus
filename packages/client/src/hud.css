@@ -1040,3 +1040,120 @@ button.primary:hover:not(:disabled) {
   border-color: var(--gold);
   color: var(--gold-hi);
 }
+
+/* --- Leaders: portraits, emblems, cards ----------------------------------------------------- */
+
+.portrait {
+  display: block;
+}
+
+.leader-head {
+  display: inline-block;
+  flex: none;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  vertical-align: middle;
+}
+
+.leader-head .portrait {
+  width: 100%;
+  height: 100%;
+}
+
+.leader-card {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.leader-frame {
+  position: relative;
+  padding: 5px;
+  border-radius: 50% 50% 12px 12px / 38% 38% 12px 12px;
+  background: linear-gradient(160deg, #f0d48c, #8a6420 45%, #e0bd6c 70%, #6e4f18);
+  box-shadow:
+    0 0 0 1px #000,
+    0 14px 30px rgba(0, 0, 0, 0.6);
+}
+
+.leader-frame .portrait {
+  border-radius: 50% 50% 9px 9px / 37% 37% 9px 9px;
+  overflow: hidden;
+}
+
+.leader-emblem {
+  position: absolute;
+  right: -8px;
+  bottom: -10px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
+}
+
+.leader-card figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.leader-card strong {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 19px;
+  letter-spacing: 0.04em;
+  color: var(--gold-hi);
+}
+
+.leader-title {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cdbf9e;
+}
+
+.leader-quote {
+  display: block;
+  max-width: 34ch;
+  margin: 6px auto 0;
+  font-style: italic;
+  font-size: 13.5px;
+  color: #e8dcc0;
+}
+
+.gallery {
+  position: fixed;
+  inset: 0;
+  overflow: auto;
+  background: linear-gradient(180deg, #0d1922, #070d13);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 28px 18px;
+  padding: 24px max(16px, env(safe-area-inset-left, 0px));
+}
+
+.gallery-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.gallery-item > .muted {
+  margin: 0;
+  font-size: 13px;
+}
+
+.gallery-emblems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  padding: 0 16px 32px;
+}

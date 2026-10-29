@@ -1155,6 +1155,37 @@ export const CivDef = z.strictObject({
       'steppe',
     ])
     .default('mediterranean'),
+  /** The civ's emblem: a symbol on a field of its colors (docs/10-art-direction.md, "Leaders"). */
+  emblem: z
+    .enum([
+      'eagle',
+      'lion',
+      'sun',
+      'star',
+      'crescent',
+      'dragon',
+      'lotus',
+      'horse',
+      'crown',
+      'tower',
+      'ankh',
+      'fleur',
+      'flower',
+      'wolf',
+      'tree',
+      'mountain',
+      'wave',
+      'bull',
+      'bird',
+      'shield',
+      'sword',
+      'ship',
+      'serpent',
+      'mask',
+      'feather',
+      'compass',
+    ])
+    .default('star'),
   /** The civ's ability (docs/09-base-roster.md). */
   ability: z
     .strictObject({ name: Text, description: Text, effects: z.array(Effect).default([]) })
@@ -1201,6 +1232,98 @@ export const AgendaRule = z.strictObject({
 export type AgendaRule = z.infer<typeof AgendaRule>;
 
 /** A leader (docs/09-base-roster.md): who leads a civ, with an ability, an agenda and an AI personality. */
+/**
+ * How a leader's portrait is drawn (docs/10-art-direction.md, "Leaders"): an illustrated bust
+ * built from these traits, or a painted image (`image`, a URL or a path under the client's
+ * public folder) that replaces it once someone supplies one.
+ */
+export const Portrait = z.strictObject({
+  skin: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #8e1b1b'),
+  hair: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #8e1b1b'),
+  eyes: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #8e1b1b')
+    .default('#4a3626'),
+  face: z.enum(['oval', 'round', 'square', 'long', 'heart']).default('oval'),
+  hairStyle: z
+    .enum([
+      'short',
+      'cropped',
+      'bald',
+      'long',
+      'wavy',
+      'curly',
+      'bob',
+      'updo',
+      'braids',
+      'topknot',
+      'chonmage',
+      'tied',
+    ])
+    .default('short'),
+  beard: z
+    .enum(['none', 'stubble', 'short', 'chin', 'full', 'goatee', 'mustache', 'long'])
+    .default('none'),
+  headwear: z
+    .enum([
+      'none',
+      'laurel',
+      'crown',
+      'tall_crown',
+      'diadem',
+      'nemes',
+      'fur_hat',
+      'bicorne',
+      'top_hat',
+      'mian',
+      'turban',
+      'helmet',
+      'veil',
+      'feathers',
+      'circlet',
+      'cap',
+    ])
+    .default('none'),
+  outfit: z
+    .enum([
+      'toga',
+      'armor',
+      'robe',
+      'gown',
+      'coat',
+      'suit',
+      'kimono',
+      'furs',
+      'dragon_robe',
+      'kaftan',
+      'tunic',
+      'wrap',
+    ])
+    .default('robe'),
+  outfitColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #8e1b1b'),
+  trim: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #8e1b1b')
+    .default('#d4a94e'),
+  accessory: z
+    .enum(['none', 'necklace', 'ruff', 'medal', 'earrings', 'beads', 'pearls', 'collar'])
+    .default('none'),
+  expression: z.enum(['neutral', 'smile', 'stern']).default('neutral'),
+  image: z.string().optional(),
+});
+
+/** What a leader says (shown in diplomacy and at the start). Original lines, not quotations. */
+export const LeaderQuotes = z.strictObject({
+  /** Introducing themselves the first time you meet. */
+  greeting: Text,
+  /** Declaring war on you, or answering your declaration. */
+  war: Text,
+  /** Agreeing to peace or a deal. */
+  peace: Text,
+  /** When their last city falls. */
+  defeat: Text,
+});
+
 export const LeaderDef = z.strictObject({
   type: z.literal('leader'),
   id: Id,
@@ -1221,6 +1344,12 @@ export const LeaderDef = z.strictObject({
     rules: z.array(AgendaRule).default([]),
   }),
   personality: Personality,
+  portrait: Portrait.optional(),
+  quotes: LeaderQuotes.optional(),
+  /** Read over the portrait when a game starts: who they were, and what is asked of you. */
+  intro: Text.optional(),
+  /** A short title under the name, e.g. "Pharaoh of the Two Lands". */
+  title: Text.optional(),
 });
 
 /** A kind of great person (docs/04-advanced-systems.md, "Great people"): its points race. */

@@ -3,6 +3,7 @@
     "type": "leader",
     "id": "leader_caesar",
     "name": "Julius Caesar",
+    "title": "Dictator of Rome",
     "civ": "civ_rome",
     "ability": {
       "name": "Crossing the Rubicon",
@@ -58,12 +59,34 @@
       "naval": 4,
       "diplomacy": 4,
       "districts": 5
-    }
+    },
+    "portrait": {
+      "skin": "#d8a982",
+      "hair": "#3a2a1e",
+      "eyes": "#4a3626",
+      "face": "long",
+      "hairStyle": "cropped",
+      "beard": "none",
+      "headwear": "laurel",
+      "outfit": "toga",
+      "outfitColor": "#6a2a5e",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "You stand before Rome. Speak plainly, and Rome will listen.",
+      "war": "The die is cast. My legions march on you.",
+      "peace": "Let the gates of war close. Rome is generous to those who yield.",
+      "defeat": "Even Rome falls. Remember that it stood."
+    },
+    "intro": "Gaius Julius Caesar: general, consul and master of Rome. Your legions built roads to every corner of the known world, and every road led home. Raise a city of marble, and make the empire eternal."
   },
   {
     "type": "leader",
     "id": "leader_cleopatra",
     "name": "Cleopatra",
+    "title": "Pharaoh of the Two Lands",
     "civ": "civ_egypt",
     "ability": {
       "name": "Serpent of the Nile",
@@ -124,12 +147,34 @@
       "naval": 4,
       "diplomacy": 8,
       "districts": 6
-    }
+    },
+    "portrait": {
+      "skin": "#b07a52",
+      "hair": "#141010",
+      "eyes": "#2a1e14",
+      "face": "heart",
+      "hairStyle": "bob",
+      "beard": "none",
+      "headwear": "circlet",
+      "outfit": "gown",
+      "outfitColor": "#efe6d0",
+      "trim": "#2f6f8a",
+      "accessory": "collar",
+      "expression": "smile"
+    },
+    "quotes": {
+      "greeting": "The Nile has carried your name to my court. Let us see if it was worth carrying.",
+      "war": "You mistook my patience for weakness. Egypt will correct you.",
+      "peace": "A wise ruler knows when a friend is worth more than a war.",
+      "defeat": "The river will remember me, even if you do not."
+    },
+    "intro": "Cleopatra, last pharaoh of the Two Lands, whose wit outmatched the empires that circled her. The Nile floods, and Egypt grows rich. Build wonders on its banks that will outlast the stars."
   },
   {
     "type": "leader",
     "id": "leader_alexander",
     "name": "Alexander the Great",
+    "title": "King of Macedon",
     "civ": "civ_macedon",
     "ability": {
       "name": "Never Defeated",
@@ -175,12 +220,34 @@
       "naval": 3,
       "diplomacy": 3,
       "districts": 5
-    }
+    },
+    "portrait": {
+      "skin": "#e0b48c",
+      "hair": "#9a6a2e",
+      "eyes": "#4a6a5a",
+      "face": "square",
+      "hairStyle": "curly",
+      "beard": "none",
+      "headwear": "none",
+      "outfit": "armor",
+      "outfitColor": "#8e2b22",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "neutral"
+    },
+    "quotes": {
+      "greeting": "I have marched farther than any man alive. Your lands are only the next horizon.",
+      "war": "Why wait for the world to come to me? I will take yours.",
+      "peace": "Very well. My army needs rest, and you have earned a little.",
+      "defeat": "I conquered the world once. Someone had to end the march."
+    },
+    "intro": "Alexander of Macedon, who never lost a battle and never stopped marching. Your companions ride at your side and your phalanx holds the line. Carry your banner to the ends of the earth."
   },
   {
     "type": "leader",
     "id": "leader_genghis",
     "name": "Genghis Khan",
+    "title": "Great Khan of the Mongols",
     "civ": "civ_mongols",
     "ability": {
       "name": "Khan of the Steppe",
@@ -239,12 +306,34 @@
       "naval": 2,
       "diplomacy": 3,
       "districts": 4
-    }
+    },
+    "portrait": {
+      "skin": "#c8946a",
+      "hair": "#1e1812",
+      "eyes": "#2a1e14",
+      "face": "round",
+      "hairStyle": "braids",
+      "beard": "goatee",
+      "headwear": "fur_hat",
+      "outfit": "furs",
+      "outfitColor": "#2f4f8a",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "The steppe is wide, and my riders have seen its every edge. Who are you?",
+      "war": "Your walls will not save you. Nothing has.",
+      "peace": "Pay what you owe and live. The khan is satisfied.",
+      "defeat": "The wind still blows across the steppe. It will carry my riders again."
+    },
+    "intro": "Temüjin, who united the clans of the steppe and became the Great Khan. Your riders move faster than any messenger and strike harder than any army. Ride, and let the world learn your name."
   },
   {
     "type": "leader",
     "id": "leader_elizabeth",
     "name": "Elizabeth I",
+    "title": "Queen of England",
     "civ": "civ_england",
     "ability": {
       "name": "Gloriana",
@@ -339,12 +428,34 @@
       "naval": 9,
       "diplomacy": 5,
       "districts": 5
-    }
+    },
+    "portrait": {
+      "skin": "#f0d0b8",
+      "hair": "#c0602a",
+      "eyes": "#4a5a6a",
+      "face": "oval",
+      "hairStyle": "curly",
+      "beard": "none",
+      "headwear": "diadem",
+      "outfit": "gown",
+      "outfitColor": "#2a2a3a",
+      "trim": "#f0e8d8",
+      "accessory": "ruff",
+      "expression": "neutral"
+    },
+    "quotes": {
+      "greeting": "England greets you. I trust you have come with something worth my time.",
+      "war": "I have the heart of a ruler and a fleet to match. You will meet both.",
+      "peace": "England has no quarrel with those who keep their word.",
+      "defeat": "Let it be written that the queen did not bow."
+    },
+    "intro": "Elizabeth, the queen who would not marry and would not yield. Your sea dogs rule the waves and your playwrights fill the theaters. Make this island the center of the world."
   },
   {
     "type": "leader",
     "id": "leader_napoleon",
     "name": "Napoleon Bonaparte",
+    "title": "Emperor of the French",
     "civ": "civ_france",
     "ability": {
       "name": "Emperor of the French",
@@ -391,12 +502,34 @@
       "naval": 4,
       "diplomacy": 4,
       "districts": 5
-    }
+    },
+    "portrait": {
+      "skin": "#e6c0a0",
+      "hair": "#2e2218",
+      "eyes": "#5a6a7a",
+      "face": "oval",
+      "hairStyle": "short",
+      "beard": "none",
+      "headwear": "bicorne",
+      "outfit": "coat",
+      "outfitColor": "#1f2f5a",
+      "trim": "#d4a94e",
+      "accessory": "medal",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "France salutes you. Let us see whether you are a friend, or merely an obstacle.",
+      "war": "My marshals are bored. You will give them something to do.",
+      "peace": "Glory can wait. France will take its gains in peace.",
+      "defeat": "History will judge me kindly. I intend to write it."
+    },
+    "intro": "Napoleon Bonaparte, the artillery officer who crowned himself emperor. Your grand army marches on new roads under new laws. Remake the world in the image of France."
   },
   {
     "type": "leader",
     "id": "leader_lincoln",
     "name": "Abraham Lincoln",
+    "title": "President of the United States",
     "civ": "civ_america",
     "ability": {
       "name": "A House United",
@@ -443,12 +576,34 @@
       "naval": 4,
       "diplomacy": 8,
       "districts": 6
-    }
+    },
+    "portrait": {
+      "skin": "#e2bc98",
+      "hair": "#1e1612",
+      "eyes": "#4a5a5a",
+      "face": "long",
+      "hairStyle": "short",
+      "beard": "chin",
+      "headwear": "top_hat",
+      "outfit": "suit",
+      "outfitColor": "#1e1e22",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "neutral"
+    },
+    "quotes": {
+      "greeting": "Welcome, friend. The American people hope we can do business as neighbors.",
+      "war": "We did not seek this fight. But we will finish it.",
+      "peace": "Let us bind up these wounds and build something better together.",
+      "defeat": "A government of the people does not die with one city."
+    },
+    "intro": "Abraham Lincoln, the rail-splitter who held a divided nation together. Your people build, settle and invent on a continent of endless promise. Lead them toward a more perfect union."
   },
   {
     "type": "leader",
     "id": "leader_qin",
     "name": "Qin Shi Huang",
+    "title": "First Emperor of China",
     "civ": "civ_china",
     "ability": {
       "name": "The First Emperor",
@@ -524,12 +679,34 @@
       "naval": 3,
       "diplomacy": 5,
       "districts": 6
-    }
+    },
+    "portrait": {
+      "skin": "#e0b890",
+      "hair": "#141010",
+      "eyes": "#2a1e14",
+      "face": "square",
+      "hairStyle": "topknot",
+      "beard": "mustache",
+      "headwear": "mian",
+      "outfit": "dragon_robe",
+      "outfitColor": "#1a1a1a",
+      "trim": "#b8322a",
+      "accessory": "none",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "You stand in the presence of the First Emperor. Kneel, or explain why you do not.",
+      "war": "All under heaven will be one. Your lands are no exception.",
+      "peace": "Order is restored. You may keep your borders, for now.",
+      "defeat": "My wall stands. My tomb waits. My name endures."
+    },
+    "intro": "Qin Shi Huang, who unified the warring states and named himself the First Emperor. Your workers raise walls across mountains and roads that bind the provinces. Build an empire for ten thousand generations."
   },
   {
     "type": "leader",
     "id": "leader_mansa",
     "name": "Mansa Musa",
+    "title": "Mansa of Mali",
     "civ": "civ_mali",
     "ability": {
       "name": "Pilgrimage of Gold",
@@ -581,12 +758,34 @@
       "naval": 4,
       "diplomacy": 7,
       "districts": 5
-    }
+    },
+    "portrait": {
+      "skin": "#6a4228",
+      "hair": "#141010",
+      "eyes": "#2a1e14",
+      "face": "oval",
+      "hairStyle": "short",
+      "beard": "short",
+      "headwear": "tall_crown",
+      "outfit": "kaftan",
+      "outfitColor": "#efe6d0",
+      "trim": "#d4a94e",
+      "accessory": "necklace",
+      "expression": "smile"
+    },
+    "quotes": {
+      "greeting": "Peace be with you. Mali has gold enough to share, and patience enough to listen.",
+      "war": "Gold buys many things. Today it buys an army.",
+      "peace": "Trade is better than war. Let the caravans move again.",
+      "defeat": "The salt roads will remember who walked them first."
+    },
+    "intro": "Mansa Musa, whose pilgrimage scattered so much gold that prices fell in every city he passed. Your caravans cross the desert and your scholars fill Timbuktu. Make Mali the richest empire the world has seen."
   },
   {
     "type": "leader",
     "id": "leader_nobunaga",
     "name": "Oda Nobunaga",
+    "title": "Lord of Owari",
     "civ": "civ_japan",
     "ability": {
       "name": "The Demon King",
@@ -676,6 +875,27 @@
       "naval": 6,
       "diplomacy": 4,
       "districts": 9
-    }
+    },
+    "portrait": {
+      "skin": "#e6c09a",
+      "hair": "#141010",
+      "eyes": "#2a1e14",
+      "face": "long",
+      "hairStyle": "chonmage",
+      "beard": "mustache",
+      "headwear": "none",
+      "outfit": "kimono",
+      "outfitColor": "#2a3a5a",
+      "trim": "#d4a94e",
+      "accessory": "none",
+      "expression": "stern"
+    },
+    "quotes": {
+      "greeting": "I have no time for ceremony. State your business.",
+      "war": "Life is short. I will not spend mine waiting for you to strike first.",
+      "peace": "Very well. The sword returns to its sheath, for now.",
+      "defeat": "Fifty years under heaven pass like a dream. So be it."
+    },
+    "intro": "Oda Nobunaga, the warlord who set out to unify a land at war with itself. Your samurai are disciplined and your guns are many. Bring all of Japan under one rule."
   }
 ]

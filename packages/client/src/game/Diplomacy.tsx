@@ -293,7 +293,17 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
 }
 
 /** A leader's and civ's abilities and unique items (docs/09-base-roster.md). */
-function Kit({ ctx, civ, leader }: { ctx: EngineContext; civ: string; leader: string }) {
+export function Kit({
+  ctx,
+  civ,
+  leader,
+  open = false,
+}: {
+  ctx: EngineContext;
+  civ: string;
+  leader: string;
+  open?: boolean;
+}) {
   const c = ctx.content;
   const l = c.entities.leader[leader];
   const cv = c.entities.civ[civ];
@@ -302,7 +312,7 @@ function Kit({ ctx, civ, leader }: { ctx: EngineContext; civ: string; leader: st
     t((c.entities[kind] as Record<string, { name: string }>)[id]?.name ?? id);
   const uniques = uniquesOf(ctx, civ);
   return (
-    <details className="kit">
+    <details className="kit" open={open}>
       <summary>Abilities and uniques</summary>
       {l && (
         <p>

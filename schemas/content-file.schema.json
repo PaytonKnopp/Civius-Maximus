@@ -11795,6 +11795,38 @@
                 "steppe"
               ]
             },
+            "emblem": {
+              "default": "star",
+              "type": "string",
+              "enum": [
+                "eagle",
+                "lion",
+                "sun",
+                "star",
+                "crescent",
+                "dragon",
+                "lotus",
+                "horse",
+                "crown",
+                "tower",
+                "ankh",
+                "fleur",
+                "flower",
+                "wolf",
+                "tree",
+                "mountain",
+                "wave",
+                "bull",
+                "bird",
+                "shield",
+                "sword",
+                "ship",
+                "serpent",
+                "mask",
+                "feather",
+                "compass"
+              ]
+            },
             "ability": {
               "type": "object",
               "properties": {
@@ -17062,6 +17094,184 @@
                 }
               },
               "additionalProperties": false
+            },
+            "portrait": {
+              "type": "object",
+              "properties": {
+                "skin": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "hair": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "eyes": {
+                  "default": "#4a3626",
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "face": {
+                  "default": "oval",
+                  "type": "string",
+                  "enum": [
+                    "oval",
+                    "round",
+                    "square",
+                    "long",
+                    "heart"
+                  ]
+                },
+                "hairStyle": {
+                  "default": "short",
+                  "type": "string",
+                  "enum": [
+                    "short",
+                    "cropped",
+                    "bald",
+                    "long",
+                    "wavy",
+                    "curly",
+                    "bob",
+                    "updo",
+                    "braids",
+                    "topknot",
+                    "chonmage",
+                    "tied"
+                  ]
+                },
+                "beard": {
+                  "default": "none",
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "stubble",
+                    "short",
+                    "chin",
+                    "full",
+                    "goatee",
+                    "mustache",
+                    "long"
+                  ]
+                },
+                "headwear": {
+                  "default": "none",
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "laurel",
+                    "crown",
+                    "tall_crown",
+                    "diadem",
+                    "nemes",
+                    "fur_hat",
+                    "bicorne",
+                    "top_hat",
+                    "mian",
+                    "turban",
+                    "helmet",
+                    "veil",
+                    "feathers",
+                    "circlet",
+                    "cap"
+                  ]
+                },
+                "outfit": {
+                  "default": "robe",
+                  "type": "string",
+                  "enum": [
+                    "toga",
+                    "armor",
+                    "robe",
+                    "gown",
+                    "coat",
+                    "suit",
+                    "kimono",
+                    "furs",
+                    "dragon_robe",
+                    "kaftan",
+                    "tunic",
+                    "wrap"
+                  ]
+                },
+                "outfitColor": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "trim": {
+                  "default": "#d4a94e",
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "accessory": {
+                  "default": "none",
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "necklace",
+                    "ruff",
+                    "medal",
+                    "earrings",
+                    "beads",
+                    "pearls",
+                    "collar"
+                  ]
+                },
+                "expression": {
+                  "default": "neutral",
+                  "type": "string",
+                  "enum": [
+                    "neutral",
+                    "smile",
+                    "stern"
+                  ]
+                },
+                "image": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "skin",
+                "hair",
+                "outfitColor"
+              ],
+              "additionalProperties": false
+            },
+            "quotes": {
+              "type": "object",
+              "properties": {
+                "greeting": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "war": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "peace": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "defeat": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "greeting",
+                "war",
+                "peace",
+                "defeat"
+              ],
+              "additionalProperties": false
+            },
+            "intro": {
+              "type": "string",
+              "minLength": 1
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
             }
           },
           "required": [
@@ -72090,6 +72300,38 @@
                   "steppe"
                 ]
               },
+              "emblem": {
+                "default": "star",
+                "type": "string",
+                "enum": [
+                  "eagle",
+                  "lion",
+                  "sun",
+                  "star",
+                  "crescent",
+                  "dragon",
+                  "lotus",
+                  "horse",
+                  "crown",
+                  "tower",
+                  "ankh",
+                  "fleur",
+                  "flower",
+                  "wolf",
+                  "tree",
+                  "mountain",
+                  "wave",
+                  "bull",
+                  "bird",
+                  "shield",
+                  "sword",
+                  "ship",
+                  "serpent",
+                  "mask",
+                  "feather",
+                  "compass"
+                ]
+              },
               "ability": {
                 "type": "object",
                 "properties": {
@@ -77357,6 +77599,184 @@
                   }
                 },
                 "additionalProperties": false
+              },
+              "portrait": {
+                "type": "object",
+                "properties": {
+                  "skin": {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  },
+                  "hair": {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  },
+                  "eyes": {
+                    "default": "#4a3626",
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  },
+                  "face": {
+                    "default": "oval",
+                    "type": "string",
+                    "enum": [
+                      "oval",
+                      "round",
+                      "square",
+                      "long",
+                      "heart"
+                    ]
+                  },
+                  "hairStyle": {
+                    "default": "short",
+                    "type": "string",
+                    "enum": [
+                      "short",
+                      "cropped",
+                      "bald",
+                      "long",
+                      "wavy",
+                      "curly",
+                      "bob",
+                      "updo",
+                      "braids",
+                      "topknot",
+                      "chonmage",
+                      "tied"
+                    ]
+                  },
+                  "beard": {
+                    "default": "none",
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "stubble",
+                      "short",
+                      "chin",
+                      "full",
+                      "goatee",
+                      "mustache",
+                      "long"
+                    ]
+                  },
+                  "headwear": {
+                    "default": "none",
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "laurel",
+                      "crown",
+                      "tall_crown",
+                      "diadem",
+                      "nemes",
+                      "fur_hat",
+                      "bicorne",
+                      "top_hat",
+                      "mian",
+                      "turban",
+                      "helmet",
+                      "veil",
+                      "feathers",
+                      "circlet",
+                      "cap"
+                    ]
+                  },
+                  "outfit": {
+                    "default": "robe",
+                    "type": "string",
+                    "enum": [
+                      "toga",
+                      "armor",
+                      "robe",
+                      "gown",
+                      "coat",
+                      "suit",
+                      "kimono",
+                      "furs",
+                      "dragon_robe",
+                      "kaftan",
+                      "tunic",
+                      "wrap"
+                    ]
+                  },
+                  "outfitColor": {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  },
+                  "trim": {
+                    "default": "#d4a94e",
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  },
+                  "accessory": {
+                    "default": "none",
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "necklace",
+                      "ruff",
+                      "medal",
+                      "earrings",
+                      "beads",
+                      "pearls",
+                      "collar"
+                    ]
+                  },
+                  "expression": {
+                    "default": "neutral",
+                    "type": "string",
+                    "enum": [
+                      "neutral",
+                      "smile",
+                      "stern"
+                    ]
+                  },
+                  "image": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "skin",
+                  "hair",
+                  "outfitColor"
+                ],
+                "additionalProperties": false
+              },
+              "quotes": {
+                "type": "object",
+                "properties": {
+                  "greeting": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "war": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "peace": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "defeat": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "greeting",
+                  "war",
+                  "peace",
+                  "defeat"
+                ],
+                "additionalProperties": false
+              },
+              "intro": {
+                "type": "string",
+                "minLength": 1
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
               }
             },
             "required": [

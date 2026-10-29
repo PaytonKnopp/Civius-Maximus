@@ -4,6 +4,7 @@
     "id": "civ_rome",
     "name": "Rome",
     "architecture": "mediterranean",
+    "emblem": "eagle",
     "adjective": "Roman",
     "colors": {
       "primary": "#7a1f2b",
@@ -55,6 +56,7 @@
     "id": "civ_egypt",
     "name": "Egypt",
     "architecture": "middle_eastern",
+    "emblem": "ankh",
     "adjective": "Egyptian",
     "colors": {
       "primary": "#1f5f7a",
@@ -133,6 +135,7 @@
     "id": "civ_macedon",
     "name": "Macedon",
     "architecture": "mediterranean",
+    "emblem": "sun",
     "adjective": "Macedonian",
     "colors": {
       "primary": "#3b2a6b",
@@ -175,6 +178,7 @@
     "id": "civ_mongols",
     "name": "Mongols",
     "architecture": "steppe",
+    "emblem": "horse",
     "adjective": "Mongolian",
     "colors": {
       "primary": "#2c5f4a",
@@ -227,6 +231,7 @@
     "id": "civ_england",
     "name": "England",
     "architecture": "european",
+    "emblem": "lion",
     "adjective": "English",
     "colors": {
       "primary": "#a11d21",
@@ -279,6 +284,7 @@
     "id": "civ_france",
     "name": "France",
     "architecture": "european",
+    "emblem": "fleur",
     "adjective": "French",
     "colors": {
       "primary": "#1d3b8a",
@@ -329,6 +335,7 @@
     "id": "civ_america",
     "name": "United States",
     "architecture": "european",
+    "emblem": "star",
     "adjective": "American",
     "colors": {
       "primary": "#24477d",
@@ -374,6 +381,7 @@
     "id": "civ_china",
     "name": "China",
     "architecture": "east_asian",
+    "emblem": "dragon",
     "adjective": "Chinese",
     "colors": {
       "primary": "#b8862b",
@@ -418,6 +426,7 @@
     "id": "civ_mali",
     "name": "Mali",
     "architecture": "african",
+    "emblem": "crescent",
     "adjective": "Malian",
     "colors": {
       "primary": "#c2572b",
@@ -518,6 +527,7 @@
     "id": "civ_japan",
     "name": "Japan",
     "architecture": "east_asian",
+    "emblem": "flower",
     "adjective": "Japanese",
     "colors": {
       "primary": "#e8e2d4",
