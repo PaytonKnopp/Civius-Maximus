@@ -18,8 +18,8 @@ lists everything, how to try it, and what Payton does next.
 | F1 | **Rules match the Civ games**: razing over turns, AI difficulty levels (Settler → Deity), game speeds | ✅ |
 | F2 | **UI overhaul**: a drawn icon set (yields, units, buildings, resources...), Civ-style top bar, research and civic trackers, unit action bar, city panel, minimap, notification feed, rich tooltips, ornate panel frames | ✅ |
 | F3 | **3D art**: detailed units by era, buildings by era and culture, districts, a landmark for every wonder, natural wonders, improvements, effects (fire, smoke, combat), lighting polish | ✅ (wonder landmarks with F17, natural wonders with F7) |
-| F4 | **Leaders and civs on screen**: an illustrated portrait for every leader, civ emblems, the diplomacy screen with portraits and quotes, leader intros | |
-| F5 | **Audio**: sound effects for every action and event, music for each era (generative, plus public-domain classical pieces played by the game's own instruments), volume settings | |
+| F4 | **Leaders and civs on screen**: an illustrated portrait for every leader, civ emblems, the diplomacy screen with portraits and quotes, leader intros | ✅ |
+| F5 | **Audio**: sound effects for every action and event, music for each era (generative, plus public-domain classical pieces played by the game's own instruments), volume settings | ✅ |
 | F6 | **Game setup**: Basic and Advanced setup (speed, difficulty, start era, world settings, every rule toggle, leader picks per seat, presets) for local and online games | |
 | F7 | **Map breadth**: 10+ map types, world age / temperature / rainfall / sea level, natural wonders | |
 | F8 | **Eras and ages**: era score from historic moments, golden, normal, dark and heroic ages with dedications | |

@@ -22,6 +22,7 @@ import {
 } from '@cx/engine';
 import { resolveText } from '@cx/content';
 import { useEffect, useState } from 'react';
+import { LeaderHead } from '../ui/LeaderCard';
 import { DealDialog, describeDeal } from './DealDialog';
 import { civName, type Colors, cssColor } from './model';
 
@@ -85,7 +86,9 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
   return (
     <aside className="player-panel" aria-label={name}>
       <div className="player-panel-head">
-        <span className="swatch big" style={{ background: cssColor(colors.main) }} />
+        <span className="panel-head-portrait" style={{ borderColor: cssColor(colors.main) }}>
+          <LeaderHead content={ctx.content} leader={p.leader} civ={p.civ} size={58} />
+        </span>
         <div>
           <h3>{name}</h3>
           <p className="unit-sub">
@@ -98,6 +101,11 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
           ✕
         </button>
       </div>
+      {leader?.quotes && p.kind === 'ai' && other !== viewer && p.alive && (
+        <q className="leader-quote panel-quote">
+          {resolveText(ctx.content, war ? leader.quotes.war : leader.quotes.greeting)}
+        </q>
+      )}
       <p className="hint" title={score.lines.map((l) => `${l.label}: ${l.amount}`).join('\n')}>
         Score {score.total}
         {domination.needed > 0 && ` · holds ${domination.held}/${domination.needed} rival capitals`}
@@ -293,7 +301,17 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
 }
 
 /** A leader's and civ's abilities and unique items (docs/09-base-roster.md). */
-function Kit({ ctx, civ, leader }: { ctx: EngineContext; civ: string; leader: string }) {
+export function Kit({
+  ctx,
+  civ,
+  leader,
+  open = false,
+}: {
+  ctx: EngineContext;
+  civ: string;
+  leader: string;
+  open?: boolean;
+}) {
   const c = ctx.content;
   const l = c.entities.leader[leader];
   const cv = c.entities.civ[civ];
@@ -302,7 +320,7 @@ function Kit({ ctx, civ, leader }: { ctx: EngineContext; civ: string; leader: st
     t((c.entities[kind] as Record<string, { name: string }>)[id]?.name ?? id);
   const uniques = uniquesOf(ctx, civ);
   return (
-    <details className="kit">
+    <details className="kit" open={open}>
       <summary>Abilities and uniques</summary>
       {l && (
         <p>

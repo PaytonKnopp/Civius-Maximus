@@ -14,6 +14,8 @@ import {
   type SaveSummary,
   storeSave,
 } from './game/storage';
+import { Gallery } from './Gallery';
+import { SoundSettings } from './ui/SoundSettings';
 import { MapLab } from './lab/MapLab';
 import { Icon } from './ui/Icon';
 import type { Quality } from './map/renderer';
@@ -123,8 +125,9 @@ export function App() {
   const content = useMemo(loadContent, []);
   const ctx: EngineContext = useMemo(() => ({ content }), [content]);
   // `#lab` opens the Map Lab directly (handy for sharing a map, and for the screenshot scripts).
-  const [screen, setScreenState] = useState<'game' | 'lab'>(() =>
-    location.hash === '#lab' ? 'lab' : 'game',
+  // `#gallery` shows every leader portrait and civ emblem.
+  const [screen, setScreenState] = useState<'game' | 'lab' | 'gallery'>(() =>
+    location.hash === '#lab' ? 'lab' : location.hash === '#gallery' ? 'gallery' : 'game',
   );
   const setScreen = (s: 'game' | 'lab') => {
     history.replaceState(null, '', s === 'lab' ? '#lab' : location.pathname + location.search);
@@ -180,6 +183,7 @@ export function App() {
   useEffect(() => () => ('handle' in start ? start.handle.online?.leave() : undefined), [start]);
 
   if (screen === 'lab') return <MapLab content={content} onBack={() => setScreen('game')} />;
+  if (screen === 'gallery') return <Gallery content={content} onBack={() => setScreen('game')} />;
 
   return (
     <div className="app">
@@ -334,6 +338,10 @@ function GameMenu(props: {
           <button type="button" role="menuitem" onClick={pick(props.onHome)}>
             Title screen
           </button>
+          <div className="menu-section">
+            <h4>Sound</h4>
+            <SoundSettings />
+          </div>
         </div>
       )}
     </div>

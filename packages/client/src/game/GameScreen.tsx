@@ -82,7 +82,10 @@ import { GraphsScreen, HistoryChart } from './GraphsScreen';
 import { HelpScreen } from './HelpScreen';
 import { HINTS, hintFor, hintsOn, markSeen, seenHints, setHints } from './hints';
 import { type Lens, LENSES, lensFor } from './lenses';
+import { LeaderIntro, LeaderSpeech, type SpeechLine } from './LeaderSpeech';
 import { Minimap } from './Minimap';
+import { music, play, type Sfx } from '../audio';
+import { LeaderHead } from '../ui/LeaderCard';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -101,6 +104,81 @@ function toPathView(steps: ReturnType<typeof findPath>): PathView | null {
 }
 
 /** A notification for the viewer, or undefined if the event isn't worth one. */
+/** The sound for an event, as the viewer hears it (docs/06-ui-ux.md, "Music and sound"). */
+function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
+  switch (e.type) {
+    case 'settlement_founded':
+      return e.owner === me ? 'found' : null;
+    case 'item_completed':
+      return e.owner === me ? 'build' : null;
+    case 'item_bought':
+      return 'buy';
+    case 'tech_researched':
+      return e.player === me ? 'research' : null;
+    case 'civic_completed':
+      return e.player === me ? 'civic' : null;
+    case 'boost_earned':
+      return e.player === me ? 'boost' : null;
+    case 'settlement_grew':
+      return s.settlements[e.settlement]?.owner === me ? 'grow' : null;
+    case 'border_grew':
+      return null;
+    case 'combat': {
+      // Guns and cannon from the age of gunpowder on; blades and arrows before.
+      const type = e.attacker.kind === 'unit' ? e.attacker.unitType : '';
+      if (/cannon|artillery|bombard|frigate|ironclad|destroyer|privateer/.test(type))
+        return 'cannon';
+      if (
+        /musket|infantry|rifle|machine_gun|guard|pike_and_shot|at_crew|cavalry|rough_rider/.test(
+          type,
+        )
+      )
+        return 'gun';
+      return e.mode === 'ranged' ? 'ranged' : 'melee';
+    }
+    case 'unit_killed':
+      return 'killed';
+    case 'settlement_captured':
+    case 'civilian_captured':
+      return 'captured';
+    case 'unit_promoted':
+      return 'promote';
+    case 'war_declared':
+      return e.target === me || e.by === me ? 'war' : null;
+    case 'peace_made':
+      return e.players.includes(me) ? 'peace' : null;
+    case 'deal_accepted':
+      return e.from === me || e.to === me ? 'deal' : null;
+    case 'wonder_completed':
+      return e.owner === me ? 'wonder' : 'notify';
+    case 'great_person_born':
+    case 'great_person_activated':
+      return 'great_person';
+    case 'religion_founded':
+    case 'pantheon_founded':
+      return 'religion';
+    case 'government_changed':
+      return e.player === me ? 'government' : null;
+    case 'turn_started':
+      return 'turn';
+    case 'unit_moved': {
+      if (e.owner !== me) return null;
+      const type = s.units[e.unit]?.type ?? '';
+      if (/galley|caravel|frigate|privateer|ironclad|destroyer|ship|boat/.test(type))
+        return 'move_ship';
+      if (/horse|cavalry|knight|chariot|keshig|companion|mandekalu|rough_rider/.test(type))
+        return 'move_horse';
+      return 'move';
+    }
+    case 'settlement_razing':
+      return 'burning';
+    case 'game_ended':
+      return e.winner === me ? 'victory' : 'defeat';
+    default:
+      return null;
+  }
+}
+
 function noticeFor(
   content: CompiledContent,
   state: GameState,
@@ -430,6 +508,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
   } | null>(null);
   const [striking, setStriking] = useState(false);
   const [gameOverSeen, setGameOverSeen] = useState(false);
+  // Leader screens: your leader's intro at the start, rivals speaking at war, peace and defeat.
+  const [introSeen, setIntroSeen] = useState<Set<PlayerId>>(() => new Set());
+  const [speech, setSpeech] = useState<{ player: PlayerId; line: SpeechLine } | null>(null);
 
   /** Hotseat: the next player took the device. Their view, their summary, their capital. */
   const beginTurn = (player: PlayerId) => {
@@ -510,6 +591,11 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
   );
   const me = state.players[viewer]!;
   const era = playerEra(ctx, me);
+  // The music follows your era and your civ's culture.
+  const architecture = ctx.content.entities.civ[me.civ]?.architecture ?? 'mediterranean';
+  useEffect(() => {
+    music.setEra(era?.order ?? 1, architecture);
+  }, [era?.order, architecture]);
   // A hint counts as seen when it first shows, and stays up until dismissed or the turn ends.
   const [hintNow, setHintNow] = useState<{ id: string; turn: number } | null>(null);
   const hintsFree =
@@ -612,6 +698,20 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
         if (e.visibleTo !== 'all' && !e.visibleTo.includes(viewer)) continue;
         const text = noticeFor(content, s, e, viewerRef.current);
         if (text) notify(text);
+        const cue = soundFor(e, viewer, s);
+        if (cue) play(cue);
+        if (cue === 'wonder' || cue === 'victory' || cue === 'defeat' || cue === 'era')
+          music.duck(4);
+        const ai = (p: PlayerId) => s.players[p]?.kind === 'ai';
+        if (e.type === 'war_declared' && e.target === viewer && ai(e.by))
+          setSpeech({ player: e.by, line: 'war' });
+        else if (e.type === 'war_declared' && e.by === viewer && ai(e.target))
+          setSpeech({ player: e.target, line: 'war' });
+        else if (e.type === 'peace_made' && e.players.includes(viewer)) {
+          const other = e.players[0] === viewer ? e.players[1] : e.players[0];
+          if (ai(other)) setSpeech({ player: other, line: 'peace' });
+        } else if (e.type === 'player_defeated' && e.by === viewer && ai(e.player))
+          setSpeech({ player: e.player, line: 'defeat' });
         if (!view) continue;
         if (e.type === 'combat') {
           view.animateAttack(
@@ -670,6 +770,16 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
   useEffect(() => {
     viewRef.current?.setSelected(selection?.kind === 'unit' ? selection.id : null);
   }, [selection, units]);
+  // A sound when you pick something: a soldier's clink, a civilian's pluck, a city's bell.
+  const selectedKey = selection ? `${selection.kind}:${selection.id}` : '';
+  useEffect(() => {
+    if (!selection) return;
+    if (selection.kind === 'unit') {
+      const u = game.state.units[selection.id];
+      const layer = u ? ctx.content.entities.unitClass[unitDef(ctx, u).class]?.layer : undefined;
+      play(layer === 'civilian' ? 'select_civilian' : 'select');
+    } else play('open');
+  }, [selectedKey]);
   useEffect(() => {
     viewRef.current?.setPath(path, unit?.tile ?? null);
   }, [path, unit?.tile]);
@@ -1252,7 +1362,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
               title={`${pl.name} · score ${scoreOf(ctx, state, p).total}${war ? ' · at war' : ''}${rel === 'allies' ? ' · allies' : rel === 'friends' ? ' · friends' : ''}${offer ? ' · has an offer for you' : ''}${pl.turnEnded ? ' (turn ended)' : ''}`}
               onClick={() => setPlayerPanel(playerPanel === p ? null : p)}
             >
-              <span className="swatch" style={{ background: cssColor(colors[p]!.main) }} />
+              <span className="chip-head" style={{ borderColor: cssColor(colors[p]!.main) }}>
+                <LeaderHead content={content} leader={pl.leader} civ={pl.civ} size={24} />
+              </span>
               {(hotseat || online) && pl.kind === 'human'
                 ? `${p === viewer ? '▸ ' : ''}${pl.name} · ${civName(content, state, p)}`
                 : p === viewer
@@ -1648,6 +1760,23 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit }: Pr
             setOverlay({ kind: 'graphs' });
           }}
           onClose={() => setGameOverSeen(true)}
+        />
+      )}
+      {!passTo && state.turn <= 1 && me.alive && !introSeen.has(viewer) && (
+        <LeaderIntro
+          ctx={ctx}
+          state={state}
+          player={viewer}
+          onBegin={() => setIntroSeen((seen) => new Set(seen).add(viewer))}
+        />
+      )}
+      {speech && !passTo && state.players[speech.player] && (
+        <LeaderSpeech
+          ctx={ctx}
+          state={state}
+          player={speech.player}
+          line={speech.line}
+          onClose={() => setSpeech(null)}
         />
       )}
       {passTo && (

@@ -53,6 +53,12 @@ right. The next-action button sits over a clickable minimap (terrain, borders, f
 your units) with the lens picker on its frame. Every panel and full screen shares one frame:
 sea-blue lacquer, a brass edge and corner flourishes; titles are gold Cinzel.
 
+**Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
+few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
+show each leader's face. A rival's diplomacy panel shows their portrait and a line in their
+voice (a greeting, or a threat at war). When a rival declares war, makes peace or falls, they
+speak to you over their portrait. Every line is original (`leader.quotes`, `leader.intro`).
+
 ## Map lenses and filters (lots of them, by design)
 
 | Lens | Shows |
@@ -136,6 +142,29 @@ graph. Series colors come from a palette checked for colorblind separation on th
   Musopen's public-domain catalog), with options for **shuffle**, **by era** (Baroque in early
   eras, Romantic later), skip, and volume. You can add your own tracks to the playlist folder.
 - Separate volume sliders for music, effects, ambience and UI.
+
+**Built so far (V1 final, F5):** all sound is synthesized live with Web Audio (`client/src/audio`),
+so nothing has to be downloaded or licensed, and it starts on your first click (browsers require
+a gesture).
+- **Music** is composed as it plays, one style per era: frame drums, lyre and flute in the Ancient
+  era; harp and choir in the Classical and Medieval; lute, recorder and strings in the
+  Renaissance; keys, strings and brass in the Industrial; slow keys and pads in the Modern.
+  A civ's culture colors the early eras: pentatonic for East Asia, Africa and the steppe, the
+  Hijaz mode for the Middle East and South Asia.
+- Pieces are 16 bars built from a motif that repeats and varies over a chord progression, with
+  quiet between them.
+- Now and then the game plays a public-domain tune on its own instruments: Greensleeves, a minuet
+  in G, Ode to Joy, Amazing Grace, a Gymnopédie, and Sakura for East Asian civs.
+- **Sound effects:** about 40 cues, among them clicks, selection, footsteps, hooves and waves,
+  founding a city, builds, research and civics, boosts, growth, melee clashes, arrows, musket
+  volleys and cannon, deaths, captures, promotions, war drums, peace, wonder fanfares, great
+  people, religion, government, new eras, turns, fire, victory and defeat.
+- **Ambience:** wind, plus birdsong before the Industrial era.
+- The ☰ menu has volume sliders for master, music, effects and ambience, and a mute switch. Music
+  ducks under big moments.
+
+The playlist of recorded public-domain pieces stays the plan for when recordings can be bundled
+or streamed. Mods will be able to add tracks.
 
 ## Controls
 
