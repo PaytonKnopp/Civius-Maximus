@@ -30,10 +30,29 @@ deliberately differ from Civ 6, the doc says so and gives a reason.
 
 ### Map generation
 
-Map types now: Continents, Pangaea, Archipelago, Fractal. Planned (M21a): small continents,
-island plates, inland sea, lakes, highlands, seven seas, Terra (old world / new world), shuffle,
-duel arena, and Earth with true start locations. World settings planned: world age (how
-mountainous), temperature, rainfall, sea level, natural wonder count.
+Map types (V1 final, F7), twelve of them:
+- **Continents**, **Small Continents** (five) and **Continents and Islands** (islands scattered
+  across the oceans).
+- **Pangaea** and **Highlands** (one rugged landmass of hills and ranges).
+- **Archipelago** and **Island Plates** (large islands).
+- **Fractal**.
+- **Inland Sea** (a ring of land around a central sea) and **Lakes** (wide land dotted with
+  lakes).
+- **Mirror** (each half reflects the other, for fair duels and team games).
+- **Shuffle** (any of the others, picked from the seed).
+
+Still planned: Terra (old world and new world) and Earth with true start locations.
+
+**World settings** (setup → Advanced → Map, and the Map Lab), with constants in
+`rules.mapgen.world`:
+- **World age:** new means 150% mountains and 130% hills; old means 60% and 75%.
+- **Temperature:** cool or hot shifts the climate 12 points, giving more tundra and snow or
+  more desert and jungle.
+- **Rainfall:** arid means −18 moisture and 65% of the usual woods and marsh; wet means +15 and
+  135%.
+- **Sea level:** low means +8% land; high means −8%.
+
+The natural wonder count comes with the map size (2 on Duel up to 8 on Huge).
 
 Generation is a pipeline of seeded steps, driven by content wherever possible (map types and
 sizes are content; each terrain declares the temperature/moisture box it belongs in; each feature
@@ -47,7 +66,18 @@ All math is integer-only so every browser generates the identical map from the s
    the coast or a lake.
 5. **Features:** woods, rainforest, marsh, floodplains (along desert/plains rivers), oasis, reef, ice.
 6. **Resources:** placed by terrain rules, with per-region balancing.
-7. **Natural wonders.**
+7. **Natural wonders** (built in F7): sixteen of them, each a special feature
+   (`feature.naturalWonder`) placed after the starts. They sit at least 5 tiles apart and 3 from
+   any start, and only where they fit: Kilimanjaro, Everest, Fuji, the Matterhorn and Torres del
+   Paine on mountains; Uluru, the Grand Canyon, the Dead Sea and the Eye of the Sahara in deserts;
+   Victoria Falls, Yosemite, the Pantanal and the Giant's Causeway on green land (the Causeway on
+   the coast); the Great Barrier Reef, the Galápagos and Ha Long Bay in coastal waters.
+   - Some can be worked for their own yields (the reef: 3 food and 2 science).
+   - Most give their neighbors yields (Kilimanjaro: +2 food to every tile next to it), which shows
+     in each tile's "why?" breakdown.
+   - Nothing can be founded, built or improved on them.
+   - In 3D each has its own landmark.
+   - Discovering them will count toward era score (F8).
 8. **Start positions:** the scorer guarantees minimum food, production and fresh water within 2
    rings, and respects civ start biases (coast, river, hills, tundra...).
 9. **Fairness pass:** every start is topped up to a minimum food and production (adding bonus

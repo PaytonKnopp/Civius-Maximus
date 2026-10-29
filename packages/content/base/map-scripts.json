@@ -43,5 +43,96 @@
     "hillPercent": 20,
     "minStartLandmass": 15,
     "detail": 5
+  },
+  {
+    "type": "mapScript",
+    "id": "small_continents",
+    "name": "Small Continents",
+    "description": "Five smaller continents: room to grow at home, neighbors a short sail away.",
+    "algorithm": "continents",
+    "landPercent": 32,
+    "mountainPercent": 7,
+    "hillPercent": 20,
+    "continents": 5,
+    "minStartLandmass": 15,
+    "detail": 8
+  },
+  {
+    "type": "mapScript",
+    "id": "island_plates",
+    "name": "Island Plates",
+    "description": "Large islands, each big enough for a civilization or two. Early boats pay off.",
+    "algorithm": "archipelago",
+    "landPercent": 30,
+    "mountainPercent": 6,
+    "hillPercent": 20,
+    "minStartLandmass": 12,
+    "detail": 8
+  },
+  {
+    "type": "mapScript",
+    "id": "inland_sea",
+    "name": "Inland Sea",
+    "description": "One ring of land around a great central sea: everyone is a neighbor, and the sea is the highway.",
+    "algorithm": "inland_sea",
+    "landPercent": 52,
+    "mountainPercent": 8,
+    "hillPercent": 22
+  },
+  {
+    "type": "mapScript",
+    "id": "continents_islands",
+    "name": "Continents and Islands",
+    "description": "Two continents, with islands scattered across the oceans to claim.",
+    "algorithm": "continents_islands",
+    "landPercent": 36,
+    "mountainPercent": 7,
+    "hillPercent": 20,
+    "continents": 2,
+    "minStartLandmass": 15
+  },
+  {
+    "type": "mapScript",
+    "id": "highlands",
+    "name": "Highlands",
+    "description": "One rugged landmass of hills, ranges and passes. Defenders love it.",
+    "algorithm": "pangaea",
+    "landPercent": 42,
+    "mountainPercent": 16,
+    "hillPercent": 38,
+    "landTilesPerRiver": 25
+  },
+  {
+    "type": "mapScript",
+    "id": "lakes",
+    "name": "Lakes",
+    "description": "Wide land dotted with lakes: fresh water everywhere, few long coasts.",
+    "algorithm": "lakes",
+    "landPercent": 46,
+    "mountainPercent": 6,
+    "hillPercent": 20,
+    "lakePercent": 500,
+    "detail": 7
+  },
+  {
+    "type": "mapScript",
+    "id": "mirror",
+    "name": "Mirror",
+    "description": "Each half of the world mirrors the other: the same land for every side. Made for fair duels and team games.",
+    "algorithm": "mirror",
+    "landPercent": 36,
+    "mountainPercent": 7,
+    "hillPercent": 20,
+    "continents": 2
+  },
+  {
+    "type": "mapScript",
+    "id": "shuffle",
+    "name": "Shuffle",
+    "description": "Any of the other map types, picked at random from the seed. You find out when you get there.",
+    "algorithm": "shuffle",
+    "landPercent": 35,
+    "mountainPercent": 7,
+    "hillPercent": 20
   }
 ]

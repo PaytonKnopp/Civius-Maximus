@@ -62,6 +62,9 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
   const [seed, setSeed] = useState('civius');
   const [wrapX, setWrapX] = useState(true);
   const [resources, setResources] = useState<MapSettings['resources']>('standard');
+  const [world, setWorld] = useState<
+    Pick<MapSettings, 'age' | 'temperature' | 'rainfall' | 'seaLevel'>
+  >({});
   const [startBalance, setStartBalance] = useState<MapSettings['startBalance']>('normal');
   const [options, setOptions] = useState<MapViewOptions>({
     grid: false,
@@ -89,7 +92,7 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
       const { map, starts } = generateMap(
         {
           content,
-          settings: { script, size, wrapX, resources, startBalance },
+          settings: { script, size, wrapX, resources, startBalance, ...world },
           players: ids.map((id) => ({ id })),
         },
         makeRandom(createRng(nextSeed)),
@@ -203,6 +206,31 @@ export function MapLab({ content, onBack }: { content: CompiledContent; onBack?:
           <p className="hint">
             {resolveText(content, content.entities.mapScript[script]?.description ?? '')}
           </p>
+          <div className="row">
+            {(
+              [
+                ['age', 'Age', ['standard', 'new', 'old']],
+                ['temperature', 'Temperature', ['standard', 'cool', 'hot']],
+                ['rainfall', 'Rainfall', ['standard', 'arid', 'wet']],
+                ['seaLevel', 'Sea level', ['standard', 'low', 'high']],
+              ] as const
+            ).map(([key, label, values]) => (
+              <div key={key}>
+                <label htmlFor={`world-${key}`}>{label}</label>
+                <select
+                  id={`world-${key}`}
+                  value={world[key] ?? 'standard'}
+                  onChange={(e) => setWorld({ ...world, [key]: e.target.value })}
+                >
+                  {values.map((v) => (
+                    <option key={v} value={v}>
+                      {v[0]!.toUpperCase() + v.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
 
           <div className="row">
             <div>

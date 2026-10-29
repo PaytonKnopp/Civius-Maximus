@@ -51,6 +51,12 @@ export function TileCard({
     .filter(Boolean)
     .join(' · ');
   const resource = t.resource ? content.entities.resource[t.resource] : undefined;
+  const wonder = t.feature ? content.entities.feature[t.feature]?.naturalWonder : undefined;
+  const adjacent = wonder
+    ? Object.entries(wonder.adjacentYields)
+        .map(([y, n]) => `+${n} ${content.entities.yield[y]?.icon ?? y}`)
+        .join(' ')
+    : '';
 
   return (
     <aside className="tile-card" aria-live="polite">
@@ -62,6 +68,17 @@ export function TileCard({
           </button>
         )}
       </div>
+      {wonder && (
+        <p className="tile-wonder">
+          <strong>Natural wonder.</strong> {name(wonder.description)}
+          {adjacent && (
+            <>
+              {' '}
+              Tiles next to it get <Rich text={adjacent} />
+            </>
+          )}
+        </p>
+      )}
       <dl className="facts">
         <dt>Tile</dt>
         <dd className="mono">

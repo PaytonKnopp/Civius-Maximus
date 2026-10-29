@@ -414,6 +414,26 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
                   ['standard', 'Standard'],
                   ['abundant', 'Abundant'],
                 ])}
+                {select('age', 'World age', [
+                  ['standard', 'Standard'],
+                  ['new', 'New (more mountains and hills)'],
+                  ['old', 'Old (worn down, flatter)'],
+                ])}
+                {select('temperature', 'Temperature', [
+                  ['standard', 'Temperate'],
+                  ['cool', 'Cool (more tundra and snow)'],
+                  ['hot', 'Hot (more desert and jungle)'],
+                ])}
+                {select('rainfall', 'Rainfall', [
+                  ['standard', 'Standard'],
+                  ['arid', 'Arid (dry, fewer woods)'],
+                  ['wet', 'Wet (lush, more woods and marsh)'],
+                ])}
+                {select('seaLevel', 'Sea level', [
+                  ['standard', 'Standard'],
+                  ['low', 'Low (more land)'],
+                  ['high', 'High (more ocean)'],
+                ])}
                 {select('startBalance', 'Start positions', [
                   ['normal', 'Standard'],
                   ['balanced', 'Balanced (fair starts)'],

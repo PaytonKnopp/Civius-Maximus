@@ -100,7 +100,10 @@ concrete blocks and glass towers. Walls ring a city that has them and lose stret
 damaged. Particle effects (`map3d/effects3d.ts`, two draw calls): chimney and factory smoke,
 fire and black smoke over burning or badly damaged cities, dust and sparks where a blow lands.
 The Map Lab's "Buildings" switch shows every style and age side by side. Wonder landmarks grow
-with the wonder list (F17); natural wonders come with the map work (F7).
+with the wonder list (F17). Each natural wonder has its own landmark (F7,
+`map3d/naturalWonders3d.ts`): great summits with snow and mist, a coral reef, the red monolith,
+terraced canyon walls, a waterfall with spray, salt flats, islets, limestone pillars, granite
+cliffs with pines, a wetland, basalt columns stepping into the sea and desert rings.
 
 **Built so far (V1 final, F2): the icon set.** About 140 icons drawn as vector paths on a 24×24
 grid (`packages/client/src/ui/icons.ts`): the yields, all 24 resources, every unit model, the

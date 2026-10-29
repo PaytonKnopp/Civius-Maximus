@@ -181,7 +181,7 @@ export function foundingProblem(
   if (t.elevation === 'mountain')
     return { code: 'bad_site', message: "Settlements can't be founded on mountains" };
   const feature = t.feature === null ? undefined : ctx.content.entities.feature[t.feature];
-  if (feature?.impassable)
+  if (feature?.impassable || feature?.naturalWonder)
     return {
       code: 'bad_site',
       message: `Settlements can't be founded on ${resolveText(ctx.content, feature.name)}`,

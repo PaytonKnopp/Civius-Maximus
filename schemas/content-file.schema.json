@@ -266,6 +266,40 @@
               "type": "string",
               "pattern": "^#[0-9a-fA-F]{6}$"
             },
+            "naturalWonder": {
+              "type": "object",
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "adjacentYields": {
+                  "default": {},
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "additionalProperties": {
+                    "type": "number",
+                    "multipleOf": 0.5
+                  }
+                },
+                "coastal": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "model": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "description",
+                "model"
+              ],
+              "additionalProperties": false
+            },
             "generation": {
               "type": "object",
               "properties": {
@@ -3020,7 +3054,12 @@
                 "continents",
                 "pangaea",
                 "archipelago",
-                "fractal"
+                "fractal",
+                "inland_sea",
+                "mirror",
+                "continents_islands",
+                "lakes",
+                "shuffle"
               ]
             },
             "landPercent": {
@@ -3061,6 +3100,12 @@
               "type": "integer",
               "minimum": 2,
               "maximum": 32
+            },
+            "lakePercent": {
+              "default": 100,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
             }
           },
           "required": [
@@ -3105,6 +3150,12 @@
               "maximum": 16
             },
             "cityStates": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 32
+            },
+            "naturalWonders": {
               "default": 0,
               "type": "integer",
               "minimum": 0,
@@ -60353,6 +60404,164 @@
                     "balancedPercent"
                   ],
                   "additionalProperties": false
+                },
+                "world": {
+                  "type": "object",
+                  "properties": {
+                    "age": {
+                      "type": "object",
+                      "properties": {
+                        "new": {
+                          "type": "object",
+                          "properties": {
+                            "mountains": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "hills": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "mountains",
+                            "hills"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "old": {
+                          "type": "object",
+                          "properties": {
+                            "mountains": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "hills": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "mountains",
+                            "hills"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "new",
+                        "old"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "temperature": {
+                      "type": "object",
+                      "properties": {
+                        "cool": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "hot": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "cool",
+                        "hot"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "rainfall": {
+                      "type": "object",
+                      "properties": {
+                        "arid": {
+                          "type": "object",
+                          "properties": {
+                            "moisture": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "features": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "moisture",
+                            "features"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "wet": {
+                          "type": "object",
+                          "properties": {
+                            "moisture": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "features": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "moisture",
+                            "features"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "arid",
+                        "wet"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "seaLevel": {
+                      "type": "object",
+                      "properties": {
+                        "low": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "high": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "low",
+                        "high"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "age",
+                    "temperature",
+                    "rainfall",
+                    "seaLevel"
+                  ],
+                  "additionalProperties": false
+                },
+                "naturalWonderSpacing": {
+                  "default": 5,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
                 }
               },
               "required": [
@@ -60790,6 +60999,40 @@
               "color": {
                 "type": "string",
                 "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "naturalWonder": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "adjacentYields": {
+                    "default": {},
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "additionalProperties": {
+                      "type": "number",
+                      "multipleOf": 0.5
+                    }
+                  },
+                  "coastal": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "model": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "description",
+                  "model"
+                ],
+                "additionalProperties": false
               },
               "generation": {
                 "type": "object",
@@ -63545,7 +63788,12 @@
                   "continents",
                   "pangaea",
                   "archipelago",
-                  "fractal"
+                  "fractal",
+                  "inland_sea",
+                  "mirror",
+                  "continents_islands",
+                  "lakes",
+                  "shuffle"
                 ]
               },
               "landPercent": {
@@ -63586,6 +63834,12 @@
                 "type": "integer",
                 "minimum": 2,
                 "maximum": 32
+              },
+              "lakePercent": {
+                "default": 100,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
               }
             },
             "required": [
@@ -63630,6 +63884,12 @@
                 "maximum": 16
               },
               "cityStates": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 32
+              },
+              "naturalWonders": {
                 "default": 0,
                 "type": "integer",
                 "minimum": 0,
@@ -120878,6 +121138,164 @@
                       "balancedPercent"
                     ],
                     "additionalProperties": false
+                  },
+                  "world": {
+                    "type": "object",
+                    "properties": {
+                      "age": {
+                        "type": "object",
+                        "properties": {
+                          "new": {
+                            "type": "object",
+                            "properties": {
+                              "mountains": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "hills": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "mountains",
+                              "hills"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "old": {
+                            "type": "object",
+                            "properties": {
+                              "mountains": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "hills": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "mountains",
+                              "hills"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "new",
+                          "old"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "temperature": {
+                        "type": "object",
+                        "properties": {
+                          "cool": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "hot": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "cool",
+                          "hot"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "rainfall": {
+                        "type": "object",
+                        "properties": {
+                          "arid": {
+                            "type": "object",
+                            "properties": {
+                              "moisture": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "features": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "moisture",
+                              "features"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "wet": {
+                            "type": "object",
+                            "properties": {
+                              "moisture": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "features": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "moisture",
+                              "features"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "arid",
+                          "wet"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "seaLevel": {
+                        "type": "object",
+                        "properties": {
+                          "low": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "high": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "low",
+                          "high"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "age",
+                      "temperature",
+                      "rainfall",
+                      "seaLevel"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "naturalWonderSpacing": {
+                    "default": 5,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
                   }
                 },
                 "required": [

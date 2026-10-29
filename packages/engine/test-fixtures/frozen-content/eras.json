@@ -9,30 +9,64 @@
     "type": "era",
     "id": "era_classical",
     "name": "Classical",
-    "order": 2
+    "order": 2,
+    "start": {
+      "gold": 60,
+      "units": ["unit_settler", "unit_archer", "unit_warrior"]
+    }
   },
   {
     "type": "era",
     "id": "era_medieval",
     "name": "Medieval",
-    "order": 3
+    "order": 3,
+    "start": {
+      "gold": 150,
+      "units": ["unit_settler", "unit_settler", "unit_swordsman", "unit_crossbowman"]
+    }
   },
   {
     "type": "era",
     "id": "era_renaissance",
     "name": "Renaissance",
-    "order": 4
+    "order": 4,
+    "start": {
+      "gold": 250,
+      "units": ["unit_settler", "unit_settler", "unit_pikeman", "unit_crossbowman", "unit_knight"]
+    }
   },
   {
     "type": "era",
     "id": "era_industrial",
     "name": "Industrial",
-    "order": 5
+    "order": 5,
+    "start": {
+      "gold": 400,
+      "units": [
+        "unit_settler",
+        "unit_settler",
+        "unit_settler",
+        "unit_musketman",
+        "unit_bombard",
+        "unit_knight"
+      ]
+    }
   },
   {
     "type": "era",
     "id": "era_modern",
     "name": "Modern",
-    "order": 6
+    "order": 6,
+    "start": {
+      "gold": 600,
+      "units": [
+        "unit_settler",
+        "unit_settler",
+        "unit_settler",
+        "unit_line_infantry",
+        "unit_field_cannon",
+        "unit_cavalry"
+      ]
+    }
   }
 ]

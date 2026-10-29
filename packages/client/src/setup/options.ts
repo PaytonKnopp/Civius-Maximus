@@ -26,6 +26,11 @@ export interface NewGameOptions {
   wrapX: boolean;
   resources: MapSettings['resources'];
   startBalance?: MapSettings['startBalance'];
+  /** World settings (standard when absent). */
+  age?: NonNullable<MapSettings['age']>;
+  temperature?: NonNullable<MapSettings['temperature']>;
+  rainfall?: NonNullable<MapSettings['rainfall']>;
+  seaLevel?: NonNullable<MapSettings['seaLevel']>;
   camps: boolean;
   domination: boolean;
   religion: boolean;
@@ -92,6 +97,10 @@ export function makeSetup(o: NewGameOptions): GameSetup {
         wrapX: o.wrapX,
         resources: o.resources,
         startBalance: o.startBalance ?? 'normal',
+        ...(o.age && o.age !== 'standard' ? { age: o.age } : {}),
+        ...(o.temperature && o.temperature !== 'standard' ? { temperature: o.temperature } : {}),
+        ...(o.rainfall && o.rainfall !== 'standard' ? { rainfall: o.rainfall } : {}),
+        ...(o.seaLevel && o.seaLevel !== 'standard' ? { seaLevel: o.seaLevel } : {}),
       },
     },
     players: [

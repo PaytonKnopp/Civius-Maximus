@@ -30,6 +30,7 @@ import {
 } from './architecture';
 import { campParts, districtParts, districtStacks, wonderParts } from './districts3d';
 import { type Emitter, EffectsLayer } from './effects3d';
+import { naturalWonderParts } from './naturalWonders3d';
 import { G, house, part, scaled, seeded } from './parts';
 
 /**
@@ -523,6 +524,8 @@ export class SettlementLayer {
   private camps = new Map<number, Drawn>();
   /** Roads, one small group per road tile (so east-west wrap can move each). */
   private roads = new Map<number, Drawn>();
+  /** Natural wonder landmarks, by tile. */
+  private wonders = new Map<number, Drawn>();
   private highlights = new Group();
   private highlightKey = '';
   private highlightX: number[] = [];
@@ -633,6 +636,42 @@ export class SettlementLayer {
       if (pos.length > 0) group.add(ribbonMesh(pos, col));
       this.group.add(group);
       this.roads.set(t, { key, group, x: this.world.center(t)[0] });
+    }
+  }
+
+  /** The natural wonders the viewer has found (dimmed when only remembered). */
+  setNaturalWonders(list: { tile: number; model: string }[]) {
+    const want = new Map<number, { model: string; key: string }>();
+    for (const w of list) {
+      const fog = this.world.fog(w.tile);
+      if (fog !== 0) want.set(w.tile, { model: w.model, key: `${w.model}:${fog}` });
+    }
+    for (const [t, d] of this.wonders) {
+      if (want.get(t)?.key === d.key) continue;
+      this.dispose(d);
+      this.wonders.delete(t);
+      this.effects.set(`nw${t}`, []);
+    }
+    for (const [t, w] of want) {
+      if (this.wonders.has(t)) continue;
+      const [x, z] = this.world.center(t);
+      const { parts, emitters } = naturalWonderParts(w.model, x, z, this.world.height(x, z), t);
+      const merged = mergeGeometries(parts);
+      for (const p of parts) p.dispose();
+      const group = new Group();
+      const remembered = this.world.fog(t) === 1;
+      if (merged) {
+        if (remembered) {
+          const c = merged.getAttribute('color');
+          for (let i = 0; i < c.count; i++)
+            c.setXYZ(i, c.getX(i) * 0.35, c.getY(i) * 0.37, c.getZ(i) * 0.42);
+        }
+        merged.computeBoundingSphere();
+        group.add(new Mesh(merged, buildingMaterial));
+      }
+      this.group.add(group);
+      this.wonders.set(t, { key: w.key, group, x });
+      this.effects.set(`nw${t}`, remembered ? [] : emitters);
     }
   }
 
@@ -811,6 +850,7 @@ export class SettlementLayer {
     for (const d of this.drawn.values()) d.group.position.x = shift(d.x);
     for (const d of this.camps.values()) d.group.position.x = shift(d.x);
     for (const d of this.roads.values()) d.group.position.x = shift(d.x);
+    for (const d of this.wonders.values()) d.group.position.x = shift(d.x);
     this.highlights.children.forEach((c, i) => {
       c.position.x = shift(this.highlightX[i] ?? 0);
     });
@@ -824,5 +864,7 @@ export class SettlementLayer {
     this.camps.clear();
     for (const d of this.roads.values()) this.dispose(d);
     this.roads.clear();
+    for (const d of this.wonders.values()) this.dispose(d);
+    this.wonders.clear();
   }
 }

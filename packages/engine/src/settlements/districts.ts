@@ -56,7 +56,7 @@ export function placementFits(
   if (p.terrains && !p.terrains.includes(t.terrain)) return false;
   if (t.feature !== null) {
     const f = ctx.content.entities.feature[t.feature];
-    if (f?.impassable) return false;
+    if (f?.impassable || f?.naturalWonder) return false;
     if (p.features && !p.features.includes(t.feature) && !f?.removable) return false;
   }
   const facts = (i: number) => tileFacts(state, i);

@@ -267,3 +267,59 @@ describe('map generation', () => {
     expect(validateMap(map, starts, modded)).toEqual([]);
   });
 });
+
+describe('map breadth (F7)', () => {
+  const players = ['p1', 'p2', 'p3', 'p4'].map((id) => ({ id }));
+  const gen = (extra: Partial<MapSettings> = {}, seed = 'breadth') =>
+    generateMap(
+      {
+        content,
+        settings: {
+          script: 'continents',
+          size: 'small',
+          wrapX: true,
+          resources: 'standard',
+          startBalance: 'normal',
+          ...extra,
+        },
+        players,
+      },
+      makeRandom(createRng(seed)),
+    );
+  const isWonder = (f: string | null) => !!f && !!content.entities.feature[f]?.naturalWonder;
+
+  it('places natural wonders apart from each other and from every start', () => {
+    const { map, starts } = gen();
+    const wonders = map.tiles.flatMap((t, i) => (isWonder(t.feature) ? [i] : []));
+    expect(wonders.length).toBe(content.entities.mapSize.small!.naturalWonders);
+    const spacing = content.rules.mapgen.naturalWonderSpacing;
+    for (const a of wonders) {
+      for (const b of wonders)
+        if (a !== b) expect(distance(map, a, b)).toBeGreaterThanOrEqual(spacing);
+      for (const s of Object.values(starts)) expect(distance(map, a, s)).toBeGreaterThanOrEqual(3);
+      expect(map.tiles[a]!.resource).toBeNull();
+    }
+  });
+
+  it('moves land, mountains and climate with the world settings', () => {
+    const land = (m: ReturnType<typeof gen>['map']) =>
+      m.tiles.filter((t) => !content.entities.terrain[t.terrain]!.water).length;
+    const mountains = (m: ReturnType<typeof gen>['map']) =>
+      m.tiles.filter((t) => t.elevation === 'mountain').length;
+    expect(land(gen({ seaLevel: 'low' }).map)).toBeGreaterThan(land(gen({ seaLevel: 'high' }).map));
+    expect(mountains(gen({ age: 'new' }).map)).toBeGreaterThan(mountains(gen({ age: 'old' }).map));
+    const count = (m: ReturnType<typeof gen>['map'], terrain: string) =>
+      m.tiles.filter((t) => t.terrain === terrain).length;
+    expect(count(gen({ temperature: 'hot' }).map, 'desert')).toBeGreaterThan(
+      count(gen({ temperature: 'cool' }).map, 'desert'),
+    );
+  });
+
+  it('generates every map type validly, and shuffle the same way from the same seed', () => {
+    for (const script of content.ids.mapScript) {
+      const { map, starts } = gen({ script });
+      expect(validateMap(map, starts, content), script).toEqual([]);
+    }
+    expect(gen({ script: 'shuffle' }, 'same').map).toEqual(gen({ script: 'shuffle' }, 'same').map);
+  });
+});

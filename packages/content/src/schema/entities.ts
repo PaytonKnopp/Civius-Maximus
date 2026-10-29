@@ -79,6 +79,19 @@ export const FeatureDef = z.strictObject({
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #2f5d34')
     .optional(),
+  /**
+   * A natural wonder (docs/03-core-mechanics.md, "Natural wonders"): placed once per map by its
+   * own step, never by `generation`. `adjacentYields` go to the tiles around it; `coastal` means
+   * it must touch water; `model` is its 3D landmark.
+   */
+  naturalWonder: z
+    .strictObject({
+      description: Text,
+      adjacentYields: YieldMap.default({}),
+      coastal: z.boolean().default(false),
+      model: z.string().min(1),
+    })
+    .optional(),
   /** Map generation: `chance` percent of eligible tiles get it, within the climate ranges given. */
   generation: z
     .strictObject({
@@ -512,6 +525,27 @@ export const RulesDef = z.strictObject({
       /** Balanced starts: every start's score is raised to at least this percent of the best one. */
       balancedPercent: z.int().min(0).max(100),
     }),
+    /**
+     * World settings in the setup (docs/03-core-mechanics.md, "Maps"): how far each moves the
+     * map from standard. Ages scale mountains and hills (percent); temperature and rainfall shift
+     * the climate (0–100 scale) and scale feature chances; sea level adds land percent.
+     */
+    world: z
+      .strictObject({
+        age: z.strictObject({
+          new: z.strictObject({ mountains: z.int(), hills: z.int() }),
+          old: z.strictObject({ mountains: z.int(), hills: z.int() }),
+        }),
+        temperature: z.strictObject({ cool: z.int(), hot: z.int() }),
+        rainfall: z.strictObject({
+          arid: z.strictObject({ moisture: z.int(), features: z.int() }),
+          wet: z.strictObject({ moisture: z.int(), features: z.int() }),
+        }),
+        seaLevel: z.strictObject({ low: z.int(), high: z.int() }),
+      })
+      .optional(),
+    /** Natural wonders keep at least this many tiles from each other and from starts. */
+    naturalWonderSpacing: z.int().min(1).default(5),
   }),
 });
 
@@ -650,7 +684,17 @@ export const MapScriptDef = z.strictObject({
   id: Id,
   name: Text,
   description: Text.optional(),
-  algorithm: z.enum(['continents', 'pangaea', 'archipelago', 'fractal']),
+  algorithm: z.enum([
+    'continents',
+    'pangaea',
+    'archipelago',
+    'fractal',
+    'inland_sea',
+    'mirror',
+    'continents_islands',
+    'lakes',
+    'shuffle',
+  ]),
   /** Percent of the map that's land. */
   landPercent: z.int().min(5).max(90),
   /** Percent of land that's mountains / hills. */
@@ -664,6 +708,8 @@ export const MapScriptDef = z.strictObject({
   landTilesPerRiver: z.int().min(5).default(35),
   /** Noise detail: higher = smaller, more scattered landmasses. */
   detail: z.int().min(2).max(32).default(6),
+  /** Inland lakes: percent of the usual number (`lakes` maps raise it). */
+  lakePercent: z.int().min(0).max(1000).default(100),
 });
 
 /** A map size the host can pick in the lobby. */
@@ -677,6 +723,8 @@ export const MapSizeDef = z.strictObject({
   players: z.int().min(1).max(16),
   /** City-states placed at the start (docs/03-core-mechanics.md, "Map sizes"). */
   cityStates: z.int().min(0).max(32).default(0),
+  /** Natural wonders placed (docs/03-core-mechanics.md, "Natural wonders"). */
+  naturalWonders: z.int().min(0).max(32).default(0),
   /** Display order in the lobby. */
   order: z.int().default(100),
 });

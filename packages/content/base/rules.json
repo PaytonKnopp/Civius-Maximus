@@ -131,7 +131,38 @@
       "coastalBonus": 5,
       "balancedPercent": 90
     },
-    "landTilesPerLake": 70
+    "landTilesPerLake": 70,
+    "world": {
+      "age": {
+        "new": {
+          "mountains": 150,
+          "hills": 130
+        },
+        "old": {
+          "mountains": 60,
+          "hills": 75
+        }
+      },
+      "temperature": {
+        "cool": -12,
+        "hot": 12
+      },
+      "rainfall": {
+        "arid": {
+          "moisture": -18,
+          "features": 65
+        },
+        "wet": {
+          "moisture": 15,
+          "features": 135
+        }
+      },
+      "seaLevel": {
+        "low": 8,
+        "high": -8
+      }
+    },
+    "naturalWonderSpacing": 5
   },
   "units": {
     "stacking": {

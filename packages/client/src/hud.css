@@ -1632,3 +1632,15 @@ button.primary:hover:not(:disabled) {
   border-color: var(--gold-hi);
   color: var(--gold-hi);
 }
+
+.tile-wonder {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #e8dcc0;
+}
+
+.tile-wonder strong {
+  color: var(--gold-hi);
+  font-weight: 600;
+}
