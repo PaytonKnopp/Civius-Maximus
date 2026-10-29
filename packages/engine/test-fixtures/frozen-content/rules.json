@@ -395,5 +395,37 @@
       "civic_ideology",
       "civic_urbanization"
     ]
+  },
+  "loyalty": {
+    "max": 100,
+    "range": 9,
+    "maxPressure": 20,
+    "governor": 8,
+    "mood": {
+      "thriving": 3,
+      "content": 0,
+      "unhappy": -3,
+      "unrest": -6
+    },
+    "afterCapture": 50,
+    "freeCity": 100,
+    "freeCityUnits": 2,
+    "yieldPenalties": [
+      {
+        "below": 75,
+        "percent": -15,
+        "label": "Wavering loyalty"
+      },
+      {
+        "below": 50,
+        "percent": -30,
+        "label": "Disloyal"
+      },
+      {
+        "below": 25,
+        "percent": -60,
+        "label": "Open revolt"
+      }
+    ]
   }
 }

@@ -2,6 +2,7 @@ import { distance, tilesWithin } from '../map/hex';
 import { foundingProblem, isCoastal, tileOnRiver, tileYields } from '../settlements/rules';
 import type { UnitState } from '../state';
 import { isWater } from '../units/movement';
+import { loyaltyOn } from '../loyalty/loyalty';
 import type { Turn } from './turn';
 
 /**
@@ -59,6 +60,19 @@ export function siteScore(t: Turn, tile: number): number {
     // Crowding a rival: they'll resent it and it's hard to hold.
     for (const s of t.knownSettlements()) {
       if (distance(map, s.tile, tile) <= 4) score -= 15;
+    }
+    // Loyalty: a site where foreign citizens outnumber ours would soon break away.
+    if (loyaltyOn(t.state)) {
+      const range = t.ctx.content.rules.loyalty.range;
+      let ours = 10;
+      let theirs = 0;
+      for (const s of t.knownSettlements()) {
+        const d = distance(map, s.tile, tile);
+        if (d > range) continue;
+        if (s.owner === t.player) ours += s.population * (range + 1 - d);
+        else theirs += s.population * (range + 1 - d);
+      }
+      if (theirs > ours) score -= Math.min(40, Math.floor((theirs - ours) / 2));
     }
     return score;
   });

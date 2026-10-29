@@ -517,6 +517,46 @@ export const RulesDef = z.strictObject({
       goldenGap: z.int().min(1),
     })
     .default({ darkBase: 8, darkStep: 3, goldenGap: 10 }),
+  /** Loyalty (docs/04-advanced-systems.md, "Loyalty"), when the game's `loyalty` setting is on. */
+  loyalty: z
+    .strictObject({
+      /** Loyalty runs from 0 to this; new settlements start full. */
+      max: z.int().min(1),
+      /** Citizens push on settlements up to this many tiles away (less with distance). */
+      range: z.int().min(0).max(20),
+      /** The most loyalty a turn that citizens' pressure can add or take. */
+      maxPressure: z.int().min(0),
+      /** Loyalty a turn from an established governor. */
+      governor: z.int(),
+      /** Loyalty a turn from the settlement's mood. */
+      mood: z.strictObject({
+        thriving: z.int(),
+        content: z.int(),
+        unhappy: z.int(),
+        unrest: z.int(),
+      }),
+      /** Loyalty a settlement has just after it's captured, or joins a civ. */
+      afterCapture: z.int().min(1),
+      /** Loyalty a settlement has when it declares itself a free city. */
+      freeCity: z.int().min(1),
+      /** Soldiers a new free city raises to defend itself. */
+      freeCityUnits: z.int().min(0).max(4),
+      /** Yields drop while loyalty is low: the lowest `below` it's under applies. */
+      yieldPenalties: z.array(
+        z.strictObject({ below: z.int().min(1), percent: z.int().max(0), label: Text }),
+      ),
+    })
+    .default({
+      max: 100,
+      range: 9,
+      maxPressure: 20,
+      governor: 8,
+      mood: { thriving: 3, content: 0, unhappy: -3, unrest: -6 },
+      afterCapture: 50,
+      freeCity: 100,
+      freeCityUnits: 2,
+      yieldPenalties: [],
+    }),
   mapgen: z.strictObject({
     coastTerrain: Id,
     oceanTerrain: Id,
@@ -1575,6 +1615,7 @@ export const MomentDef = z.strictObject({
     'space_project',
     'tech_researched',
     'civic_completed',
+    'settlement_joined',
   ]),
   once: z.enum(['player', 'world', 'never']).default('never'),
   cap: z.int().min(1).optional(),

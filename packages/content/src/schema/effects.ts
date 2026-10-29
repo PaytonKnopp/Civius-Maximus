@@ -469,6 +469,22 @@ const YieldPerFollower = z.strictObject({
   condition: Condition.optional(),
 });
 
+/** Loyalty a turn in matching settlements (when the loyalty setting is on). */
+const ModifyLoyalty = z.strictObject({
+  effect: z.literal('modify_loyalty'),
+  params: z.strictObject({ amount: z.int() }),
+  target: SettlementTarget,
+  condition: Condition.optional(),
+});
+
+/** Stronger (or weaker) loyalty pressure from this player's citizens. */
+const ModifyLoyaltyPressure = z.strictObject({
+  effect: z.literal('modify_loyalty_pressure'),
+  params: z.strictObject({ percent: Percent }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
 /** Items of this kind can also be bought with faith (same price as in gold). */
 const PurchaseWithFaith = z.strictObject({
   effect: z.literal('purchase_with_faith'),
@@ -510,6 +526,8 @@ export const Effect = z.discriminatedUnion('effect', [
   YieldPerFollower,
   GrantEnvoys,
   CommanderBonus,
+  ModifyLoyalty,
+  ModifyLoyaltyPressure,
 ]);
 export type Effect = z.infer<typeof Effect>;
 export const EFFECT_TYPES = Effect.options.map((o) => o.shape.effect.value);

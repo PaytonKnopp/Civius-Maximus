@@ -43,6 +43,7 @@ import {
   wallsMax,
   warKey,
   workableTiles,
+  FREE,
 } from '@cx/engine';
 import { type GameHandle, LocalGame, makeSave, RemoteGame } from '@cx/host';
 import { Icon, Rich } from '../ui/Icon';
@@ -144,6 +145,10 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
     case 'settlement_captured':
     case 'civilian_captured':
       return 'captured';
+    case 'settlement_flipped':
+      return e.from === me || e.to === me ? 'captured' : 'notify';
+    case 'loyalty_falling':
+      return e.owner === me ? 'notify' : null;
     case 'unit_promoted':
       return 'promote';
     case 'war_declared':
@@ -416,6 +421,18 @@ function noticeFor(
       return `${e.name} is being razed: gone in ${e.turns} turn${e.turns === 1 ? '' : 's'}`;
     case 'settlement_liberated':
       return `${e.name} was liberated and returned to ${civName(content, state, e.to)}`;
+    case 'settlement_flipped':
+      return e.to === FREE
+        ? e.from === ME
+          ? `${e.name} lost its loyalty and broke away as a free city!`
+          : `${e.name} broke away from ${civName(content, state, e.from)} as a free city`
+        : e.to === ME
+          ? `${e.name} chose to join you!`
+          : `${e.name} joined ${civName(content, state, e.to)}`;
+    case 'loyalty_falling':
+      return e.owner === ME
+        ? `${e.name} is losing loyalty (${e.loyalty}, ${e.change} a turn): post a governor or raise happiness there`
+        : undefined;
     case 'capital_moved':
       return e.player === ME ? `Your capital moved to ${name(e.settlement)}` : undefined;
     case 'camp_cleared':

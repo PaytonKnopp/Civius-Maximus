@@ -2,16 +2,27 @@ import { resolveText } from '@cx/content';
 import {
   type EngineContext,
   type GameState,
+  loyaltyOf,
+  loyaltyOn,
   type PlayerId,
+  pressureAt,
   settleSites,
   tileYields,
 } from '@cx/engine';
 import type { TileHighlight } from '../map/renderer';
+import { playerColors } from './model';
 
 /** Map lenses: overlays that answer one question about every tile at a glance. */
-export type Lens = 'none' | 'yields' | 'settler' | 'resources' | 'religion';
+export type Lens = 'none' | 'yields' | 'settler' | 'resources' | 'religion' | 'loyalty';
 
-export const LENSES: readonly Lens[] = ['none', 'yields', 'settler', 'resources', 'religion'];
+export const LENSES: readonly Lens[] = [
+  'none',
+  'yields',
+  'settler',
+  'resources',
+  'religion',
+  'loyalty',
+];
 
 export const LENS_NAMES: Record<Lens, string> = {
   none: 'No lens',
@@ -19,7 +30,38 @@ export const LENS_NAMES: Record<Lens, string> = {
   settler: 'Settling',
   resources: 'Resources',
   religion: 'Religion',
+  loyalty: 'Loyalty',
 };
+
+/** Loyalty lens: which side's people pull hardest on each tile, and each settlement's loyalty. */
+function loyaltyLens(
+  ctx: EngineContext,
+  state: GameState,
+  fog: Uint8Array,
+  colors: Record<PlayerId, { main: number }>,
+): TileHighlight[] {
+  if (!loyaltyOn(state)) return [];
+  const out: TileHighlight[] = [];
+  const percents = new Map<PlayerId, number>();
+  state.map.tiles.forEach((t, tile) => {
+    if (fog[tile] === 0) return;
+    const s = t.settlement !== null ? state.settlements[t.settlement] : undefined;
+    if (s && s.tile === tile) {
+      const r = loyaltyOf(ctx, state, s, percents);
+      const label = r.steadfast
+        ? '◆'
+        : `${r.loyalty} ${r.change > 0 ? '+' : r.change < 0 ? '−' : '±'}${Math.abs(r.change)}`;
+      out.push({ tile, tone: 'lens', label, color: r.change < 0 ? 0xe0503c : 0x9fd36a });
+      return;
+    }
+    let best: { id: PlayerId; push: number } | null = null;
+    for (const [id, push] of pressureAt(ctx, state, tile, percents))
+      if (!best || push > best.push || (push === best.push && id < best.id)) best = { id, push };
+    if (best && best.push > 0)
+      out.push({ tile, tone: 'lens', color: colors[best.id]?.main ?? 0x9a9a9a });
+  });
+  return out;
+}
 
 /** Religions get the graphs' categorical colors, in founding order. */
 const RELIGION_COLORS = [
@@ -40,6 +82,8 @@ export function lensFor(
   switch (lens) {
     case 'none':
       return [];
+    case 'loyalty':
+      return loyaltyLens(ctx, state, fog, playerColors(ctx.content, state));
     case 'yields': {
       // What each of the viewer's tiles gives if worked.
       const out: TileHighlight[] = [];

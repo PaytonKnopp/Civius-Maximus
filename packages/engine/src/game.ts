@@ -25,6 +25,7 @@ import { cultureTurn } from './culture/tourism';
 import { scienceTurn } from './science/space';
 import { agesHandlers, agesTurn, awardMoments, newAgeState } from './eras/ages';
 import { governorHandlers, governorsTurn } from './governors/governors';
+import { freeCitiesTurn, loyaltyTurn } from './loyalty/loyalty';
 import { applyStartEra } from './progress/startEra';
 import { spawnStartingUnits, startTurnForUnits, unitHandlers } from './units/handlers';
 import type { GameSettings, GameState, PlayerId, PlayerState } from './state';
@@ -242,6 +243,7 @@ const turnSteps: TurnStep[] = [
   { id: 'combat', order: 90, run: combatTurn },
   { id: 'settlements', order: 100, run: settlementsTurn },
   { id: 'cityStates', order: 105, run: cityStatesTurn },
+  { id: 'freeCities', order: 106, run: freeCitiesTurn },
   { id: 'diplomacy', order: 110, run: diplomacyTurn },
   { id: 'trade', order: 120, run: tradeTurn },
   { id: 'greatPeople', order: 115, run: greatPeopleTurn },
@@ -250,6 +252,7 @@ const turnSteps: TurnStep[] = [
   { id: 'science', order: 129, run: scienceTurn },
   { id: 'ages', order: 135, run: agesTurn },
   { id: 'governors', order: 136, run: governorsTurn },
+  { id: 'loyalty', order: 137, run: loyaltyTurn },
   { id: 'history', order: 140, run: (draft, ctx) => historyTurn(draft, ctx) },
 ];
 

@@ -415,7 +415,7 @@ forces new crisis policies. Off by default, for groups that like chaos.
 
 - **Loyalty:** cities near your population centers stay loyal. A city far from home and next to
   a big rival can **flip** (become a free city, then join someone else). This makes settling
-  "inside" your friend's empire risky.
+  "inside" your friend's empire risky. Built in V1 final F10; see "Loyalty" below.
 - **Espionage:** spies with missions: steal tech boosts, siphon funds, sabotage production,
   recruit partisans, counterspy. Each mission has a visible success chance.
 - **World congress:** periodic votes on resolutions (e.g., "+100% production to Campus districts for
@@ -424,6 +424,53 @@ forces new crisis policies. Off by default, for groups that like chaos.
 - **Climate & disasters:** floods (fertilize floodplains but damage improvements), volcanic
   eruptions, storms, and CO₂-driven global warming with rising sea levels in the late game.
 - **Corporations/monopolies:** control luxury resources for empire-wide bonuses.
+
+---
+
+## Loyalty
+
+Built in V1 final F10, after Civ VI. On unless the `loyalty` setup toggle is off.
+
+- **Pressure:** every citizen pushes on settlements up to 9 tiles away
+  (`rules.loyalty.range`), at full strength on its own tile and a tenth less per tile away.
+  - A settlement's own side (its owner and teammates) pushes one way; everyone else pushes the
+    other way, city-states and free cities included.
+  - The change a turn is `10 × (own − foreign) / (min(own, foreign) + 0.5)`, in citizens,
+    capped at ±20. Whole-number maths only.
+- **Other sources, a turn:**
+  - An established governor gives +8; Celestine the Envoy gives 4 more.
+  - Mood: thriving +3, unhappy −3, unrest −6.
+  - The Monument gives +1.
+  - A dark age gives −2 and makes your citizens push 20% less. Golden ages push 20% more,
+    heroic ages 40% more. These come from the effects `modify_loyalty` and
+    `modify_loyalty_pressure`.
+- **Low loyalty costs yields:** −15% below 75, −30% below 50, −60% below 25
+  (`rules.loyalty.yieldPenalties`).
+- **Breaking away:**
+  - At 0 a settlement becomes a **free city**, owned by the Free Cities. Like raiders, they're
+    at war with everyone.
+  - The old owner's units are moved out and its governor comes home. The free city raises two
+    defenders, builds and grows on its own, and its loyalty starts full.
+  - A free city whose loyalty runs out joins the civ pulling on it hardest, but only if that
+    civ's people would keep it loyal. Otherwise it stays free.
+  - A captured settlement starts at 50 loyalty. A liberated one starts full.
+- **Never flip:** capitals and city-states always stay loyal.
+- **On screen:**
+  - The settlement panel has a loyalty meter with the change a turn and every reason in its
+    tooltip, and says how many turns are left before it breaks away.
+  - The **Loyalty lens** tints each tile with the side pulling hardest there and labels every
+    settlement with its loyalty and change.
+  - Notices appear when a settlement crosses a penalty mark and when one breaks away or joins.
+  - A settlement joining you is a historic moment (+2 era score).
+- **AI:**
+  - It avoids sites where foreign citizens outnumber its own.
+  - It posts governors to settlements that are losing loyalty first, and moves a spare one to a
+    settlement about to break away.
+  - It only takes free cities that it could hold.
+- **Why the last rule:** in test games, armies kept retaking free cities they couldn't hold,
+  and those cities broke away again a few turns later. Some 37 flips happened in 200 turns,
+  mostly ping-pong. With the rule, about 12 happen, mostly cities taken in war drifting back to
+  the civ whose people surround them.
 
 ---
 

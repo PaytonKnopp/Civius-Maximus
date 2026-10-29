@@ -72,7 +72,7 @@ export type { MapSettings, MapState, MapTile, StartBias } from './map/types';
 export { type Replay, runReplay } from './replay';
 export { createRng, nextInt, nextRange, nextU32, type RngState } from './rng';
 export { decodeBits, encodeBits, getBit } from './bitset';
-export { atWar, HOSTILE, unitClassOf, unitDef, unitIds, warKey } from './context';
+export { atWar, FREE, HOSTILE, unitClassOf, unitDef, unitIds, warKey } from './context';
 export { unitsNeedingOrders } from './units/handlers';
 export {
   canTraverse,
@@ -287,3 +287,15 @@ export {
   titlesEarned,
   titlesSpent,
 } from './governors/governors';
+export {
+  type LoyaltyLine,
+  type LoyaltyReport,
+  loyaltyNow,
+  loyaltyOf,
+  loyaltyOn,
+  loyaltyPenalty,
+  holdable,
+  pressureAt,
+  pushFor,
+  turnsToFlip,
+} from './loyalty/loyalty';

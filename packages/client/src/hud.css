@@ -1940,3 +1940,22 @@ button.turn-pill:hover {
 .governor-line {
   color: #b9e08c;
 }
+
+/* Loyalty (settlement panel) */
+.loyalty-line {
+  margin: 6px 0;
+}
+
+.bar-fill.loyalty {
+  background: color-mix(in srgb, #6fa3d8 45%, var(--ink));
+}
+
+.loyalty-line.falling .bar-fill.loyalty {
+  background: color-mix(in srgb, #e0503c 50%, var(--ink));
+}
+
+.loyalty-warn {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: #f0a58f;
+}

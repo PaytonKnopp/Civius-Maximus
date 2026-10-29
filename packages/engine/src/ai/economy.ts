@@ -24,6 +24,7 @@ import { isCoastal, settlementsOf } from '../settlements/rules';
 import { obsoletedBy, upgradeCost, upgradeProblem } from '../units/upgrades';
 import { jitter, personalityOf, roleOf, type Turn } from './turn';
 import { titlesAvailable } from '../governors/governors';
+import { loyaltyOf, loyaltyOn, turnsToFlip } from '../loyalty/loyalty';
 import { effectValue, happinessWeight, yieldsValue } from './values';
 
 /** Which trait each dedication serves (an AI leader picks the ones its personality likes). */
@@ -101,10 +102,19 @@ export function manageGovernors(t: Turn) {
   }
   const govs = t.p.governors ?? {};
   const taken = new Set(Object.values(govs).map((g) => g.settlement));
+  // Settlements losing loyalty come first: turns until they'd break away (null: not falling).
+  const danger = new Map<string, number>();
+  if (loyaltyOn(t.state)) {
+    for (const s of settlementsOf(t.state, t.player)) {
+      const turns = turnsToFlip(loyaltyOf(t.ctx, t.state, s));
+      if (turns !== null) danger.set(s.id, turns);
+    }
+  }
   const open = settlementsOf(t.state, t.player)
     .filter((s) => !taken.has(s.id))
     .sort(
       (a, b) =>
+        (danger.get(a.id) ?? 999) - (danger.get(b.id) ?? 999) ||
         Number(b.capital) - Number(a.capital) ||
         b.population - a.population ||
         (a.id < b.id ? -1 : 1),
@@ -115,6 +125,14 @@ export function manageGovernors(t: Turn) {
     if (!s) break;
     t.act({ type: 'assign_governor', player: t.player, governor: gid, settlement: s.id });
   }
+  // One settlement about to break away with no governor: move one from a safe settlement.
+  const urgent = open.find((s) => (danger.get(s.id) ?? 999) <= 8);
+  if (!urgent) return;
+  const spare = Object.entries(t.p.governors ?? {})
+    .filter(([, g]) => g.settlement !== null && !danger.has(g.settlement))
+    .sort(([a], [b]) => weight(a) - weight(b))[0];
+  if (spare)
+    t.act({ type: 'assign_governor', player: t.player, governor: spare[0], settlement: urgent.id });
 }
 
 /** Research, civics, government and policy cards. */

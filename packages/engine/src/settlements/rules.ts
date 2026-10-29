@@ -37,6 +37,7 @@ import {
   specialistSlots,
 } from './districts';
 import { scaleCost } from '../speed';
+import { loyaltyPenalty } from '../loyalty/loyalty';
 
 /**
  * Settlement rules as pure functions of the game state (docs/03-core-mechanics.md, section 3).
@@ -481,6 +482,12 @@ export function settlementYields(
           : 'Unhappy';
     for (const y of Object.keys(before).sort()) {
       if (y !== 'happiness') applyPercent(y, label, happiness.yieldPercent);
+    }
+  }
+  const disloyal = loyaltyPenalty(ctx, state, s);
+  if (disloyal) {
+    for (const y of Object.keys(before).sort()) {
+      if (y !== 'happiness') applyPercent(y, disloyal.label, disloyal.percent);
     }
   }
   for (const p of percents) applyPercent(p.y, p.label, p.percent);

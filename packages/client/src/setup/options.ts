@@ -37,6 +37,8 @@ export interface NewGameOptions {
   cityStates: boolean;
   science: boolean;
   culture: boolean;
+  /** Settlements can break away when their loyalty runs out. */
+  loyalty: boolean;
   turnLimit: number | null;
   speed: string;
   difficulty: string;
@@ -63,6 +65,7 @@ export const DEFAULT_OPTIONS: NewGameOptions = {
   cityStates: true,
   science: true,
   culture: true,
+  loyalty: true,
   turnLimit: null,
   speed: 'speed_standard',
   difficulty: 'difficulty_prince',
@@ -87,6 +90,7 @@ export function makeSetup(o: NewGameOptions): GameSetup {
       cityStates: o.cityStates,
       science: o.science,
       culture: o.culture,
+      ...(o.loyalty === false ? { loyalty: false } : {}),
       turnLimit: o.turnLimit,
       speed: o.speed,
       difficulty: o.difficulty,

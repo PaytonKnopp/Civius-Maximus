@@ -100,6 +100,8 @@ describe('AI', () => {
 
   it('beats a player who does nothing', () => {
     const { state } = play(createGame(setup(2, '2', 'duel', 'pangaea', true), ctx), 200);
-    expect(state.result).toEqual({ reason: 'conquest', winner: 'p2' });
+    expect(state.result?.winner).toBe('p2');
+    // Domination when one of its settlements broke away to the idle player's side (loyalty).
+    expect(['conquest', 'domination']).toContain(state.result?.reason);
   }, 180_000);
 });
