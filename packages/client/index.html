@@ -14,7 +14,27 @@
     <meta name="apple-mobile-web-app-title" content="Civius Maximus" />
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Shown until the game starts (the desktop app may first look for the latest version). -->
+    <div id="root">
+      <div
+        style="
+          position: fixed;
+          inset: 0;
+          display: grid;
+          place-content: center;
+          gap: 10px;
+          text-align: center;
+          background: #0b1620;
+          color: #e9dcc0;
+          font-family: Georgia, serif;
+        "
+      >
+        <div style="font-size: 30px; letter-spacing: 0.12em">CIVIUS MAXIMUS</div>
+        <div style="font-size: 14px; opacity: 0.6; font-family: system-ui, sans-serif">
+          Loading…
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

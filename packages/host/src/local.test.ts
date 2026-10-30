@@ -127,13 +127,33 @@ describe('saves', () => {
     expect(loaded.state.turn).toBe(3);
   });
 
-  it('refuse other content and non-saves', () => {
-    const game = new LocalGame(setup(['human', 'ai']), ctx);
-    const save = makeSave(game.state, 'Test');
+  it('refuse non-saves', () => {
     expect(readSave('{"hello":1}', ctx).ok).toBe(false);
     expect(readSave('not json', ctx).ok).toBe(false);
-    const other = readSave(JSON.stringify({ ...save, contentHash: 'x' }), ctx);
-    expect(!other.ok && other.message).toMatch(/different rules/);
+  });
+
+  it('load after an update, with the current rules, while their content still exists', () => {
+    const game = new LocalGame(setup(['human', 'ai']), ctx);
+    game.act({ type: 'end_turn', player: 'p1' });
+    const old = makeSave({ ...game.state, contentHash: 'an earlier version' }, 'Old');
+    old.contentHash = 'an earlier version';
+    const read = readSave(JSON.stringify(old), ctx);
+    expect(read.ok && read.updated).toBe(true);
+    if (!read.ok) return;
+    expect(read.save.state.contentHash).toBe(ctx.content.hash);
+    const loaded = new LocalGame(read.save.state, ctx);
+    expect(loaded.act({ type: 'end_turn', player: 'p1' }).ok).toBe(true);
+    expect(loaded.state.turn).toBe(3);
+  });
+
+  it('refuse saves that need content this version lacks, and say what', () => {
+    const game = new LocalGame(setup(['human', 'ai']), ctx);
+    const state = JSON.parse(JSON.stringify(game.state)) as typeof game.state;
+    state.contentHash = 'a mod';
+    Object.values(state.units)[0]!.type = 'unit_sky_whale';
+    state.map.tiles[0]!.terrain = 'moon_dust';
+    const read = readSave(JSON.stringify(makeSave(state, 'Modded')), ctx);
+    expect(!read.ok && read.message).toMatch(/moon_dust, unit_sky_whale\): a mod that's off/);
   });
 });
 

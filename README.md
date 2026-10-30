@@ -13,7 +13,8 @@ Built from the ground up to be modded: leaders, civs, units and rules are all da
 > 2D, phone-friendly, with a Civilopedia, replays and a Hall of Fame. Everything in it, how to
 > try it and what's next: [V1 final review](docs/V1-FINAL-REVIEW.md) (the earlier
 > [V1 review](docs/V1-REVIEW.md) covers the first build). The UI and art polish pass before the
-> first playtest: [polish review](docs/POLISH-REVIEW.md).
+> first playtest: [polish review](docs/POLISH-REVIEW.md). Safe online play, cloud saves and a
+> desktop app that updates itself, set up step by step: [setup review](docs/SETUP-REVIEW.md).
 
 ## Design docs
 
@@ -35,8 +36,10 @@ Built from the ground up to be modded: leaders, civs, units and rules are all da
 ## Optional setup
 
 The game needs no server or account. [docs/guides](docs/guides/README.md) explains, step by
-step, how to switch on accounts, cloud saves and public games (a free Supabase project) and
-how to get the desktop app (one click in GitHub Actions).
+step, how hosting online stays safe and in sync (and your own relay for strict networks), how to
+switch on accounts, a cloud autosave every turn and public games (a free Supabase project), how
+to publish the desktop app (it updates itself from the website, so friends install it once),
+and how to add painted portraits or 3D models later.
 
 ## Development
 

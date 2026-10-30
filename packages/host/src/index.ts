@@ -8,6 +8,7 @@ export {
   type TurnWork,
 } from './local';
 export { OnlineHost } from './online';
-export { RemoteGame } from './remote';
-export { makeSave, readSave, SAVE_FORMAT, type SaveFile } from './saves';
+export { RemoteGame, type RemoteOptions } from './remote';
+export { memorySeatKeys, type SeatKeys, seatProof } from './seatKeys';
+export { makeSave, missingContent, readSave, SAVE_FORMAT, type SaveFile } from './saves';
 export { type ClientTransport, type HostTransport, memoryNetwork } from './transport';

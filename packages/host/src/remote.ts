@@ -19,7 +19,22 @@ import {
 } from '@cx/protocol';
 import type { GameHandle, OnlineSession } from './handle';
 import { deepFreeze, type GameListener } from './local';
+import { memorySeatKeys, type SeatKeys, seatProof } from './seatKeys';
 import type { ClientTransport } from './transport';
+
+type Line = ClientTransport<ClientMessage, HostMessage>;
+
+export interface RemoteOptions {
+  /** The seat keys this device holds, to get its seat back when rejoining (seatKeys.ts). */
+  keys?: SeatKeys;
+  /** Opens a new line to the same host, to get back in on its own after a drop. */
+  reconnect?: () => Promise<Line>;
+  /** How long to wait before each try to reconnect, in ms. */
+  retryDelays?: number[];
+}
+
+/** About three minutes of tries, then the game says the host is gone. */
+const RETRY_DELAYS = [1000, 2000, 4000, 8000, 15000, 30000, 30000, 30000, 30000, 30000];
 
 /**
  * Actions not played ahead on the client: they roll dice (combat), process the turn, or wait on
@@ -41,7 +56,8 @@ const NOT_PREDICTED = new Set<ActionType>([
 /**
  * An online game played from this tab while someone else hosts it. It only ever holds this
  * player's view. Actions are sent to the host and, where safe, played ahead on that view so the
- * screen answers at once; the host's next view replaces the guess.
+ * screen answers at once; the host's next view replaces the guess. If the line drops during the
+ * game, it reconnects by itself and the host gives the seat back (its key proves it's ours).
  */
 export class RemoteGame implements GameHandle {
   readonly saves = false;
@@ -53,6 +69,8 @@ export class RemoteGame implements GameHandle {
   started = false;
   /** Why the host turned us away, or the connection closed. */
   ended: string | null = null;
+  /** The line dropped and it's trying to get back in. */
+  reconnecting = false;
   /** The host refused an action (shown as a notice). */
   onRefused?: (message: string) => void;
   private confirmed: GameState | null = null;
@@ -65,20 +83,20 @@ export class RemoteGame implements GameHandle {
   private chatFns = new Set<(line: ChatLine) => void>();
   private pingFns = new Set<(ping: Ping) => void>();
   private deadlineAt: number | null = null;
+  private net!: Line;
+  private readonly keys: SeatKeys;
+  private leaving = false;
 
   constructor(
-    private readonly net: ClientTransport<ClientMessage, HostMessage>,
+    net: Line,
     readonly ctx: EngineContext,
-    code: string,
-    name: string,
+    private readonly code: string,
+    private readonly name: string,
+    private readonly options: RemoteOptions = {},
   ) {
     this.state = undefined as unknown as GameState;
-    net.onMessage((m) => this.receive(m));
-    net.onClose(() => {
-      this.ended ??= 'The connection to the host was lost.';
-      this.changed();
-    });
-    net.send({ t: 'hello', protocol: PROTOCOL_VERSION, contentHash: ctx.content.hash, name });
+    this.keys = options.keys ?? memorySeatKeys();
+    this.attach(net);
     this.online = {
       code,
       seats: () => this.seatList,
@@ -87,9 +105,9 @@ export class RemoteGame implements GameHandle {
         return () => this.watchers.delete(fn);
       },
       chat: () => this.chatLog,
-      say: (text) => net.send({ t: 'chat', text }),
+      say: (text) => this.net.send({ t: 'chat', text }),
       ping: (tile) => {
-        net.send({ t: 'ping', tile });
+        this.net.send({ t: 'ping', tile });
       },
       onChat: (fn) => {
         this.chatFns.add(fn);
@@ -100,9 +118,70 @@ export class RemoteGame implements GameHandle {
         return () => this.pingFns.delete(fn);
       },
       deadline: () => this.deadlineAt,
-      pick: (leader) => net.send({ t: 'pick', leader }),
-      leave: () => net.close(),
+      pick: (leader) => this.net.send({ t: 'pick', leader }),
+      leave: () => {
+        this.leaving = true;
+        this.net.close();
+      },
+      reconnecting: () => this.reconnecting,
     };
+  }
+
+  /** Talks to the host over `net`: says hello (with this device's seat proofs) and listens. */
+  private attach(net: Line) {
+    this.net = net;
+    const off = [
+      net.onMessage((m) => this.receive(m)),
+      net.onClose(() => {
+        for (const f of off) f();
+        this.dropped();
+      }),
+    ];
+    net.send({
+      t: 'hello',
+      protocol: PROTOCOL_VERSION,
+      contentHash: this.ctx.content.hash,
+      name: this.name,
+      proofs: this.keys.all().map((key) => seatProof(key, this.code)),
+    });
+  }
+
+  private dropped() {
+    if (this.ended || this.leaving || !this.started || !this.options.reconnect) {
+      this.ended ??= 'The connection to the host was lost.';
+      this.changed();
+      return;
+    }
+    void this.retry();
+  }
+
+  private async retry() {
+    this.reconnecting = true;
+    this.changed();
+    for (const wait of this.options.retryDelays ?? RETRY_DELAYS) {
+      await new Promise((r) => setTimeout(r, wait));
+      if (this.leaving) break;
+      try {
+        const line = await this.options.reconnect!();
+        if (this.leaving) {
+          line.close();
+          break;
+        }
+        // The host sends the whole view again, and it's the truth: actions it never answered
+        // are dropped rather than sent twice.
+        this.pending = [];
+        this.busy = false;
+        this.reconnecting = false;
+        this.attach(line);
+        this.changed();
+        return;
+      } catch {
+        // The host isn't back yet: wait and try again.
+      }
+    }
+    this.reconnecting = false;
+    this.ended ??= 'The connection to the host was lost.';
+    this.changed();
   }
 
   /** The first view arrived: the game screen can open. */
@@ -114,6 +193,8 @@ export class RemoteGame implements GameHandle {
     if (!this.confirmed)
       return { ok: false, error: { code: 'not_ready', message: 'Not connected yet' } };
     if (this.ended) return { ok: false, error: { code: 'disconnected', message: this.ended } };
+    if (this.reconnecting)
+      return { ok: false, error: { code: 'disconnected', message: 'Reconnecting to the host…' } };
     if (this.busy)
       return { ok: false, error: { code: 'busy', message: 'Your rivals are still moving' } };
     const id = this.nextId++;
@@ -189,6 +270,10 @@ export class RemoteGame implements GameHandle {
       case 'timer':
         this.deadlineAt = m.seconds === null ? null : Date.now() + m.seconds * 1000;
         this.changed();
+        break;
+      case 'key':
+        if (typeof m.gameId === 'string' && typeof m.key === 'string')
+          this.keys.save(m.gameId, m.key);
         break;
     }
   }

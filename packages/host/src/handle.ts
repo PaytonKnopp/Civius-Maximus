@@ -34,6 +34,13 @@ export interface OnlineSession {
   onChange(fn: () => void): () => void;
   /** The host only: ends an absent player's turn so the others aren't stuck waiting. */
   endTurnFor?(player: PlayerId): void;
+  /**
+   * The host only: frees an away friend's seat, so they can rejoin from another device (or
+   * someone else can take it). Seats are otherwise kept for whoever played them.
+   */
+  freeSeat?(player: PlayerId): void;
+  /** A client only: the line to the host dropped and it's trying to get back in. */
+  reconnecting?(): boolean;
   /** Chat with everyone in the game (V1 final F20). */
   chat(): ChatLine[];
   say(text: string): void;

@@ -63,6 +63,7 @@ import type { MapRenderer, PathView, Quality, TileHighlight } from '../map/rende
 import { World3D } from '../map3d/World3D';
 import { CombatPreview, type Side } from './CombatPreview';
 import { CaptureDialog, GameOver, PlayerPanel, WarPrompt } from './Diplomacy';
+import { cloudAutosave } from '../cloud/autosave';
 import { AUTOSAVE, ONLINE_AUTOSAVE, storeSave } from './storage';
 import {
   civName,
@@ -784,22 +785,25 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   const online = game.online;
   const [seats, setSeats] = useState<SeatInfo[]>(() => online?.seats() ?? []);
   const [cutOff, setCutOff] = useState<string | null>(null);
+  const [reconnecting, setReconnecting] = useState(false);
   useEffect(() => {
     if (!online) return;
     if (game instanceof RemoteGame) game.onRefused = notify;
     const update = () => {
       setSeats(online.seats());
+      setReconnecting(online.reconnecting?.() ?? false);
       if (game instanceof RemoteGame && game.ended) setCutOff(game.ended);
     };
     update();
     return online.onChange(update);
   }, [game, online, notify]);
+  // Away friends still to play this turn, and (for the host) away seats kept for their player.
   const away = seats.filter(
     (x) =>
       !x.online &&
       x.player &&
       state.players[x.player]?.alive &&
-      !state.players[x.player]!.turnEnded,
+      (!state.players[x.player]!.turnEnded || (online?.freeSeat && x.reserved)),
   );
 
   const colors = useMemo(() => playerColors(content, state), [content, state.playerOrder]);
@@ -969,11 +973,16 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       }
       if (events.some((e) => e.type === 'turn_started')) {
         // An online game's host keeps its own autosave (resumed online); clients only see a view.
-        if (game.saves)
-          void storeSave(
-            game.online ? ONLINE_AUTOSAVE : AUTOSAVE,
-            makeSave(s, `${game.online ? 'Online autosave' : 'Autosave'} · turn ${s.turn}`),
-          ).catch(() => {});
+        // Signed in, it goes to the cloud too, to continue on another device.
+        if (game.saves) {
+          const id = game.online ? ONLINE_AUTOSAVE : AUTOSAVE;
+          const save = makeSave(
+            s,
+            `${game.online ? 'Online autosave' : 'Autosave'} · turn ${s.turn}`,
+          );
+          void storeSave(id, save).catch(() => {});
+          cloudAutosave(id, save);
+        }
       }
       for (const e of events) {
         if (e.visibleTo !== 'all' && !e.visibleTo.includes(viewer)) continue;
@@ -1817,9 +1826,18 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           colorOf={(p) => (p && colors[p] ? cssColor(colors[p]!.main) : undefined)}
         />
       )}
-      {online && (away.length > 0 || cutOff) && (
+      {online && (away.length > 0 || cutOff || reconnecting) && (
         <div className="online-bar" role="status">
-          {cutOff ? (
+          {reconnecting && !cutOff ? (
+            <>
+              Reconnecting to the host…
+              {onExit && (
+                <button type="button" className="ghost small" onClick={onExit}>
+                  Main menu
+                </button>
+              )}
+            </>
+          ) : cutOff ? (
             <>
               {cutOff}
               {onExit && (
@@ -1832,13 +1850,23 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             away.map((x) => (
               <span key={x.player}>
                 {x.name} is away
-                {online.endTurnFor && (
+                {online.endTurnFor && !state.players[x.player!]!.turnEnded && (
                   <button
                     type="button"
                     className="ghost small"
                     onClick={() => online.endTurnFor!(x.player!)}
                   >
                     End their turn
+                  </button>
+                )}
+                {online.freeSeat && x.reserved && (
+                  <button
+                    type="button"
+                    className="ghost small"
+                    title={`Their seat is kept for the device they played on. Free it so ${x.name} can rejoin from another device or browser (or someone else can take it).`}
+                    onClick={() => online.freeSeat!(x.player!)}
+                  >
+                    Free seat
                   </button>
                 )}
               </span>
