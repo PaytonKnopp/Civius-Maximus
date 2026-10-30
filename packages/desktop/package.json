@@ -1,0 +1,11 @@
+{
+  "name": "@cx/desktop",
+  "private": true,
+  "type": "module",
+  "description": "The desktop app (Tauri 2): the same game in its own window. See docs/guides/desktop.md.",
+  "scripts": {
+    "icons": "npx --yes @tauri-apps/cli@2 icon icon.png",
+    "dev": "npx --yes @tauri-apps/cli@2 dev",
+    "build": "npx --yes @tauri-apps/cli@2 build"
+  }
+}

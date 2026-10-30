@@ -1,6 +1,7 @@
 import type { EngineContext, GameState } from '@cx/engine';
 import { readSave, type SaveFile } from '@cx/host';
 import { useEffect, useState } from 'react';
+import { cloud } from './cloud/cloud';
 import { AUTOSAVE, loadSave, ONLINE_AUTOSAVE } from './game/storage';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
   onMapLab: () => void;
   onOnline: () => void;
   onHallOfFame: () => void;
+  onAccount: () => void;
   onPedia: () => void;
   /** Host the online game this browser hosted last (from its autosave). */
   onResumeOnline: (state: GameState) => void;
@@ -70,6 +72,9 @@ export function HomeScreen(props: Props) {
           </button>
           <button type="button" className="ghost" onClick={props.onHallOfFame}>
             Hall of Fame
+          </button>
+          <button type="button" className="ghost" onClick={props.onAccount}>
+            {cloud()?.session ? `Account · ${cloud()!.session!.name}` : 'Account'}
           </button>
           <button type="button" className="ghost" onClick={props.onPedia}>
             Civilopedia

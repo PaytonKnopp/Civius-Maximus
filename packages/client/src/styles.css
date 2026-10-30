@@ -3063,3 +3063,20 @@ kbd {
     bottom: 150px;
   }
 }
+
+/* Accounts and public games */
+.account-form {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+.account-form label {
+  display: grid;
+  gap: 4px;
+}
+.public-games {
+  margin-top: 14px;
+}
+.public-games h3 {
+  margin: 0 0 6px;
+}

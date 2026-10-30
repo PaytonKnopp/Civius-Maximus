@@ -3,6 +3,8 @@ import { type GameHandle, makeSave, readSave } from '@cx/host';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadContent } from './content';
 import { HomeScreen } from './HomeScreen';
+import { AccountDialog } from './cloud/AccountDialog';
+import { cloud, type CloudSave } from './cloud/cloud';
 import { CivilopediaScreen } from './game/CivilopediaScreen';
 import { HallOfFameScreen } from './game/HallOfFameScreen';
 import { type GameStart, GameScreen } from './game/GameScreen';
@@ -103,7 +105,7 @@ export function App() {
     id: startId(),
     setup: makeSetup({ ...DEFAULT_OPTIONS, seed: randomSeed() }),
   }));
-  const [dialog, setDialog] = useState<'new' | 'saves' | null>(null);
+  const [dialog, setDialog] = useState<'new' | 'saves' | 'account' | null>(null);
   // Online play: the host/join dialog, opened from the home screen or an invite link.
   const [online, setOnline] = useState<{ joinCode?: string; resume?: GameState } | null>(() => {
     const code = joinCodeFromUrl();
@@ -161,6 +163,7 @@ export function App() {
           onMapLab={() => setScreen('lab')}
           onOnline={() => setOnline({})}
           onHallOfFame={() => setScreen('fame')}
+          onAccount={() => setDialog('account')}
           onPedia={() => setScreen('pedia')}
           onResumeOnline={(state) => setOnline({ resume: state })}
         />
@@ -189,6 +192,7 @@ export function App() {
           <GameMenu
             onNewGame={() => setDialog('new')}
             onSaves={() => setDialog('saves')}
+            onAccount={() => setDialog('account')}
             onMapLab={() => setScreen('lab')}
             onHome={() => setHome(true)}
           />
@@ -233,6 +237,7 @@ export function App() {
           }}
         />
       )}
+      {dialog === 'account' && <AccountDialog onClose={() => setDialog(null)} />}
       {dialog === 'saves' && (
         <SavesDialog
           ctx={ctx}
@@ -253,6 +258,7 @@ export function App() {
 function GameMenu(props: {
   onNewGame: () => void;
   onSaves: () => void;
+  onAccount: () => void;
   onMapLab: () => void;
   onHome: () => void;
 }) {
@@ -286,6 +292,9 @@ function GameMenu(props: {
           </button>
           <button type="button" role="menuitem" onClick={pick(props.onSaves)}>
             Save / Load…
+          </button>
+          <button type="button" role="menuitem" onClick={pick(props.onAccount)}>
+            Account…
           </button>
           <button type="button" role="menuitem" onClick={pick(props.onMapLab)}>
             Map Lab
@@ -335,6 +344,39 @@ function SavesDialog({
   onLoad: (state: GameState) => void;
 }) {
   const [saves, setSaves] = useState<SaveSummary[] | null>(null);
+  // Cloud saves, when signed in (cloud/cloud.ts).
+  const remote = cloud();
+  const [cloudSaves, setCloudSaves] = useState<CloudSave[] | null>(null);
+  const refreshCloud = useCallback(() => {
+    if (!remote?.signedIn) return;
+    remote
+      .listSaves()
+      .then(setCloudSaves)
+      .catch((e: Error) => setMessage(e.message));
+  }, [remote]);
+  useEffect(refreshCloud, [refreshCloud]);
+  const saveToCloud = async () => {
+    const state = current();
+    if (!state || !remote) return;
+    try {
+      const label = name.trim() || `Turn ${state.turn}`;
+      await remote.putSave(`save-${Date.now()}`, label, state.turn, makeSave(state, label));
+      setMessage('Saved to the cloud.');
+      refreshCloud();
+    } catch (e) {
+      setMessage((e as Error).message);
+    }
+  };
+  const loadFromCloud = async (id: string) => {
+    try {
+      const data = await remote!.getSave(id);
+      const read = readSave(JSON.stringify(data), ctx);
+      if (!read.ok) setMessage(read.message);
+      else onLoad(read.save.state);
+    } catch (e) {
+      setMessage((e as Error).message);
+    }
+  };
   const [name, setName] = useState(() => `Turn ${current()?.turn ?? 1}`);
   const [message, setMessage] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);
@@ -433,6 +475,54 @@ function SavesDialog({
               </li>
             ))}
           </ul>
+        )}
+        {remote?.signedIn && (
+          <>
+            <h3>
+              Cloud saves{' '}
+              <button type="button" className="ghost small" onClick={() => void saveToCloud()}>
+                Save to the cloud
+              </button>
+            </h3>
+            {cloudSaves === null ? (
+              <p className="hint">Loading…</p>
+            ) : cloudSaves.length === 0 ? (
+              <p className="hint">Nothing in the cloud yet.</p>
+            ) : (
+              <ul className="save-list">
+                {cloudSaves.map((s) => (
+                  <li key={s.id}>
+                    <span className="save-name">
+                      <strong>{s.name}</strong>
+                      <span className="muted small-text">
+                        turn {s.turn} · {new Date(s.updatedAt).toLocaleString()}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      className="primary small"
+                      onClick={() => void loadFromCloud(s.id)}
+                    >
+                      Load
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost small"
+                      aria-label={`Delete ${s.name} from the cloud`}
+                      onClick={() =>
+                        void remote
+                          .deleteSave(s.id)
+                          .then(refreshCloud)
+                          .catch((e: Error) => setMessage(e.message))
+                      }
+                    >
+                      ✕
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
         <div className="dialog-actions">
           <input

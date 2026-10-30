@@ -176,6 +176,18 @@ no message limits. Nothing else changes.
   confirmation turned off. Players who add a real email get password reset.
 - Profile: display name, avatar, favorite leaders, stats (games played and won).
 - **Single player and hotseat need no account.**
+- **Built in V1 final F21:** all of it switches on by configuration (`VITE_SUPABASE_URL` and
+  `VITE_SUPABASE_ANON_KEY` at build time, from the repository variables in the Pages and desktop
+  workflows, or a URL and key pasted into the Account dialog). The client calls Supabase's REST
+  endpoints directly (`packages/client/src/cloud/cloud.ts`, no SDK): username-and-password
+  accounts with the placeholder address, **cloud saves** in Save / Load, and **public lobbies**
+  (a signed-in host lists the join code for six hours; anyone can browse them under Join). The
+  tables and row-level security are in `packages/backend/supabase/migrations/`; a scheduled
+  workflow keeps a free project from pausing. Live play still goes browser to browser (WebRTC),
+  so Realtime message limits don't apply. Step by step: [guides/supabase.md](guides/supabase.md).
+- **Desktop app (F21):** `packages/desktop` (Tauri 2) wraps the client; the **Desktop
+  installers** workflow builds Windows, macOS and Linux installers on demand
+  ([guides/desktop.md](guides/desktop.md)).
 
 ## Supabase free tier: limits to keep in mind
 

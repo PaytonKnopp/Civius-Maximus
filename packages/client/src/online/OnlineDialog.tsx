@@ -3,6 +3,7 @@ import type { EngineContext, GameSetup, GameState } from '@cx/engine';
 import { type GameHandle, OnlineHost, RemoteGame } from '@cx/host';
 import { isJoinCode, normalizeCode, type SeatInfo } from '@cx/protocol';
 import { useEffect, useRef, useState } from 'react';
+import { cloud, type PublicLobby } from '../cloud/cloud';
 import { createAiRunner } from '../game/aiRunner';
 import { joinHost, type Network, newCode, openHost } from './transports';
 
@@ -127,6 +128,22 @@ export function OnlineDialog(props: Props) {
   });
   const [friends, setFriends] = useState(1);
   const [myLeader, setMyLeader] = useState<string | null>(null);
+  // Public games (cloud/cloud.ts): a signed-in host can list the lobby; anyone can browse.
+  const remoteCloud = cloud();
+  const [listPublicly, setListPublicly] = useState(false);
+  const [publicGames, setPublicGames] = useState<PublicLobby[] | null>(null);
+  const listed = useRef<string | null>(null);
+  const unlist = () => {
+    if (listed.current && remoteCloud) void remoteCloud.closeLobby(listed.current).catch(() => {});
+    listed.current = null;
+  };
+  useEffect(() => {
+    if (mode !== 'join' || !remoteCloud) return;
+    remoteCloud
+      .listLobbies()
+      .then(setPublicGames)
+      .catch(() => setPublicGames([]));
+  }, [mode, remoteCloud]);
   const [error, setError] = useState<string>();
   const [connecting, setConnecting] = useState(false);
   const [host, setHost] = useState<OnlineHost>();
@@ -168,7 +185,15 @@ export function OnlineDialog(props: Props) {
       if (resume) {
         h.resume(resume, createAiRunner());
         onGame(h.handle());
-      } else setHost(h);
+      } else {
+        setHost(h);
+        if (listPublicly && remoteCloud?.signedIn) {
+          await remoteCloud
+            .announceLobby(c, who, friends, { size: o.size, script: o.script, rivals: o.rivals })
+            .then(() => (listed.current = c))
+            .catch(() => setError('The lobby is open, but listing it publicly failed.'));
+        }
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -193,6 +218,7 @@ export function OnlineDialog(props: Props) {
   };
 
   const leave = () => {
+    unlist();
     host?.close();
     remote?.online.leave();
     onCancel();
@@ -376,6 +402,16 @@ export function OnlineDialog(props: Props) {
                     <option value="ai">An AI plays until they’re back</option>
                   </select>
                 </div>
+                {remoteCloud?.signedIn && (
+                  <label className="check">
+                    <input
+                      type="checkbox"
+                      checked={listPublicly}
+                      onChange={(e) => setListPublicly(e.target.checked)}
+                    />
+                    List this game publicly
+                  </label>
+                )}
                 <div>
                   <label htmlFor="online-limit">Turn limit</label>
                   <select
@@ -428,6 +464,33 @@ export function OnlineDialog(props: Props) {
               autoCapitalize="characters"
               onChange={(e) => setCode(normalizeCode(e.target.value).slice(0, 6))}
             />
+            {remoteCloud && (
+              <div className="public-games">
+                <h3>Public games</h3>
+                {publicGames === null ? (
+                  <p className="hint">Looking…</p>
+                ) : publicGames.length === 0 ? (
+                  <p className="hint">No public games open right now.</p>
+                ) : (
+                  <ul className="save-list">
+                    {publicGames.map((g) => (
+                      <li key={g.code}>
+                        <span className="save-name">
+                          <strong>{g.hostName}’s game</strong>
+                          <span className="muted small-text">
+                            {g.openSeats} seat{g.openSeats === 1 ? '' : 's'} ·{' '}
+                            {String(g.info.size ?? '')} {String(g.info.script ?? '')}
+                          </span>
+                        </span>
+                        <button type="button" className="small" onClick={() => setCode(g.code)}>
+                          Use code {g.code}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </>
         )}
 
@@ -478,6 +541,7 @@ export function OnlineDialog(props: Props) {
               type="button"
               className="primary"
               onClick={() => {
+                unlist();
                 host.start((names, leaders) => makeSetup(names, o, leaders), createAiRunner());
                 onGame(host.handle());
               }}
