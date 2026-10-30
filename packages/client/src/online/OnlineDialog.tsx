@@ -33,6 +33,10 @@ export interface OnlineOptions {
     huts?: boolean;
   };
   turnLimit?: number | null;
+  /** Seconds a turn lasts before everyone still playing is ended (null: no timer). */
+  turnSeconds?: number | null;
+  /** When a friend drops: wait for them (the host can end their turn), or an AI plays. */
+  absent?: 'wait' | 'ai';
 }
 
 const RULES: [keyof NonNullable<OnlineOptions['rules']>, string][] = [
@@ -60,7 +64,7 @@ interface Props {
   joinCode?: string;
   /** Open on Host with this game to resume (an online game's autosave). */
   resume?: GameState;
-  makeSetup: (names: string[], o: OnlineOptions) => GameSetup;
+  makeSetup: (names: string[], o: OnlineOptions, leaders: (string | null)[]) => GameSetup;
   onGame: (game: GameHandle) => void;
   onCancel: () => void;
 }
@@ -118,8 +122,11 @@ export function OnlineDialog(props: Props) {
       huts: true,
     },
     turnLimit: null,
+    turnSeconds: null,
+    absent: 'wait',
   });
   const [friends, setFriends] = useState(1);
+  const [myLeader, setMyLeader] = useState<string | null>(null);
   const [error, setError] = useState<string>();
   const [connecting, setConnecting] = useState(false);
   const [host, setHost] = useState<OnlineHost>();
@@ -156,6 +163,8 @@ export function OnlineDialog(props: Props) {
       const c = newCode();
       const line = await openHost(net, c);
       const h = new OnlineHost(line, ctx, c, who, resume ? 7 : friends);
+      h.turnSeconds = o.turnSeconds ?? null;
+      h.aiTakeover = o.absent === 'ai';
       if (resume) {
         h.resume(resume, createAiRunner());
         onGame(h.handle());
@@ -340,6 +349,34 @@ export function OnlineDialog(props: Props) {
                   </select>
                 </div>
                 <div>
+                  <label htmlFor="online-timer">Turn timer</label>
+                  <select
+                    id="online-timer"
+                    value={o.turnSeconds ?? ''}
+                    onChange={(e) =>
+                      setO({ ...o, turnSeconds: e.target.value ? Number(e.target.value) : null })
+                    }
+                  >
+                    <option value="">Off</option>
+                    {[60, 90, 120, 180, 300].map((n) => (
+                      <option key={n} value={n}>
+                        {n < 120 ? `${n} seconds` : `${n / 60} minutes`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="online-absent">If a friend drops</label>
+                  <select
+                    id="online-absent"
+                    value={o.absent ?? 'wait'}
+                    onChange={(e) => setO({ ...o, absent: e.target.value as 'wait' | 'ai' })}
+                  >
+                    <option value="wait">Wait (you can end their turn)</option>
+                    <option value="ai">An AI plays until they’re back</option>
+                  </select>
+                </div>
+                <div>
                   <label htmlFor="online-limit">Turn limit</label>
                   <select
                     id="online-limit"
@@ -396,10 +433,17 @@ export function OnlineDialog(props: Props) {
 
         {lobby && (
           <Lobby
+            content={content}
             code={host ? host.code : remote!.online.code}
             net={net}
             seats={seats}
             open={host ? friends : null}
+            myLeader={myLeader}
+            onPick={(leader) => {
+              setMyLeader(leader);
+              if (host) host.pickForHost(leader);
+              else remote?.online.pick(leader);
+            }}
           />
         )}
 
@@ -434,7 +478,7 @@ export function OnlineDialog(props: Props) {
               type="button"
               className="primary"
               onClick={() => {
-                host.start((names) => makeSetup(names, o), createAiRunner());
+                host.start((names, leaders) => makeSetup(names, o, leaders), createAiRunner());
                 onGame(host.handle());
               }}
             >
@@ -447,19 +491,34 @@ export function OnlineDialog(props: Props) {
   );
 }
 
-/** The code to share and who's in so far. */
+/** The code to share, who's in so far, and the leader each wants. */
 function Lobby({
+  content,
   code,
   net,
   seats,
   open,
+  myLeader,
+  onPick,
 }: {
+  content: CompiledContent;
   code: string;
   net: Network;
   seats: SeatInfo[];
   /** The host's view: how many friends the game takes. */
   open: number | null;
+  myLeader: string | null;
+  onPick: (leader: string | null) => void;
 }) {
+  const leaderName = (id: string | null | undefined) => {
+    const l = id ? content.entities.leader[id] : undefined;
+    if (!l) return 'random leader';
+    const civ = content.entities.civ[l.civ];
+    return `${resolveText(content, l.name)}${civ ? ` (${resolveText(content, civ.name)})` : ''}`;
+  };
+  const leaders = [...content.ids.leader].sort((a, b) =>
+    leaderName(a).localeCompare(leaderName(b)),
+  );
   const [copied, setCopied] = useState(false);
   const copy = () => {
     void navigator.clipboard
@@ -483,6 +542,7 @@ function Lobby({
             <span className={`dot ${s.online ? 'on' : ''}`} aria-hidden="true" />
             {s.name}
             {s.host && <span className="muted"> · host</span>}
+            <span className="muted"> · {leaderName(s.leader)}</span>
           </li>
         ))}
         {Array.from({ length: empty }, (_, i) => (
@@ -492,6 +552,19 @@ function Lobby({
           </li>
         ))}
       </ul>
+      <label htmlFor="online-leader">Your leader</label>
+      <select
+        id="online-leader"
+        value={myLeader ?? ''}
+        onChange={(e) => onPick(e.target.value || null)}
+      >
+        <option value="">Random</option>
+        {leaders.map((id) => (
+          <option key={id} value={id}>
+            {leaderName(id)}
+          </option>
+        ))}
+      </select>
       <p className="hint">
         {open === null
           ? 'Waiting for the host to start the game.'

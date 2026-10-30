@@ -133,4 +133,58 @@ describe('online play', () => {
     expect(odd.ended).toMatch(/different game content/);
     expect(host.seats()).toHaveLength(3);
   });
+
+  it('relays chat and map pings, and keeps lobby leader picks', async () => {
+    const { net, host, bo, cy } = await lobby();
+    bo.online.pick('leader_caesar');
+    bo.online.say('hello all');
+    await net.flush();
+    expect(host.seats().find((x) => x.name === 'Bo')).toMatchObject({ leader: 'leader_caesar' });
+    expect(cy.online.chat().map((l) => `${l.from}: ${l.text}`)).toEqual(['Bo: hello all']);
+    expect(host.lobbyChat()).toHaveLength(1);
+
+    let leaders: (string | null)[] = [];
+    host.start((names, picks) => {
+      leaders = picks;
+      return makeSetup(names);
+    });
+    await net.flush();
+    expect(leaders).toEqual([null, 'leader_caesar', null]);
+    const me = host.handle().online!;
+    const pings: number[] = [];
+    me.onPing((p) => pings.push(p.tile));
+    const cyPings: string[] = [];
+    cy.online.onPing((p) => cyPings.push(`${p.from}@${p.tile}`));
+    bo.online.ping(7);
+    me.say('gg');
+    await net.flush();
+    expect(pings).toEqual([7]);
+    expect(cyPings).toEqual(['Bo@7']);
+    expect(bo.online.chat().at(-1)).toMatchObject({ from: 'Ann', player: 'p1', text: 'gg' });
+  });
+
+  it('ends everyone’s turn when the turn timer runs out', async () => {
+    const { net, host, bo } = await lobby();
+    host.turnSeconds = 0.05;
+    host.start(makeSetup);
+    await net.flush();
+    expect(host.handle().online!.deadline()).not.toBeNull();
+    expect(bo.online.deadline()).not.toBeNull();
+    await new Promise((r) => setTimeout(r, 120));
+    await net.flush();
+    expect(host.game!.state.turn).toBe(2);
+    host.close();
+  });
+
+  it('lets the AI play the seat of a friend who dropped, when the host chose that', async () => {
+    const { net, host, bo } = await lobby();
+    host.aiTakeover = true;
+    host.start(makeSetup);
+    await net.flush();
+    bo.online.leave();
+    await net.flush();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(host.game!.state.players.p2!.turnEnded).toBe(true);
+    expect(host.game!.state.players.p3!.turnEnded).toBe(false);
+  });
 });

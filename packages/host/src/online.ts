@@ -5,13 +5,16 @@ import {
   type GameSetup,
   type GameState,
   parseAction,
+  playAiTurn,
   type PlayerId,
   playerView,
 } from '@cx/engine';
 import {
+  type ChatLine,
   type ClientMessage,
   diffView,
   type HostMessage,
+  type Ping,
   PROTOCOL_VERSION,
   type SeatInfo,
 } from '@cx/protocol';
@@ -29,8 +32,21 @@ export class OnlineHost {
   game: LocalGame | null = null;
   /** The player the host plays, once the game started. */
   hostPlayer: PlayerId | null = null;
-  /** Friends in the lobby before the start (the host isn't listed). */
-  private lobby: { name: string; peer: string }[] = [];
+  /** Friends in the lobby before the start (the host isn't listed), with their leader picks. */
+  private lobby: { name: string; peer: string; leader: string | null }[] = [];
+  /** The host's own leader pick in the lobby. */
+  private hostLeader: string | null = null;
+  /** Seconds each turn lasts before everyone still playing is ended (null: no timer). */
+  turnSeconds: number | null = null;
+  /** An AI plays the seat of a friend who dropped, until they rejoin (otherwise the host waits). */
+  aiTakeover = false;
+  private chatLog: ChatLine[] = [];
+  private chatFns = new Set<(line: ChatLine) => void>();
+  private pingFns = new Set<(ping: Ping) => void>();
+  private timerTurn = -1;
+  private deadlineAt: number | null = null;
+  private timer: ReturnType<typeof setTimeout> | null = null;
+  private playingAbsent = false;
   /** Connected clients that said hello, and the seat each plays once the game started. */
   private peers = new Map<string, PlayerId | null>();
   /** The last view each client was sent (the next one goes as the changes from it). */
@@ -64,8 +80,14 @@ export class OnlineHost {
     const game = this.game;
     if (!game)
       return [
-        { name: this.hostName, player: null, host: true, online: true },
-        ...this.lobby.map((l) => ({ name: l.name, player: null, host: false, online: true })),
+        { name: this.hostName, player: null, host: true, online: true, leader: this.hostLeader },
+        ...this.lobby.map((l) => ({
+          name: l.name,
+          player: null,
+          host: false,
+          online: true,
+          leader: l.leader,
+        })),
       ];
     const taken = new Set(this.peers.values());
     return humanSeats(game.state).map((p) => ({
@@ -81,9 +103,18 @@ export class OnlineHost {
     return () => this.watchers.delete(fn);
   }
 
-  /** Starts a new game with the lobby: `makeSetup` gets the humans' names, the host first. */
-  start(makeSetup: (names: string[]) => GameSetup, runner?: AiRunner): LocalGame {
-    const setup = makeSetup([this.hostName, ...this.lobby.map((l) => l.name)]);
+  /**
+   * Starts a new game with the lobby: `makeSetup` gets the humans' names and leader picks (null:
+   * random), the host first.
+   */
+  start(
+    makeSetup: (names: string[], leaders: (string | null)[]) => GameSetup,
+    runner?: AiRunner,
+  ): LocalGame {
+    const setup = makeSetup(
+      [this.hostName, ...this.lobby.map((l) => l.name)],
+      [this.hostLeader, ...this.lobby.map((l) => l.leader)],
+    );
     const humans = setup.players.filter((p) => p.kind === 'human').map((p) => p.id);
     this.begin(new LocalGame(setup, this.ctx, runner), humans[0]!);
     this.lobby.forEach((l, i) => {
@@ -116,6 +147,19 @@ export class OnlineHost {
         if (player !== me && !game.state.players[player]?.turnEnded)
           game.act({ type: 'end_turn', player });
       },
+      chat: () => this.chatLog,
+      say: (text) => this.say(this.hostName, me, text),
+      ping: (tile) => this.broadcastPing({ from: this.hostName, player: me, tile }),
+      onChat: (fn) => {
+        this.chatFns.add(fn);
+        return () => this.chatFns.delete(fn);
+      },
+      onPing: (fn) => {
+        this.pingFns.add(fn);
+        return () => this.pingFns.delete(fn);
+      },
+      deadline: () => this.deadlineAt,
+      pick: (leader) => this.pickForHost(leader),
       leave: () => this.close(),
     };
     return {
@@ -138,7 +182,103 @@ export class OnlineHost {
 
   close() {
     for (const off of this.stop) off();
+    if (this.timer) clearTimeout(this.timer);
     this.net.close();
+  }
+
+  /** The lobby: the host picks a leader (null: random). */
+  pickForHost(leader: string | null) {
+    this.hostLeader = leader;
+    this.changed();
+  }
+
+  /** Lobby chat for the host's own screen, before there's a game handle. */
+  lobbyChat(): ChatLine[] {
+    return this.chatLog;
+  }
+
+  sayInLobby(text: string) {
+    this.say(this.hostName, null, text);
+  }
+
+  private say(from: string, player: PlayerId | null, input: string) {
+    const text = input.trim().slice(0, 300);
+    if (!text) return;
+    const line: ChatLine = { from, player, text, turn: this.game?.state.turn ?? 0 };
+    this.chatLog = [...this.chatLog, line].slice(-200);
+    for (const peer of this.peers.keys()) this.net.send(peer, { t: 'chat', line });
+    for (const fn of this.chatFns) fn(line);
+    this.changed();
+  }
+
+  private broadcastPing(ping: Ping) {
+    const size = this.game?.state.map.tiles.length ?? 0;
+    if (!Number.isInteger(ping.tile) || ping.tile < 0 || ping.tile >= size) return;
+    for (const peer of this.peers.keys()) this.net.send(peer, { t: 'ping', ping });
+    for (const fn of this.pingFns) fn(ping);
+  }
+
+  /** The name a connected client goes by: their seat's, or the one they gave in the lobby. */
+  private nameOf(peer: string): { name: string; player: PlayerId | null } {
+    const player = this.peers.get(peer) ?? null;
+    if (player && this.game) return { name: this.game.state.players[player]!.name, player };
+    return { name: this.lobby.find((l) => l.peer === peer)?.name ?? 'Friend', player: null };
+  }
+
+  /** After every change: start this turn's timer, and let the AI play dropped seats. */
+  private tick() {
+    const game = this.game;
+    if (!game) return;
+    const state = game.state;
+    if (this.turnSeconds && state.status === 'playing' && state.turn !== this.timerTurn) {
+      this.timerTurn = state.turn;
+      this.deadlineAt = Date.now() + this.turnSeconds * 1000;
+      if (this.timer) clearTimeout(this.timer);
+      this.timer = setTimeout(() => this.expire(), this.turnSeconds * 1000);
+      for (const peer of this.peers.keys())
+        this.net.send(peer, { t: 'timer', seconds: this.turnSeconds });
+      this.changed();
+    }
+    if (this.aiTakeover) setTimeout(() => this.playAbsent(), 0);
+  }
+
+  /** Time's up: everyone still playing this turn ends it. */
+  private expire() {
+    const game = this.game;
+    if (!game || game.state.status !== 'playing') return;
+    if (game.busy) {
+      this.timer = setTimeout(() => this.expire(), 500);
+      return;
+    }
+    this.deadlineAt = null;
+    for (const p of humanSeats(game.state)) {
+      const pl = game.state.players[p]!;
+      if (pl.alive && !pl.turnEnded) game.act({ type: 'end_turn', player: p });
+    }
+  }
+
+  /** Seats whose player dropped are played by the AI until they rejoin (`aiTakeover`). */
+  private playAbsent() {
+    const game = this.game;
+    if (!game || this.playingAbsent || game.busy || game.state.status !== 'playing') return;
+    const here = new Set(this.peers.values());
+    const absent = humanSeats(game.state).filter((p) => {
+      const pl = game.state.players[p]!;
+      return p !== this.hostPlayer && !here.has(p) && pl.alive && !pl.turnEnded;
+    });
+    if (absent.length === 0) return;
+    this.playingAbsent = true;
+    try {
+      for (const p of absent) {
+        if (game.busy) break;
+        playAiTurn(this.ctx, game.state, p, (a) => {
+          const r = game.act(a);
+          return r.ok ? game.state : undefined;
+        });
+      }
+    } finally {
+      this.playingAbsent = false;
+    }
   }
 
   private begin(game: LocalGame, hostPlayer: PlayerId) {
@@ -147,13 +287,30 @@ export class OnlineHost {
     this.stop.push(
       game.subscribe((_, events) => {
         for (const [peer, player] of this.peers) if (player) this.sendView(peer, events);
+        this.tick();
       }),
     );
+    this.tick();
   }
 
   private receive(peer: string, m: ClientMessage) {
     if (m.t === 'hello') this.join(peer, m);
     else if (m.t === 'act') this.clientAct(peer, m.id, m.action);
+    else if (!this.peers.has(peer)) return;
+    else if (m.t === 'chat') {
+      const who = this.nameOf(peer);
+      this.say(who.name, who.player, String(m.text));
+    } else if (m.t === 'ping') {
+      const who = this.nameOf(peer);
+      if (who.player) this.broadcastPing({ from: who.name, player: who.player, tile: m.tile });
+    } else if (m.t === 'pick') {
+      const l = this.lobby.find((x) => x.peer === peer);
+      const leader = typeof m.leader === 'string' ? m.leader : null;
+      if (l && !this.game) {
+        l.leader = leader && this.ctx.content.entities.leader[leader] ? leader : null;
+        this.changed();
+      }
+    }
   }
 
   private join(peer: string, m: Extract<ClientMessage, { t: 'hello' }>) {
@@ -165,7 +322,7 @@ export class OnlineHost {
     const game = this.game;
     if (!game) {
       if (this.lobby.length >= this.openSeats) return this.refuse(peer, 'The game is full.');
-      this.lobby.push({ name, peer });
+      this.lobby.push({ name, peer, leader: null });
       this.peers.set(peer, null);
     } else {
       // Rejoining: their own seat if the name matches, else the first one nobody plays.
@@ -177,7 +334,14 @@ export class OnlineHost {
       if (!seat) return this.refuse(peer, 'Every seat in this game is taken.');
       this.peers.set(peer, seat);
       this.sendView(peer, []);
+      if (this.deadlineAt !== null)
+        this.net.send(peer, {
+          t: 'timer',
+          seconds: Math.max(0, Math.round((this.deadlineAt - Date.now()) / 1000)),
+        });
     }
+    // Catch up on the chat.
+    for (const line of this.chatLog.slice(-30)) this.net.send(peer, { t: 'chat', line });
     this.changed();
   }
 
@@ -221,6 +385,7 @@ export class OnlineHost {
     this.acked.delete(peer);
     this.lobby = this.lobby.filter((l) => l.peer !== peer);
     this.changed();
+    if (this.aiTakeover) setTimeout(() => this.playAbsent(), 0);
   }
 
   private changed() {

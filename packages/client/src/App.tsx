@@ -36,8 +36,12 @@ import { networkFromUrl } from './online/transports';
 let nextStart = 0;
 const startId = () => `start-${++nextStart}`;
 
-/** A new online game: the humans (host first) and AI rivals, every rule on. */
-function makeOnlineSetup(names: string[], o: OnlineOptions): GameSetup {
+/** A new online game: the humans (host first, with their lobby leader picks) and AI rivals. */
+function makeOnlineSetup(
+  names: string[],
+  o: OnlineOptions,
+  leaders: (string | null)[] = [],
+): GameSetup {
   const rules = o.rules;
   return makeSetup({
     ...DEFAULT_OPTIONS,
@@ -64,6 +68,7 @@ function makeOnlineSetup(names: string[], o: OnlineOptions): GameSetup {
     speed: o.speed,
     difficulty: o.difficulty,
     ...(o.startEra ? { startEra: o.startEra } : {}),
+    picks: Object.fromEntries(leaders.flatMap((leader, i) => (leader ? [[i, { leader }]] : []))),
   });
 }
 

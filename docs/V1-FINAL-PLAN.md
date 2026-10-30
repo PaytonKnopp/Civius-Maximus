@@ -34,6 +34,6 @@ lists everything, how to try it, and what Payton does next.
 | F17 | **The full roster**: leaders and civs 11–30 with full kits; 40+ world wonders; the rest of the units and buildings | ✅ |
 | F18 | **AI and balance**: the AI plays every system above, difficulty levels, simulation-tuned balance | ✅ |
 | F19 | **Explanations and history**: Civilopedia, advisor tips, hall of fame, replays | ✅ |
-| F20 | **Friends online (no setup)**: chat, map pings, un-end turn, turn timers, AI takeover, leader picks in the lobby | |
+| F20 | **Friends online (no setup)**: chat, map pings, un-end turn, turn timers, AI takeover, leader picks in the lobby | ✅ |
 | F21 | **Ready for Payton's setup**: Supabase backend (accounts, cloud saves, lobby) switched on by configuration, Tauri desktop project, step-by-step guides | |
 | F22 | **Final review**: [V1-FINAL-REVIEW.md](V1-FINAL-REVIEW.md) | |

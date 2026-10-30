@@ -2995,3 +2995,71 @@ kbd {
     grid-row: auto;
   }
 }
+
+/* Online: chat, turn timer, un-end turn */
+.chat-toggle {
+  position: absolute;
+  right: 300px;
+  bottom: 12px;
+  z-index: 7;
+}
+.chat-panel {
+  position: absolute;
+  right: 300px;
+  bottom: 12px;
+  width: min(340px, calc(100vw - 24px));
+  max-height: 46vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(14, 22, 32, 0.95);
+  border: 1px solid rgba(212, 169, 78, 0.45);
+  border-radius: 8px;
+  z-index: 7;
+}
+.chat-panel header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.chat-panel ol {
+  list-style: none;
+  margin: 0;
+  padding: 6px 10px;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 0.92em;
+}
+.chat-panel li {
+  padding: 2px 0;
+  overflow-wrap: anywhere;
+}
+.chat-panel form {
+  padding: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.chat-panel input {
+  width: 100%;
+}
+.turn-timer {
+  text-align: center;
+  font-size: 0.9em;
+  padding: 2px 6px;
+  color: #e8dcc0;
+}
+.turn-timer.low {
+  color: #ff8a6a;
+  font-weight: 600;
+}
+.corner .unend {
+  align-self: center;
+}
+@media (max-width: 760px) {
+  .chat-toggle,
+  .chat-panel {
+    right: auto;
+    left: 12px;
+    bottom: 150px;
+  }
+}

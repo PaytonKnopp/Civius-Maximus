@@ -113,6 +113,16 @@ turn** so the others aren't stuck (D83). Closing the host's tab ends the game fo
 host's browser keeps an online autosave, and the home screen offers **Host your online game
 again** (with a new code).
 
+**Built in V1 final F20:** each player picks a leader in the lobby (or Random), and everyone
+sees the picks next to the names. The host's options add a **turn timer** (off, 60 or 90
+seconds, 2, 3 or 5 minutes) and what happens **if a friend drops**: wait (the host can end their
+turn), or **an AI plays their seat** until they rejoin. In the game, a **Chat** button (or `/`)
+opens the conversation everyone in the game shares (lobby lines included); **M** pings the tile
+under the mouse for everyone (a gold "!" on the map for a few seconds, and a notice); after
+ending your turn, **Not done yet** takes it back while others are still playing; the timer
+counts down under the Next button and, when it runs out, ends everyone's turn. Not yet: team or
+private chat, time banks, nudges, draft mode, duplicates rules.
+
 - The **join code** is shown big at the top with a copy button. The host can regenerate it or lock
   the lobby.
 - **Seats (up to 8):** open, claimed (human), AI (with difficulty), or closed.

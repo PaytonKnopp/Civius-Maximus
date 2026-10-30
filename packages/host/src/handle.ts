@@ -1,5 +1,5 @@
 import type { Action, ActionResult, EngineContext, GameState, PlayerId } from '@cx/engine';
-import type { SeatInfo } from '@cx/protocol';
+import type { ChatLine, Ping, SeatInfo } from '@cx/protocol';
 import type { GameListener } from './local';
 
 /**
@@ -34,6 +34,18 @@ export interface OnlineSession {
   onChange(fn: () => void): () => void;
   /** The host only: ends an absent player's turn so the others aren't stuck waiting. */
   endTurnFor?(player: PlayerId): void;
+  /** Chat with everyone in the game (V1 final F20). */
+  chat(): ChatLine[];
+  say(text: string): void;
+  /** Points at a tile for everyone. */
+  ping(tile: number): void;
+  /** Chat lines and pings as they come. */
+  onChat(fn: (line: ChatLine) => void): () => void;
+  onPing(fn: (ping: Ping) => void): () => void;
+  /** When this turn's timer runs out (this device's clock, ms), or null for no timer. */
+  deadline(): number | null;
+  /** In the lobby: the leader this device's player wants (null: random). */
+  pick(leader: string | null): void;
   /** Leaves the game (the host leaving ends it for everyone). */
   leave(): void;
 }
