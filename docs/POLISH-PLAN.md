@@ -44,6 +44,6 @@ Screenshots of every screen at turn 120 and the 3D Map Lab close-ups (October 30
 | P4 | **The world**: sharper painted terrain with a richer palette, lush mixed forests and jungles, fields with crop rows, mines, quarries and pastures, rivers and coasts, soft shadows and ambient occlusion, color grading, depth of field when zoomed in | ✅ |
 | P5 | **Full screens**: one screen frame with a banner, cards, emblems, portraits and meters; tech and civic trees, government, religion, victories, city-states, great people and works, governors, espionage, congress, climate, ages, graphs, the Civilopedia and help | ✅ |
 | P6 | **Menus and dialogs**: a cinematic title screen (the menu in a column over the living world, the HUD hidden); setup, the online lobby and saves take the P1 look (turn transitions moved to P8) | ✅ |
-| P7 | **Leaders**: painted-style portraits with real shading and distinct faces, scenic backgrounds by civ, a diplomacy screen worthy of them, gentle motion | |
-| P8 | **Feel**: panel and screen transitions, hover and press feedback, a turn banner, combat and event feedback, floating numbers, selection and path highlights | |
+| P7 | **Leaders**: painted-style portraits with real shading and distinct faces, scenic backgrounds by civ, a diplomacy screen worthy of them, gentle motion | ✅ |
+| P8 | **Feel**: panel and screen transitions, hover and press feedback, a turn banner, combat and event feedback, floating numbers, selection and path highlights | ✅ |
 | P9 | **Final pass**: phone layout, accessibility and keyboard, consistency sweep of every screen, performance on Low/Medium/High, and the review ([POLISH-REVIEW.md](POLISH-REVIEW.md)) | |

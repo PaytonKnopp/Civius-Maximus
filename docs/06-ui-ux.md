@@ -84,6 +84,13 @@ highlighted in gold, New game, Play online, Load game) that light up and slide o
 Hall of Fame, Civilopedia, Account and Map Lab as small links under a rule. The game's HUD hides
 while it's open. On phones the column sits at the bottom over a dark fade.
 
+**Feel (polish P8):** a banner sweeps across the map when a new turn begins ("Turn 121" in
+gold over the era's name, with gold rules either side) and fades away, in place of the old
+"Turn 121" notice. Panels slide in (units and cities from the left, notices and hints from the
+right), dialogs rise in over a blurred backdrop, screens fade in, the next-turn button glows
+when the turn is ready to end and presses in when clicked; every button has hover, press and
+focus states (P1). Motion is switched off for players who ask their system for reduced motion.
+
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
 show each leader's face. A rival's diplomacy panel shows their portrait and a line in their
