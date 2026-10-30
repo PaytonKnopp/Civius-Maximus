@@ -12,7 +12,8 @@ Built from the ground up to be modded: leaders, civs, units and rules are all da
 > Ancient → Future; every major Civ system (most as setup toggles); seven victory types; 3D or
 > 2D, phone-friendly, with a Civilopedia, replays and a Hall of Fame. Everything in it, how to
 > try it and what's next: [V1 final review](docs/V1-FINAL-REVIEW.md) (the earlier
-> [V1 review](docs/V1-REVIEW.md) covers the first build).
+> [V1 review](docs/V1-REVIEW.md) covers the first build). The UI and art polish pass before the
+> first playtest: [polish review](docs/POLISH-REVIEW.md).
 
 ## Design docs
 

@@ -46,4 +46,4 @@ Screenshots of every screen at turn 120 and the 3D Map Lab close-ups (October 30
 | P6 | **Menus and dialogs**: a cinematic title screen (the menu in a column over the living world, the HUD hidden); setup, the online lobby and saves take the P1 look (turn transitions moved to P8) | ✅ |
 | P7 | **Leaders**: painted-style portraits with real shading and distinct faces, scenic backgrounds by civ, a diplomacy screen worthy of them, gentle motion | ✅ |
 | P8 | **Feel**: panel and screen transitions, hover and press feedback, a turn banner, combat and event feedback, floating numbers, selection and path highlights | ✅ |
-| P9 | **Final pass**: phone layout, accessibility and keyboard, consistency sweep of every screen, performance on Low/Medium/High, and the review ([POLISH-REVIEW.md](POLISH-REVIEW.md)) | |
+| P9 | **Final pass**: phone layout, accessibility and keyboard, consistency sweep of every screen, performance on Low/Medium/High, and the review ([POLISH-REVIEW.md](POLISH-REVIEW.md)) | ✅ |
