@@ -14,6 +14,8 @@ import {
 import { useEffect } from 'react';
 import { civName, perTurn } from './model';
 import { Icon } from '../ui/Icon';
+import { LeaderHead } from '../ui/LeaderCard';
+import { Meter } from '../ui/Meter';
 
 interface Props {
   ctx: EngineContext;
@@ -84,23 +86,37 @@ export function VictoriesScreen({ ctx, state, viewer, onGraphs, onClose }: Props
               return (
                 <tr key={p} className={p === viewer ? 'mine' : ''}>
                   <td>
-                    <strong>{civName(content, state, p)}</strong>
+                    <span className="civ-cell">
+                      <LeaderHead
+                        content={content}
+                        leader={state.players[p]!.leader}
+                        civ={state.players[p]!.civ}
+                        size={34}
+                      />
+                      <span>
+                        <strong>{civName(content, state, p)}</strong>
+                        <small className="muted">{state.players[p]!.name}</small>
+                      </span>
+                    </span>
                   </td>
-                  <td className="mono">{scoreOf(ctx, state, p).total}</td>
+                  <td className="score-cell">{scoreOf(ctx, state, p).total}</td>
                   {s.domination !== false && (
-                    <td className="mono">
-                      {dom.held}/{dom.needed}
+                    <td>
+                      <Meter value={dom.held} max={dom.needed} tone="#d0614e" />
                     </td>
                   )}
                   {s.science !== false && (
-                    <td className="mono">
-                      {space.done}/{space.total}
-                      {space.arrives !== null && ` · arrives turn ${space.arrives}`}
+                    <td>
+                      <Meter
+                        value={space.done}
+                        max={space.total}
+                        tone="#5fb8f0"
+                        label={`${space.done}/${space.total}${space.arrives !== null ? ` · turn ${space.arrives}` : ''}`}
+                      />
                     </td>
                   )}
                   {s.culture !== false && (
                     <td
-                      className="mono"
                       title={[
                         `${domesticTourists(ctx, state, p)} domestic tourists, tourism ${perTurn(state.players[p]!.tourismRate)}`,
                         ...culture.map(
@@ -109,19 +125,30 @@ export function VictoriesScreen({ ctx, state, viewer, onGraphs, onClose }: Props
                         ),
                       ].join('\n')}
                     >
-                      {ahead}/{culture.length}
+                      <Meter value={ahead} max={culture.length} tone="#c58be0" />
                     </td>
                   )}
                   {s.religion !== false && (
-                    <td className="mono">
-                      {religion
-                        ? `${won}/${faith.length} · ${state.religions[religion]?.name ?? ''}`
-                        : '—'}
+                    <td>
+                      {religion ? (
+                        <Meter
+                          value={won}
+                          max={faith.length}
+                          tone="#5fd0c0"
+                          title={state.religions[religion]?.name ?? ''}
+                        />
+                      ) : (
+                        <span className="muted">No religion</span>
+                      )}
                     </td>
                   )}
                   {diplomaticOn(state) && (
-                    <td className="mono">
-                      {diplomaticPoints(ctx, state, p)}/{content.rules.congress.victoryPoints}
+                    <td>
+                      <Meter
+                        value={diplomaticPoints(ctx, state, p)}
+                        max={content.rules.congress.victoryPoints}
+                        tone="#e2c25e"
+                      />
                     </td>
                   )}
                 </tr>

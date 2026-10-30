@@ -14,7 +14,8 @@ import {
 } from '@cx/engine';
 import { useEffect, useState } from 'react';
 import { civName, whole } from './model';
-import { Icon } from '../ui/Icon';
+import { Icon, Rich } from '../ui/Icon';
+import { Meter } from '../ui/Meter';
 
 interface Props {
   ctx: EngineContext;
@@ -55,9 +56,10 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
           Religion
         </h2>
         <p className="screen-sub">
-          🙏 {whole(me.faith)} faith. A pantheon costs {rules.pantheonFaith} faith. A Great Prophet
-          used in a settlement with a {t(content.entities.district[rules.holyDistrict]?.name ?? '')}{' '}
-          founds a religion ({religions.length} of {maxReligions(ctx, state)} founded).
+          <Icon name="faith" /> {whole(me.faith)} faith. A pantheon costs {rules.pantheonFaith}{' '}
+          faith. A Great Prophet used in a settlement with a{' '}
+          {t(content.entities.district[rules.holyDistrict]?.name ?? '')} founds a religion (
+          {religions.length} of {maxReligions(ctx, state)} founded).
         </p>
         <button type="button" className="close" onClick={onClose} aria-label="Close">
           ✕
@@ -71,9 +73,13 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
         <section className="religion-section">
           <h3>Pantheon</h3>
           {pantheon ? (
-            <p>
-              <strong>{t(pantheon.name)}</strong>: {t(pantheon.description)}
-            </p>
+            <div className="belief-grid">
+              <div className="belief-card chosen">
+                <span className="belief-kind">Pantheon</span>
+                <strong>{t(pantheon.name)}</strong>
+                <span>{t(pantheon.description)}</span>
+              </div>
+            </div>
           ) : (
             <>
               <p className="hint">Pick one belief for your people. Each can be taken only once.</p>
@@ -91,7 +97,7 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
                         title={why}
                         onClick={() => act(action)}
                       >
-                        Take for 🙏 {rules.pantheonFaith}
+                        <Rich text={`Take for 🙏 ${rules.pantheonFaith}`} />
                       </button>
                     </div>
                   );
@@ -110,15 +116,15 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
                 {state.settlements[mine.holyCity]?.name ?? 'a lost city'}.{' '}
                 {following(followersOf(state, mine.id).length)}.
               </p>
-              <ul className="belief-list">
+              <div className="belief-grid">
                 {mine.beliefs.map((id) => (
-                  <li key={id}>
-                    <strong>{t(belief(id)?.name ?? id)}</strong>{' '}
-                    <span className="muted">({belief(id)?.kind})</span>:{' '}
-                    {t(belief(id)?.description ?? '')}
-                  </li>
+                  <div className="belief-card chosen" key={id}>
+                    <span className="belief-kind">{belief(id)?.kind}</span>
+                    <strong>{t(belief(id)?.name ?? id)}</strong>
+                    <span>{t(belief(id)?.description ?? '')}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
               <p className="hint">
                 Buy missionaries with faith in a settlement that follows it, and send them to preach
                 next to other settlements.
@@ -159,9 +165,8 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
                         </div>
                       </td>
                       <td>{civName(content, state, r.founder)}</td>
-                      <td className="mono">{followersOf(state, r.id).length}</td>
+                      <td className="score-cell">{followersOf(state, r.id).length}</td>
                       <td
-                        className="mono"
                         title={progress
                           .map(
                             (x) =>
@@ -169,7 +174,12 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
                           )
                           .join('\n')}
                       >
-                        {won}/{progress.length} civs
+                        <Meter
+                          value={won}
+                          max={progress.length}
+                          tone="#5fd0c0"
+                          label={`${won}/${progress.length} civs`}
+                        />
                       </td>
                     </tr>
                   );

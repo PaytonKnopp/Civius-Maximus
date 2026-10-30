@@ -591,7 +591,7 @@ export function SettlementPanel({
                         title={why(buy) ?? `Buy now for ${u.faithCost} faith`}
                         onClick={() => act(buy)}
                       >
-                        🙏 {u.faithCost}
+                        <Icon name="faith" /> {u.faithCost}
                       </button>
                     </li>
                   );

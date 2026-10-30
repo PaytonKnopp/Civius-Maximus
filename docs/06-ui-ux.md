@@ -68,6 +68,15 @@ help: Civilopedia, help), lighting up in the screen's color on hover; graphics q
 into the ☰ menu. The unit card has an action bar of tiles (icon, name, key) with the cost on
 upgrades, pillage and plunder.
 
+**Full screens (polish P5):** every screen shares one frame: a deep backdrop lit warmly from
+above with a vignette, a banner header (gold title between ornaments, a line of context, the
+close button), sections under engraved titles with a rule, tables drawn as rows of cards (your
+own row marked in gold), and meters (`ui/Meter.tsx`) wherever something is in progress. The
+Victories screen shows every civ's leader, score and a meter per victory type in its color;
+the Religion screen shows the pantheon and your beliefs as cards, and each religion's progress
+toward victory as a meter. Costs show the game's yield icons instead of emoji. Graphs grow to
+fill the screen.
+
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
 show each leader's face. A rival's diplomacy panel shows their portrait and a line in their

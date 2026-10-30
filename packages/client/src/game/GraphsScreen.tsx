@@ -101,7 +101,9 @@ export function HistoryChart({
     watch.observe(el);
     return () => watch.disconnect();
   }, [ready]);
-  const H = Math.round(Math.min(420, Math.max(220, W * 0.45)));
+  // As tall as the screen allows (under the header, tabs and legend), within a sensible shape.
+  const room = typeof innerHeight === 'number' ? innerHeight - 230 : 420;
+  const H = Math.round(Math.max(220, Math.min(room, W * 0.55)));
   const history = state.history;
   const series = useMemo(
     () =>
