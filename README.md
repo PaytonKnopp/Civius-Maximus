@@ -30,6 +30,12 @@ Built from the ground up to be modded: leaders, civs, units and rules are all da
 | [10 · Art direction](docs/10-art-direction.md) | Painterly stylized 3D: Civ VII + Outer Wilds + Puss in Boots |
 | [Decisions](docs/DECISIONS.md) | Decided and open questions |
 
+## Optional setup
+
+The game needs no server or account. [docs/guides](docs/guides/README.md) explains, step by
+step, how to switch on accounts, cloud saves and public games (a free Supabase project) and
+how to get the desktop app (one click in GitHub Actions).
+
 ## Development
 
 Requires Node 22+ and pnpm 10+.

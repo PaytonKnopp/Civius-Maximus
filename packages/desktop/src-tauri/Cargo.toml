@@ -1,0 +1,17 @@
+[package]
+name = "civius-maximus"
+version = "0.1.0"
+description = "Civius Maximus, a Civ-style 4X game to play with friends"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

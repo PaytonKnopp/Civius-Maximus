@@ -1,0 +1,48 @@
+name: Desktop installers
+
+# Builds the desktop app (packages/desktop, Tauri 2) for Windows, macOS and Linux. Run it from
+# Actions → "Desktop installers" → Run workflow; the installers are attached to the run as
+# artifacts (docs/guides/desktop.md). Set the SUPABASE_URL and SUPABASE_ANON_KEY repository
+# variables first if the app should have accounts and cloud saves built in.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Linux libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @cx/desktop build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: civius-maximus-${{ runner.os }}
+          path: |
+            packages/desktop/src-tauri/target/release/bundle/**/*.msi
+            packages/desktop/src-tauri/target/release/bundle/**/*.exe
+            packages/desktop/src-tauri/target/release/bundle/**/*.dmg
+            packages/desktop/src-tauri/target/release/bundle/**/*.deb
+            packages/desktop/src-tauri/target/release/bundle/**/*.AppImage
+          if-no-files-found: warn

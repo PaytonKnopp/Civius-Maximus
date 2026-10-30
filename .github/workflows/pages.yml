@@ -28,7 +28,12 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Accounts, cloud saves and public games switch on when these repository variables are
+      # set (Settings → Secrets and variables → Actions → Variables); see docs/guides/supabase.md.
       - run: pnpm build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
