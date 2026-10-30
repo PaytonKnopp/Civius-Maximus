@@ -221,9 +221,9 @@ export class World3D implements MapRenderer {
     depthWrite: false,
   });
   private propMaterial = new MeshStandardMaterial({
-    roughness: 0.92,
+    roughness: 0.9,
     metalness: 0,
-    flatShading: true,
+    vertexColors: true,
   });
   private propGeometry = propGeometries();
   private gridMaterial = new LineBasicMaterial({

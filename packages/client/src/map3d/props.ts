@@ -5,14 +5,17 @@ import {
   ConeGeometry,
   CylinderGeometry,
   DodecahedronGeometry,
+  Float32BufferAttribute,
   IcosahedronGeometry,
 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { center3 } from './sampler';
 
 /**
- * Low-poly props scattered over the map: mixed forests, jungle, rocks and shrubs. Many small,
- * varied, flat-shaded pieces read as scale and realism; instancing keeps them cheap.
+ * Props scattered over the map: mixed forests, jungle, rocks and shrubs. Soft, smooth canopies
+ * with light baked in (darker beneath, brighter on top) and layered pines read as painted
+ * woodland; rocks stay faceted. Many small, varied pieces read as scale; instancing keeps them
+ * cheap.
  */
 
 export type PropKind =
@@ -28,27 +31,97 @@ export type PropKind =
 /** Merging needs every part non-indexed; some primitives (icosahedrons) already are. */
 const flat = (g: BufferGeometry) => (g.index ? g.toNonIndexed() : g);
 
+/**
+ * Bakes light into a prop: darker underneath and inside, lighter on top, with a little mottling,
+ * so canopies read as volumes of leaves rather than solid shapes. Instance colors tint on top.
+ */
+function shade(g: BufferGeometry, low: number, high: number, mottle = 0.07): BufferGeometry {
+  const out = flat(g);
+  out.computeBoundingBox();
+  const { min, max } = out.boundingBox!;
+  const pos = out.getAttribute('position');
+  const colors = new Float32Array(pos.count * 3);
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i);
+    const t = (y - min.y) / Math.max(1e-6, max.y - min.y);
+    const m = Math.sin(pos.getX(i) * 41 + pos.getZ(i) * 29 + y * 17) * mottle;
+    const v = low + (high - low) * Math.pow(t, 0.75) + m;
+    colors.set([v, v, v * 0.97], i * 3);
+  }
+  out.setAttribute('color', new Float32BufferAttribute(colors, 3));
+  return out;
+}
+
+/** A leafy lobe: a smooth sphere with a lumpy outline (positions pushed in and out). */
+function lobe(r: number, x: number, y: number, z: number, sy = 1): BufferGeometry {
+  const g = new IcosahedronGeometry(r, 2);
+  const pos = g.getAttribute('position');
+  for (let i = 0; i < pos.count; i++) {
+    const px = pos.getX(i);
+    const py = pos.getY(i);
+    const pz = pos.getZ(i);
+    const k = 1 + 0.09 * Math.sin(px * 37 + py * 23) * Math.cos(pz * 31 - px * 13);
+    pos.setXYZ(i, px * k, py * k * sy, pz * k);
+  }
+  return g.translate(x, y, z);
+}
+
+/** Faceted rock: one normal per face. */
+function facets(g: BufferGeometry): BufferGeometry {
+  const out = flat(g);
+  out.computeVertexNormals();
+  return out;
+}
+
 export function propGeometries(): Record<PropKind, BufferGeometry> {
   return {
-    pineCrown: mergeGeometries([
-      flat(new ConeGeometry(0.19, 0.4, 7).translate(0, 0.34, 0)),
-      flat(new ConeGeometry(0.145, 0.34, 7).translate(0, 0.54, 0)),
-      flat(new ConeGeometry(0.09, 0.24, 6).translate(0, 0.72, 0)),
-    ])!,
-    pineTrunk: new CylinderGeometry(0.025, 0.04, 0.26, 5).translate(0, 0.13, 0),
-    broadCrown: mergeGeometries([
-      flat(new IcosahedronGeometry(0.17, 0).translate(0, 0.42, 0)),
-      flat(new IcosahedronGeometry(0.13, 0).translate(0.1, 0.36, 0.05)),
-      flat(new IcosahedronGeometry(0.12, 0).translate(-0.09, 0.37, -0.05)),
-    ])!,
-    broadTrunk: new CylinderGeometry(0.03, 0.045, 0.32, 5).translate(0, 0.16, 0),
-    jungleCrown: mergeGeometries([
-      flat(new IcosahedronGeometry(0.24, 0).scale(1.35, 0.5, 1.35).translate(0, 0.66, 0)),
-      flat(new IcosahedronGeometry(0.16, 0).scale(1.3, 0.55, 1.3).translate(0.12, 0.52, -0.06)),
-    ])!,
-    jungleTrunk: new CylinderGeometry(0.025, 0.04, 0.64, 5).translate(0, 0.32, 0),
-    rock: new DodecahedronGeometry(0.08, 0).scale(1, 0.62, 1).translate(0, 0.02, 0),
-    shrub: new IcosahedronGeometry(0.085, 0).scale(1, 0.7, 1).translate(0, 0.04, 0),
+    pineCrown: shade(
+      mergeGeometries([
+        flat(new ConeGeometry(0.2, 0.34, 11).translate(0, 0.3, 0)),
+        flat(new ConeGeometry(0.165, 0.3, 11).translate(0, 0.46, 0)),
+        flat(new ConeGeometry(0.125, 0.26, 10).translate(0, 0.6, 0)),
+        flat(new ConeGeometry(0.08, 0.2, 9).translate(0, 0.73, 0)),
+      ])!,
+      0.45,
+      1.12,
+    ),
+    pineTrunk: shade(new CylinderGeometry(0.022, 0.038, 0.26, 7).translate(0, 0.13, 0), 0.8, 1, 0),
+    broadCrown: shade(
+      mergeGeometries([
+        lobe(0.15, 0, 0.44, 0),
+        lobe(0.12, 0.1, 0.37, 0.06),
+        lobe(0.115, -0.09, 0.38, -0.05),
+        lobe(0.1, 0.02, 0.36, -0.1),
+        lobe(0.095, -0.04, 0.52, 0.06),
+      ])!,
+      0.42,
+      1.15,
+      0.09,
+    ),
+    broadTrunk: shade(new CylinderGeometry(0.026, 0.044, 0.34, 7).translate(0, 0.17, 0), 0.8, 1, 0),
+    jungleCrown: shade(
+      mergeGeometries([
+        lobe(0.2, 0, 0.66, 0, 0.5),
+        lobe(0.15, 0.13, 0.55, -0.07, 0.55),
+        lobe(0.13, -0.12, 0.58, 0.08, 0.5),
+      ])!,
+      0.45,
+      1.1,
+      0.08,
+    ),
+    jungleTrunk: shade(
+      new CylinderGeometry(0.022, 0.038, 0.64, 7).translate(0, 0.32, 0),
+      0.8,
+      1,
+      0,
+    ),
+    rock: shade(
+      facets(new DodecahedronGeometry(0.08, 0).scale(1, 0.62, 1).translate(0, 0.02, 0)),
+      0.7,
+      1.1,
+      0.05,
+    ),
+    shrub: shade(lobe(0.08, 0, 0.04, 0, 0.7), 0.55, 1.1, 0.08),
   };
 }
 

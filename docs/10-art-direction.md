@@ -102,6 +102,16 @@ and cities are denser (up to 60 buildings) with bigger houses, and garden trees 
 them. Ships have smooth rounded hulls with a prow, a deck and a rail, and square sails that
 belly forward on their yards; aircraft have streamlined fuselages; tanks a rounded turret.
 
+**Built in polish P4: the world.** The ground is painted per pixel now, not only per vertex:
+broad patches of lusher and sun-dried growth, and a fine grain up close that fades with
+distance so the strategic view never shimmers. The palette is warmer while staying natural
+(meadow green, golden savanna, warm sand). Woods are soft: broadleaf canopies are clusters of
+lumpy, smooth-shaded lobes and pines are four layered tiers, all with light baked in (darker
+beneath and inside, brighter on top, mottled), so they read as leaves rather than solids; rocks
+stay faceted. Borders are a crisp line in the owner's color with a narrow glow inward. Farms
+are a patchwork of four crops with furrows, each field lying on its own patch of ground, a
+hedge, a farmhouse and a haystack; every improvement's pieces now line up with each other.
+
 **Built so far (V1 final, F4): leaders and emblems.** Every leader has an illustrated portrait
 drawn in vector from traits in content (`leader.portrait`: face shape, skin, eyes, hair style,
 beard, headwear from laurels and crowns to a mian or a bicorne, clothes from togas to kimonos,

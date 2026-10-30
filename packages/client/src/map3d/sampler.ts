@@ -21,14 +21,14 @@ export function worldSize3(map: { width: number; height: number }): [number, num
 }
 
 /**
- * Natural, muted palette per base terrain (sRGB hex): moss, ochre, dark sand, slate. Water
+ * Natural palette per base terrain (sRGB hex): meadow green, golden savanna, warm sand, slate. Water
  * terrains color the seabed seen through the shallows.
  */
 const TERRAIN_PALETTE: Record<string, number> = {
-  grassland: 0x55703a,
-  plains: 0x6f6b47,
-  desert: 0x8f7c5c,
-  tundra: 0x666956,
+  grassland: 0x5a7a36,
+  plains: 0x857f4a,
+  desert: 0xab9066,
+  tundra: 0x6d715e,
   snow: 0xcfd6dc,
   coast: 0x7d7052,
   lake: 0x5e6a4e,
@@ -38,9 +38,9 @@ const FEATURE_TINT: Record<string, number> = {
   woods: 0x3c5229,
   rainforest: 0x2c4424,
   marsh: 0x4a5c46,
-  floodplains: 0x857d50,
-  floodplains_grassland: 0x5f7a3a,
-  floodplains_plains: 0x74703f,
+  floodplains: 0x8f8752,
+  floodplains_grassland: 0x62823a,
+  floodplains_plains: 0x878144,
 };
 const ROCK = new Color(0x55534f);
 const SAND = new Color(0xa89870);
