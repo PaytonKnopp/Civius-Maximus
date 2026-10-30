@@ -75,6 +75,22 @@ All art is referenced from content files, so swapping a placeholder for real art
 cannon, tank, steamship, commander (with a banner) and robed (missionaries, great people). The
 Map Lab's "Unit models" switch puts one of each on the map, for checking new art.
 
+**Built in polish P2: characters.** Units are now people, not blocks: figures about five and a
+half heads tall with faces (eyes, brows, nose, ears, mouth, beards on some), hair, hoods or a
+helmet of their era (bronze with a horsehair ridge, a Roman crest and neck guard, a plumed steel
+helmet, a tricorn, a shako with its pompom, a steel helmet), a tunic skirt or breeches, plate
+and pauldrons, cloaks for commanders and knights, sleeves from the gunpowder era on, a quiver
+on archers' backs, and five skin tones and hair colors mixed through a squad. Everything is
+smooth-shaded (`map3d/figures.ts`), with a warm rim light so figures stand out from the land,
+a soft shadow and a thin ring in the owner's color underneath. Horses, oxen (the settler's
+wagon), mules (traders) and elephants are built the same way, with jointed legs. Every model is
+rigged (`map3d/rig.ts`): one skinned mesh per material on a skeleton of a dozen bones per
+figure, so a squad still costs two draw calls. Animation is procedural, no files: figures
+breathe and glance around, walk with swinging arms and bending knees while they move, horses
+trot, ships ride the swell, aircraft hover; attackers turn to their target and swing (swords,
+clubs), thrust (spears, pikes), draw (bows) or shoulder and fire (muskets, rifles, crossbows),
+and guns recoil.
+
 **Built so far (V1 final, F4): leaders and emblems.** Every leader has an illustrated portrait
 drawn in vector from traits in content (`leader.portrait`: face shape, skin, eyes, hair style,
 beard, headwear from laurels and crowns to a mian or a bicorne, clothes from togas to kimonos,

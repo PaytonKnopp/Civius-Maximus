@@ -1,6 +1,8 @@
 import {
+  Bone,
   BufferGeometry,
   CanvasTexture,
+  CircleGeometry,
   Color,
   DoubleSide,
   Float32BufferAttribute,
@@ -13,6 +15,8 @@ import {
   MeshBasicMaterial,
   MeshStandardMaterial,
   RingGeometry,
+  Skeleton,
+  SkinnedMesh,
   SphereGeometry,
   Sprite,
   SpriteMaterial,
@@ -21,15 +25,19 @@ import {
 } from 'three';
 import type { PathView, UnitView } from '../map/renderer';
 import { drawIcon } from '../ui/drawIcon';
-import { unitGeometry } from './unitModels';
+import { type AttackAnim, animateRigs, restOffsets } from './figures';
+import type { Rig } from './rig';
+import { type UnitGeometry, unitGeometry } from './unitModels';
 
 /**
- * Units in the 3D world: small low-poly squads (oversized against the terrain so they read at
- * strategy zoom), a floating badge per unit, smooth movement along the path just taken, the
- * selection ring and the path preview with turn markers.
+ * Units in the 3D world: squads of rigged figures (oversized against the terrain so they read at
+ * strategy zoom) that breathe at rest, walk along the path just taken and swing, thrust, draw or
+ * fire when they attack; a soft shadow and a ring in the owner's color under them, a floating
+ * badge, the selection ring and the path preview with turn markers.
  */
 
-const SCALE = 2.1;
+const SCALE = 2.25;
+const ATTACK_SECONDS = 0.75;
 const LAYER_OFFSET: Record<UnitView['layer'], [number, number]> = {
   military: [-0.22, -0.04],
   civilian: [0.25, 0.14],
@@ -46,8 +54,28 @@ export interface UnitWorld {
 }
 
 const geo = {
-  base: new RingGeometry(0.2, 0.24, 24).rotateX(-Math.PI / 2),
+  base: new RingGeometry(0.2, 0.226, 40).rotateX(-Math.PI / 2),
+  shadow: new CircleGeometry(0.27, 28).rotateX(-Math.PI / 2),
 };
+
+/** A soft round shadow: dark in the middle, fading out. */
+const shadowMat = (() => {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createRadialGradient(32, 32, 2, 32, 32, 32);
+  g.addColorStop(0, 'rgba(0,0,0,0.62)');
+  g.addColorStop(0.55, 'rgba(0,0,0,0.38)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 64, 64);
+  return new MeshBasicMaterial({
+    map: new CanvasTexture(c),
+    transparent: true,
+    depthWrite: false,
+    toneMapped: false,
+  });
+})();
 
 const baseCache = new Map<number, MeshBasicMaterial>();
 const baseMat = (color: number) => {
@@ -59,27 +87,75 @@ const baseMat = (color: number) => {
   return m;
 };
 
-const matte = new MeshStandardMaterial({
-  vertexColors: true,
-  roughness: 0.82,
-  flatShading: true,
-  side: DoubleSide,
-});
-const metal = new MeshStandardMaterial({
-  vertexColors: true,
-  roughness: 0.42,
-  metalness: 0.6,
-  flatShading: true,
-});
+/** A warm rim of light on the edges, so figures stand out from the land behind them. */
+function withRim<T extends MeshStandardMaterial>(m: T, strength: number): T {
+  m.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <opaque_fragment>',
+      `float rimF = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 2.4);
+      outgoingLight += vec3(1.0, 0.86, 0.64) * rimF * ${strength.toFixed(2)};
+      #include <opaque_fragment>`,
+    );
+  };
+  return m;
+}
 
-function buildModel(view: UnitView): Group {
+const matte = withRim(
+  new MeshStandardMaterial({ vertexColors: true, roughness: 0.74, side: DoubleSide }),
+  0.26,
+);
+const metal = withRim(
+  new MeshStandardMaterial({ vertexColors: true, roughness: 0.36, metalness: 0.7 }),
+  0.18,
+);
+
+const IDENTITY = new Matrix4();
+const inverseCache = new WeakMap<UnitGeometry, Matrix4[]>();
+/** Each bone's inverse rest transform (rest bones have no rotation: a translation). */
+function inverses(geom: UnitGeometry): Matrix4[] {
+  let list = inverseCache.get(geom);
+  if (!list) {
+    list = geom.bones.map((b) => new Matrix4().makeTranslation(-b.at[0], -b.at[1], -b.at[2]));
+    inverseCache.set(geom, list);
+  }
+  return list;
+}
+
+interface Model {
+  group: Group;
+  bones: Bone[];
+  rest: Vector3[];
+  rigs: Rig[];
+}
+
+function buildModel(view: UnitView): Model {
   const g = new Group();
   const geom = unitGeometry(view.model, view.color, view.accent);
-  g.add(new Mesh(geom.matte, matte));
-  if (geom.metal) g.add(new Mesh(geom.metal, metal));
-  g.add(new Mesh(geo.base, baseMat(view.color)));
+  const rest = restOffsets(geom.bones);
+  const bones = geom.bones.map((_, i) => {
+    const b = new Bone();
+    b.position.copy(rest[i]!);
+    return b;
+  });
+  geom.bones.forEach((d, i) => d.parent >= 0 && bones[d.parent]!.add(bones[i]!));
+  const skeleton = new Skeleton(bones, inverses(geom));
+  const skinned = (geometry: BufferGeometry, material: MeshStandardMaterial) => {
+    const mesh = new SkinnedMesh(geometry, material);
+    mesh.bind(skeleton, IDENTITY);
+    mesh.boundingSphere = geometry.boundingSphere!.clone();
+    mesh.boundingSphere.radius *= 1.4;
+    return mesh;
+  };
+  const body = skinned(geom.matte, matte);
+  body.add(bones[0]!);
+  g.add(body);
+  if (geom.metal) g.add(skinned(geom.metal, metal));
+  const shadow = new Mesh(geo.shadow, shadowMat);
+  shadow.position.y = 0.004;
+  shadow.renderOrder = 1;
+  g.add(shadow, new Mesh(geo.base, baseMat(view.color)));
   g.scale.setScalar(SCALE);
-  return g;
+  return { group: g, bones, rest, rigs: geom.rigs };
 }
 
 const badgeCache = new Map<string, SpriteMaterial>();
@@ -185,6 +261,9 @@ function turnMarker(label: string, final: boolean): SpriteMaterial {
 interface Drawn {
   view: UnitView;
   group: Group;
+  model: Model;
+  /** An attack under way: its kind and when it started. */
+  attack: { kind: AttackAnim['kind']; start: number } | null;
   badge: Sprite;
   /** World position (unwrapped) and pending animation waypoints. */
   pos: Vector3;
@@ -250,11 +329,12 @@ export class UnitLayer {
       const target = this.slot(view);
       if (!d || d.view.model !== view.model || d.view.color !== view.color) {
         if (d) this.group.remove(d.group, d.badge);
-        const group = buildModel(view);
+        const model = buildModel(view);
+        const group = model.group;
         const sprite = new Sprite(badge(view));
         sprite.scale.set(0.34, 0.34, 1);
         sprite.renderOrder = 30;
-        d = { view, group, badge: sprite, pos: target.clone(), route: [] };
+        d = { view, group, model, attack: null, badge: sprite, pos: target.clone(), route: [] };
         this.group.add(group, sprite);
         this.drawn.set(view.id, d);
       }
@@ -287,16 +367,25 @@ export class UnitLayer {
     this.selected = id;
   }
 
-  /** A quick lunge toward a tile and back (a melee attack). */
-  lunge(id: string, tile: number) {
+  /**
+   * An attack on a tile: the unit turns to face it and plays its attack (a swing, a thrust, a
+   * draw or a volley); melee units also lunge toward the tile and back.
+   */
+  attack(id: string, tile: number, mode: 'melee' | 'ranged') {
     const d = this.drawn.get(id);
     if (!d) return;
     const [x0, z] = this.world.center(tile);
     const x = this.near(x0, d.pos.x);
-    const home = d.route.length > 0 ? d.route[d.route.length - 1]!.clone() : d.pos.clone();
-    const toward = home.clone().lerp(new Vector3(x, home.y, z), 0.45);
-    d.route.push(toward, home);
+    d.group.rotation.y = Math.atan2(-(z - d.pos.z), x - d.pos.x);
+    d.attack = { kind: mode, start: this.now };
+    if (mode === 'melee') {
+      const home = d.route.length > 0 ? d.route[d.route.length - 1]!.clone() : d.pos.clone();
+      const toward = home.clone().lerp(new Vector3(x, home.y, z), 0.4);
+      d.route.push(toward, home);
+    }
   }
+
+  private now = 0;
 
   setPath(path: PathView | null, fromTile: number | null) {
     for (const child of [...this.pathGroup.children])
@@ -357,7 +446,16 @@ export class UnitLayer {
   update(dt: number, cameraX: number, time: number) {
     const w = this.world.worldWidth();
     const shiftFor = (x: number) => (this.world.wrap() ? Math.round((cameraX - x) / w) * w : 0);
+    this.now = time;
     for (const d of this.drawn.values()) {
+      const walking = d.route.length > 0;
+      let attack: AttackAnim | null = null;
+      if (d.attack) {
+        const u = (time - d.attack.start) / ATTACK_SECONDS;
+        if (u >= 1 || u < 0) d.attack = null;
+        else attack = { kind: d.attack.kind, u };
+      }
+      animateRigs(d.model.rigs, d.model.bones, d.model.rest, time, walking, attack);
       if (d.route.length > 0) {
         const next = d.route[0]!;
         const step = SPEED * dt * Math.sqrt(3);
