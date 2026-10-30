@@ -5,6 +5,7 @@ import { isJoinCode, normalizeCode, type SeatInfo } from '@cx/protocol';
 import { useEffect, useRef, useState } from 'react';
 import { cloud, type PublicLobby } from '../cloud/cloud';
 import { createAiRunner } from '../game/aiRunner';
+import { browserSeatKeys, hostedGame, rememberHosted } from './keys';
 import { joinHost, type Network, newCode, openHost } from './transports';
 
 /** What the host picks for a new online game. */
@@ -177,13 +178,21 @@ export function OnlineDialog(props: Props) {
     setError(undefined);
     saveName(name.trim());
     try {
-      const c = newCode();
-      const line = await openHost(net, c);
+      // A game hosted again keeps its code when it can, so friends' games reconnect by themselves.
+      const before = resume ? hostedGame(resume.gameId) : undefined;
+      let c = before?.code ?? newCode();
+      const line = await openHost(net, c).catch((e: unknown) => {
+        if (!before) throw e;
+        c = newCode();
+        return openHost(net, c);
+      });
       const h = new OnlineHost(line, ctx, c, who, resume ? 7 : friends);
       h.turnSeconds = o.turnSeconds ?? null;
       h.aiTakeover = o.absent === 'ai';
+      h.onKeys = (gameId, keys) => rememberHosted({ gameId, code: c, keys });
       if (resume) {
-        h.resume(resume, createAiRunner());
+        h.resume(resume, createAiRunner(), before?.keys);
+        rememberHosted({ gameId: resume.gameId, code: c, keys: before?.keys ?? {} });
         onGame(h.handle());
       } else {
         setHost(h);
@@ -209,7 +218,12 @@ export function OnlineDialog(props: Props) {
     saveName(name.trim());
     try {
       const line = await joinHost(net, c);
-      setRemote(new RemoteGame(line, ctx, c, name.trim() || 'Friend'));
+      setRemote(
+        new RemoteGame(line, ctx, c, name.trim() || 'Friend', {
+          keys: browserSeatKeys(),
+          reconnect: () => joinHost(net, c),
+        }),
+      );
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -448,8 +462,10 @@ export function OnlineDialog(props: Props) {
 
         {!lobby && resume && (
           <p className="hint">
-            Turn {resume.turn}. Friends rejoin with the new code and get their seat back by using
-            the same name.
+            Turn {resume.turn}. Friends who are still in the game reconnect by themselves; others
+            rejoin with the code from the device they played on and get their seat back. Someone on
+            a new device: free their seat (in the bar at the top of the map) and they join with the
+            same name.
           </p>
         )}
 
@@ -501,6 +517,7 @@ export function OnlineDialog(props: Props) {
             net={net}
             seats={seats}
             open={host ? friends : null}
+            {...(host ? { onRemove: (i: number) => host.removeFromLobby(i) } : {})}
             myLeader={myLeader}
             onPick={(leader) => {
               setMyLeader(leader);
@@ -562,6 +579,7 @@ function Lobby({
   net,
   seats,
   open,
+  onRemove,
   myLeader,
   onPick,
 }: {
@@ -571,6 +589,8 @@ function Lobby({
   seats: SeatInfo[];
   /** The host's view: how many friends the game takes. */
   open: number | null;
+  /** The host's view: sends away the friend at this place in the list. */
+  onRemove?: (index: number) => void;
   myLeader: string | null;
   onPick: (leader: string | null) => void;
 }) {
@@ -607,6 +627,17 @@ function Lobby({
             {s.name}
             {s.host && <span className="muted"> · host</span>}
             <span className="muted"> · {leaderName(s.leader)}</span>
+            {onRemove && !s.host && (
+              <button
+                type="button"
+                className="ghost small seat-remove"
+                aria-label={`Remove ${s.name} from the lobby`}
+                title="Remove from the lobby"
+                onClick={() => onRemove(i)}
+              >
+                Remove
+              </button>
+            )}
           </li>
         ))}
         {Array.from({ length: empty }, (_, i) => (

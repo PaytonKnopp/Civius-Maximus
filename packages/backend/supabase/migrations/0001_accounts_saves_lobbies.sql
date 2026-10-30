@@ -9,7 +9,9 @@ create table if not exists public.profiles (
 );
 alter table public.profiles enable row level security;
 drop policy if exists "profiles are readable" on public.profiles;
-create policy "profiles are readable" on public.profiles for select using (true);
+drop policy if exists "signed-in players see profiles" on public.profiles;
+create policy "signed-in players see profiles" on public.profiles
+  for select using (auth.uid() is not null);
 drop policy if exists "players edit their own profile" on public.profiles;
 create policy "players edit their own profile" on public.profiles
   for update using (auth.uid() = id) with check (auth.uid() = id);

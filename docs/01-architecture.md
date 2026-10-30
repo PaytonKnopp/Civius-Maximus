@@ -123,7 +123,11 @@ human and several AI seats, all on your machine.
    resume, replays and crash recovery. The game's **compiled content** (base + mods, about
    100–300 KB compressed) is stored once per game too, since every game is locked to the content
    it started with (the engine refuses to apply actions under different content). Base-game
-   updates and mod updates never break a game in progress.
+   updates and mod updates never break a game in progress. **As built:** a game isn't locked to
+   its content after all, because the game updates often: a save from an earlier version plays
+   on with the current rules as long as every content id it uses still exists (`readSave`),
+   like a Civ save after a patch. Within one session everyone must run the same build (the
+   host checks the protocol and content hash when a friend joins).
 5. **Host handoff:** if the host leaves, the game pauses. The host can resume it later, or hand
    hosting to another seated player, who loads the latest snapshot. This works because the engine
    is deterministic.
@@ -141,12 +145,15 @@ what changed (changed tiles by index, changed top-level fields, new graph histor
 whole view is about 600 KB, mostly tiles. Clients play their own actions ahead on their view
 (`RemoteGame`) so the screen answers at once, except combat, ending the turn and deals; the
 host's next view replaces the guess. The host autosaves the real game; hosting it again later
-gives the same seats back to friends who rejoin with their name. A test in
+gives the same seats back to friends who rejoin. A test in
 `packages/host/src/online.test.ts` checks that every client holds exactly its own view.
 V1 final added chat, map pings, un-end turn, turn timers and an AI taking over an absent seat
-(F20), and accounts, cloud saves and public lobbies (F21, switched on by configuration). Not
-yet: host handoff, and a relay (TURN) server for the few networks where browsers can't connect
-directly.
+(F20), and accounts, cloud saves and public lobbies (F21, switched on by configuration). Before the first game night (October 2026): **seat keys**
+(only the friend who played a seat gets it back; the host can free it for a new device),
+clients that **reconnect by themselves** after a drop, the host's broker line reopening itself,
+dead lines noticed within seconds, and a **relay (TURN)** fallback: PeerJS's free shared relay by
+default, plus your own via `VITE_TURN_*` ([guides/online.md](guides/online.md);
+docs/02-multiplayer.md, "Rejoining"). Not yet: host handoff.
 
 ### Trade-offs of a player-hosted game (honest)
 
@@ -187,8 +194,15 @@ no message limits. Nothing else changes.
   workflow keeps a free project from pausing. Live play still goes browser to browser (WebRTC),
   so Realtime message limits don't apply. Step by step: [guides/supabase.md](guides/supabase.md).
 - **Desktop app (F21):** `packages/desktop` (Tauri 2) wraps the client; the **Desktop
-  installers** workflow builds Windows, macOS and Linux installers on demand
+  installers** workflow builds Windows, macOS and Linux installers on demand and publishes them
+  as a GitHub release at links that never change. Since October 2026 the app opens the **live
+  website** whenever it answers (`client/src/update.ts`), so one install keeps up with every
+  merge to `main`; offline, it plays the copy it was built with
   ([guides/desktop.md](guides/desktop.md)).
+- **Limits (October 2026):** `0002_limits_and_safety.sql` caps saves at 8 MB and 30 per player,
+  stamps times on the server, keeps one public lobby per host with a server-set six-hour
+  expiry, and hides profiles from visitors who aren't signed in. Signed-in players' autosaves
+  go to the cloud each turn (`client/src/cloud/autosave.ts`).
 
 ## Supabase free tier: limits to keep in mind
 
@@ -246,7 +260,12 @@ Realtime messages per month, 5 GB egress, and 2 active projects.
 ## Security
 
 - Supabase row-level security on every table: you can only read games you're seated in, only your
-  own private channel, and only your own profile's private fields.
+  own private channel, and only your own profile's private fields. **As built:** players read and
+  change only their own saves; lobbies are public to read and changed only by their host;
+  triggers enforce sizes, counts and times (`packages/backend/supabase/migrations/`). The anon
+  key is public by design; the `service_role` key never leaves the Supabase dashboard.
+- Online seats are claimed with a secret per seat (`packages/host/src/seatKeys.ts`), never by
+  name alone; the key itself never travels after it's given, only a hash bound to the join code.
 - Mods are data only in v1 (no executable code), so loading a friend's mod is safe (D10).
 - Every action is validated by the engine on the host. Clients are never trusted.
 

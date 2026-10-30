@@ -237,12 +237,16 @@ export class Cloud {
   private async rest(path: string, init: RequestInit = {}, needsAccount = true): Promise<unknown> {
     if (needsAccount && !this.session) throw new Error('Sign in first');
     if (this.session && this.session.expiresAt - 60 < Date.now() / 1000) await this.refresh();
-    const token = this.session?.accessToken ?? this.config.anonKey;
+    // Signed out, the key alone identifies the game. The legacy anon key is a token too; a
+    // newer publishable key (sb_publishable_…) isn't, so it only goes as `apikey`.
+    const token =
+      this.session?.accessToken ??
+      (this.config.anonKey.startsWith('eyJ') ? this.config.anonKey : null);
     const res = await this.fetcher(`${this.config.url}/rest/v1/${path}`, {
       ...init,
       headers: {
         apikey: this.config.anonKey,
-        Authorization: `Bearer ${token}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         'Content-Type': 'application/json',
         ...(init.headers as Record<string, string> | undefined),
       },

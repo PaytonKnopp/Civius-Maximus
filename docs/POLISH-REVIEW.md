@@ -62,7 +62,8 @@ The two things that would lift it furthest, both free:
 
 ## Your next steps
 
-Unchanged from the V1 final review, with one optional addition:
+Superseded by the [setup review](SETUP-REVIEW.md), which has the full setup in order. As
+written at the time:
 
 1. **Play a game online with a friend** (title screen → Play online → Host; send the code).
    Note anything that looks wrong, reads unclearly or feels slow, and send it to me.

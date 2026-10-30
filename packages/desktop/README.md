@@ -1,9 +1,11 @@
 # desktop
 
 The desktop app: Tauri 2 wraps the web game (`packages/client`) in a native window for Windows,
-macOS and Linux. No code is duplicated: `tauri build` builds the client and bundles it.
+macOS and Linux. No code is duplicated: `tauri build` builds the client and bundles it as the
+offline copy. At start, the app opens the live website when it answers (`VITE_LIVE_URL`, set by
+the Desktop installers workflow), so one install keeps up with every merge to `main`.
 
-Step by step (install Rust, make the icons, build, share the installer):
+Publishing, installing, sending to friends and when to rebuild:
 [docs/guides/desktop.md](../../docs/guides/desktop.md).
 
 - `pnpm --filter @cx/desktop icons`: makes every icon size from `icon.png` (once).

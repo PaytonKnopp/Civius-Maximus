@@ -1,9 +1,12 @@
 name: Desktop installers
 
-# Builds the desktop app (packages/desktop, Tauri 2) for Windows, macOS and Linux. Run it from
-# Actions → "Desktop installers" → Run workflow; the installers are attached to the run as
-# artifacts (docs/guides/desktop.md). Set the SUPABASE_URL and SUPABASE_ANON_KEY repository
-# variables first if the app should have accounts and cloud saves built in.
+# Builds the desktop app (packages/desktop, Tauri 2) for Windows, macOS and Linux and publishes
+# the installers as a public GitHub release, at download links that never change:
+#   https://github.com/<owner>/<repo>/releases/latest/download/Civius-Maximus-Windows-setup.exe
+#   (also -Windows.msi, -macOS.dmg, -Linux.AppImage and -Linux.deb)
+# The app opens the live website, so everyone who installed it plays the latest game without
+# installing again; run this only when the app itself changes (docs/guides/desktop.md). Run it
+# from Actions → "Desktop installers" → Run workflow.
 
 on:
   workflow_dispatch:
@@ -11,12 +14,30 @@ on:
 permissions:
   contents: read
 
+env:
+  # The website the app opens: this repository's GitHub Pages site, or the LIVE_URL repository
+  # variable if it's set (a custom domain, say).
+  VITE_LIVE_URL: ${{ vars.LIVE_URL || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
+  # The copy inside the app, for playing offline, has the same accounts and relay settings as
+  # the website (docs/guides/supabase.md, docs/guides/online.md).
+  VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+  VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+  VITE_TURN_URLS: ${{ vars.TURN_URLS }}
+  VITE_TURN_USERNAME: ${{ vars.TURN_USERNAME }}
+  VITE_TURN_CREDENTIAL: ${{ vars.TURN_CREDENTIAL }}
+
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-22.04]
+        include:
+          - os: windows-latest
+            name: Windows
+          - os: macos-latest
+            name: macOS
+          - os: ubuntu-22.04
+            name: Linux
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -26,23 +47,70 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
+      - name: macOS for Apple silicon and Intel
+        if: runner.os == 'macOS'
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
       - name: Linux libraries
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @cx/desktop build
-        env:
-          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+      - name: Build the app
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = macOS ]; then
+            pnpm --filter @cx/desktop run build --target universal-apple-darwin
+          else
+            pnpm --filter @cx/desktop run build
+          fi
+      - name: Name the installers
+        shell: bash
+        run: |
+          mkdir out
+          pick() { find packages/desktop/src-tauri/target -path "*/release/bundle/$1" -type f | head -n 1; }
+          case "$RUNNER_OS" in
+            Windows)
+              cp "$(pick 'nsis/*.exe')" out/Civius-Maximus-Windows-setup.exe
+              cp "$(pick 'msi/*.msi')" out/Civius-Maximus-Windows.msi ;;
+            macOS)
+              cp "$(pick 'dmg/*.dmg')" out/Civius-Maximus-macOS.dmg ;;
+            Linux)
+              cp "$(pick 'appimage/*.AppImage')" out/Civius-Maximus-Linux.AppImage
+              cp "$(pick 'deb/*.deb')" out/Civius-Maximus-Linux.deb ;;
+          esac
+          ls -l out
       - uses: actions/upload-artifact@v4
         with:
-          name: civius-maximus-${{ runner.os }}
-          path: |
-            packages/desktop/src-tauri/target/release/bundle/**/*.msi
-            packages/desktop/src-tauri/target/release/bundle/**/*.exe
-            packages/desktop/src-tauri/target/release/bundle/**/*.dmg
-            packages/desktop/src-tauri/target/release/bundle/**/*.deb
-            packages/desktop/src-tauri/target/release/bundle/**/*.AppImage
-          if-no-files-found: warn
+          name: installers-${{ matrix.name }}
+          path: out/*
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: installers-*
+          merge-multiple: true
+          path: out
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -l out
+          gh release create "desktop-${{ github.run_number }}" out/* \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "Desktop app (build ${{ github.run_number }})" \
+            --latest \
+            --notes "Install once: the app opens the live game, so it updates itself whenever the website does.
+
+          - **Windows:** [Civius-Maximus-Windows-setup.exe](https://github.com/${{ github.repository }}/releases/latest/download/Civius-Maximus-Windows-setup.exe) (or the .msi)
+          - **macOS** (Apple silicon and Intel): [Civius-Maximus-macOS.dmg](https://github.com/${{ github.repository }}/releases/latest/download/Civius-Maximus-macOS.dmg)
+          - **Linux:** [Civius-Maximus-Linux.AppImage](https://github.com/${{ github.repository }}/releases/latest/download/Civius-Maximus-Linux.AppImage) (or the .deb)
+
+          The installers aren't code-signed, so the first launch asks once; the steps are in docs/guides/desktop.md."

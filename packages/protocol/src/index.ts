@@ -1,7 +1,7 @@
 import type { Action, GameEvent, GameState, MapTile, PlayerId, RuleError } from '@cx/engine';
 
 /** Version of the client <-> host message protocol. Clients and hosts must match. */
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 
 /** Someone in an online game's lobby, or (once it started) a human seat. */
 export interface SeatInfo {
@@ -13,6 +13,8 @@ export interface SeatInfo {
   online: boolean;
   /** The leader they picked in the lobby (a `leader` content id), or null for a random one. */
   leader?: string | null;
+  /** The seat is kept for its player (only their key gets it back) until the host frees it. */
+  reserved?: boolean;
 }
 
 /** A line of chat (V1 final F20). */
@@ -34,7 +36,11 @@ export interface Ping {
 
 /** Client → host. */
 export type ClientMessage =
-  | { t: 'hello'; protocol: number; contentHash: string; name: string }
+  /**
+   * `proofs`: the seat keys this device holds, each hashed with the join code (host/seatKeys.ts),
+   * so rejoining gets the same seat back and nobody else can take it.
+   */
+  | { t: 'hello'; protocol: number; contentHash: string; name: string; proofs: string[] }
   /** `id`s count up; each comes back in a `result` (and as a view's `ack` if it was applied). */
   | { t: 'act'; id: number; action: Action }
   | { t: 'chat'; text: string }
@@ -55,7 +61,9 @@ export type HostMessage =
   | { t: 'chat'; line: ChatLine }
   | { t: 'ping'; ping: Ping }
   /** The turn timer: seconds left this turn (null: no timer, or it isn't running). */
-  | { t: 'timer'; seconds: number | null };
+  | { t: 'timer'; seconds: number | null }
+  /** This client's seat key for the game (kept to rejoin it). */
+  | { t: 'key'; gameId: string; key: string };
 
 /**
  * A view of the game as the changes from the previous one sent (or the whole of it). Map tiles

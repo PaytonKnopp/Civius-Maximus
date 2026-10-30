@@ -20,13 +20,15 @@ import {
 } from '@cx/protocol';
 import type { GameHandle, OnlineSession } from './handle';
 import { type AiRunner, LocalGame } from './local';
+import { newSeatKey, seatProof } from './seatKeys';
 import type { HostTransport } from './transport';
 
 /**
  * An online game hosted in this tab (docs/01-architecture.md, "Multiplayer data flow"): the
  * real game runs here, friends join by code, and each of them is only ever sent their own view
  * of it (`playerView`) and the events they may see. Before the game starts, the lobby collects
- * who's playing; after, anyone who drops can rejoin their seat (by name, or any free one).
+ * who's playing; after, each friend's seat is theirs: it has a secret key (seatKeys.ts) and only
+ * that key gets it back after a drop, until the host frees the seat for someone else.
  */
 export class OnlineHost {
   game: LocalGame | null = null;
@@ -53,6 +55,10 @@ export class OnlineHost {
   private sent = new Map<string, GameState>();
   /** The last action each client sent that the game has handled. */
   private acked = new Map<string, number>();
+  /** Each friend's seat key, once they've had one. Seats without a key are free to take. */
+  private keys = new Map<PlayerId, string>();
+  /** The seat keys changed: keep them with the game, to host it again later. */
+  onKeys?: (gameId: string, keys: Record<PlayerId, string>) => void;
   private watchers = new Set<() => void>();
   private stop: (() => void)[] = [];
 
@@ -95,6 +101,7 @@ export class OnlineHost {
       player: p,
       host: p === this.hostPlayer,
       online: p === this.hostPlayer || taken.has(p),
+      reserved: this.keys.has(p),
     }));
   }
 
@@ -121,18 +128,36 @@ export class OnlineHost {
       if (humans[i + 1]) this.peers.set(l.peer, humans[i + 1]!);
     });
     this.lobby = [];
+    for (const [peer, player] of this.peers) if (player) this.giveKey(peer, player);
     this.changed();
     for (const peer of this.peers.keys()) this.sendView(peer, []);
     return this.game!;
   }
 
-  /** Hosts a saved game: the host takes the seat with their name (or the first); friends rejoin. */
-  resume(state: GameState, runner?: AiRunner): LocalGame {
+  /**
+   * Hosts a saved game: the host takes the seat with their name (or the first); friends rejoin.
+   * `keys` are the seat keys from when it was hosted before (seats without one are free).
+   */
+  resume(state: GameState, runner?: AiRunner, keys: Record<PlayerId, string> = {}): LocalGame {
     const humans = humanSeats(state);
     const mine = humans.find((p) => state.players[p]!.name === this.hostName) ?? humans[0]!;
+    for (const p of humans)
+      if (p !== mine && typeof keys[p] === 'string') this.keys.set(p, keys[p]!);
     this.begin(new LocalGame(state, this.ctx, runner), mine);
     this.changed();
     return this.game!;
+  }
+
+  /**
+   * The host frees an away friend's seat: their key no longer counts, and the next person to
+   * join takes it (the same friend on a new device, or someone else).
+   */
+  freeSeat(player: PlayerId) {
+    if (!this.game || player === this.hostPlayer || !this.keys.has(player)) return;
+    if ([...this.peers.values()].includes(player)) return;
+    this.keys.delete(player);
+    this.keysChanged();
+    this.changed();
   }
 
   /** The game as the host's own screen plays it: only the host's seat is played here. */
@@ -147,6 +172,7 @@ export class OnlineHost {
         if (player !== me && !game.state.players[player]?.turnEnded)
           game.act({ type: 'end_turn', player });
       },
+      freeSeat: (player) => this.freeSeat(player),
       chat: () => this.chatLog,
       say: (text) => this.say(this.hostName, me, text),
       ping: (tile) => this.broadcastPing({ from: this.hostName, player: me, tile }),
@@ -189,6 +215,20 @@ export class OnlineHost {
   /** The lobby: the host picks a leader (null: random). */
   pickForHost(leader: string | null) {
     this.hostLeader = leader;
+    this.changed();
+  }
+
+  /**
+   * The lobby: the host sends away the friend at `index` in the lobby (the host is seat 0, so
+   * friends start at 1), e.g. a stranger who found a public game. (Someone who keeps coming back
+   * gets a fresh lobby: the host opens a new one, with a new code.)
+   */
+  removeFromLobby(index: number) {
+    const l = this.game ? undefined : this.lobby[index - 1];
+    if (!l) return;
+    this.lobby = this.lobby.filter((x) => x !== l);
+    this.peers.delete(l.peer);
+    this.refuse(l.peer, 'The host removed you from the lobby.');
     this.changed();
   }
 
@@ -314,10 +354,16 @@ export class OnlineHost {
   }
 
   private join(peer: string, m: Extract<ClientMessage, { t: 'hello' }>) {
+    // An update came out between the two of you opening the game (or the mods differ).
+    const update =
+      'both of you reload the page, then the host picks "Host your online game again" on the home screen (everyone keeps their seat).';
     if (m.protocol !== PROTOCOL_VERSION)
-      return this.refuse(peer, 'The host runs a different version of the game. Reload the page.');
+      return this.refuse(peer, `The host is on a different version of the game: ${update}`);
     if (m.contentHash !== this.ctx.content.hash)
-      return this.refuse(peer, 'The host plays with different game content (version or mods).');
+      return this.refuse(
+        peer,
+        `The host plays with different game content (a newer or older version, or other mods): ${update}`,
+      );
     const name = m.name.trim().slice(0, 24) || 'Friend';
     const game = this.game;
     if (!game) {
@@ -325,14 +371,14 @@ export class OnlineHost {
       this.lobby.push({ name, peer, leader: null });
       this.peers.set(peer, null);
     } else {
-      // Rejoining: their own seat if the name matches, else the first one nobody plays.
-      const taken = new Set(this.peers.values());
-      const free = humanSeats(game.state).filter((p) => p !== this.hostPlayer && !taken.has(p));
-      const seat =
-        free.find((p) => game.state.players[p]!.name === name) ??
-        free.find((p) => game.state.players[p]!.alive);
-      if (!seat) return this.refuse(peer, 'Every seat in this game is taken.');
+      const seat = this.seatFor(peer, name, m.proofs);
+      if (!seat)
+        return this.refuse(
+          peer,
+          'Every seat in this game is taken. Rejoining from another device or browser? Ask the host to free your seat.',
+        );
       this.peers.set(peer, seat);
+      this.giveKey(peer, seat);
       this.sendView(peer, []);
       if (this.deadlineAt !== null)
         this.net.send(peer, {
@@ -343,6 +389,52 @@ export class OnlineHost {
     // Catch up on the chat.
     for (const line of this.chatLog.slice(-30)) this.net.send(peer, { t: 'chat', line });
     this.changed();
+  }
+
+  /**
+   * The seat a client joining a started game gets: the one whose key it proves it holds (the
+   * same player coming back, even on a new connection before the old one has timed out), else
+   * a free one (no key yet, or freed by the host), the one with their name first.
+   */
+  private seatFor(peer: string, name: string, proofs: unknown): PlayerId | undefined {
+    const state = this.game!.state;
+    const friends = humanSeats(state).filter((p) => p !== this.hostPlayer);
+    const held = new Set(
+      Array.isArray(proofs) ? proofs.filter((x) => typeof x === 'string').slice(0, 64) : [],
+    );
+    const mine = friends.find((p) => {
+      const key = this.keys.get(p);
+      return key !== undefined && held.has(seatProof(key, this.code));
+    });
+    if (mine) {
+      for (const [other, p] of this.peers)
+        if (p === mine && other !== peer) {
+          this.peers.delete(other);
+          this.sent.delete(other);
+          this.refuse(other, 'You joined this game again from another window.');
+        }
+      return mine;
+    }
+    const taken = new Set(this.peers.values());
+    const free = friends.filter((p) => !this.keys.has(p) && !taken.has(p));
+    return (
+      free.find((p) => state.players[p]!.name === name) ?? free.find((p) => state.players[p]!.alive)
+    );
+  }
+
+  /** Sends a client its seat's key (a new one if the seat has none). */
+  private giveKey(peer: string, player: PlayerId) {
+    let key = this.keys.get(player);
+    if (!key) {
+      key = newSeatKey();
+      this.keys.set(player, key);
+      this.keysChanged();
+    }
+    this.net.send(peer, { t: 'key', gameId: this.game!.state.gameId, key });
+  }
+
+  private keysChanged() {
+    if (this.game) this.onKeys?.(this.game.state.gameId, Object.fromEntries(this.keys));
   }
 
   private clientAct(peer: string, id: number, input: unknown) {

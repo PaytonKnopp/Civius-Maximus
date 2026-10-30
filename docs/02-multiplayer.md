@@ -107,11 +107,11 @@ defines.
 map type and size; every rule on) or join with a code. The lobby shows the code big, a button
 that copies an invite link (`…#join=CODE`, which opens Join with the code filled in), and who's
 in. The host starts whenever ready: seats nobody took are left out. No accounts, leader picks,
-presets or ready check yet. A friend who drops can rejoin with the same code and name and gets
+presets or ready check yet. A friend who drops can rejoin with the same code (from the same browser) and gets
 their seat back; until then the top of the host's screen says they're away, with **End their
 turn** so the others aren't stuck (D83). Closing the host's tab ends the game for everyone; the
 host's browser keeps an online autosave, and the home screen offers **Host your online game
-again** (with a new code).
+again** (with the same code when possible; see "Rejoining" below).
 
 **Built in V1 final F20:** each player picks a leader in the lobby (or Random), and everyone
 sees the picks next to the names. The host's options add a **turn timer** (off, 60 or 90
@@ -122,6 +122,28 @@ under the mouse for everyone (a gold "!" on the map for a few seconds, and a not
 ending your turn, **Not done yet** takes it back while others are still playing; the timer
 counts down under the Next button and, when it runs out, ends everyone's turn. Not yet: team or
 private chat, time banks, nudges, draft mode, duplicates rules.
+
+### Rejoining
+
+**Built before the first game night (October 2026):** when the game starts, the host gives each
+friend a secret **seat key**, kept in their browser. Only that key gets the seat back: someone
+else with the code (from an invite link that got around, or the public list) can't take a seat
+by typing a friend's name. The key itself never travels back: the client proves it holds one by
+hashing it with this hosting's join code (`packages/host/src/seatKeys.ts`), so a different
+host learns nothing useful.
+
+- **A dropped line reconnects by itself.** If a friend's connection drops (Wi-Fi blip, laptop
+  asleep), their game says "Reconnecting to the host…" and tries for about three minutes; the
+  host gives the seat back and sends the whole view again. Actions the host never answered are
+  dropped rather than sent twice. A second window of the same player takes the seat over from
+  the first.
+- **A new device:** the host's bar shows **Free seat** next to an away friend; after that, the
+  next person to join takes the seat (the friend, with the same name) and gets a new key.
+- **Hosting again:** the host's browser remembers each game's keys and code. **Host your online
+  game again** reuses the code when the matchmaking service allows it, so friends who were still
+  in the game reconnect without doing anything; otherwise there's a new code to send.
+- **Strict networks:** browsers try a direct line first and fall back to PeerJS's free shared
+  relay (TURN). A build can add its own relay (`VITE_TURN_*`, [guides/online.md](guides/online.md)).
 
 - The **join code** is shown big at the top with a copy button. The host can regenerate it or lock
   the lobby.
@@ -157,7 +179,9 @@ private chat, time banks, nudges, draft mode, duplicates rules.
 - **Time bank:** each player has a pool of time that carries over (like a chess clock).
 - **Timeout behavior** (host chooses): auto end turn / AI plays the rest of the turn for that player.
 - **Disconnects:** the game waits a grace period (e.g., 2 minutes) for the player to reconnect, then
-  either pauses or hands the seat to the AI until they're back (host setting).
+  either pauses or hands the seat to the AI until they're back (host setting). Built: clients
+  reconnect by themselves for about three minutes; the host waits (with **End their turn**) or
+  the AI plays the seat, as chosen ("Rejoining", above).
 
 ## Saving and resuming
 
@@ -213,8 +237,19 @@ Simultaneous turns are played live, so notifications are mostly about getting ev
 
 - **Save / Load** in the top bar: named saves kept in the browser (IndexedDB), an autosave at
   the start of every turn, and export/import as a file (D52). A save is the whole game state as
-  JSON; it only loads with the same content (base + mods), since other rules would play
-  differently.
+  JSON.
+- **Saves survive updates** (October 2026): the game updates often, and each update changes the
+  content's hash. Like a Civ save after a patch, a save from an earlier version loads and plays
+  on with the current rules, as long as everything it refers to still exists
+  (`missingContent` in `packages/host/src/saves.ts` checks every content id in it). A save that
+  needs content this version lacks (a mod that's off, a unit removed since) is refused and says
+  what's missing.
+- **Cloud autosave** (October 2026): signed in, the autosave at the start of every turn also goes
+  to the player's account (single player, hotseat, and the online game they host), one upload
+  at a time with only the newest waiting. **Continue** and **Host your online game again** take
+  the newer of the browser's and the cloud's, so a game goes on from any device (the website and
+  the desktop app keep separate browser storage; the cloud joins them). The database keeps at
+  most 30 saves of up to 8 MB per player (`0002_limits_and_safety.sql`).
 
 ## End of game
 

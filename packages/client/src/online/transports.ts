@@ -33,9 +33,49 @@ export function joinHost(net: Network, code: string): Promise<ClientLine> {
 
 const peerId = (code: string) => `civius-maximus-${code}`;
 
+/**
+ * How browsers find a path to each other (docs/guides/online.md). PeerJS's defaults try a
+ * direct line first (Google's STUN), then PeerJS's free shared relay (TURN) for networks that
+ * block direct lines. A build can add its own relay, tried first: `VITE_TURN_URLS` (comma
+ * separated), `VITE_TURN_USERNAME` and `VITE_TURN_CREDENTIAL`.
+ */
+export function iceServers(
+  env: Record<string, string | undefined> = import.meta.env,
+): RTCIceServer[] {
+  const defaults: RTCIceServer[] = [
+    { urls: 'stun:stun.l.google.com:19302' },
+    {
+      urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'],
+      username: 'peerjs',
+      credential: 'peerjsp',
+    },
+  ];
+  const urls = (env.VITE_TURN_URLS ?? '').split(/[\s,]+/).filter((u) => /^turns?:/.test(u));
+  if (urls.length === 0) return defaults;
+  return [
+    {
+      urls,
+      ...(env.VITE_TURN_USERNAME ? { username: env.VITE_TURN_USERNAME } : {}),
+      ...(env.VITE_TURN_CREDENTIAL ? { credential: env.VITE_TURN_CREDENTIAL } : {}),
+    },
+    ...defaults,
+  ];
+}
+
+/**
+ * PeerJS loads when it's first needed. If the site was updated since this page opened, the old
+ * file is gone: say so instead of failing strangely.
+ */
+const loadPeer = () =>
+  import('peerjs').catch(() => {
+    throw new Error('A new version of the game is out. Reload the page, then try again.');
+  });
+
+const peerOptions = () => ({ debug: 0 as const, config: { iceServers: iceServers() } });
+
 async function peerHost(code: string): Promise<HostLine> {
-  const { Peer } = await import('peerjs');
-  const peer = new Peer(peerId(code), { debug: 0 });
+  const { Peer } = await loadPeer();
+  const peer = new Peer(peerId(code), peerOptions());
   const lines = new Map<string, import('peerjs').DataConnection>();
   const messages = new Set<(from: string, m: ClientMessage) => void>();
   const peers = new Set<(peer: string, connected: boolean) => void>();
@@ -43,28 +83,44 @@ async function peerHost(code: string): Promise<HostLine> {
     conn.on('open', () => {
       lines.set(conn.peer, conn);
       peers.forEach((h) => h(conn.peer, true));
+      watchLine(conn, gone);
     });
     conn.on('data', (data) => {
       const m = parse<ClientMessage>(data);
       if (m) messages.forEach((h) => h(conn.peer, m));
     });
     const gone = () => {
-      if (lines.delete(conn.peer)) peers.forEach((h) => h(conn.peer, false));
+      if (lines.get(conn.peer) !== conn) return;
+      lines.delete(conn.peer);
+      peers.forEach((h) => h(conn.peer, false));
+      conn.close();
     };
     conn.on('close', gone);
     conn.on('error', gone);
   });
+  let opened = false;
   await new Promise<void>((resolve, reject) => {
-    peer.on('open', () => resolve());
-    peer.on('error', (e) =>
+    peer.on('open', () => {
+      opened = true;
+      resolve();
+    });
+    peer.on('error', (e) => {
+      // Later errors (a friend's line failing, the broker blinking) don't end the game.
+      if (opened) return;
+      peer.destroy();
       reject(
         new Error(
           e.type === 'unavailable-id'
             ? 'That code is taken. Try again.'
             : `Couldn't reach the matchmaking service (${e.type}).`,
         ),
-      ),
-    );
+      );
+    });
+  });
+  // The matchmaking line can drop while friends' own lines stay up: reopen it so friends who
+  // drop can still get back in.
+  peer.on('disconnected', () => {
+    if (!peer.destroyed) setTimeout(() => !peer.destroyed && peer.reconnect(), 1000);
   });
   return {
     send: (to, m) => lines.get(to)?.send(JSON.stringify(m)),
@@ -77,10 +133,11 @@ async function peerHost(code: string): Promise<HostLine> {
 }
 
 async function peerClient(code: string): Promise<ClientLine> {
-  const { Peer } = await import('peerjs');
-  const peer = new Peer({ debug: 0 });
+  const { Peer } = await loadPeer();
+  const peer = new Peer(peerOptions());
   const messages = new Set<(m: HostMessage) => void>();
   const closes = new Set<() => void>();
+  let timer: ReturnType<typeof setTimeout> | undefined;
   const conn = await new Promise<import('peerjs').DataConnection>((resolve, reject) => {
     peer.on('error', (e) =>
       reject(
@@ -95,19 +152,44 @@ async function peerClient(code: string): Promise<ClientLine> {
       const c = peer.connect(peerId(code), { reliable: true });
       c.on('open', () => resolve(c));
     });
-    setTimeout(() => reject(new Error('The host didn’t answer. Check the code.')), 20000);
+    timer = setTimeout(() => reject(new Error('The host didn’t answer. Check the code.')), 20000);
+  }).catch((e: Error) => {
+    // A failed try leaves nothing open behind it.
+    peer.destroy();
+    throw e;
   });
+  clearTimeout(timer);
   conn.on('data', (data) => {
     const m = parse<HostMessage>(data);
     if (m) messages.forEach((h) => h(m));
   });
-  conn.on('close', () => closes.forEach((h) => h()));
+  let closed = false;
+  const gone = () => {
+    if (closed) return;
+    closed = true;
+    closes.forEach((h) => h());
+    peer.destroy();
+  };
+  conn.on('close', gone);
+  conn.on('error', gone);
+  watchLine(conn, gone);
   return {
     send: (m) => conn.send(JSON.stringify(m)),
     onMessage: (h) => (messages.add(h), () => messages.delete(h)),
     onClose: (h) => (closes.add(h), () => closes.delete(h)),
     close: () => peer.destroy(),
   };
+}
+
+/**
+ * A line whose other end vanished (a closed laptop, a lost network) may never say "close"; the
+ * browser's own connection state does, within seconds.
+ */
+function watchLine(conn: import('peerjs').DataConnection, gone: () => void) {
+  const pc = conn.peerConnection as RTCPeerConnection | undefined;
+  pc?.addEventListener('connectionstatechange', () => {
+    if (pc.connectionState === 'failed' || pc.connectionState === 'closed') gone();
+  });
 }
 
 function parse<T>(data: unknown): T | undefined {

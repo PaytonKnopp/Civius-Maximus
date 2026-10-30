@@ -2722,6 +2722,9 @@ kbd {
   padding: 6px 0;
   border-bottom: 1px solid color-mix(in srgb, var(--panel-edge) 60%, transparent);
 }
+.lobby .seat-remove {
+  margin-left: auto;
+}
 .lobby .dot {
   width: 8px;
   height: 8px;

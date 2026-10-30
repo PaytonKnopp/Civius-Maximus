@@ -99,7 +99,9 @@ await host.evaluate(() => window.cx.game.act({ type: 'end_turn', player: 'p1' })
 await waitTurn(host, 3);
 console.log('host turn after the friend left:', await turn(host));
 
-// Phone size: the lobby dialog fits.
+// Phone size: the lobby dialog fits. (The host's game is done: closing it leaves the software
+// renderer to the phone page, which otherwise can take longer than a click waits.)
+await host.close();
 const phone = await browser.newPage({ viewport: { width: 400, height: 820 }, isMobile: true });
 watch(phone, 'phone');
 await phone.goto(base, { waitUntil: 'networkidle' });
