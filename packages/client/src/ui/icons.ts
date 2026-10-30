@@ -840,6 +840,13 @@ export const ICONS: Record<string, IconDef> = {
     bg: C.ui,
     glyph: [s(ring(10.6, 10.6, 5.2, 3.6), true), s(bar(14.2, 14.2, 18.8, 18.8, 2.2))],
   },
+  pedia: {
+    bg: C.ui,
+    glyph: [
+      s('M4 6.6c2.6-1 5.2-.8 7.4.6v11.4c-2.2-1.3-4.8-1.5-7.4-.6Z'),
+      s('M20 6.6c-2.6-1-5.2-.8-7.4.6v11.4c2.2-1.3 4.8-1.5 7.4-.6Z'),
+    ],
+  },
   help: {
     bg: C.ui,
     glyph: [

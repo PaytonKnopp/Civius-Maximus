@@ -377,6 +377,8 @@ export const RulesDef = z.strictObject({
     perEra: z.int().min(0),
     /** Per enemy unit destroyed. */
     perKill: z.int().min(0),
+    /** Every this many turns the history keeps a map of who owns what, for the replay. */
+    replayEvery: z.int().min(1).default(5),
   }),
   /** Diplomacy (docs/04-advanced-systems.md, "Diplomacy & deals"). */
   diplomacy: z.strictObject({

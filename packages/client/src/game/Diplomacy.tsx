@@ -450,10 +450,21 @@ interface GameOverProps {
   /** The score over the game (the recap). */
   chart?: ReactNode;
   onGraphs?: () => void;
+  /** Opens the replay of the game. */
+  onReplay?: () => void;
   onClose: () => void;
 }
 
-export function GameOver({ won, title, text, scores, chart, onGraphs, onClose }: GameOverProps) {
+export function GameOver({
+  won,
+  title,
+  text,
+  scores,
+  chart,
+  onGraphs,
+  onReplay,
+  onClose,
+}: GameOverProps) {
   return (
     <div className="modal-backdrop">
       <div className={`modal game-over ${won ? 'won' : 'lost'}`} role="alertdialog">
@@ -476,6 +487,11 @@ export function GameOver({ won, title, text, scores, chart, onGraphs, onClose }:
           {onGraphs && (
             <button type="button" onClick={onGraphs}>
               All graphs
+            </button>
+          )}
+          {onReplay && (
+            <button type="button" onClick={onReplay}>
+              Watch the replay
             </button>
           )}
           <button type="button" className="primary" onClick={onClose}>

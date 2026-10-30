@@ -27,7 +27,7 @@ happened and what needs you".
 | **Reports** | Cities overview, units list, yields over time, demographics, score |
 | **Turn summary** | What changed since your last turn (what the other players did that you can see) |
 | **Victory progress** | Each victory type, with every player's progress (based on what you can see) |
-| **Replay** | Timeline scrubber, map playback, historic moments |
+| **Replay** | Timeline scrubber, map playback, historic moments (built in V1 final F19: from the game-over dialog and the Hall of Fame; the map is drawn from a snapshot of who owned what every 5 turns, kept in the game's history) |
 | **Graphs** | Civ VI-style end-of-game (and mid-game) graphs, with more options (below) |
 | **Game setup** | Basic and Advanced setup tabs with every option (see [02-multiplayer.md](02-multiplayer.md)) |
 
@@ -104,6 +104,17 @@ Help screen (?) lists every shortcut and turns hints back on.
 - **Placement previews:** hover a district or wonder spot to see adjacency and what you'd lose
   (e.g., "removes Woods: −1 ⚙️").
 - **Civilopedia:** an in-game encyclopedia generated from content, so mods show up automatically.
+  *Built (V1 final F19):* F1, the 📖 button or the home screen. Sixteen categories (how to play,
+  civilizations and leaders, units, buildings, districts, wonders, improvements, techs, civics,
+  governments and policies, religion, great people, city-states, the map, promotions, and
+  governors, eras and the world), a search across titles and text, and links between articles
+  (what a tech unlocks, what a unit upgrades to, a leader's civ...). "How to play" has 22 short
+  articles on the systems, with numbers from the rules.
+- **Advisors** (V1 final F19): each turn, tips from the military, economic, culture and foreign
+  advisors about what needs attention (enemies near a settlement, losing gold, a pile of gold,
+  free trade routes, unhappiness, starvation, room to expand, falling loyalty, a hostile
+  neighbor, envoys to send), one at a time in a card under the research trackers. "Hide this
+  turn", or turn them off (and back on from Help).
 
 ## End Turn (works like Civ)
 
@@ -129,6 +140,9 @@ Available any time for what you know about, and in full for everyone at the end 
 - **Summary cards** at the end: biggest empire, most wonders, deadliest war, fastest tech, longest
   golden age, and each player's best moment.
 - Graphs export as images, and stay in the hall of fame with the replay.
+- **Hall of Fame** (V1 final F19, home screen): every finished game in this browser, newest
+  first: date, leader, result and how, turn, score, map and difficulty, with a replay for the
+  eight newest (kept in local storage; the oldest replays go first when it fills).
 
 **Built so far (V1 part 10):** the game keeps every civ's numbers each turn (score, science,
 culture and tourism per turn, military, citizens, settlements). The Graphs screen (H, or from

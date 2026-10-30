@@ -88,7 +88,11 @@ import { ReligionScreen } from './ReligionScreen';
 import { CityStatesScreen } from './CityStatesScreen';
 import { VictoriesScreen } from './VictoriesScreen';
 import { GraphsScreen, HistoryChart } from './GraphsScreen';
+import { CivilopediaScreen } from './CivilopediaScreen';
 import { HelpScreen } from './HelpScreen';
+import { recordGame, replayOf } from './hallOfFame';
+import { ReplayView } from './ReplayView';
+import { adviceFor, advisorsOn, setAdvisors } from './advisors';
 import { HINTS, hintFor, hintsOn, markSeen, seenHints, setHints } from './hints';
 import { type Lens, LENSES, lensFor } from './lenses';
 import { LeaderIntro, LeaderSpeech, type SpeechLine } from './LeaderSpeech';
@@ -709,6 +713,8 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     | { kind: 'climate' }
     | { kind: 'graphs' }
     | { kind: 'help' }
+    | { kind: 'pedia'; article?: string }
+    | { kind: 'replay' }
     | null
   >(null);
   // First-game hints (hints.ts): kept in this browser, re-read when the help screen closes.
@@ -729,6 +735,11 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   const [nuking, setNuking] = useState<string | null>(null);
   const [nukeAt, setNukeAt] = useState<number | null>(null);
   const [gameOverSeen, setGameOverSeen] = useState(false);
+  // Finished games go into this browser's Hall of Fame (once each).
+  useEffect(() => {
+    if (state.status !== 'ended') return;
+    recordGame(ctx, state, viewer, `${state.settings.seed}:${state.turn}:${viewer}`);
+  }, [state.status]);
   // Leader screens: your leader's intro at the start, rivals speaking at war, peace and defeat.
   const [introSeen, setIntroSeen] = useState<Set<PlayerId>>(() => new Set());
   const [speech, setSpeech] = useState<{ player: PlayerId; line: SpeechLine } | null>(null);
@@ -833,6 +844,19 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     if (hintNow && state.turn > hintNow.turn) setHintNow(null);
   }, [hintNow, state.turn]);
   const hint = hintsFree && hintNow ? HINTS.find((h) => h.id === hintNow.id) : undefined;
+  // Advisors (advisors.ts): a few tips each turn, one at a time, out of the way of hints.
+  const [advisorsEnabled, setAdvisorsEnabled] = useState(advisorsOn);
+  const [tipsHiddenOn, setTipsHiddenOn] = useState<number | null>(null);
+  const [tipAt, setTipAt] = useState(0);
+  const tips = useMemo(
+    () => (advisorsEnabled && state.status === 'playing' ? adviceFor(ctx, state, viewer) : []),
+    [advisorsEnabled, ctx, state, viewer],
+  );
+  useEffect(() => setTipAt(0), [state.turn, viewer]);
+  const tip =
+    !hint && hintsFree && tipsHiddenOn !== state.turn && tips.length > 0
+      ? tips[tipAt % tips.length]
+      : undefined;
   const captured = Object.values(state.settlements).find(
     (x) => x.owner === viewer && x.captureChoice,
   );
@@ -1458,7 +1482,10 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       else if (e.key === 'x' && disastersOn(state)) setOverlay({ kind: 'climate' });
       else if (e.key === 'h') setOverlay({ kind: 'graphs' });
       else if (e.key === '?') setOverlay({ kind: 'help' });
-      else if (e.key === 'l') setLens((l) => LENSES[(LENSES.indexOf(l) + 1) % LENSES.length]!);
+      else if (e.key === 'F1') {
+        e.preventDefault();
+        setOverlay({ kind: 'pedia' });
+      } else if (e.key === 'l') setLens((l) => LENSES[(LENSES.indexOf(l) + 1) % LENSES.length]!);
       else if (e.key === 'Escape') {
         if (placing) setPlacing(null);
         else if (nuking) {
@@ -1643,6 +1670,11 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               onClick={() => setOverlay({ kind: 'graphs' })}
             />
             <ScreenButton
+              icon="pedia"
+              label="Civilopedia (F1)"
+              onClick={() => setOverlay({ kind: 'pedia' })}
+            />
+            <ScreenButton
               icon="help"
               label="Help and shortcuts (?)"
               onClick={() => setOverlay({ kind: 'help' })}
@@ -1809,6 +1841,34 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         })}
       </div>
 
+      {tip && (
+        <aside className="advisor-card" aria-label={`${tip.advisor} advisor`}>
+          <h4>
+            <Icon name={tip.icon} size={20} /> {tip.advisor} advisor
+          </h4>
+          <p>{tip.text}</p>
+          <div className="hint-actions">
+            {tips.length > 1 && (
+              <button type="button" className="small" onClick={() => setTipAt((i) => i + 1)}>
+                Next tip ({(tipAt % tips.length) + 1}/{tips.length})
+              </button>
+            )}
+            <button type="button" className="small" onClick={() => setTipsHiddenOn(state.turn)}>
+              Hide this turn
+            </button>
+            <button
+              type="button"
+              className="ghost small"
+              onClick={() => {
+                setAdvisors(false);
+                setAdvisorsEnabled(false);
+              }}
+            >
+              No advisors
+            </button>
+          </div>
+        </aside>
+      )}
       {hint && (
         <aside className={`hint-card ${selection ? 'behind-panel' : ''}`} aria-label="Hint">
           <p>{hint.text(ctx)}</p>
@@ -2068,12 +2128,43 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           onClose={() => setOverlay(null)}
         />
       )}
+      {overlay?.kind === 'replay' && (
+        <div className="screen" role="dialog" aria-label="Replay">
+          <header className="screen-head">
+            <h2>
+              <Icon name="trophy" size={30} />
+              Replay
+            </h2>
+            <p className="screen-sub">The world, turn by turn. Kept in the Hall of Fame.</p>
+            <button
+              type="button"
+              className="close"
+              onClick={() => setOverlay(null)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </header>
+          <div className="fame-body">
+            <ReplayView replay={replayOf(ctx, state)} />
+          </div>
+        </div>
+      )}
+      {overlay?.kind === 'pedia' && (
+        <CivilopediaScreen
+          content={content}
+          initial={overlay.article}
+          onClose={() => setOverlay(null)}
+        />
+      )}
       {overlay?.kind === 'help' && (
         <HelpScreen
+          onPedia={() => setOverlay({ kind: 'pedia' })}
           onClose={() => {
             setOverlay(null);
             setHintsEnabled(hintsOn());
             setHintsSeen(seenHints());
+            setAdvisorsEnabled(advisorsOn());
           }}
         />
       )}
@@ -2177,6 +2268,10 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           onGraphs={() => {
             setGameOverSeen(true);
             setOverlay({ kind: 'graphs' });
+          }}
+          onReplay={() => {
+            setGameOverSeen(true);
+            setOverlay({ kind: 'replay' });
           }}
           onClose={() => setGameOverSeen(true)}
         />

@@ -888,7 +888,7 @@
     "type": "wonder",
     "id": "wonder_machu_picchu",
     "name": "Machu Picchu",
-    "description": "+4 gold here. Commercial Hubs +1 gold and Industrial Zones +1 production for each neighboring mountain. Built next to a mountain.",
+    "description": "+4 gold here. Commercial Hubs +1 gold and Industrial Zones +1 production for each neighboring mountain. Built on hills next to a mountain.",
     "icon": "MP",
     "cost": 340,
     "era": "era_medieval",

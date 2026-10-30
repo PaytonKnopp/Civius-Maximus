@@ -131,5 +131,53 @@ export function historyTurn(draft: Draft<GameState>, ctx: EngineContext) {
       settlements: mine.length,
     };
   }
-  draft.history.push({ turn: draft.turn, stats });
+  const owners =
+    draft.turn % ctx.content.rules.score.replayEvery === 0 ? encodeOwners(state) : undefined;
+  draft.history.push({ turn: draft.turn, stats, ...(owners ? { owners } : {}) });
+}
+
+/** The map's owners as a replay frame (see `HistoryEntry.owners`). */
+export function encodeOwners(state: GameState): string {
+  const index = new Map(state.playerOrder.map((p, i) => [p, i]));
+  let out = '';
+  let run = '';
+  let n = 0;
+  const flush = () => {
+    if (n > 0) out += (n > 1 ? String(n) : '') + run;
+  };
+  for (let tile = 0; tile < state.map.tiles.length; tile++) {
+    const t = state.map.tiles[tile]!;
+    const i = t.owner === null ? undefined : index.get(t.owner);
+    const isCenter = t.settlement !== null && state.settlements[t.settlement]?.tile === tile;
+    const c =
+      t.owner === null
+        ? '.'
+        : i === undefined
+          ? isCenter
+            ? '#'
+            : '+'
+          : String.fromCharCode((isCenter ? 65 : 97) + (i % 26));
+    if (c === run) n++;
+    else {
+      flush();
+      run = c;
+      n = 1;
+    }
+  }
+  flush();
+  return out;
+}
+
+/** A replay frame back to one character per tile (see `encodeOwners`). */
+export function decodeOwners(text: string): string {
+  let out = '';
+  let count = '';
+  for (const ch of text) {
+    if (ch >= '0' && ch <= '9') count += ch;
+    else {
+      out += ch.repeat(count ? Number(count) : 1);
+      count = '';
+    }
+  }
+  return out;
 }
