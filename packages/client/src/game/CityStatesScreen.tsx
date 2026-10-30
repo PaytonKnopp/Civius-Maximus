@@ -149,7 +149,13 @@ export function CityStateCard({
           <div className="row-inline">
             <button type="button" disabled={!!why} title={why} onClick={() => act(send)}>
               Send envoy ({mine}){' '}
-              {me.envoys > 0 ? '· free' : `· 🤝 ${ctx.content.rules.cityStates.envoyInfluence}`}
+              {me.envoys > 0 ? (
+                '· free'
+              ) : (
+                <>
+                  · <Icon name="influence" /> {ctx.content.rules.cityStates.envoyInfluence}
+                </>
+              )}
             </button>
             {cs.suzerain === viewer && (
               <button
@@ -236,7 +242,7 @@ function Camps({ ctx, state, viewer, act }: Omit<Props, 'onClose'>) {
                 title={why?.message ?? 'Spend influence toward befriending it this turn'}
                 onClick={() => act({ type: 'befriend_camp', player: viewer, camp: c.id })}
               >
-                Befriend · 🤝 {rules.befriendInfluence}
+                Befriend · <Icon name="influence" /> {rules.befriendInfluence}
               </button>
             </li>
           );

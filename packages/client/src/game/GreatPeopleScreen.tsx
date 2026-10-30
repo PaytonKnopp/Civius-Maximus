@@ -100,7 +100,7 @@ export function GreatPeopleScreen({ ctx, state, viewer, act, onClose }: Props) {
                       title={why('gold')}
                       onClick={() => act(recruit('gold'))}
                     >
-                      Recruit for 💰 {whole(recruitCost(ctx, state, viewer, cls))}
+                      Recruit for <Icon name="gold" /> {whole(recruitCost(ctx, state, viewer, cls))}
                     </button>
                     {canRecruitWith(ctx, cls, 'faith') && (
                       <button
@@ -109,7 +109,7 @@ export function GreatPeopleScreen({ ctx, state, viewer, act, onClose }: Props) {
                         title={why('faith')}
                         onClick={() => act(recruit('faith'))}
                       >
-                        🙏 {whole(recruitCost(ctx, state, viewer, cls, 'faith'))}
+                        <Icon name="faith" /> {whole(recruitCost(ctx, state, viewer, cls, 'faith'))}
                       </button>
                     )}
                   </div>

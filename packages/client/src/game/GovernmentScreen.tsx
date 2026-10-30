@@ -14,7 +14,7 @@ import {
 } from '@cx/engine';
 import { useEffect, useState } from 'react';
 import { whole } from './model';
-import { Icon } from '../ui/Icon';
+import { Icon, Rich } from '../ui/Icon';
 
 const SLOT_NAMES: Record<SlotKind, string> = {
   military: 'Military',
@@ -92,9 +92,13 @@ export function GovernmentScreen({ ctx, state, viewer, act, onClose }: Props) {
           Government
         </h2>
         <p className="screen-sub">
-          {p.policyWindow
-            ? 'You just finished a civic: changing cards and government is free this turn.'
-            : `Changing a card costs ${goldIcon} ${content.rules.progress.policySwapCost}; a new government costs ${goldIcon} ${content.rules.progress.governmentChangeCost}. Both are free the turn you finish a civic.`}
+          <Rich
+            text={
+              p.policyWindow
+                ? 'You just finished a civic: changing cards and government is free this turn.'
+                : `Changing a card costs ${goldIcon} ${content.rules.progress.policySwapCost}; a new government costs ${goldIcon} ${content.rules.progress.governmentChangeCost}. Both are free the turn you finish a civic.`
+            }
+          />
         </p>
         <button type="button" className="close" onClick={onClose} aria-label="Close">
           ✕
@@ -137,7 +141,9 @@ export function GovernmentScreen({ ctx, state, viewer, act, onClose }: Props) {
                         act({ type: 'set_government', player: viewer, government: g.id })
                       }
                     >
-                      Adopt{govCost > 0 ? ` · ${goldIcon} ${whole(govCost)}` : ' · free'}
+                      <Rich
+                        text={`Adopt${govCost > 0 ? ` · ${goldIcon} ${whole(govCost)}` : ' · free'}`}
+                      />
                     </button>
                   ) : (
                     <span className="muted small-text">
@@ -182,7 +188,7 @@ export function GovernmentScreen({ ctx, state, viewer, act, onClose }: Props) {
               disabled={!changed || !!problem || p.gold < cost}
               onClick={() => act({ type: 'set_policies', player: viewer, policies: draft })}
             >
-              Confirm{cost > 0 ? ` · ${goldIcon} ${whole(cost)}` : ''}
+              <Rich text={`Confirm${cost > 0 ? ` · ${goldIcon} ${whole(cost)}` : ''}`} />
             </button>
           </div>
           <h4>Available cards</h4>

@@ -1017,3 +1017,244 @@ input[type='range'] {
     letter-spacing: 0.06em;
   }
 }
+
+/* --- Full screens (polish P5) -------------------------------------------------------------------
+   One frame for every screen: a deep backdrop with a warm light from above and a vignette, a
+   banner header, sections under engraved titles, tables as rows of cards, and meters for
+   progress. */
+
+.screen {
+  background:
+    var(--grain),
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(240, 212, 140, 0.1), transparent 60%),
+    radial-gradient(ellipse at 50% 120%, rgba(0, 0, 0, 0.55), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97'%3E%3Cpath d='M28 0l28 16v32L28 64 0 48V16zM28 64v33M0 16L-28 0M56 16L84 0' fill='none' stroke='%23d2ac5c' stroke-opacity='.045'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #111e28, #070c11);
+  animation: fade-in 180ms var(--ease);
+}
+
+.screen-head {
+  min-height: 64px;
+  background:
+    var(--grain), linear-gradient(180deg, rgba(255, 228, 160, 0.09), transparent 50%),
+    linear-gradient(180deg, #1a2733, #0c151c);
+  border-bottom: 1px solid rgba(210, 172, 92, 0.75);
+}
+
+.screen-head h2 {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--gold-1);
+}
+
+.screen-sub {
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.screen h3,
+.screen h4 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 12px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.screen h3::after,
+.screen h4::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(210, 172, 92, 0.5), transparent);
+}
+
+/* Tables become rows of cards. */
+.screen table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+}
+
+.screen thead th {
+  padding: 4px 14px;
+  border: none;
+  background: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+}
+
+.screen tbody td {
+  padding: 10px 14px;
+  border: none;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  background: linear-gradient(180deg, rgba(255, 246, 222, 0.05), rgba(255, 246, 222, 0.025));
+  font-family: var(--font-body);
+  vertical-align: middle;
+}
+
+.screen tbody td:first-child {
+  border-left: 1px solid var(--line);
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.screen tbody td:last-child {
+  border-right: 1px solid var(--line);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.screen tbody tr:hover td {
+  background: linear-gradient(180deg, rgba(255, 236, 190, 0.09), rgba(255, 236, 190, 0.04));
+}
+
+.screen tbody tr.mine td {
+  background: linear-gradient(180deg, rgba(240, 212, 140, 0.13), rgba(240, 212, 140, 0.05));
+  border-top-color: rgba(240, 212, 140, 0.35);
+}
+
+.screen tbody tr.mine td:first-child {
+  box-shadow: inset 3px 0 0 var(--gold);
+}
+
+.civ-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.civ-cell > span:last-child {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.civ-cell small {
+  font-size: 12px;
+}
+
+.score-cell {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gold-1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Meters */
+.meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+}
+
+.meter-bar {
+  position: relative;
+  flex: 1;
+  min-width: 60px;
+  max-width: 140px;
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 244, 214, 0.06);
+  overflow: hidden;
+}
+
+.meter-bar > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--pct);
+  border-radius: 4px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 80%, #fff), var(--tone));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--tone) 60%, transparent);
+}
+
+.meter-text {
+  font-weight: 700;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.meter.full .meter-text {
+  color: var(--gold-1);
+}
+
+/* Cards in screens: beliefs, policies, great people... */
+.belief-card,
+.screen .policy-card,
+.screen .gp-card {
+  border-radius: var(--radius);
+  background:
+    var(--grain), linear-gradient(180deg, rgba(255, 246, 222, 0.06), rgba(255, 246, 222, 0.02));
+  border: 1px solid var(--line-2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 190, 0.06),
+    0 6px 16px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 140ms var(--ease),
+    border-color 140ms var(--ease),
+    box-shadow 140ms var(--ease);
+}
+
+.belief-card:hover,
+.screen .policy-card:hover,
+.screen .gp-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(210, 172, 92, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 190, 0.1),
+    0 10px 22px rgba(0, 0, 0, 0.45);
+}
+
+.belief-card.chosen {
+  border-color: rgba(95, 208, 192, 0.55);
+  background:
+    var(--grain), linear-gradient(180deg, rgba(95, 208, 192, 0.12), rgba(95, 208, 192, 0.03));
+}
+
+.belief-kind {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8fd8cc;
+}
+
+.belief-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.belief-grid .belief-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+}
+
+.religion-body,
+.victory-body {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.victory-notes {
+  margin-top: 18px;
+  line-height: 1.6;
+}
