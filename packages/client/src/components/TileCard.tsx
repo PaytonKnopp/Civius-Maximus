@@ -1,12 +1,6 @@
 import { type CompiledContent, resolveText } from '@cx/content';
-import {
-  computeTileYields,
-  explainYields,
-  formatFixed,
-  isOnRiver,
-  type MapState,
-  neighbors,
-} from '@cx/engine';
+import { computeTileYields, explainYields, isOnRiver, type MapState, neighbors } from '@cx/engine';
+import { fmt } from '../game/model';
 import { Icon, Rich } from '../ui/Icon';
 
 /** Tile inspector: what's on a tile and its yields, with the "why?" breakdown. */
@@ -146,7 +140,7 @@ export function TileCard({
       <p className="hint total">
         {Object.entries(breakdown.total).map(([id, v]) => (
           <span key={id} className="total-yield">
-            <Icon name={id} size={18} /> {formatFixed(v)}
+            <Icon name={id} size={18} /> {fmt(v)}
           </span>
         ))}
       </p>

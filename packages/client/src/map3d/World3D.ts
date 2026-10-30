@@ -834,7 +834,7 @@ export class World3D implements MapRenderer {
     ctx.fillStyle = '#121a22';
     ctx.fill();
     ctx.fillStyle = '#eadfc4';
-    ctx.font = '600 44px "IBM Plex Mono", monospace';
+    ctx.font = '600 44px "Source Sans 3 Variable", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(name.slice(0, 2), size / 2, size / 2 + 2);

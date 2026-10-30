@@ -51,7 +51,22 @@ turn and era, the ☰ game menu (new game, save/load, Map Lab, title screen) and
 switch. Under it, research and civic trackers with a progress ring; the civs' turn chips sit top
 right. The next-action button sits over a clickable minimap (terrain, borders, fog, settlements,
 your units) with the lens picker on its frame. Every panel and full screen shares one frame:
-sea-blue lacquer, a brass edge and corner flourishes; titles are gold Cinzel.
+sea-blue lacquer, a brass edge and corner flourishes; titles are gold Cinzel (refined in
+polish P1, below).
+
+**The design system (polish P1):** `packages/client/src/theme.css` holds the tokens every
+screen uses. Type is **Cinzel** for titles and **Source Sans 3** for text, both bundled with the
+game (no font CDN, so the desktop app and offline play look the same); numbers use tabular
+figures and show at most one decimal (12.4), whole from 100 up. Panels are dark lacquer with a
+fine grain, a gold hairline and small brass corner ticks over a blurred map; buttons come as
+default (dark, gold edge on hover), primary (gold), ghost and danger, with hover, press and focus
+states. Tooltips are the game's own card (title, key, then the "why?" lines with yield icons)
+for anything with a hint. The screen buttons in the top bar are brass glyphs in dark wells,
+grouped (empire: research, civics, government, governors; culture: great people, great works,
+religion; world: climate, World Congress, espionage, city-states; standing: victories, graphs;
+help: Civilopedia, help), lighting up in the screen's color on hover; graphics quality moved
+into the ☰ menu. The unit card has an action bar of tiles (icon, name, key) with the cost on
+upgrades, pillage and plunder.
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top

@@ -56,7 +56,7 @@ dim, cold slate.
 | **Lighting & sky** | One low golden key light (late afternoon), cool sky ambient, film-style (ACES) tone mapping, a split-tone grade and vignette, drifting cloud shadows, a dusk sky at the horizon. No day/night cycle (keeps it cheap and readable). |
 | **Leaders** | Painted 2D portraits (bust and full-figure for diplomacy) in one consistent style, with gentle parallax/breathing motion. No 3D animated leaders (too heavy, too costly to make 30+). |
 | **Icons** | One unified painted icon set: yields, resources, units, buildings, promotions, policies. Big, bold, instantly readable at small size. Yields on tiles shown large with these icons. |
-| **UI** | Clean and calm like Civ VII, with Civ VI's information where you want it. Dark translucent panels, metallic gold/brass/copper for headings, numbers and highlights, Roman inscription type for titles. The map and the numbers are the stars. |
+| **UI** | Clean and calm like Civ VII, with Civ VI's information where you want it. Dark translucent panels, metallic gold/brass/copper for headings, numbers and highlights, Roman inscription type for titles (Cinzel; text in Source Sans 3, both bundled). The map and the numbers are the stars. |
 
 ## Where art comes from
 

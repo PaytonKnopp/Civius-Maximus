@@ -307,11 +307,11 @@ function roundRect(
 function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: number } {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
-  const nameFont = '400 46px "Marcellus SC", Georgia, serif';
+  const nameFont = '400 46px "Cinzel Variable", Georgia, serif';
   ctx.font = nameFont;
   const name = `${view.capital ? '★ ' : ''}${view.name}`;
   const nameW = ctx.measureText(name).width;
-  ctx.font = '500 26px "IBM Plex Sans", sans-serif';
+  ctx.font = '500 26px "Source Sans 3 Variable", sans-serif';
   const statusW = view.status ? ctx.measureText(view.status).width : 0;
   const bars = view.health < view.maxHealth || view.wallsMax > 0;
   const textH = view.status ? 118 : 84;
@@ -334,7 +334,7 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   ctx.strokeStyle = css(view.accent);
   ctx.stroke();
   ctx.fillStyle = css(view.accent);
-  ctx.font = '700 32px "IBM Plex Sans", sans-serif';
+  ctx.font = '700 32px "Source Sans 3 Variable", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(String(view.population), 48, textH / 2 + 1);
@@ -343,7 +343,7 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   ctx.font = nameFont;
   ctx.fillText(name, 94, view.status ? 42 : textH / 2 + 2);
   if (view.status) {
-    ctx.font = '500 26px "IBM Plex Sans", sans-serif';
+    ctx.font = '500 26px "Source Sans 3 Variable", sans-serif';
     ctx.fillStyle = '#c9b98a';
     ctx.fillText(view.status, 96, 86);
   }
@@ -385,7 +385,7 @@ function labelMaterial(text: string, color: number): SpriteMaterial {
   if (cached) return cached;
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
-  ctx.font = '600 34px "IBM Plex Sans", sans-serif';
+  ctx.font = '600 34px "Source Sans 3 Variable", sans-serif';
   const w = Math.ceil(measureRichText(ctx, text, 38) + 36);
   canvas.width = w;
   canvas.height = 60;
@@ -395,7 +395,7 @@ function labelMaterial(text: string, color: number): SpriteMaterial {
   ctx.lineWidth = 3;
   ctx.strokeStyle = css(color);
   ctx.stroke();
-  ctx.font = '600 34px "IBM Plex Sans", sans-serif';
+  ctx.font = '600 34px "Source Sans 3 Variable", sans-serif';
   ctx.fillStyle = '#f0e6cc';
   ctx.textBaseline = 'middle';
   drawRichText(ctx, text, 18, 31, 38);

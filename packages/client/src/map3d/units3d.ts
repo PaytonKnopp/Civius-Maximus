@@ -114,7 +114,7 @@ function badge(view: UnitView): SpriteMaterial {
   const accent = `#${view.accent.toString(16).padStart(6, '0')}`;
   if (!drawIcon(ctx, view.model, 64, 60, 50, 'glyph', accent)) {
     ctx.fillStyle = accent;
-    ctx.font = '700 34px "IBM Plex Sans", sans-serif';
+    ctx.font = '700 34px "Source Sans 3 Variable", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(view.icon, 64, 62);
@@ -171,7 +171,7 @@ function turnMarker(label: string, final: boolean): SpriteMaterial {
   ctx.strokeStyle = '#d4a94e';
   ctx.stroke();
   ctx.fillStyle = final ? '#10161d' : '#ecdcb4';
-  ctx.font = '700 40px "IBM Plex Sans", sans-serif';
+  ctx.font = '700 40px "Source Sans 3 Variable", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(label, 48, 50);

@@ -32,7 +32,7 @@ export function labelTexture(text: string, fontPx: number): Texture {
   const f = fontPx * SCALE;
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
-  const font = `600 ${f}px "IBM Plex Sans", sans-serif`;
+  const font = `600 ${f}px "Source Sans 3 Variable", sans-serif`;
   ctx.font = font;
   const icon = Math.round(f * 1.15);
   const w = Math.ceil(measureRichText(ctx, text, icon) + f);

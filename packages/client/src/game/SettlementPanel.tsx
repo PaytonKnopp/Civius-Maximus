@@ -8,7 +8,6 @@ import {
   districtLimit,
   districtYields,
   type EngineContext,
-  formatFixed,
   FREE,
   type GameState,
   happinessOf,
@@ -45,6 +44,7 @@ import {
   tileName,
   turnsFor,
   whole,
+  fmt,
   yieldLabel,
 } from './model';
 
@@ -76,7 +76,7 @@ const FOCUSES: CitizenFocus[] = [
 ];
 
 const explain = (lines: Line[] | undefined, fixed = true) =>
-  (lines ?? []).map((l) => `${l.label}: ${fixed ? formatFixed(l.amount) : l.amount}`).join('\n');
+  (lines ?? []).map((l) => `${l.label}: ${fixed ? fmt(l.amount) : l.amount}`).join('\n');
 
 interface Props {
   ctx: EngineContext;
@@ -222,7 +222,7 @@ export function SettlementPanel({
         <span className="bar-fill food" style={{ width: `${foodPct}%` }} />
         <span className="bar-text">
           {icon('food')} {whole(s.food)}/{whole(sum.foodNeeded)} ({sum.growth >= 0 ? '+' : ''}
-          {formatFixed(sum.growth)})
+          {fmt(sum.growth)})
         </span>
       </div>
 
@@ -230,7 +230,7 @@ export function SettlementPanel({
         {YIELDS.map((y) => (
           <li key={y} title={`${name(y)}\n${explain(sum.yields.lines[y])}`}>
             <span aria-hidden="true">{icon(y)}</span>
-            <span className="mono">{formatFixed(sum.yields.total[y] ?? 0)}</span>
+            <span className="mono">{fmt(sum.yields.total[y] ?? 0)}</span>
           </li>
         ))}
         <li
@@ -334,7 +334,7 @@ export function SettlementPanel({
       {mine && s.kind === 'city' && (
         <section aria-label="Production">
           <h4>
-            Production {icon('production')} {formatFixed(production)}
+            Production {icon('production')} {fmt(production)}
           </h4>
           {sum.head ? (
             <div className="bar" title={`${whole(sum.head.progress)} / ${whole(sum.head.cost)}`}>
@@ -376,8 +376,8 @@ export function SettlementPanel({
       {mine && s.kind === 'town' && (
         <section aria-label="Town">
           <p className="hint">
-            Towns turn their production into gold: {icon('gold')} +{formatFixed(sum.townGold)} a
-            turn. Upgrade to a city to build things; towns can still buy.
+            Towns turn their production into gold: {icon('gold')} +{fmt(sum.townGold)} a turn.
+            Upgrade to a city to build things; towns can still buy.
           </p>
           <button
             type="button"

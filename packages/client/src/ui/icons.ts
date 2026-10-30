@@ -993,6 +993,33 @@ export const ICONS: Record<string, IconDef> = {
   next: { bg: C.brass, glyph: [s(poly(7.4, 5.6, 17.8, 12, 7.4, 18.4))] },
   population: { bg: C.ui, glyph: PERSON },
   capital: { bg: C.brass, glyph: [s(star(12, 12, 7.6, 3.4, 5))] },
+  governor: {
+    bg: '#6a5a8e',
+    glyph: [
+      s(circle(12, 7.6, 3.3)),
+      s('M5.4 19.6c0-4 2.9-7 6.6-7s6.6 3 6.6 7Z'),
+      dark('M9.3 14.6l2.7 1.9 2.7-1.9v1.6l-2.7 1.9-2.7-1.9Z'),
+    ],
+  },
+  greatWorks: {
+    bg: '#8e5a3c',
+    glyph: [
+      s(rect(4, 5, 16, 14, 1) + rect(6.2, 7.2, 11.6, 9.6), true),
+      s('M7 16.6l3.5-4.7 2.5 3.1 1.7-1.9 2.5 3.5Z'),
+      s(circle(15.2, 9.6, 1.3)),
+    ],
+  },
+  ages: {
+    bg: '#7a6a3a',
+    glyph: [
+      s(
+        'M7 3.8h10v1.6h-1.3c0 3.1-1.9 4.7-3.3 6.6 1.4 1.9 3.3 3.5 3.3 6.6H17v1.6H7v-1.6h1.3c0-3.1 1.9-4.7 3.3-6.6C10.2 10.1 8.3 8.5 8.3 5.4H7Z',
+      ),
+      dark(
+        'M9.6 6.4h4.8c-.3 1.6-1.3 2.6-2.4 3.7-1.1-1.1-2.1-2.1-2.4-3.7ZM9.4 17.8c.3-1.8 1.4-2.9 2.6-3.9 1.2 1 2.3 2.1 2.6 3.9Z',
+      ),
+    ],
+  },
   check: { bg: '#4f8f5a', glyph: CHECK },
   trophy: { bg: C.brass, glyph: [] },
   water_drop: { bg: '#3f88a8', glyph: DROP },

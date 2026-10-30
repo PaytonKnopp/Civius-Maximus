@@ -447,6 +447,17 @@ function hasEmptySlotToFill(ctx: EngineContext, state: GameState, player: Player
 /** A fixed-point amount as whole units for display (rounded down), e.g. 1250 → "12". */
 export const whole = (n: number) => String(Math.floor(n / 100));
 
+/**
+ * A fixed-point amount for display, tidy like the Civ games: one decimal at most (12.4), whole
+ * numbers from 100 up (126), no trailing ".0".
+ */
+export function fmt(n: number): string {
+  const v = n / 100;
+  if (Math.abs(v) >= 100) return String(Math.round(v));
+  const r = Math.round(v * 10) / 10;
+  return Number.isInteger(r) ? String(r) : r.toFixed(1);
+}
+
 /** A per-turn amount with a sign, e.g. +3 or -1.5. */
 export function perTurn(n: number): string {
   const v = n / 100;
