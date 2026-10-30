@@ -256,7 +256,7 @@ export class MapView implements MapRenderer {
       if (view.capital) g.star(0, -11, 5, 4.5, 2).fill(0xd4a94e);
       const label = new Text({
         text: `${view.population}  ${view.name}`,
-        style: { fontFamily: 'Marcellus SC, Georgia, serif', fontSize: 12, fill: 0xf0e6cc },
+        style: { fontFamily: 'Cinzel Variable, Georgia, serif', fontSize: 12, fill: 0xf0e6cc },
       });
       label.anchor.set(0.5, 0);
       label.position.set(0, 19);
@@ -483,7 +483,7 @@ export class MapView implements MapRenderer {
           : new Text({
               text: view.icon,
               style: {
-                fontFamily: 'IBM Plex Sans, sans-serif',
+                fontFamily: 'Source Sans 3 Variable, sans-serif',
                 fontSize: 11,
                 fontWeight: '700',
                 fill: view.accent,
@@ -513,7 +513,7 @@ export class MapView implements MapRenderer {
       const t = new Text({
         text,
         style: {
-          fontFamily: 'IBM Plex Sans, sans-serif',
+          fontFamily: 'Source Sans 3 Variable, sans-serif',
           fontSize: 16,
           fontWeight: '800',
           fill: FLASH_COLORS[tone],
@@ -586,7 +586,7 @@ export class MapView implements MapRenderer {
         const t = new Text({
           text: String(step.turn + 1),
           style: {
-            fontFamily: 'IBM Plex Sans, sans-serif',
+            fontFamily: 'Source Sans 3 Variable, sans-serif',
             fontSize: 12,
             fontWeight: '700',
             fill: final ? 0x10161d : 0xecdcb4,
@@ -829,7 +829,7 @@ export class MapView implements MapRenderer {
         const label = new Text({
           text: resolveText(content, r.name).slice(0, 2),
           style: {
-            fontFamily: 'IBM Plex Mono, monospace',
+            fontFamily: 'Source Sans 3 Variable, sans-serif',
             fontSize: 9,
             fontWeight: '600',
             fill: 0x0b1620,

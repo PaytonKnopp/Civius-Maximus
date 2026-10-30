@@ -11,7 +11,6 @@ import {
   type EngineContext,
   findPath,
   fogOfWar,
-  formatFixed,
   type GameEvent,
   type GameSetup,
   type GameState,
@@ -81,6 +80,7 @@ import {
   turnsFor,
   unitViews,
   whole,
+  fmt,
 } from './model';
 import { GovernmentScreen } from './GovernmentScreen';
 import { GreatPeopleScreen } from './GreatPeopleScreen';
@@ -1212,7 +1212,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     if (panelMode === 'buy') {
       for (const tile of purchasableTiles(ctx, state, settlement)) {
         const cost = tilePurchaseCost(ctx, state, settlement, tile);
-        out.push({ tile, tone: 'buy', label: `💰 ${formatFixed(cost)}` });
+        out.push({ tile, tone: 'buy', label: `💰 ${fmt(cost)}` });
       }
       return out;
     }
@@ -1622,21 +1622,34 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               onClick={openGovernment}
             />
             <ScreenButton
-              icon="capital"
+              icon="governor"
               label="Governors (O)"
               badge={titlesAvailable(ctx, me) > 0 ? String(titlesAvailable(ctx, me)) : undefined}
               onClick={() => setOverlay({ kind: 'governors' })}
             />
+            <span className="screen-sep" aria-hidden="true" />
             <ScreenButton
               icon="greatPeople"
               label="Great people (P)"
               onClick={() => setOverlay({ kind: 'greatPeople' })}
             />
             <ScreenButton
-              icon="tourism"
+              icon="greatWorks"
               label="Great works (K)"
               onClick={() => setOverlay({ kind: 'greatWorks' })}
             />
+            <ScreenButton
+              icon="religion"
+              label={`${
+                me.religion
+                  ? (state.religions[me.religion]?.name ?? 'Religion')
+                  : pantheonOf(ctx, state, viewer)
+                    ? 'Religion'
+                    : 'Pantheon'
+              } (R)`}
+              onClick={() => setOverlay({ kind: 'religion' })}
+            />
+            <span className="screen-sep" aria-hidden="true" />
             {disastersOn(state) && (state.disasterLog?.length || state.climate) && (
               <ScreenButton
                 icon="climate"
@@ -1671,17 +1684,6 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
                 onClick={() => setOverlay({ kind: 'espionage' })}
               />
             )}
-            <ScreenButton
-              icon="religion"
-              label={`${
-                me.religion
-                  ? (state.religions[me.religion]?.name ?? 'Religion')
-                  : pantheonOf(ctx, state, viewer)
-                    ? 'Religion'
-                    : 'Pantheon'
-              } (R)`}
-              onClick={() => setOverlay({ kind: 'religion' })}
-            />
             {Object.keys(state.cityStates).length > 0 && (
               <ScreenButton
                 icon="cityStates"
@@ -1690,6 +1692,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
                 onClick={() => setOverlay({ kind: 'cityStates' })}
               />
             )}
+            <span className="screen-sep" aria-hidden="true" />
             <ScreenButton
               icon="victory"
               label="Victories (V)"
@@ -1700,6 +1703,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               label="Graphs (H)"
               onClick={() => setOverlay({ kind: 'graphs' })}
             />
+            <span className="screen-sep" aria-hidden="true" />
             <ScreenButton
               icon="pedia"
               label="Civilopedia (F1)"

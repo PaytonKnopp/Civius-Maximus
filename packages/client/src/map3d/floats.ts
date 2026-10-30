@@ -45,7 +45,7 @@ const shotMaterial = new MeshBasicMaterial({ color: 0xffe2a0, toneMapped: false 
 function textMaterial(text: string, tone: FlashTone): SpriteMaterial {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
-  const font = '800 64px "IBM Plex Sans", sans-serif';
+  const font = '800 64px "Source Sans 3 Variable", sans-serif';
   ctx.font = font;
   const w = Math.ceil(ctx.measureText(text).width + 24);
   canvas.width = w;

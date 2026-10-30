@@ -478,6 +478,19 @@ export function UnitPanel({
       )}
       {mine && (
         <div className="unit-actions">
+          {def.actions.includes('found_settlement') && (
+            <button
+              type="button"
+              className="found"
+              disabled={foundBlocked !== undefined}
+              title={foundBlocked ?? 'Found a settlement here'}
+              onClick={() => act(found)}
+            >
+              <Icon name="found" />
+              Found city
+              <kbd>B</kbd>
+            </button>
+          )}
           {upgradeTo && (
             <button
               type="button"
@@ -488,10 +501,12 @@ export function UnitPanel({
               }
               onClick={() => act({ type: 'upgrade_unit', player: viewer, unit: unit.id })}
             >
-              <Icon name="upgrade" size={18} />{' '}
-              {resolveText(ctx.content, unitDef(ctx, { type: upgradeTo }).name)}{' '}
-              <Icon name="gold" size={16} />
-              {whole(upgradeCost(ctx, state, unit.type, upgradeTo))}
+              <Icon name="upgrade" />
+              Upgrade
+              <span className="act-cost">
+                <Icon name="gold" />
+                {whole(upgradeCost(ctx, state, unit.type, upgradeTo))}
+              </span>
             </button>
           )}
           {command && (
@@ -505,7 +520,8 @@ export function UnitPanel({
                 }
                 onClick={() => pack && act(pack)}
               >
-                Pack {packable.length > 0 ? `(${packable.length})` : ''}
+                <Icon name="commander" />
+                Pack{packable.length > 0 ? ` (${packable.length})` : ''}
               </button>
               <button
                 type="button"
@@ -518,6 +534,7 @@ export function UnitPanel({
                 }
                 onClick={() => act(unpackAction)}
               >
+                <Icon name="commander" />
                 Unpack
               </button>
             </>
@@ -532,8 +549,11 @@ export function UnitPanel({
               }
               onClick={() => act({ type: 'pillage', player: viewer, unit: unit.id })}
             >
-              Pillage <Icon name="gold" size={16} />
-              {whole(pillageGold(ctx, state, viewer))}
+              <Icon name="attack" />
+              Pillage
+              <span className="act-cost">
+                <Icon name="gold" />+{whole(pillageGold(ctx, state, viewer))}
+              </span>
             </button>
           )}
           {plunder.map((r) => (
@@ -545,37 +565,43 @@ export function UnitPanel({
                 act({ type: 'plunder_route', player: viewer, unit: unit.id, route: r.id })
               }
             >
-              Plunder {civName(ctx.content, state, r.owner)}&apos;s route{' '}
-              <Icon name="gold" size={16} />
-              {whole(plunderGold(ctx, state, viewer))}
+              <Icon name="trade" />
+              Plunder
+              <span className="act-cost">
+                <Icon name="gold" />+{whole(plunderGold(ctx, state, viewer))}
+              </span>
             </button>
           ))}
-          {def.actions.includes('found_settlement') && (
-            <button
-              type="button"
-              className="found"
-              disabled={foundBlocked !== undefined}
-              title={foundBlocked ?? 'Found a settlement here'}
-              onClick={() => act(found)}
-            >
-              <Icon name="found" size={18} /> Found settlement <kbd>B</kbd>
-            </button>
-          )}
-          <button type="button" onClick={onSkip}>
-            <Icon name="skip" size={18} /> Skip <kbd>Space</kbd>
+          <button type="button" title="Skip this unit for now (Space)" onClick={onSkip}>
+            <Icon name="skip" />
+            Skip
+            <kbd>Space</kbd>
           </button>
           {unit.orders ? (
             <button type="button" onClick={() => act({ type: 'wake_unit', ...ref })}>
+              <Icon name={unit.orders.kind === 'move' ? 'movement' : 'check'} />
               {unit.orders.kind === 'move' ? 'Cancel move' : 'Wake'}
             </button>
           ) : (
             <>
-              <button type="button" onClick={() => act({ type: 'sleep_unit', ...ref })}>
-                <Icon name="sleep" size={18} /> Sleep <kbd>Z</kbd>
+              <button
+                type="button"
+                title="Sleep until you wake it (Z)"
+                onClick={() => act({ type: 'sleep_unit', ...ref })}
+              >
+                <Icon name="sleep" />
+                Sleep
+                <kbd>Z</kbd>
               </button>
               {cls.combat && (
-                <button type="button" onClick={() => act({ type: 'fortify_unit', ...ref })}>
-                  <Icon name="fortify" size={18} /> Fortify <kbd>F</kbd>
+                <button
+                  type="button"
+                  title={`Fortify: up to +${Math.max(...fortify)} defense the longer it holds still (F)`}
+                  onClick={() => act({ type: 'fortify_unit', ...ref })}
+                >
+                  <Icon name="fortify" />
+                  Fortify
+                  <kbd>F</kbd>
                 </button>
               )}
             </>

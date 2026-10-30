@@ -195,6 +195,8 @@ export function App() {
             onAccount={() => setDialog('account')}
             onMapLab={() => setScreen('lab')}
             onHome={() => setHome(true)}
+            quality={mode === '3d' ? quality : null}
+            onQuality={setQuality}
           />
           <div className="segmented compact" role="group" aria-label="View">
             {(['3d', '2d'] as const).map((m) => (
@@ -209,18 +211,6 @@ export function App() {
               </button>
             ))}
           </div>
-          {mode === '3d' && (
-            <select
-              aria-label="Graphics quality"
-              className="compact-select"
-              value={quality}
-              onChange={(e) => setQuality(e.target.value as Quality)}
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          )}
         </div>
       </header>
       {dialog === 'new' && (
@@ -261,6 +251,9 @@ function GameMenu(props: {
   onAccount: () => void;
   onMapLab: () => void;
   onHome: () => void;
+  /** The 3D view's graphics quality (null in the 2D view). */
+  quality: Quality | null;
+  onQuality: (q: Quality) => void;
 }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -302,6 +295,24 @@ function GameMenu(props: {
           <button type="button" role="menuitem" onClick={pick(props.onHome)}>
             Title screen
           </button>
+          {props.quality && (
+            <div className="menu-section">
+              <h4>Graphics</h4>
+              <div className="segmented" role="group" aria-label="Graphics quality">
+                {(['low', 'medium', 'high'] as const).map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    aria-pressed={props.quality === q}
+                    className={props.quality === q ? 'on' : ''}
+                    onClick={() => props.onQuality(q)}
+                  >
+                    {q === 'low' ? 'Low' : q === 'medium' ? 'Medium' : 'High'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="menu-section">
             <h4>Sound</h4>
             <SoundSettings />
