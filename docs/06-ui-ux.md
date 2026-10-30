@@ -77,6 +77,13 @@ the Religion screen shows the pantheon and your beliefs as cards, and each relig
 toward victory as a meter. Costs show the game's yield icons instead of emoji. Graphs grow to
 fill the screen.
 
+**Title screen (polish P6):** the menu stands in a column on the left over the living world
+(a quick game plays behind it), like the Civ games' title screens: the laurel and the title in
+gold, the tagline, then the main choices as large engraved words (Continue or Quick game
+highlighted in gold, New game, Play online, Load game) that light up and slide on hover, with
+Hall of Fame, Civilopedia, Account and Map Lab as small links under a rule. The game's HUD hides
+while it's open. On phones the column sits at the bottom over a dark fade.
+
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
 show each leader's face. A rival's diplomacy panel shows their portrait and a line in their
