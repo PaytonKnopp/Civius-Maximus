@@ -91,6 +91,17 @@ trot, ships ride the swell, aircraft hover; attackers turn to their target and s
 clubs), thrust (spears, pikes), draw (bows) or shoulder and fire (muskets, rifles, crossbows),
 and guns recoil.
 
+**Built in polish P3: buildings and vehicles.** Houses are no longer boxes with cones: pitched
+roofs are real gables with eaves past the walls (`G.gable`), hipped roofs overhang, East Asian
+roofs sweep out in two tiers with a ridge, flat roofs have a parapet. Every house has a stone
+footing, a door and windows by story (about a third of them lit at dusk), cornices between
+floors, chimneys on pitched roofs, awnings over some flat-roofed doors, half-timbering on
+European town houses, and a lower wing on about a third of them. Industrial rows have three
+floors, slate gables and two chimneys; modern towers have window bands and rooftop plant. Towns
+and cities are denser (up to 60 buildings) with bigger houses, and garden trees grow between
+them. Ships have smooth rounded hulls with a prow, a deck and a rail, and square sails that
+belly forward on their yards; aircraft have streamlined fuselages; tanks a rounded turret.
+
 **Built so far (V1 final, F4): leaders and emblems.** Every leader has an illustrated portrait
 drawn in vector from traits in content (`leader.portrait`: face shape, skin, eyes, hair style,
 beard, headwear from laurels and crowns to a mian or a bicorne, clothes from togas to kimonos,
