@@ -39,7 +39,7 @@ Screenshots of every screen at turn 120 and the 3D Map Lab close-ups (October 30
 | # | Part | Status |
 |---|---|---|
 | P1 | **Design system and HUD**: bundled fonts, one set of tokens (type scale, spacing, surfaces, gold trim), new buttons; the top bar with yields and grouped, labeled screen buttons; a Civ-style unit card with an icon action bar; a cleaner city panel; tidy numbers everywhere; hints and notifications out of the way | ✅ |
-| P2 | **Characters**: new figures with real proportions, faces, hair, clothing and gear by era, smooth shading; procedural rigs with idle, walk and attack animation; better horses; civilians and great people as characters; bigger, readable squads on a team-colored base | |
+| P2 | **Characters**: new figures with real proportions, faces, hair, clothing and gear by era, smooth shading; procedural rigs with idle, walk and attack animation; better horses; civilians and great people as characters; bigger, readable squads on a team-colored base | ✅ |
 | P3 | **Buildings and vehicles**: houses with eaves, windows and chimneys, varied towns that grow into dense cities with plazas, temples and towers, better districts and wonders up close, smooth ships, siege engines, tanks and aircraft | |
 | P4 | **The world**: sharper painted terrain with a richer palette, lush mixed forests and jungles, fields with crop rows, mines, quarries and pastures, rivers and coasts, soft shadows and ambient occlusion, color grading, depth of field when zoomed in | |
 | P5 | **Full screens**: one screen frame with a banner, cards, emblems, portraits and meters; tech and civic trees, government, religion, victories, city-states, great people and works, governors, espionage, congress, climate, ages, graphs, the Civilopedia and help | |

@@ -439,7 +439,7 @@ export class World3D implements MapRenderer {
   animateAttack(unit: string | null, from: number, tile: number, mode: 'melee' | 'ranged') {
     if (!this.data) return;
     if (mode === 'ranged') this.floats.shot(from, tile);
-    else if (unit) this.units.lunge(unit, tile);
+    if (unit) this.units.attack(unit, tile, mode);
     // Dust and sparks where the blow lands (after the lunge or the shot gets there).
     const w = this.data.map.width;
     const [x, z] = center3(tile % w, Math.floor(tile / w));

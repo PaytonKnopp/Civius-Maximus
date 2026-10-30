@@ -1,30 +1,24 @@
 import {
   BoxGeometry,
-  BufferGeometry,
-  Color,
+  type BufferGeometry,
   ConeGeometry,
   CylinderGeometry,
-  Euler,
-  Float32BufferAttribute,
-  Matrix4,
   PlaneGeometry,
-  Quaternion,
   SphereGeometry,
   TorusGeometry,
-  Vector3,
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { type FigureOpts, mount, person, rider } from './figures';
+import { type BoneDef, on, put, type Rig, resetRig, rig } from './rig';
 
 /**
- * The unit models (docs/10-art-direction.md, "Units"): small squads of chunky figures with gear
- * by era (bronze helmets and round shields, mail and crests, tricorns and muskets, steel
- * helmets and rifles), horses, chariots, siege engines, guns, tanks, ships from galleys to
- * destroyers, and aircraft. Local space: y up, +x is the way the unit faces. Each model is two
- * merged meshes (cloth and wood with vertex colors, metal), cached per model and color, so a
- * unit costs two draw calls whatever its detail.
+ * The unit models (docs/10-art-direction.md, "Units"; polish P2): squads of rigged figures with
+ * gear by era (see figures.ts), riders on horses, oxen and elephants, siege engines, guns,
+ * tanks, ships from galleys to destroyers, and aircraft. Local space: y up, +x is the way the
+ * unit faces. Each model is two skinned meshes (cloth, wood and skin with vertex colors; metal)
+ * on one skeleton, cached per model and color, so a unit costs two draw calls whatever its
+ * detail.
  */
-
-type V3 = [number, number, number];
 
 const unit = {
   box: new BoxGeometry(1, 1, 1),
@@ -36,24 +30,6 @@ const unit = {
   plane: new PlaneGeometry(1, 1),
   arc: new TorusGeometry(1, 0.1, 4, 10, Math.PI),
 };
-
-const m4 = new Matrix4();
-const qt = new Quaternion();
-const eu = new Euler();
-
-/** A unit geometry, colored, placed at `at`, scaled by `s` and rotated by `rot` (radians, XYZ). */
-function put(g: BufferGeometry, color: number, at: V3, s: V3, rot: V3 = [0, 0, 0]) {
-  const out = g.index ? g.toNonIndexed() : g.clone();
-  out.deleteAttribute('uv');
-  qt.setFromEuler(eu.set(rot[0], rot[1], rot[2]));
-  out.applyMatrix4(m4.compose(new Vector3(...at), qt, new Vector3(...s)));
-  const c = new Color(color);
-  const n = out.getAttribute('position').count;
-  const col = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) col.set([c.r, c.g, c.b], i * 3);
-  out.setAttribute('color', new Float32BufferAttribute(col, 3));
-  return out;
-}
 
 /** Parts being assembled: `m` matte (cloth, wood, skin), `k` metal. */
 interface Kit {
@@ -83,205 +59,6 @@ const C = {
   red: 0x8e2b22,
 };
 
-type Helmet = 'none' | 'bronze' | 'crest' | 'plume' | 'tricorn' | 'shako' | 'steel' | 'hood';
-type Weapon =
-  'none' | 'club' | 'spear' | 'pike' | 'sword' | 'bow' | 'crossbow' | 'musket' | 'rifle' | 'staff';
-type Shield = 'none' | 'round' | 'tower' | 'kite';
-
-interface FigureOpts {
-  helmet?: Helmet;
-  weapon?: Weapon;
-  shield?: Shield;
-  /** Tunic color (the owner's main color). */
-  body: number;
-  /** Trim color (the owner's accent). */
-  trim: number;
-  /** Trousers and boots. */
-  legs?: number;
-  /** Armor over the tunic. */
-  armor?: number;
-  scale?: number;
-  skin?: number;
-}
-
-/** One soldier, standing at (x, z), facing +x. About 0.25 tall. */
-function figure(kit: Kit, x: number, z: number, o: FigureOpts, y = 0) {
-  const s = o.scale ?? 1;
-  const at = (dx: number, dy: number, dz: number): V3 => [x + dx * s, y + dy * s, z + dz * s];
-  const sz = (a: number, b: number, c: number): V3 => [a * s, b * s, c * s];
-  const legs = o.legs ?? C.dark;
-  const skin = o.skin ?? C.skin;
-  // Legs and boots.
-  for (const side of [-1, 1]) {
-    kit.m.push(put(unit.box, legs, at(0, 0.045, side * 0.017), sz(0.024, 0.09, 0.022)));
-    kit.m.push(put(unit.box, C.dark, at(0.006, 0.01, side * 0.017), sz(0.032, 0.02, 0.024)));
-  }
-  // Torso, tapering to the shoulders, a belt.
-  kit.m.push(put(unit.box, o.body, at(0, 0.125, 0), sz(0.04, 0.075, 0.062)));
-  kit.m.push(put(unit.box, o.armor ?? o.trim, at(0, 0.093, 0), sz(0.044, 0.012, 0.066)));
-  if (o.armor !== undefined)
-    kit.k.push(put(unit.box, o.armor, at(0.002, 0.135, 0), sz(0.042, 0.05, 0.064)));
-  // Arms: the right (−z) holds the weapon forward, the left the shield.
-  kit.m.push(put(unit.box, o.body, at(0.012, 0.13, -0.042), sz(0.02, 0.07, 0.02), [0, 0, -0.5]));
-  kit.m.push(put(unit.box, o.body, at(0.012, 0.13, 0.042), sz(0.02, 0.07, 0.02), [0, 0, -0.35]));
-  kit.m.push(put(unit.ball, skin, at(0.032, 0.1, -0.044), sz(0.012, 0.012, 0.012)));
-  // Neck and head.
-  kit.m.push(put(unit.ball, skin, at(0, 0.188, 0), sz(0.026, 0.028, 0.026)));
-  helmet(kit, o.helmet ?? 'none', at, sz, o.trim);
-  weapon(kit, o.weapon ?? 'none', at, sz);
-  shield(kit, o.shield ?? 'none', at, sz, o.trim, o.body);
-}
-
-function helmet(
-  kit: Kit,
-  h: Helmet,
-  at: (x: number, y: number, z: number) => V3,
-  sz: (a: number, b: number, c: number) => V3,
-  trim: number,
-) {
-  switch (h) {
-    case 'none':
-      kit.m.push(put(unit.dome, C.hair, at(-0.004, 0.194, 0), sz(0.028, 0.024, 0.028)));
-      break;
-    case 'hood':
-      kit.m.push(put(unit.dome, C.canvas, at(-0.004, 0.19, 0), sz(0.031, 0.034, 0.031)));
-      break;
-    case 'bronze':
-      kit.k.push(put(unit.dome, C.bronze, at(0, 0.196, 0), sz(0.03, 0.028, 0.03)));
-      break;
-    case 'crest':
-      kit.k.push(put(unit.dome, C.iron, at(0, 0.196, 0), sz(0.03, 0.028, 0.03)));
-      kit.m.push(put(unit.box, trim, at(-0.002, 0.226, 0), sz(0.05, 0.016, 0.008)));
-      break;
-    case 'plume':
-      kit.k.push(put(unit.dome, C.steel, at(0, 0.196, 0), sz(0.031, 0.03, 0.031)));
-      kit.m.push(put(unit.cone, trim, at(-0.01, 0.235, 0), sz(0.012, 0.04, 0.012), [0, 0, 0.4]));
-      break;
-    case 'tricorn':
-      kit.m.push(put(unit.cyl, C.dark, at(0, 0.206, 0), sz(0.038, 0.008, 0.038)));
-      kit.m.push(put(unit.dome, C.dark, at(0, 0.208, 0), sz(0.024, 0.018, 0.024)));
-      break;
-    case 'shako':
-      kit.m.push(put(unit.cyl, C.dark, at(0, 0.222, 0), sz(0.024, 0.04, 0.024)));
-      kit.m.push(put(unit.box, trim, at(0.022, 0.23, 0), sz(0.004, 0.012, 0.012)));
-      break;
-    case 'steel':
-      kit.k.push(put(unit.dome, C.olive, at(0, 0.196, 0), sz(0.034, 0.026, 0.034)));
-      kit.k.push(put(unit.cyl, C.olive, at(0, 0.197, 0), sz(0.04, 0.004, 0.04)));
-      break;
-  }
-}
-
-function weapon(
-  kit: Kit,
-  w: Weapon,
-  at: (x: number, y: number, z: number) => V3,
-  sz: (a: number, b: number, c: number) => V3,
-) {
-  const hand = (dx: number, dy: number) => at(0.032 + dx, 0.1 + dy, -0.044);
-  switch (w) {
-    case 'club':
-      kit.m.push(put(unit.cyl, C.wood, hand(0.02, 0.03), sz(0.008, 0.09, 0.008), [0, 0, -0.6]));
-      kit.m.push(put(unit.ball, C.woodDark, hand(0.046, 0.066), sz(0.016, 0.016, 0.016)));
-      break;
-    case 'spear':
-    case 'pike': {
-      const len = w === 'pike' ? 0.42 : 0.3;
-      kit.m.push(put(unit.cyl, C.wood, hand(0, 0.05), sz(0.005, len, 0.005)));
-      kit.k.push(put(unit.cone, C.iron, hand(0, 0.05 + len / 2 + 0.018), sz(0.01, 0.036, 0.01)));
-      break;
-    }
-    case 'sword':
-      kit.k.push(put(unit.box, C.iron, hand(0.04, 0.03), sz(0.07, 0.01, 0.004), [0, 0, 0.6]));
-      kit.m.push(put(unit.box, C.bronze, hand(0.008, 0.008), sz(0.006, 0.024, 0.008), [0, 0, 0.6]));
-      break;
-    case 'bow':
-      kit.m.push(
-        put(unit.arc, C.wood, at(0.05, 0.13, 0.04), sz(0.07, 0.07, 0.07), [
-          Math.PI / 2,
-          0,
-          -Math.PI / 2,
-        ]),
-      );
-      kit.m.push(
-        put(unit.box, C.leather, at(-0.026, 0.13, 0.012), sz(0.014, 0.06, 0.02), [0.4, 0, 0]),
-      );
-      break;
-    case 'crossbow':
-      kit.m.push(put(unit.box, C.wood, hand(0.04, 0.02), sz(0.08, 0.012, 0.012)));
-      kit.m.push(
-        put(unit.arc, C.iron, hand(0.07, 0.02), sz(0.04, 0.04, 0.04), [
-          Math.PI / 2,
-          0,
-          -Math.PI / 2,
-        ]),
-      );
-      break;
-    case 'musket':
-    case 'rifle':
-      kit.m.push(put(unit.box, C.woodDark, hand(0.01, 0.02), sz(0.05, 0.014, 0.01), [0, 0, 0.9]));
-      kit.k.push(put(unit.cyl, C.steel, hand(0.04, 0.08), sz(0.004, 0.11, 0.004), [0, 0, -0.68]));
-      if (w === 'musket')
-        kit.k.push(
-          put(unit.cone, C.iron, hand(0.085, 0.135), sz(0.003, 0.03, 0.003), [0, 0, -0.68]),
-        );
-      break;
-    case 'staff':
-      kit.m.push(put(unit.cyl, C.wood, hand(0, 0.06), sz(0.005, 0.26, 0.005)));
-      break;
-  }
-}
-
-function shield(
-  kit: Kit,
-  s: Shield,
-  at: (x: number, y: number, z: number) => V3,
-  sz: (a: number, b: number, c: number) => V3,
-  trim: number,
-  body: number,
-) {
-  switch (s) {
-    case 'round':
-      kit.m.push(
-        put(unit.cyl12, trim, at(0.03, 0.125, 0.05), sz(0.045, 0.008, 0.045), [0, 0, Math.PI / 2]),
-      );
-      kit.k.push(put(unit.ball, C.bronze, at(0.035, 0.125, 0.05), sz(0.01, 0.01, 0.01)));
-      break;
-    case 'tower':
-      kit.m.push(put(unit.box, body, at(0.032, 0.12, 0.05), sz(0.008, 0.1, 0.06)));
-      kit.k.push(put(unit.box, C.gold, at(0.037, 0.12, 0.05), sz(0.004, 0.016, 0.016)));
-      break;
-    case 'kite':
-      kit.m.push(put(unit.box, trim, at(0.032, 0.135, 0.05), sz(0.008, 0.06, 0.05)));
-      kit.m.push(
-        put(unit.cone, trim, at(0.032, 0.088, 0.05), sz(0.025, 0.04, 0.004), [Math.PI, 0, 0]),
-      );
-      break;
-  }
-}
-
-/** A horse facing +x, standing at (x, z); its back is about 0.13 up. */
-function horse(kit: Kit, x: number, z: number, coat = C.horse, barding?: number) {
-  kit.m.push(put(unit.box, barding ?? coat, [x, 0.125, z], [0.17, 0.065, 0.06]));
-  kit.m.push(put(unit.box, coat, [x + 0.095, 0.17, z], [0.04, 0.09, 0.035], [0, 0, -0.55]));
-  kit.m.push(put(unit.box, coat, [x + 0.13, 0.205, z], [0.06, 0.03, 0.03], [0, 0, 0.35]));
-  kit.m.push(put(unit.box, C.horse2, [x + 0.085, 0.2, z], [0.03, 0.06, 0.012], [0, 0, -0.55]));
-  kit.m.push(put(unit.box, C.horse2, [x - 0.1, 0.11, z], [0.016, 0.06, 0.014], [0, 0, 0.5]));
-  for (const [dx, dz] of [
-    [0.06, 0.022],
-    [0.06, -0.022],
-    [-0.065, 0.022],
-    [-0.065, -0.022],
-  ] as const) {
-    kit.m.push(put(unit.box, coat, [x + dx, 0.05, z + dz], [0.018, 0.1, 0.018]));
-  }
-}
-
-function rider(kit: Kit, x: number, z: number, o: FigureOpts) {
-  // Seated: no legs below the saddle, so draw the figure lifted and let the horse hide them.
-  figure(kit, x, z, o, 0.075);
-}
-
 function wheel(kit: Kit, x: number, y: number, z: number, r: number, color = C.woodDark) {
   kit.m.push(put(unit.cyl12, color, [x, y, z], [r, 0.014, r], [Math.PI / 2, 0, 0]));
   kit.m.push(put(unit.cyl, C.dark, [x, y, z], [r * 0.3, 0.02, r * 0.3], [Math.PI / 2, 0, 0]));
@@ -308,15 +85,31 @@ function sail(kit: Kit, x: number, y: number, w: number, h: number, color: numbe
 }
 
 const SOLDIER: Record<string, Omit<FigureOpts, 'body' | 'trim'>> = {
-  warrior: { helmet: 'none', weapon: 'club', shield: 'none', legs: C.leather, skin: C.skin2 },
+  warrior: { helmet: 'none', weapon: 'club', legs: C.leather, beard: true },
   spear: { helmet: 'bronze', weapon: 'spear', shield: 'round', legs: C.leather },
-  pike: { helmet: 'plume', weapon: 'pike', shield: 'none', armor: C.iron },
+  pike: { helmet: 'plume', weapon: 'pike', armor: C.iron, sleeves: true, skirt: false },
   sword: { helmet: 'crest', weapon: 'sword', shield: 'tower', armor: C.iron },
-  archer: { helmet: 'hood', weapon: 'bow', shield: 'none', legs: C.leather },
-  crossbow: { helmet: 'crest', weapon: 'crossbow', shield: 'none', armor: C.iron },
-  musket: { helmet: 'tricorn', weapon: 'musket', legs: C.white },
-  rifle: { helmet: 'shako', weapon: 'rifle', legs: C.white },
-  infantry: { helmet: 'steel', weapon: 'rifle', legs: C.olive },
+  archer: { helmet: 'hood', weapon: 'bow', legs: C.leather },
+  crossbow: { helmet: 'plume', weapon: 'crossbow', armor: C.iron, sleeves: true },
+  musket: { helmet: 'tricorn', weapon: 'musket', legs: C.white, sleeves: true, skirt: false },
+  rifle: { helmet: 'shako', weapon: 'rifle', legs: C.white, sleeves: true, skirt: false },
+  infantry: { helmet: 'steel', weapon: 'rifle', legs: C.olive, sleeves: true, skirt: false },
+};
+
+/** How a vehicle moves on its own: ships ride the swell, aircraft hover. */
+const VEHICLES: Record<string, 'float' | 'hover' | 'none'> = {
+  ship: 'float',
+  frigate: 'float',
+  steamship: 'float',
+  destroyer: 'float',
+  plane: 'hover',
+  bomber: 'hover',
+  helicopter: 'hover',
+  rocket: 'hover',
+  tank: 'none',
+  cannon: 'none',
+  artillery: 'none',
+  siege: 'none',
 };
 
 /** Builds a model's parts. `body` and `trim` are the owner's colors. */
@@ -333,7 +126,9 @@ function build(model: string, body: number, trim: number, kit: Kit) {
             [0.03, 0.05],
             [-0.03, -0.05],
           ];
-    for (const [x, z] of spots) figure(kit, x, z, { ...style, body, trim });
+    spots.forEach(([x, z], i) =>
+      person({ x, z }, { beard: i === 1, ...style, body, trim, look: i * 2 + 1 }),
+    );
   };
   switch (model) {
     case 'warrior':
@@ -348,8 +143,14 @@ function build(model: string, body: number, trim: number, kit: Kit) {
       squad(SOLDIER[model]!);
       break;
     case 'scout':
-      figure(kit, 0.03, 0.05, { helmet: 'hood', weapon: 'staff', legs: C.leather, body, trim });
-      figure(kit, -0.04, -0.04, { helmet: 'none', weapon: 'bow', legs: C.leather, body, trim });
+      person(
+        { x: 0.03, z: 0.05 },
+        { helmet: 'hood', weapon: 'staff', legs: C.leather, body, trim, look: 2 },
+      );
+      person(
+        { x: -0.04, z: -0.04 },
+        { helmet: 'none', weapon: 'bow', legs: C.leather, body, trim, look: 3, beard: true },
+      );
       break;
     case 'settler': {
       // A covered wagon, an ox and the family walking beside it.
@@ -358,91 +159,90 @@ function build(model: string, body: number, trim: number, kit: Kit) {
       kit.m.push(put(unit.box, trim, [0, 0.19, 0], [0.2, 0.012, 0.03]));
       for (const x of [-0.07, 0.07])
         for (const z of [0.065, -0.065]) wheel(kit, x, 0.045, z, 0.042);
-      kit.m.push(put(unit.box, 0x8a7a66, [0.19, 0.085, 0], [0.11, 0.06, 0.06]));
-      kit.m.push(put(unit.box, 0x8a7a66, [0.255, 0.1, 0], [0.04, 0.04, 0.04]));
-      for (const [dx, dz] of [
-        [0.15, 0.02],
-        [0.15, -0.02],
-        [0.225, 0.02],
-        [0.225, -0.02],
-      ] as const)
-        kit.m.push(put(unit.box, 0x6e604f, [dx, 0.03, dz], [0.016, 0.06, 0.016]));
-      figure(kit, 0.06, 0.13, { helmet: 'hood', weapon: 'staff', body, trim, legs: C.leather });
+      mount(0.2, 0, { kind: 'ox' });
+      person(
+        { x: 0.06, z: 0.13 },
+        { helmet: 'hood', weapon: 'staff', body, trim, legs: C.leather, look: 1 },
+      );
       break;
     }
     case 'trader': {
       // A pack mule with bundles and a merchant.
-      horse(kit, 0.02, 0, 0x7d6a58);
-      kit.m.push(put(unit.box, trim, [0.0, 0.17, 0.04], [0.08, 0.05, 0.03]));
-      kit.m.push(put(unit.box, body, [0.0, 0.17, -0.04], [0.08, 0.05, 0.03]));
-      kit.m.push(put(unit.box, C.canvas, [0.0, 0.19, 0], [0.09, 0.03, 0.08]));
-      figure(kit, 0.1, 0.1, { helmet: 'hood', weapon: 'staff', body, trim, legs: C.leather });
+      const mule = mount(0.02, 0, { kind: 'mule', cloth: trim });
+      on(mule.rig.body, () => {
+        kit.m.push(put(unit.box, trim, [0.0, mule.back - 0.005, 0.038], [0.07, 0.045, 0.028]));
+        kit.m.push(put(unit.box, body, [0.0, mule.back - 0.005, -0.038], [0.07, 0.045, 0.028]));
+        kit.m.push(put(unit.box, C.canvas, [0.0, mule.back + 0.018, 0], [0.08, 0.026, 0.07]));
+      });
+      person(
+        { x: 0.1, z: 0.1 },
+        { helmet: 'hood', weapon: 'staff', body, trim, legs: C.leather, look: 4, beard: true },
+      );
       break;
     }
     case 'cavalry':
       for (const z of [0.06, -0.06]) {
-        horse(kit, 0, z);
-        rider(kit, -0.01, z, { helmet: 'shako', weapon: 'sword', body, trim, legs: C.white });
+        const h = mount(0, z, { kind: 'horse', cloth: trim });
+        rider(h, -0.005, z, {
+          helmet: 'shako',
+          weapon: 'sword',
+          body,
+          trim,
+          legs: C.white,
+          sleeves: true,
+          skirt: false,
+          look: z > 0 ? 1 : 3,
+        });
       }
       break;
     case 'horseman':
       for (const z of [0.06, -0.06]) {
-        horse(kit, 0, z);
-        rider(kit, -0.01, z, { helmet: 'none', weapon: 'spear', body, trim, legs: C.leather });
+        const h = mount(0, z, { kind: 'horse', cloth: trim, coat: z > 0 ? C.horse : C.horse2 });
+        rider(h, -0.005, z, {
+          helmet: 'none',
+          weapon: 'spear',
+          body,
+          trim,
+          legs: C.leather,
+          look: z > 0 ? 2 : 0,
+          beard: z > 0,
+        });
       }
       break;
     case 'knight':
       for (const z of [0.065, -0.065]) {
-        horse(kit, 0, z, C.horse2, trim);
-        rider(kit, -0.01, z, {
+        const h = mount(0, z, { kind: 'horse', coat: C.horse2, barding: trim });
+        rider(h, -0.005, z, {
           helmet: 'plume',
           weapon: 'pike',
           shield: 'kite',
           armor: C.iron,
+          sleeves: true,
+          cloak: true,
           body,
           trim,
+          look: z > 0 ? 3 : 1,
         });
       }
       break;
     case 'elephant': {
       // A war elephant with a howdah and two riders.
-      const hide = 0x6e6a66;
-      kit.m.push(put(unit.ball, hide, [0, 0.17, 0], [0.15, 0.085, 0.075]));
-      kit.m.push(put(unit.ball, hide, [0.13, 0.2, 0], [0.055, 0.055, 0.05]));
-      for (const z of [0.045, -0.045])
-        kit.m.push(
-          put(
-            unit.box,
-            hide,
-            [0.12, 0.2, z * 1.25],
-            [0.045, 0.07, 0.01],
-            [0, 0.4 * Math.sign(z), 0],
-          ),
-        );
-      kit.m.push(put(unit.cyl, hide, [0.18, 0.13, 0], [0.012, 0.1, 0.012], [0, 0, -0.2]));
-      for (const z of [0.022, -0.022])
-        kit.m.push(put(unit.cone, 0xe8e0c8, [0.17, 0.16, z], [0.008, 0.06, 0.008], [0, 0, -1.9]));
-      for (const [dx, dz] of [
-        [0.07, 0.04],
-        [0.07, -0.04],
-        [-0.07, 0.04],
-        [-0.07, -0.04],
-      ] as const) {
-        kit.m.push(put(unit.cyl, hide, [dx, 0.05, dz], [0.022, 0.1, 0.022]));
-      }
-      kit.m.push(put(unit.box, trim, [-0.01, 0.255, 0], [0.11, 0.04, 0.09]));
-      kit.m.push(put(unit.box, body, [-0.01, 0.235, 0], [0.13, 0.012, 0.11]));
-      figure(kit, 0.0, 0.025, { helmet: 'none', weapon: 'bow', body, trim }, 0.2);
-      figure(kit, -0.03, -0.025, { helmet: 'none', weapon: 'spear', body, trim }, 0.2);
+      const e = mount(0, 0, { kind: 'elephant' });
+      on(e.rig.body, () => {
+        kit.m.push(put(unit.box, trim, [-0.015, e.back + 0.028, 0], [0.1, 0.045, 0.085]));
+        kit.m.push(put(unit.box, body, [-0.015, e.back + 0.003, 0], [0.15, 0.012, 0.13]));
+      });
+      rider(e, 0.005, 0.025, { helmet: 'none', weapon: 'bow', body, trim, look: 2 });
+      rider(e, -0.035, -0.025, { helmet: 'none', weapon: 'spear', body, trim, look: 4 });
       break;
     }
     case 'chariot': {
-      horse(kit, 0.12, 0.035);
-      horse(kit, 0.12, -0.035, C.horse2);
+      mount(0.13, 0.042, { kind: 'horse', cloth: trim });
+      mount(0.13, -0.042, { kind: 'horse', coat: C.horse2, cloth: trim });
       kit.m.push(put(unit.box, trim, [-0.06, 0.08, 0], [0.08, 0.06, 0.1]));
       kit.m.push(put(unit.box, C.wood, [0.04, 0.07, 0], [0.16, 0.012, 0.012]));
       for (const z of [0.065, -0.065]) wheel(kit, -0.06, 0.05, z, 0.05);
-      figure(kit, -0.07, 0.015, { helmet: 'bronze', weapon: 'bow', body, trim }, 0.05);
+      person({ x: -0.07, z: 0.015, y: 0.05 }, { helmet: 'bronze', weapon: 'bow', body, trim });
       break;
     }
     case 'siege': {
@@ -453,7 +253,7 @@ function build(model: string, body: number, trim: number, kit: Kit) {
       kit.m.push(put(unit.box, C.woodDark, [-0.03, 0.15, 0], [0.2, 0.016, 0.016], [0, 0, 0.6]));
       kit.m.push(put(unit.dome, C.leather, [-0.11, 0.1, 0], [0.025, 0.02, 0.025], [Math.PI, 0, 0]));
       for (const x of [-0.07, 0.07]) for (const z of [0.065, -0.065]) wheel(kit, x, 0.04, z, 0.04);
-      figure(kit, -0.18, 0.06, { helmet: 'crest', body, trim });
+      person({ x: -0.18, z: 0.06 }, { helmet: 'crest', armor: C.iron, body, trim, look: 2 });
       break;
     }
     case 'cannon':
@@ -490,8 +290,8 @@ function build(model: string, body: number, trim: number, kit: Kit) {
       for (const z of [0.055, -0.055])
         wheel(kit, 0.01, 0.055, z, 0.055, modern ? C.dark : C.woodDark);
       const crew = modern ? SOLDIER.infantry! : SOLDIER.musket!;
-      figure(kit, -0.16, 0.08, { ...crew, weapon: 'none', body, trim });
-      figure(kit, -0.16, -0.08, { ...crew, weapon: 'none', body, trim });
+      person({ x: -0.16, z: 0.08 }, { ...crew, weapon: 'none', body, trim, look: 1 });
+      person({ x: -0.16, z: -0.08 }, { ...crew, weapon: 'none', body, trim, look: 4 });
       break;
     }
     case 'tank': {
@@ -651,29 +451,38 @@ function build(model: string, body: number, trim: number, kit: Kit) {
       break;
     }
     case 'commander': {
-      horse(kit, 0, 0, C.white, trim);
-      rider(kit, -0.01, 0, {
+      const h = mount(0, 0, { kind: 'horse', coat: C.white, barding: trim });
+      rider(h, -0.005, 0, {
         helmet: 'plume',
         weapon: 'sword',
         armor: C.gold,
+        cloak: true,
+        sleeves: true,
+        beard: true,
         body,
         trim,
         scale: 1.1,
+        look: 3,
       });
       kit.m.push(put(unit.cyl, C.woodDark, [-0.1, 0.24, 0.07], [0.005, 0.4, 0.005]));
       kit.m.push(put(unit.box, body, [-0.06, 0.38, 0.07], [0.08, 0.06, 0.004]));
       kit.m.push(put(unit.box, trim, [-0.06, 0.352, 0.07], [0.08, 0.008, 0.005]));
       break;
     }
-    case 'robed': {
-      kit.m.push(put(unit.cone, C.white, [0, 0.1, 0], [0.05, 0.2, 0.05]));
-      kit.m.push(put(unit.box, trim, [0.001, 0.12, 0], [0.052, 0.012, 0.03]));
-      kit.m.push(put(unit.ball, C.skin, [0, 0.205, 0], [0.026, 0.028, 0.026]));
-      kit.m.push(put(unit.dome, body, [-0.004, 0.21, 0], [0.03, 0.03, 0.03]));
-      kit.m.push(put(unit.cyl, C.wood, [0.04, 0.14, -0.04], [0.005, 0.28, 0.005]));
-      kit.k.push(put(unit.ball, C.gold, [0.04, 0.285, -0.04], [0.014, 0.014, 0.014]));
+    case 'robed':
+      person(
+        { x: 0, z: 0 },
+        {
+          robe: C.white,
+          body: C.white,
+          trim: body,
+          weapon: 'staff',
+          cloak: true,
+          look: 2,
+          beard: true,
+        },
+      );
       break;
-    }
     default:
       squad({ helmet: 'none', weapon: 'staff' }, 2);
   }
@@ -682,6 +491,9 @@ function build(model: string, body: number, trim: number, kit: Kit) {
 export interface UnitGeometry {
   matte: BufferGeometry;
   metal: BufferGeometry | null;
+  /** The skeleton (rest positions) and what moves on it. */
+  bones: BoneDef[];
+  rigs: Rig[];
 }
 
 const cache = new Map<string, UnitGeometry>();
@@ -691,16 +503,18 @@ export function unitGeometry(model: string, body: number, trim: number): UnitGeo
   const key = `${model}:${body}:${trim}`;
   let g = cache.get(key);
   if (!g) {
-    const kit: Kit = { m: [], k: [] };
-    build(model, body, trim, kit);
+    resetRig();
+    build(model, body, trim, rig.out);
+    const motion = VEHICLES[model];
+    if (motion) rig.rigs.push({ kind: 'vehicle', motion });
     const merge = (list: BufferGeometry[]) => {
       if (list.length === 0) return null;
       const out = mergeGeometries(list)!;
       for (const p of list) p.dispose();
-      out.computeVertexNormals();
+      out.computeBoundingSphere();
       return out;
     };
-    g = { matte: merge(kit.m)!, metal: merge(kit.k) };
+    g = { matte: merge(rig.out.m)!, metal: merge(rig.out.k), bones: rig.bones, rigs: rig.rigs };
     cache.set(key, g);
   }
   return g;
