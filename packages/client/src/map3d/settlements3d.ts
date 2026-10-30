@@ -32,7 +32,7 @@ import {
 import { campParts, districtParts, districtStacks, hutParts, wonderParts } from './districts3d';
 import { type Emitter, EffectsLayer } from './effects3d';
 import { naturalWonderParts } from './naturalWonders3d';
-import { G, house, part, scaled, seeded } from './parts';
+import { G, house, off, part, scaled, seeded } from './parts';
 
 /**
  * Settlements in the 3D world: clusters of houses that grow with population (a keep for cities,
@@ -129,42 +129,58 @@ function improvementParts(
   z: number,
   y: number,
   seed: number,
+  /** The ground under a point, so fields lie on slopes instead of floating. */
+  groundAt: (x: number, z: number) => number = () => y,
 ): BufferGeometry[] {
   const r = seeded(seed);
   const rot = r() * Math.PI;
-  const at = (dx: number, dz: number): [number, number] => [
-    x + dx * Math.cos(rot) - dz * Math.sin(rot),
-    z + dx * Math.sin(rot) + dz * Math.cos(rot),
-  ];
+  // Turned the same way `scaled` turns a part, so the pieces of an improvement line up.
+  const at = (dx: number, dz: number): [number, number] => off(x, z, rot, dx, dz);
   const out: BufferGeometry[] = [];
   switch (model) {
     case 'farm': {
-      const fields = [0x9c8a45, 0x6f7a3a, 0xa8914f, 0x5f6b33];
+      // Four fields in different crops, each lying on its own patch of ground, with furrows
+      // running along it, a hedge on two sides, and a farmhouse with a haystack.
+      const fields = [0xb39a4e, 0x6f7f3c, 0xc2a85a, 0x5d6d34];
       [
-        [-0.22, -0.16],
-        [0.2, -0.16],
-        [-0.22, 0.17],
-        [0.2, 0.17],
+        [-0.21, -0.15],
+        [0.2, -0.15],
+        [-0.21, 0.16],
+        [0.2, 0.16],
       ].forEach(([dx, dz], i) => {
         const [px, pz] = at(dx!, dz!);
-        out.push(scaled(G.box, fields[i]!, px, y + 0.012, pz, 0.36, 0.02, 0.27, rot));
-        for (let k = -1; k <= 1; k++) {
-          const [fx, fz] = at(dx!, dz! + k * 0.08);
+        const fy = groundAt(px, pz);
+        const crop = new Color(fields[(i + Math.floor(r() * 2)) % 4]!);
+        out.push(scaled(G.box, crop.getHex(), px, fy + 0.012, pz, 0.36, 0.01, 0.26, rot));
+        for (let k = -2; k <= 2; k++) {
+          const [fx, fz] = at(dx!, dz! + k * 0.048);
           out.push(
             scaled(
               G.box,
-              new Color(fields[i]!).multiplyScalar(0.75).getHex(),
+              crop.clone().multiplyScalar(0.72).getHex(),
               fx,
-              y + 0.024,
+              groundAt(fx, fz) + 0.019,
               fz,
               0.34,
               0.006,
-              0.015,
+              0.012,
               rot,
             ),
           );
         }
+        const [hx, hz] = at(dx!, dz! + (dz! < 0 ? -0.14 : 0.14));
+        out.push(
+          scaled(G.box, 0x3f5228, hx, groundAt(hx, hz) + 0.018, hz, 0.36, 0.028, 0.018, rot),
+        );
       });
+      const [bx, bz] = at(0.02, 0.0);
+      const by = groundAt(bx, bz);
+      out.push(
+        scaled(G.box, 0xd8ccae, bx, by + 0.03, bz, 0.07, 0.06, 0.05, rot),
+        scaled(G.gable, 0x8a4a30, bx, by + 0.058, bz, 0.062, 0.04, 0.078, rot + Math.PI / 2),
+      );
+      const [sx, sz] = at(-0.06, 0.02);
+      out.push(scaled(G.cone, 0xd6b863, sx, groundAt(sx, sz) + 0.028, sz, 0.028, 0.056, 0.028));
       break;
     }
     case 'mine': {
@@ -749,7 +765,17 @@ export class SettlementLayer {
           for (const at of districtStacks(district.model, x, z, ground, t))
             emitters.push({ kind: 'chimney', at });
       } else if (wonder) parts.push(...wonderParts(wonder.model, x, z, ground, t));
-      else if (model) parts.push(...improvementParts(model, x, z, ground, t));
+      else if (model)
+        parts.push(
+          ...improvementParts(
+            model,
+            x,
+            z,
+            ground,
+            t,
+            (px, pz) => Math.max(0, height(px, pz)) - 0.005,
+          ),
+        );
     }
     if (parts.length > 0) {
       const merged = mergeGeometries(parts);
@@ -779,9 +805,9 @@ export class SettlementLayer {
       for (const n of this.world.neighbors(t)) {
         if (ownerOf(n) === view.owner) continue;
         const { c, a, b } = this.edge(t, n);
-        ribbon(pos, col, this.world, c, a, b, 0.015, 0, edgeDark, 0.6, 0.6, 0.045);
-        ribbon(pos, col, this.world, c, a, b, 0.065, 0.015, color, 1, 1, 0.045);
-        ribbon(pos, col, this.world, c, a, b, 0.3, 0.065, color, 0.45, 0, 0.04);
+        ribbon(pos, col, this.world, c, a, b, 0.012, 0, edgeDark, 0.7, 0.7, 0.045);
+        ribbon(pos, col, this.world, c, a, b, 0.05, 0.012, color, 1, 1, 0.045);
+        ribbon(pos, col, this.world, c, a, b, 0.17, 0.05, color, 0.32, 0, 0.04);
       }
     }
     if (pos.length > 0) group.add(ribbonMesh(pos, col));
