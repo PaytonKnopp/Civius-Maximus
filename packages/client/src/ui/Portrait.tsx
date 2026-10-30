@@ -23,6 +23,8 @@ interface Props {
   className?: string;
   /** Crop: the whole bust (default) or just the head, for small round chips. */
   crop?: 'bust' | 'head';
+  /** The civ's architecture: the landmark on the horizon behind them. */
+  scene?: string;
 }
 
 // --- Color helpers ------------------------------------------------------------------------------
@@ -997,6 +999,128 @@ const FALLBACK: Spec = {
   expression: 'neutral',
 };
 
+// --- The painted scene behind a bust -----------------------------------------------------------
+
+/** A landmark of the civ's architecture on the far hills, as a silhouette. */
+function landmark(kind: string, color: string): ReactNode {
+  switch (kind) {
+    case 'european':
+      return (
+        <path
+          d="M150,178V140h6v-6h4v6h4v-6h4v6h6v38ZM178,178v-50h-3v-6h3v-4h4v4h3v6h-3v50Z M156,178v-22h20v22Z"
+          fill={color}
+        />
+      );
+    case 'northern':
+      return <path d="M152,178l10-14h-4l9-14h-4l9-16 9 16h-4l9 14h-4l10 14Z" fill={color} />;
+    case 'east_asian':
+      return (
+        <path
+          d="M150,178h44v-4h-4l-6-8h-4l3-6h-24l3 6h-4l-6 8h-4Z M158,160l5-8h-3l4-8h14l4 8h-3l5 8Z M164,144l4-7h8l4 7Z M171,137v-8h2v8Z"
+          fill={color}
+        />
+      );
+    case 'south_asian':
+      return (
+        <path
+          d="M148,178h48v-6h-6v-10c0-12-7-20-14-22v-6h-2v-4h-1v4h-2v6c-7 2-14 10-14 22v10h-9Z"
+          fill={color}
+        />
+      );
+    case 'middle_eastern':
+      return (
+        <path
+          d="M150,178h40v-14c0-10-8-18-16-19v-4h-2v4c-8 1-16 9-16 19v-1h-6Z M188,178v-40l2-6 2 6v40Z M151,178v-30l1.6-5 1.6 5v30Z"
+          fill={color}
+        />
+      );
+    case 'african':
+      return (
+        <path
+          d="M150,178v-8l10-12 10 12v8Z M168,178v-10l9-11 9 11v10Z M184,178v-34c-6-1-10-6-8-10 3 0 6 2 8 4 0-6 3-10 6-12 3 2 6 6 6 12 2-2 5-4 8-4 2 4-2 9-8 10v34Z"
+          fill={color}
+        />
+      );
+    case 'american':
+      return (
+        <path d="M146,178h50v-6h-5v-7h-5v-7h-5v-7h-6v-6h-8v6h-6v7h-5v7h-5v7h-5Z" fill={color} />
+      );
+    case 'steppe':
+      return (
+        <path
+          d="M148,178c0-9 5-14 13-14s13 5 13 14Z M168,178c0-11 6-17 15-17s15 6 15 17Z M159,164l2-6 2 6Z M181,161l2-6 2 6Z"
+          fill={color}
+        />
+      );
+    default:
+      // A temple: steps, columns, a pediment.
+      return (
+        <g fill={color}>
+          <path d="M146,178h50v-4h-50Z M148,174h46v-3h-46Z M146,146h50l-25-12Z M146,146h50v3h-50Z" />
+          {[150, 159, 168, 177, 186].map((x) => (
+            <rect key={x} x={x} y={149} width={4.5} height={22} />
+          ))}
+        </g>
+      );
+  }
+}
+
+/** Dusk behind the leader: a warm horizon, far hills, a landmark of their civ, soft clouds. */
+function scene(uid: string, primary: string, kind: string): ReactNode {
+  const far = mix(dark(primary, 0.55), '#3a3a4a', 0.35);
+  const near = dark(primary, 0.78);
+  return (
+    <g>
+      <rect x="0" y="0" width="200" height="240" fill={`url(#sky${uid})`} />
+      <ellipse
+        cx="150"
+        cy="150"
+        rx="90"
+        ry="46"
+        fill="#ffd79a"
+        opacity="0.22"
+        filter={`url(#soft${uid})`}
+      />
+      <g opacity="0.3" filter={`url(#soft${uid})`} fill="#ffe8c4">
+        <ellipse cx="40" cy="62" rx="34" ry="5" />
+        <ellipse cx="165" cy="88" rx="30" ry="4" />
+        <ellipse cx="120" cy="40" rx="22" ry="3" />
+      </g>
+      <path
+        d="M0,170C30,152 60,158 90,150C120,142 150,156 200,146V240H0Z"
+        fill={far}
+        opacity="0.85"
+      />
+      <g opacity="0.85">{landmark(kind, mix(far, '#000', 0.2))}</g>
+      <path d="M0,190C40,176 80,186 120,178C150,172 175,180 200,174V240H0Z" fill={near} />
+    </g>
+  );
+}
+
+/**
+ * Painted form on the face: soft shadow on the side away from the light, hollows under the
+ * cheekbones and along the jaw, light on the forehead, the cheek, the bridge of the nose and the
+ * chin. All blurred and clipped to the face, so it reads as modeling, not lines.
+ */
+function modeling(uid: string, f: Face, skin: string): ReactNode {
+  const shade = dark(skin, 0.42);
+  const lit = light(skin, 0.38);
+  return (
+    <g clipPath={`url(#face${uid})`} filter={`url(#soft${uid})`}>
+      <ellipse cx={100 + f.w * 0.78} cy={110} rx={f.w * 0.55} ry={40} fill={shade} opacity={0.42} />
+      <ellipse cx={100 - f.w * 0.98} cy={98} rx={6} ry={20} fill={shade} opacity={0.3} />
+      <ellipse cx={100 + f.w * 0.55} cy={124} rx={8} ry={5} fill={shade} opacity={0.35} />
+      <ellipse cx={100 - f.w * 0.55} cy={124} rx={7} ry={4} fill={shade} opacity={0.22} />
+      <ellipse cx={100} cy={f.bottom - 3} rx={f.jaw * 0.9} ry={7} fill={shade} opacity={0.28} />
+      <ellipse cx={100} cy={121.5} rx={6} ry={2.2} fill={shade} opacity={0.45} />
+      <ellipse cx={92} cy={f.top + 20} rx={16} ry={9} fill={lit} opacity={0.5} />
+      <ellipse cx={85} cy={111} rx={8} ry={6} fill={lit} opacity={0.42} />
+      <ellipse cx={100} cy={108} rx={2.2} ry={8} fill={lit} opacity={0.55} />
+      <ellipse cx={98} cy={f.bottom - 9} rx={6} ry={3} fill={lit} opacity={0.35} />
+    </g>
+  );
+}
+
 export function Portrait({
   portrait,
   primary,
@@ -1007,6 +1131,7 @@ export function Portrait({
   title,
   className,
   crop = 'bust',
+  scene: sceneKind = 'mediterranean',
 }: Props) {
   const uid = useId().replace(/:/g, '');
   const spec = portrait ?? FALLBACK;
@@ -1050,6 +1175,18 @@ export function Portrait({
           <stop offset="0.55" stopColor={skin} />
           <stop offset="1" stopColor={dark(skin, 0.18)} />
         </linearGradient>
+        <linearGradient id={`sky${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={mix(dark(primary, 0.72), '#1a2230', 0.4)} />
+          <stop offset="0.45" stopColor={mix(dark(primary, 0.35), '#c88a5a', 0.3)} />
+          <stop offset="0.66" stopColor={mix('#f0c27c', primary, 0.22)} />
+          <stop offset="1" stopColor={dark(primary, 0.6)} />
+        </linearGradient>
+        <filter id={`soft${uid}`} x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3.2" />
+        </filter>
+        <clipPath id={`face${uid}`}>
+          <path d={facePath(f)} />
+        </clipPath>
         <linearGradient id={`light${uid}`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#fff6e0" stopOpacity="0.22" />
           <stop offset="0.5" stopColor="#fff6e0" stopOpacity="0" />
@@ -1086,21 +1223,11 @@ export function Portrait({
           </filter>
         )}
       </defs>
-      <rect x="0" y="0" width="200" height="240" fill={`url(#bg${uid})`} />
-      <g opacity="0.12" stroke={light(secondary, 0.2)} strokeWidth="1">
-        {Array.from({ length: 18 }, (_, i) => {
-          const a = (i / 18) * Math.PI * 2;
-          return (
-            <line
-              key={i}
-              x1={100}
-              y1={96}
-              x2={100 + Math.cos(a) * 180}
-              y2={96 + Math.sin(a) * 180}
-            />
-          );
-        })}
-      </g>
+      {crop === 'head' ? (
+        <rect x="0" y="0" width="200" height="240" fill={`url(#bg${uid})`} />
+      ) : (
+        scene(uid, primary, sceneKind)
+      )}
       <g filter={painted ? `url(#paint${uid})` : undefined}>
         {hairBack(spec.hairStyle, spec.hair, f)}
         {spec.headwear === 'nemes' || spec.headwear === 'veil' ? headwear(spec, f) : null}
@@ -1120,6 +1247,7 @@ export function Portrait({
         <path d={facePath(f)} fill={`url(#skin${uid})`} />
         <ellipse cx={83} cy={117} rx={7} ry={5} fill="#d0604e" opacity={0.13} />
         <ellipse cx={117} cy={117} rx={7} ry={5} fill="#d0604e" opacity={0.13} />
+        {modeling(uid, f, skin)}
         {eyes(spec, skin)}
         {/* Nose. */}
         <path
@@ -1143,6 +1271,15 @@ export function Portrait({
           f,
           spec.trim,
         )}
+        {/* A warm rim of light on the shoulders from the sunset behind. */}
+        <path
+          d={SHOULDERS}
+          fill="none"
+          stroke="#ffd9a0"
+          strokeWidth={3}
+          opacity={0.32}
+          filter={`url(#soft${uid})`}
+        />
         {/* Key light from the upper left, shade to the lower right. */}
         <rect x="0" y="0" width="200" height="240" fill={`url(#light${uid})`} />
       </g>

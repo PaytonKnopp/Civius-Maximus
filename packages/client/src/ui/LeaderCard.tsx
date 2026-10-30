@@ -11,6 +11,8 @@ export function leaderArt(content: CompiledContent, leaderId: string, civId?: st
     primary: civ?.colors.primary ?? '#5a4a3a',
     secondary: civ?.colors.secondary ?? '#e8d9a8',
     emblem: civ?.emblem ?? 'star',
+    /** The civ's architecture, for the scene behind the portrait. */
+    scene: civ?.architecture ?? 'mediterranean',
     name: leader ? resolveText(content, leader.name) : leaderId,
     title: leader?.title ? resolveText(content, leader.title) : '',
     civName: civ ? resolveText(content, civ.name) : '',
@@ -73,6 +75,7 @@ export function LeaderCard({
           portrait={art.portrait}
           primary={art.primary}
           secondary={art.secondary}
+          scene={art.scene}
           size={size}
           painted={painted}
           title={art.name}

@@ -242,7 +242,8 @@ function noticeFor(
   const name = (id: string) => state.settlements[id]?.name ?? 'A settlement';
   switch (e.type) {
     case 'turn_started':
-      return `Turn ${e.turn}`;
+      // The turn banner announces it.
+      return undefined;
     case 'settlement_founded':
       return e.owner === ME
         ? `${e.name} founded`
@@ -853,6 +854,16 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   useEffect(() => {
     music.setEra(era?.order ?? 1, architecture);
   }, [era?.order, architecture]);
+  // A banner sweeps across when a new turn begins (polish P8).
+  const [banner, setBanner] = useState<number | null>(null);
+  const bannerTurn = useRef(state.turn);
+  useEffect(() => {
+    if (state.turn === bannerTurn.current) return;
+    bannerTurn.current = state.turn;
+    setBanner(state.turn);
+    const t = window.setTimeout(() => setBanner(null), 2600);
+    return () => window.clearTimeout(t);
+  }, [state.turn]);
   // A hint counts as seen when it first shows, and stays up until dismissed or the turn ends.
   const [hintNow, setHintNow] = useState<{ id: string; turn: number } | null>(null);
   const hintsFree =
@@ -1741,6 +1752,16 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           </button>
         </div>
       </header>
+      {banner !== null && (
+        <div className="turn-banner" aria-hidden="true" key={banner}>
+          <span className="turn-banner-rule" />
+          <span className="turn-banner-text">
+            <span className="turn-banner-turn">Turn {banner}</span>
+            {era && <span className="turn-banner-era">{resolveText(content, era.name)}</span>}
+          </span>
+          <span className="turn-banner-rule" />
+        </div>
+      )}
 
       <div className="players">
         {state.playerOrder.map((p) => {

@@ -112,6 +112,17 @@ stay faceted. Borders are a crisp line in the owner's color with a narrow glow i
 are a patchwork of four crops with furrows, each field lying on its own patch of ground, a
 hedge, a farmhouse and a haystack; every improvement's pieces now line up with each other.
 
+**Built in polish P7: leaders.** Every portrait stands before its own dusk: a sky going from
+the civ's color to a warm horizon, a low sun glow, soft clouds, far and near hills, and a
+landmark of the civ's architecture on the horizon (a temple, a castle, a stave church, a
+pagoda, a stupa, a dome and minaret, round huts under a baobab, a stepped pyramid, yurts).
+Faces are painted with form: soft shadow on the side away from the light, hollows under the
+cheekbones and along the jaw, light on the forehead, cheek, nose and chin, all blurred and
+clipped to the face; a warm rim of light from the sunset catches the shoulders. Big portraits
+(the intro, a leader speaking, your leader in setup) breathe slowly. These are still drawn in
+code; painted art made with an image generator can replace any of them through
+`portrait.image` ([portrait-style-guide.md](portrait-style-guide.md)).
+
 **Built so far (V1 final, F4): leaders and emblems.** Every leader has an illustrated portrait
 drawn in vector from traits in content (`leader.portrait`: face shape, skin, eyes, hair style,
 beard, headwear from laurels and crowns to a mian or a bicorne, clothes from togas to kimonos,
