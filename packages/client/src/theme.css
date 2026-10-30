@@ -1579,3 +1579,31 @@ input[type='range'] {
   line-height: 1.55;
   color: var(--text);
 }
+
+/* --- Phones (polish P9): the unit and city cards are bottom sheets, leaving the map in view. -- */
+
+@media (max-width: 640px) {
+  .unit-panel,
+  .settlement-panel {
+    max-height: 46vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .unit-head h3 {
+    font-size: 17px;
+  }
+
+  .unit-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .turn-banner-turn {
+    font-size: 26px;
+  }
+
+  .turn-banner-rule {
+    width: 48px;
+  }
+}

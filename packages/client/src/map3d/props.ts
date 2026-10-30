@@ -8,7 +8,7 @@ import {
   Float32BufferAttribute,
   IcosahedronGeometry,
 } from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { center3 } from './sampler';
 
 /**
@@ -36,7 +36,7 @@ const flat = (g: BufferGeometry) => (g.index ? g.toNonIndexed() : g);
  * so canopies read as volumes of leaves rather than solid shapes. Instance colors tint on top.
  */
 function shade(g: BufferGeometry, low: number, high: number, mottle = 0.07): BufferGeometry {
-  const out = flat(g);
+  const out = g;
   out.computeBoundingBox();
   const { min, max } = out.boundingBox!;
   const pos = out.getAttribute('position');
@@ -54,7 +54,8 @@ function shade(g: BufferGeometry, low: number, high: number, mottle = 0.07): Buf
 
 /** A leafy lobe: a smooth sphere with a lumpy outline (positions pushed in and out). */
 function lobe(r: number, x: number, y: number, z: number, sy = 1): BufferGeometry {
-  const g = new IcosahedronGeometry(r, 2);
+  // Shared vertices (indexed): 42 per lobe, so a forest of thousands of trees stays light.
+  const g = mergeVertices(new IcosahedronGeometry(r, 1).deleteAttribute('uv'));
   const pos = g.getAttribute('position');
   for (let i = 0; i < pos.count; i++) {
     const px = pos.getX(i);
@@ -77,10 +78,10 @@ export function propGeometries(): Record<PropKind, BufferGeometry> {
   return {
     pineCrown: shade(
       mergeGeometries([
-        flat(new ConeGeometry(0.2, 0.34, 11).translate(0, 0.3, 0)),
-        flat(new ConeGeometry(0.165, 0.3, 11).translate(0, 0.46, 0)),
-        flat(new ConeGeometry(0.125, 0.26, 10).translate(0, 0.6, 0)),
-        flat(new ConeGeometry(0.08, 0.2, 9).translate(0, 0.73, 0)),
+        new ConeGeometry(0.2, 0.34, 11).translate(0, 0.3, 0),
+        new ConeGeometry(0.165, 0.3, 11).translate(0, 0.46, 0),
+        new ConeGeometry(0.125, 0.26, 10).translate(0, 0.6, 0),
+        new ConeGeometry(0.08, 0.2, 9).translate(0, 0.73, 0),
       ])!,
       0.45,
       1.12,

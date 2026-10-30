@@ -129,8 +129,14 @@ export function put(
   src.deleteAttribute('uv');
   qt.setFromEuler(eu.set(rot[0], rot[1], rot[2]));
   src.applyMatrix4(m4.compose(new Vector3(...at), qt, new Vector3(...s)));
-  const out = src.index ? src.toNonIndexed() : src;
-  if (!rig.smooth) out.computeVertexNormals();
+  // Every part ends up indexed, so they all merge: smooth parts keep their shared vertices
+  // (a fifth of the size); faceted ones get a vertex per corner, one normal per face.
+  let out = src;
+  if (!rig.smooth || !src.index) {
+    out = src.index ? src.toNonIndexed() : src;
+    if (!rig.smooth) out.computeVertexNormals();
+    out.setIndex([...Array(out.getAttribute('position').count).keys()]);
+  }
   const n = out.getAttribute('position').count;
   tmp.set(color);
   const col = new Float32Array(n * 3);
@@ -158,7 +164,7 @@ export function limb(
   ra: number,
   rb: number,
   color: number,
-  segments = 10,
+  segments = 8,
 ): BufferGeometry {
   const va = new Vector3(...a);
   const vb = new Vector3(...b);

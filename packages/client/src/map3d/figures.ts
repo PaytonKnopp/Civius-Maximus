@@ -35,10 +35,12 @@ import {
 // --- Shapes --------------------------------------------------------------------------------------
 
 const G = {
-  ball: new SphereGeometry(1, 16, 12),
+  ball: new SphereGeometry(1, 14, 10),
+  /** Small round parts (eyes, ears, joints, hands): fewer faces, nobody sees them. */
+  bead: new SphereGeometry(1, 7, 5),
   cap: new SphereGeometry(1, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2),
   hood: new SphereGeometry(1, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.62),
-  cyl: new CylinderGeometry(1, 1, 1, 14),
+  cyl: new CylinderGeometry(1, 1, 1, 10),
   disk: new CylinderGeometry(1, 1, 1, 22),
   tri: new CylinderGeometry(1, 1, 1, 3),
   cone: new ConeGeometry(1, 1, 12),
@@ -234,7 +236,7 @@ export function person(stand: Stand, o: FigureOpts): PersonRig {
       }
       smooth(thigh, () => {
         rig.out.m.push(limb(hip, knee, 0.0118 * s, 0.009 * s, legs));
-        m(G.ball, legs, knee, S(0.0092, 0.0092, 0.0092));
+        m(G.bead, legs, knee, S(0.0092, 0.0092, 0.0092));
       });
       smooth(shin, () => {
         rig.out.m.push(limb(knee, ankle, 0.0088 * s, 0.0068 * s, PALETTE.boot));
@@ -295,13 +297,13 @@ export function person(stand: Stand, o: FigureOpts): PersonRig {
     m(G.ball, skin, P(0.0085, 0.2325, 0), S(0.0118, 0.0105, 0.0128));
     m(G.cone, skin, P(0.0208, 0.2425, 0), S(0.0034, 0.0085, 0.0034), [0, 0, -Math.PI / 2]);
     for (const side of [-1, 1]) {
-      m(G.ball, PALETTE.eye, P(0.0172, 0.2468, side * 0.0074), S(0.0026, 0.0028, 0.0026));
+      m(G.bead, PALETTE.eye, P(0.0172, 0.2468, side * 0.0074), S(0.0026, 0.0028, 0.0026));
       m(G.box, hair, P(0.0184, 0.2512, side * 0.0076), S(0.0022, 0.0018, 0.0078), [
         side * 0.18,
         0,
         0,
       ]);
-      m(G.ball, skin, P(-0.001, 0.243, side * 0.0196), S(0.0042, 0.006, 0.0032));
+      m(G.bead, skin, P(-0.001, 0.243, side * 0.0196), S(0.0042, 0.006, 0.0032));
     }
     m(G.box, PALETTE.lip, P(0.0192, 0.2338, 0), S(0.002, 0.0016, 0.0075));
     if (o.beard ?? false) m(G.ball, hair, P(0.0105, 0.2295, 0), S(0.0118, 0.0125, 0.0158));
@@ -316,11 +318,11 @@ export function person(stand: Stand, o: FigureOpts): PersonRig {
     smooth(arm, () => {
       m(G.ball, o.body, sh, S(0.0112, 0.0105, 0.0112));
       rig.out.m.push(limb(sh, el, 0.0088 * s, 0.0074 * s, o.body));
-      m(G.ball, o.sleeves ? o.body : skin, el, S(0.0074, 0.0074, 0.0074));
+      m(G.bead, o.sleeves ? o.body : skin, el, S(0.0074, 0.0074, 0.0074));
     });
     smooth(fore, () => {
       rig.out.m.push(limb(el, ha, 0.0072 * s, 0.006 * s, robed ? o.robe! : forearm));
-      m(G.ball, skin, ha, S(0.0068, 0.0072, 0.0064));
+      m(G.bead, skin, ha, S(0.0068, 0.0072, 0.0064));
     });
   }
 
