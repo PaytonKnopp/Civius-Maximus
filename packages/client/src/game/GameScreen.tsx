@@ -90,6 +90,7 @@ import { VictoriesScreen } from './VictoriesScreen';
 import { GraphsScreen, HistoryChart } from './GraphsScreen';
 import { CivilopediaScreen } from './CivilopediaScreen';
 import { HelpScreen } from './HelpScreen';
+import { ChatPanel } from './ChatPanel';
 import { recordGame, replayOf } from './hallOfFame';
 import { ReplayView } from './ReplayView';
 import { adviceFor, advisorsOn, setAdvisors } from './advisors';
@@ -801,6 +802,30 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   );
 
   const colors = useMemo(() => playerColors(content, state), [content, state.playerOrder]);
+  // Online extras (F20): map pings for a few seconds, and the turn timer's countdown.
+  const [pings, setPings] = useState<{ tile: number; from: string; at: number }[]>([]);
+  useEffect(() => {
+    if (!online) return;
+    return online.onPing((p) => {
+      const at = Date.now();
+      setPings((list) => [
+        ...list.filter((x) => at - x.at < 6000),
+        { tile: p.tile, from: p.from, at },
+      ]);
+      notify(`${p.from} pinged the map`);
+      setTimeout(() => setPings((list) => list.filter((x) => x.at !== at)), 6000);
+    });
+  }, [online, notify]);
+  const hoverRef = useRef<number | undefined>(undefined);
+  hoverRef.current = hover;
+  const [now, setNow] = useState(() => Date.now());
+  const deadline = online?.deadline() ?? null;
+  useEffect(() => {
+    if (deadline === null) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [deadline]);
+  const secondsLeft = deadline === null ? null : Math.max(0, Math.ceil((deadline - now) / 1000));
   const fog = useMemo(() => fogOfWar(ctx, state, viewer), [ctx, state, viewer]);
   const units = useMemo(
     () => unitViews(ctx, state, viewer, fog, colors),
@@ -1218,8 +1243,12 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     hover,
   ]);
   const highlights = useMemo(
-    () => [...lensHighlights, ...choiceHighlights],
-    [lensHighlights, choiceHighlights],
+    () => [
+      ...lensHighlights,
+      ...choiceHighlights,
+      ...pings.map((p) => ({ tile: p.tile, tone: 'lens' as const, label: '!', color: 0xffd040 })),
+    ],
+    [lensHighlights, choiceHighlights, pings],
   );
   useEffect(() => {
     viewRef.current?.setHighlights(highlights);
@@ -1486,6 +1515,8 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         e.preventDefault();
         setOverlay({ kind: 'pedia' });
       } else if (e.key === 'l') setLens((l) => LENSES[(LENSES.indexOf(l) + 1) % LENSES.length]!);
+      else if (e.key === 'm' && game.online && hoverRef.current !== undefined)
+        game.online.ping(hoverRef.current);
       else if (e.key === 'Escape') {
         if (placing) setPlacing(null);
         else if (nuking) {
@@ -1755,6 +1786,12 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           );
         })}
       </div>
+      {online && (
+        <ChatPanel
+          online={online}
+          colorOf={(p) => (p && colors[p] ? cssColor(colors[p]!.main) : undefined)}
+        />
+      )}
       {online && (away.length > 0 || cutOff) && (
         <div className="online-bar" role="status">
           {cutOff ? (
@@ -2024,6 +2061,21 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           <span className="next-label">{busy ? 'Rivals are moving…' : next.label}</span>
           <kbd>Enter</kbd>
         </button>
+        {secondsLeft !== null && state.status === 'playing' && (
+          <div className={`turn-timer ${secondsLeft <= 15 ? 'low' : ''}`} role="timer">
+            ⏱ {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')} left this
+            turn
+          </div>
+        )}
+        {online && next.kind === 'waiting' && !busy && (
+          <button
+            type="button"
+            className="ghost small unend"
+            onClick={() => act({ type: 'unend_turn', player: viewer })}
+          >
+            Not done yet
+          </button>
+        )}
         <Minimap
           ctx={ctx}
           state={state}

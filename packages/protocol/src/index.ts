@@ -1,7 +1,7 @@
 import type { Action, GameEvent, GameState, MapTile, PlayerId, RuleError } from '@cx/engine';
 
 /** Version of the client <-> host message protocol. Clients and hosts must match. */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 /** Someone in an online game's lobby, or (once it started) a human seat. */
 export interface SeatInfo {
@@ -11,13 +11,36 @@ export interface SeatInfo {
   host: boolean;
   /** Connected right now (the host always is). */
   online: boolean;
+  /** The leader they picked in the lobby (a `leader` content id), or null for a random one. */
+  leader?: string | null;
+}
+
+/** A line of chat (V1 final F20). */
+export interface ChatLine {
+  from: string;
+  /** The seat that said it, once the game started. */
+  player: PlayerId | null;
+  text: string;
+  /** The game turn it was said on (0 in the lobby). */
+  turn: number;
+}
+
+/** A map ping: someone pointing at a tile for everyone. */
+export interface Ping {
+  from: string;
+  player: PlayerId | null;
+  tile: number;
 }
 
 /** Client → host. */
 export type ClientMessage =
   | { t: 'hello'; protocol: number; contentHash: string; name: string }
   /** `id`s count up; each comes back in a `result` (and as a view's `ack` if it was applied). */
-  | { t: 'act'; id: number; action: Action };
+  | { t: 'act'; id: number; action: Action }
+  | { t: 'chat'; text: string }
+  | { t: 'ping'; tile: number }
+  /** In the lobby: the leader to play (null: random). */
+  | { t: 'pick'; leader: string | null };
 
 /** Host → client. */
 export type HostMessage =
@@ -28,7 +51,11 @@ export type HostMessage =
   | { t: 'view'; delta: ViewDelta; events: GameEvent[]; busy: boolean; ack: number }
   | { t: 'result'; id: number; error: RuleError | null }
   /** Turned away (wrong version, the game is full...): the connection closes. */
-  | { t: 'refused'; reason: string };
+  | { t: 'refused'; reason: string }
+  | { t: 'chat'; line: ChatLine }
+  | { t: 'ping'; ping: Ping }
+  /** The turn timer: seconds left this turn (null: no timer, or it isn't running). */
+  | { t: 'timer'; seconds: number | null };
 
 /**
  * A view of the game as the changes from the previous one sent (or the whole of it). Map tiles

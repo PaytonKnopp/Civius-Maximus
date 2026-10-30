@@ -25,6 +25,8 @@ const KEYS: [string, string][] = [
   ['E', 'Eras and ages: era score, dedications, timeline'],
   ['H', 'Graphs'],
   ['L', 'Next map lens'],
+  ['M', 'Online: ping the tile under the mouse for everyone'],
+  ['/', 'Online: chat'],
   ['?', 'This screen'],
   ['F1', 'Civilopedia: every unit, building, wonder, leader and rule'],
 ];

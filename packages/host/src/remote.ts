@@ -10,8 +10,10 @@ import {
 } from '@cx/engine';
 import {
   applyDelta,
+  type ChatLine,
   type ClientMessage,
   type HostMessage,
+  type Ping,
   PROTOCOL_VERSION,
   type SeatInfo,
 } from '@cx/protocol';
@@ -59,6 +61,10 @@ export class RemoteGame implements GameHandle {
   private nextId = 1;
   private listeners = new Set<GameListener>();
   private watchers = new Set<() => void>();
+  private chatLog: ChatLine[] = [];
+  private chatFns = new Set<(line: ChatLine) => void>();
+  private pingFns = new Set<(ping: Ping) => void>();
+  private deadlineAt: number | null = null;
 
   constructor(
     private readonly net: ClientTransport<ClientMessage, HostMessage>,
@@ -80,6 +86,21 @@ export class RemoteGame implements GameHandle {
         this.watchers.add(fn);
         return () => this.watchers.delete(fn);
       },
+      chat: () => this.chatLog,
+      say: (text) => net.send({ t: 'chat', text }),
+      ping: (tile) => {
+        net.send({ t: 'ping', tile });
+      },
+      onChat: (fn) => {
+        this.chatFns.add(fn);
+        return () => this.chatFns.delete(fn);
+      },
+      onPing: (fn) => {
+        this.pingFns.add(fn);
+        return () => this.pingFns.delete(fn);
+      },
+      deadline: () => this.deadlineAt,
+      pick: (leader) => net.send({ t: 'pick', leader }),
       leave: () => net.close(),
     };
   }
@@ -155,6 +176,18 @@ export class RemoteGame implements GameHandle {
       }
       case 'refused':
         this.ended = m.reason;
+        this.changed();
+        break;
+      case 'chat':
+        this.chatLog = [...this.chatLog, m.line].slice(-200);
+        for (const fn of this.chatFns) fn(m.line);
+        this.changed();
+        break;
+      case 'ping':
+        for (const fn of this.pingFns) fn(m.ping);
+        break;
+      case 'timer':
+        this.deadlineAt = m.seconds === null ? null : Date.now() + m.seconds * 1000;
         this.changed();
         break;
     }
