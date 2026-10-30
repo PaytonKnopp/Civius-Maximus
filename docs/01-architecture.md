@@ -143,9 +143,10 @@ whole view is about 600 KB, mostly tiles. Clients play their own actions ahead o
 host's next view replaces the guess. The host autosaves the real game; hosting it again later
 gives the same seats back to friends who rejoin with their name. A test in
 `packages/host/src/online.test.ts` checks that every client holds exactly its own view.
-Not yet: accounts, cloud saves, chat, turn timers, AI taking over an absent seat (the host can
-end an absent player's turn instead, D83), host handoff, and a relay (TURN) server for the few
-networks where browsers can't connect directly.
+V1 final added chat, map pings, un-end turn, turn timers and an AI taking over an absent seat
+(F20), and accounts, cloud saves and public lobbies (F21, switched on by configuration). Not
+yet: host handoff, and a relay (TURN) server for the few networks where browsers can't connect
+directly.
 
 ### Trade-offs of a player-hosted game (honest)
 

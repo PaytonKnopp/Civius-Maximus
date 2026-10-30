@@ -161,8 +161,9 @@ features on top.
 - 🎮 **Checkpoint:** first online game between you two, then a 4–8 player game with more friends.
 - **Built in the V1 build:** hosting in the browser, join by code over WebRTC, per-player views
   (with the test), simultaneous turns, rejoining a seat, ending an absent player's turn, the
-  host's autosave and hosting it again. Not yet: Supabase, un-end, dynamic turns, timers, AI
-  takeover, cloud saves, host handoff, chat, pings, notifications (see 01, "Built so far").
+  host's autosave and hosting it again. V1 final added un-end, timers, AI takeover, chat and
+  pings (F20) and Supabase accounts, cloud saves and public lobbies (F21). Not yet: dynamic
+  turns, host handoff, notifications.
 
 
 ### M14 · Deploy
