@@ -45,9 +45,11 @@ export function HomeScreen(props: Props) {
   return (
     <div className="home" role="dialog" aria-label="Civius Maximus">
       <div className="home-card">
-        <h1 className="home-title">Civius Maximus</h1>
-        <p className="home-sub">Build an empire to stand the test of time.</p>
-        <div className="home-actions">
+        <div className="home-brand">
+          <h1 className="home-title">Civius Maximus</h1>
+          <p className="home-sub">Build an empire to stand the test of time.</p>
+        </div>
+        <nav className="home-actions" aria-label="Main menu">
           {autosave && (
             <button type="button" className="primary" onClick={() => onContinue(autosave.state)}>
               Continue <span className="muted">· turn {autosave.turn}</span>
@@ -70,14 +72,16 @@ export function HomeScreen(props: Props) {
           <button type="button" onClick={onLoadGame}>
             Load game…
           </button>
+        </nav>
+        <div className="home-links">
           <button type="button" className="ghost" onClick={props.onHallOfFame}>
             Hall of Fame
           </button>
-          <button type="button" className="ghost" onClick={props.onAccount}>
-            {cloud()?.session ? `Account · ${cloud()!.session!.name}` : 'Account'}
-          </button>
           <button type="button" className="ghost" onClick={props.onPedia}>
             Civilopedia
+          </button>
+          <button type="button" className="ghost" onClick={props.onAccount}>
+            {cloud()?.session ? `Account · ${cloud()!.session!.name}` : 'Account'}
           </button>
           <button type="button" className="ghost" onClick={onMapLab}>
             Map Lab

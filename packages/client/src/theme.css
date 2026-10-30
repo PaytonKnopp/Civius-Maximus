@@ -1258,3 +1258,186 @@ input[type='range'] {
   margin-top: 18px;
   line-height: 1.6;
 }
+
+/* --- The title screen (polish P6) ------------------------------------------------------------
+   The menu stands in a column on the left over the living world, like the Civ games' title
+   screens; the game's HUD hides while it's open. */
+
+.app:has(.home) :is(.topbar, .trackers, .players, .corner, .hint-card, .notices, .game-bar) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.home {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(5, 9, 13, 0.94) 0%,
+      rgba(5, 9, 13, 0.82) 30%,
+      rgba(5, 9, 13, 0.25) 62%,
+      rgba(5, 9, 13, 0.05) 100%
+    ),
+    linear-gradient(0deg, rgba(5, 9, 13, 0.75), transparent 35%);
+  animation: fade-in 600ms var(--ease);
+}
+
+.home-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+  width: min(460px, 100%);
+  max-width: none;
+  margin: 0;
+  padding: 48px 56px 36px max(48px, env(safe-area-inset-left, 0px));
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  text-align: left;
+}
+
+.home-card::before {
+  display: none;
+}
+
+.home-brand::before {
+  content: '';
+  display: block;
+  width: 70px;
+  height: 44px;
+  margin-bottom: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 84 52'%3E%3Cg fill='none' stroke='%23d2ac5c' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M42 48C24 46 12 34 10 14M42 48C60 46 72 34 74 14'/%3E%3C/g%3E%3Cg fill='%23d2ac5c'%3E%3Cellipse cx='12' cy='22' rx='3' ry='6' transform='rotate(-25 12 22)'/%3E%3Cellipse cx='16' cy='31' rx='3' ry='6' transform='rotate(-45 16 31)'/%3E%3Cellipse cx='23' cy='39' rx='3' ry='6' transform='rotate(-62 23 39)'/%3E%3Cellipse cx='32' cy='45' rx='3' ry='6' transform='rotate(-78 32 45)'/%3E%3Cellipse cx='72' cy='22' rx='3' ry='6' transform='rotate(25 72 22)'/%3E%3Cellipse cx='68' cy='31' rx='3' ry='6' transform='rotate(45 68 31)'/%3E%3Cellipse cx='61' cy='39' rx='3' ry='6' transform='rotate(62 61 39)'/%3E%3Cellipse cx='52' cy='45' rx='3' ry='6' transform='rotate(78 52 45)'/%3E%3C/g%3E%3Cpath d='M42 8l3.5 7.5 8 .9-6 5.5 1.7 8-7.2-4.2-7.2 4.2 1.7-8-6-5.5 8-.9z' fill='%23f0d48c'/%3E%3C/svg%3E")
+    left center / contain no-repeat;
+}
+
+.home-card .home-title {
+  margin: 0;
+  font-size: clamp(34px, 4.2vw, 54px);
+  white-space: normal;
+  line-height: 1.02;
+}
+
+.home-sub {
+  margin: 12px 0 0;
+  font-size: 15.5px;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+}
+
+.home-sub::after {
+  width: 200px;
+  margin: 18px 0 0;
+  background-position: left center;
+}
+
+.home-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.home-actions button,
+.home-actions button:not(.primary) {
+  position: relative;
+  padding: 12px 16px 12px 22px;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.home-actions button::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0;
+  transform: scaleX(0.3);
+  transform-origin: left;
+  transition:
+    opacity 160ms var(--ease),
+    transform 160ms var(--ease);
+}
+
+.home-actions button:hover:not(:disabled),
+.home-actions button:focus-visible {
+  color: var(--gold-1);
+  background: linear-gradient(90deg, rgba(240, 212, 140, 0.12), transparent 80%);
+  box-shadow: none;
+  transform: translateX(4px);
+}
+
+.home-actions button:hover::before,
+.home-actions button:focus-visible::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.home-actions button.primary {
+  color: var(--gold-1);
+  background: linear-gradient(90deg, rgba(240, 212, 140, 0.16), transparent 85%);
+  border-left: 2px solid var(--gold);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  filter: none;
+}
+
+.home-actions button .muted {
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.home-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-2);
+}
+
+.home-links button {
+  padding: 6px 10px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.home-foot {
+  margin: 0;
+  max-width: 340px;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .home {
+    background: linear-gradient(0deg, rgba(5, 9, 13, 0.95) 30%, rgba(5, 9, 13, 0.55));
+  }
+
+  .home-card {
+    justify-content: flex-end;
+    padding: 28px 24px max(24px, env(safe-area-inset-bottom, 0px));
+    gap: 18px;
+  }
+
+  .home-actions button,
+  .home-actions button:not(.primary) {
+    padding: 10px 14px 10px 18px;
+    font-size: 17px;
+  }
+}
