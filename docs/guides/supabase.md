@@ -71,7 +71,7 @@ Left sidebar → **Project Settings** (gear) → **Data API** (or **API Keys**):
 - **Project URL**, like `https://abcdefghijkl.supabase.co`
 - the **anon public** key: a long string starting `eyJ`. Newer dashboards put it under
   **API Keys** → **Legacy API Keys**. (The newer "publishable" key, `sb_publishable_…`, is meant
-  to work the same way, but the game is tested with the anon key: use that one.)
+  to work the same way, but the game was built around the anon key: use that one.)
 
 **Never use the `service_role` / `secret` key anywhere in the game, in GitHub, or in a chat.** It
 skips every rule from step 2. If it ever leaks, roll it in the same settings page.
