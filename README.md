@@ -7,11 +7,12 @@ Built from the ground up to be modded: leaders, civs, units and rules are all da
 > **Play it:** https://paytonknopp.github.io/Civius-Maximus/ (deployed from `main` by
 > `.github/workflows/pages.yml`).
 >
-> **Status: V1.** Play alone against AI leaders, pass the device (hotseat), or host online and
-> have friends join with a code (no accounts, $0). Ten leaders and civs with full kits; Ancient →
-> Modern; diplomacy, trade routes, great people, religion, city-states, commanders; score,
-> conquest, domination, science, culture and religious victories. 3D or 2D, phone-friendly.
-> What was built, what's next and the open decisions: [V1 review](docs/V1-REVIEW.md).
+> **Status: V1 final.** Play alone against AI leaders, pass the device (hotseat), or host online
+> and have friends join with a code (no accounts needed, $0). 30 leaders and civs with full kits;
+> Ancient → Future; every major Civ system (most as setup toggles); seven victory types; 3D or
+> 2D, phone-friendly, with a Civilopedia, replays and a Hall of Fame. Everything in it, how to
+> try it and what's next: [V1 final review](docs/V1-FINAL-REVIEW.md) (the earlier
+> [V1 review](docs/V1-REVIEW.md) covers the first build).
 
 ## Design docs
 
