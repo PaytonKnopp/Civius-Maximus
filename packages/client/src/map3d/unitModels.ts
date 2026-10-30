@@ -65,23 +65,68 @@ function wheel(kit: Kit, x: number, y: number, z: number, r: number, color = C.w
 }
 
 /** A hull along x: `len` long, `beam` wide, its deck at `deck`. */
+const smooth = {
+  keel: new SphereGeometry(1, 22, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2),
+  disk: new CylinderGeometry(1, 1, 1, 24),
+  rail: new TorusGeometry(1, 0.03, 5, 32),
+  prow: new ConeGeometry(1, 1, 14),
+  sail: new CylinderGeometry(1, 1, 1, 12, 1, true, -0.5, 1.0),
+  pod: new SphereGeometry(1, 18, 12),
+  rod: new CylinderGeometry(1, 1, 1, 10),
+};
+
+/** A hull along x: `len` long, `beam` wide, its deck at `deck`; smooth and rounded, with a prow. */
 function hull(kit: Kit, len: number, beam: number, deck: number, color: number, metal = false) {
-  const g = (metal ? kit.k : kit.m) as BufferGeometry[];
-  g.push(put(unit.box, color, [0, deck / 2, 0], [len * 0.78, deck, beam]));
-  g.push(
-    put(
-      unit.cone,
-      color,
-      [len * 0.39 + len * 0.1, deck / 2, 0],
-      [beam * 0.5, len * 0.2, deck * 0.9],
-      [0, 0, -Math.PI / 2],
-    ),
+  on(
+    0,
+    () => {
+      const g = (metal ? kit.k : kit.m) as BufferGeometry[];
+      g.push(put(smooth.keel, color, [0, deck, 0], [len * 0.5, deck * 1.6, beam * 0.5]));
+      g.push(
+        put(
+          smooth.prow,
+          color,
+          [len * 0.5, deck * 0.62, 0],
+          [beam * 0.24, len * 0.2, deck * 0.7],
+          [0, 0, -Math.PI / 2],
+        ),
+      );
+      kit.m.push(
+        put(smooth.disk, metal ? C.grey : C.wood, [0, deck, 0], [len * 0.49, 0.004, beam * 0.47]),
+      );
+      (metal ? kit.k : kit.m).push(
+        put(
+          smooth.rail,
+          metal ? C.steel : C.woodDark,
+          [0, deck + 0.004, 0],
+          [len * 0.5, beam * 0.5, 0.06],
+          [Math.PI / 2, 0, 0],
+        ),
+      );
+    },
+    true,
   );
-  g.push(put(unit.box, color, [-len * 0.41, deck / 2, 0], [len * 0.06, deck, beam * 0.9]));
 }
 
+/** A square sail bellied forward by the wind, on a yard. */
 function sail(kit: Kit, x: number, y: number, w: number, h: number, color: number) {
-  kit.m.push(put(unit.box, color, [x, y, 0], [0.006, h, w]));
+  on(
+    0,
+    () => {
+      const r = w * 1.05;
+      kit.m.push(put(smooth.sail, color, [x - r * 0.88, y, 0], [r, h, r], [0, Math.PI / 2, 0]));
+      kit.m.push(
+        put(
+          smooth.rod,
+          C.woodDark,
+          [x + 0.002, y + h / 2, 0],
+          [0.003, w * 1.08, 0.003],
+          [Math.PI / 2, 0, 0],
+        ),
+      );
+    },
+    true,
+  );
 }
 
 const SOLDIER: Record<string, Omit<FigureOpts, 'body' | 'trim'>> = {
@@ -310,11 +355,18 @@ function build(model: string, body: number, trim: number, kit: Kit) {
       }
       kit.k.push(put(unit.box, C.olive, [0, 0.075, 0], [0.28, 0.045, 0.12]));
       kit.k.push(put(unit.box, C.olive, [0.12, 0.065, 0], [0.06, 0.03, 0.12], [0, 0, 0.5]));
-      kit.k.push(put(unit.box, C.olive, [-0.02, 0.115, 0], [0.12, 0.045, 0.09]));
+      on(
+        0,
+        () => {
+          kit.k.push(put(smooth.pod, C.olive, [-0.02, 0.11, 0], [0.07, 0.034, 0.052]));
+          kit.k.push(put(smooth.disk, C.olive, [-0.035, 0.142, 0.012], [0.014, 0.006, 0.014]));
+        },
+        true,
+      );
       kit.k.push(
         put(unit.cyl, C.steel, [0.12, 0.118, 0], [0.011, 0.18, 0.011], [0, 0, -Math.PI / 2]),
       );
-      kit.m.push(put(unit.box, body, [-0.02, 0.14, 0], [0.06, 0.006, 0.05]));
+      kit.m.push(put(unit.box, body, [-0.06, 0.124, 0], [0.012, 0.016, 0.06]));
       kit.m.push(put(unit.box, trim, [-0.13, 0.08, 0], [0.004, 0.02, 0.08]));
       break;
     }
@@ -323,7 +375,7 @@ function build(model: string, body: number, trim: number, kit: Kit) {
       hull(kit, 0.36, 0.1, 0.05, C.wood);
       kit.m.push(put(unit.cyl, C.woodDark, [0, 0.17, 0], [0.006, 0.26, 0.006]));
       sail(kit, 0, 0.19, 0.16, 0.13, body);
-      kit.m.push(put(unit.box, trim, [0.001, 0.19, 0], [0.008, 0.03, 0.162]));
+      kit.m.push(put(unit.box, trim, [0.021, 0.19, 0], [0.008, 0.026, 0.15]));
       for (let i = -2; i <= 2; i++)
         for (const z of [1, -1])
           kit.m.push(
@@ -397,8 +449,7 @@ function build(model: string, body: number, trim: number, kit: Kit) {
     case 'plane': {
       // A propeller fighter, flying.
       const y = 0.32;
-      kit.k.push(put(unit.cyl, C.grey, [0, y, 0], [0.022, 0.24, 0.022], [0, 0, Math.PI / 2]));
-      kit.k.push(put(unit.cone, C.grey, [-0.15, y, 0], [0.022, 0.06, 0.022], [0, 0, Math.PI / 2]));
+      on(0, () => kit.k.push(put(smooth.pod, C.grey, [-0.01, y, 0], [0.15, 0.026, 0.026])), true);
       kit.m.push(put(unit.box, body, [0.01, y, 0], [0.07, 0.008, 0.34]));
       kit.m.push(put(unit.box, body, [-0.15, y + 0.005, 0], [0.04, 0.006, 0.12]));
       kit.m.push(put(unit.box, trim, [-0.15, y + 0.03, 0], [0.04, 0.05, 0.006]));
@@ -408,7 +459,7 @@ function build(model: string, body: number, trim: number, kit: Kit) {
     }
     case 'bomber': {
       const y = 0.34;
-      kit.k.push(put(unit.cyl, C.grey, [0, y, 0], [0.03, 0.34, 0.03], [0, 0, Math.PI / 2]));
+      on(0, () => kit.k.push(put(smooth.pod, C.grey, [0, y, 0], [0.2, 0.034, 0.034])), true);
       kit.m.push(put(unit.box, body, [0.02, y, 0], [0.08, 0.01, 0.48]));
       for (const z of [0.1, -0.1, 0.18, -0.18])
         kit.k.push(
@@ -420,7 +471,7 @@ function build(model: string, body: number, trim: number, kit: Kit) {
     }
     case 'helicopter': {
       const y = 0.28;
-      kit.k.push(put(unit.ball, C.olive, [0, y, 0], [0.07, 0.045, 0.045]));
+      on(0, () => kit.k.push(put(smooth.pod, C.olive, [0, y, 0], [0.075, 0.046, 0.046])), true);
       kit.k.push(
         put(unit.cyl, C.olive, [-0.11, y + 0.01, 0], [0.01, 0.14, 0.01], [0, 0, Math.PI / 2]),
       );

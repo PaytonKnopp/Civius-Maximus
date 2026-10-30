@@ -5,10 +5,12 @@ import {
   ConeGeometry,
   CylinderGeometry,
   DodecahedronGeometry,
+  ExtrudeGeometry,
   Float32BufferAttribute,
   IcosahedronGeometry,
   Matrix4,
   Quaternion,
+  Shape,
   SphereGeometry,
   Vector3,
 } from 'three';
@@ -52,6 +54,16 @@ export function seeded(seed: number) {
   };
 }
 
+/** A triangular prism, 1 wide (x), 1 tall (y), 1 long (z): a gable roof with its ridge along z. */
+function gablePrism() {
+  const tri = new Shape();
+  tri.moveTo(-0.5, 0);
+  tri.lineTo(0.5, 0);
+  tri.lineTo(0, 1);
+  tri.closePath();
+  return new ExtrudeGeometry(tri, { depth: 1, bevelEnabled: false }).translate(0, 0, -0.5);
+}
+
 export const G = {
   box: new BoxGeometry(1, 1, 1),
   roof: new ConeGeometry(0.75, 1, 4).rotateY(Math.PI / 4),
@@ -63,7 +75,14 @@ export const G = {
   pyramid: new ConeGeometry(1, 1, 4).rotateY(Math.PI / 4),
   rock: new DodecahedronGeometry(1, 0),
   bush: new IcosahedronGeometry(1, 0),
+  gable: gablePrism(),
+  canopy: new SphereGeometry(1, 7, 5),
 };
+
+/** A point `lx` along and `lz` across from (x, z), in a frame turned by `rot` (as `scaled` turns). */
+export function off(x: number, z: number, rot: number, lx: number, lz: number): [number, number] {
+  return [x + lx * Math.cos(rot) + lz * Math.sin(rot), z - lx * Math.sin(rot) + lz * Math.cos(rot)];
+}
 
 export const WALLS = [0xa89679, 0x9c8a6e, 0xb3a385, 0x8f7f66];
 export const ROOFS = [0x7a3f2c, 0x6b3a2a, 0x845034, 0x5e4a3c];

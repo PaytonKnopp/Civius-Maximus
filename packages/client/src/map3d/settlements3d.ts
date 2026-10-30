@@ -25,6 +25,7 @@ import {
   building,
   cityCenter,
   factory,
+  gardenTree,
   palace,
   walls,
 } from './architecture';
@@ -78,7 +79,7 @@ function settlementParts(
       scaled(G.box, 0x6b4a2e, cx, y + 0.09, cz, 0.12, 0.012, 0.012),
     );
   }
-  const count = Math.min(44, (city ? 6 : 3) + view.population * (city ? 3 : 2));
+  const count = Math.min(60, (city ? 10 : 5) + Math.round(view.population * (city ? 3.6 : 2.4)));
   const radius = city ? 0.78 : 0.62;
   const homes: [number, number][] = [];
   for (let i = 0; i < count; i++) {
@@ -94,8 +95,17 @@ function settlementParts(
         emitters.push({ kind: 'chimney', at: top });
       continue;
     }
-    building(parts, x, ground(x, z), z, a + r(), r, city ? 1.25 : 1.05, style, age, t);
+    building(parts, x, ground(x, z), z, a + r(), r, city ? 1.45 : 1.2, style, age, t);
     homes.push([x, z]);
+  }
+  // Gardens: a few trees between the houses (fewer among modern blocks).
+  const trees = (city ? 3 : 2) + Math.floor(view.population / 3);
+  for (let i = 0; i < trees; i++) {
+    const a = i * 2.39996 + 1.2 + r();
+    const ring = radius * (0.5 + r() * 0.55);
+    const x = cx + Math.cos(a) * ring;
+    const z = cz + Math.sin(a) * ring * 0.92;
+    if (age < 4 || r() < 0.4) gardenTree(parts, x, ground(x, z), z, r);
   }
   if (city && view.wallsMax > 0)
     walls(parts, cx, cz, ground, style, age, view.walls / view.wallsMax, view.tile);

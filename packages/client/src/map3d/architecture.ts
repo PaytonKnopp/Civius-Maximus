@@ -1,5 +1,5 @@
 import type { BufferGeometry } from 'three';
-import { G, scaled } from './parts';
+import { G, off, scaled } from './parts';
 
 /**
  * How settlements look (docs/10-art-direction.md, "Settlements"): each civ builds in its own
@@ -129,6 +129,12 @@ const GLASS = [0x6f8ea6, 0x5a7890, 0x86a2b4, 0x4e6a80];
 type Parts = BufferGeometry[];
 const pick = <T>(list: T[], r: () => number) => list[Math.floor(r() * list.length)]!;
 
+/** Window glass: most dark, some lit from inside at dusk. */
+const GLASS_DARK = 0x2a2c30;
+const GLASS_LIT = 0xf2c46a;
+const DOOR = 0x3a2a1e;
+const TIMBER = 0x3b2a1e;
+
 function roofOn(
   parts: Parts,
   shape: Palette['roof'],
@@ -143,30 +149,77 @@ function roofOn(
 ) {
   switch (shape) {
     case 'hip':
-      parts.push(scaled(G.roof, color, x, y + h * 0.3, z, w * 0.98, h * 0.6, d * 0.98, rot));
+      // A hipped roof with eaves past the walls.
+      parts.push(scaled(G.roof, color, x, y + h * 0.27, z, w * 1.12, h * 0.55, d * 1.14, rot));
       break;
     case 'gable':
-      // A ridge: a stretched four-sided roof, steeper.
-      parts.push(scaled(G.roof, color, x, y + h * 0.45, z, w * 1.02, h * 0.95, d * 0.8, rot));
+      // A pitched roof: a prism with its ridge along the house, overhanging at the gables.
+      parts.push(
+        scaled(G.gable, color, x, y - 0.002, z, d * 1.16, h * 0.82, w * 1.1, rot + Math.PI / 2),
+      );
       break;
     case 'flat':
-      parts.push(scaled(G.box, color, x, y + 0.004, z, w * 1.04, 0.008, d * 1.04, rot));
+      // A flat roof with a low parapet.
+      parts.push(scaled(G.box, color, x, y + 0.004, z, w * 1.04, 0.01, d * 1.04, rot));
+      parts.push(scaled(G.box, color, x, y + 0.011, z, w * 0.86, 0.006, d * 0.86, rot));
       break;
     case 'flared':
+      // Two tiers with wide eaves, the lower one flatter: the sweep of a tiled East Asian roof.
       parts.push(
-        scaled(G.pyramid, color, x, y + h * 0.18, z, w * 0.95, h * 0.36, d * 0.95, rot),
-        scaled(G.pyramid, color, x, y + h * 0.42, z, w * 0.55, h * 0.4, d * 0.55, rot),
+        scaled(G.pyramid, color, x, y + h * 0.1, z, w * 1.3, h * 0.2, d * 1.3, rot),
+        scaled(G.pyramid, color, x, y + h * 0.28, z, w * 0.82, h * 0.34, d * 0.82, rot),
+        scaled(G.box, 0x2b2622, x, y + h * 0.47, z, w * 0.5, 0.008, 0.008, rot),
       );
       break;
     case 'thatch':
-      parts.push(scaled(G.cone, color, x, y + h * 0.35, z, w * 0.62, h * 0.7, d * 0.62, rot));
+      parts.push(scaled(G.cone, color, x, y + h * 0.33, z, w * 0.7, h * 0.72, d * 0.7, rot));
       break;
     case 'dome':
       parts.push(
-        scaled(G.box, color, x, y + 0.004, z, w * 1.02, 0.008, d * 1.02, rot),
-        scaled(G.dome, color, x, y, z, w * 0.32, h * 0.45, w * 0.32, rot),
+        scaled(G.box, color, x, y + 0.004, z, w * 1.04, 0.01, d * 1.04, rot),
+        scaled(G.dome, color, x, y + 0.006, z, w * 0.33, h * 0.45, w * 0.33, rot),
       );
       break;
+  }
+}
+
+/** A door on the front, windows along the sides, one row per story; some windows are lit. */
+function openings(
+  parts: Parts,
+  x: number,
+  y: number,
+  z: number,
+  rot: number,
+  w: number,
+  d: number,
+  storyH: number,
+  stories: number,
+  r: () => number,
+  big: number,
+) {
+  const [fx, fz] = off(x, z, rot, w / 2 + 0.001, 0);
+  parts.push(scaled(G.box, DOOR, fx, y + storyH * 0.32, fz, 0.004, storyH * 0.62, 0.02 * big, rot));
+  for (let story = 0; story < stories; story++) {
+    const wy = y + storyH * (story + (story === 0 ? 0.58 : 0.5));
+    for (const side of [-1, 1]) {
+      for (const along of story === 0 ? [-0.27] : [-0.27, 0.22]) {
+        const [px, pz] = off(x, z, rot, w * along, side * (d / 2 + 0.001));
+        const lit = r() < 0.3;
+        parts.push(
+          scaled(
+            G.box,
+            lit ? GLASS_LIT : GLASS_DARK,
+            px,
+            wy,
+            pz,
+            0.016 * big,
+            storyH * 0.32,
+            0.004,
+            rot,
+          ),
+        );
+      }
+    }
   }
 }
 
@@ -186,36 +239,49 @@ export function building(
 ) {
   const p = P[style];
   const w = (0.09 + r() * 0.05) * big;
-  const d = (0.08 + r() * 0.04) * big;
-  let h = (0.06 + r() * 0.04) * big;
+  const d = (0.075 + r() * 0.035) * big;
+  let h = (0.06 + r() * 0.035) * big;
   if (age === 0) {
     switch (p.hut) {
-      case 'round':
+      case 'round': {
+        const [dx, dz] = off(x, z, rot, w * 0.42, 0);
         parts.push(
-          scaled(G.cyl, pick(p.walls, r), x, y + h * 0.4, z, w * 0.45, h * 0.8, w * 0.45),
-          scaled(G.cone, pick(p.roofs, r), x, y + h * 0.8 + h * 0.4, z, w * 0.6, h * 0.8, w * 0.6),
+          scaled(G.cyl, pick(p.walls, r), x, y + h * 0.36, z, w * 0.42, h * 0.72, w * 0.42),
+          scaled(
+            G.cone,
+            pick(p.roofs, r),
+            x,
+            y + h * 0.72 + h * 0.36,
+            z,
+            w * 0.62,
+            h * 0.78,
+            w * 0.62,
+          ),
+          scaled(G.box, DOOR, dx, y + h * 0.22, dz, 0.004, h * 0.42, 0.022, rot),
         );
         return;
+      }
       case 'tent':
         parts.push(
           scaled(G.cyl, pick(p.walls, r), x, y + h * 0.3, z, w * 0.5, h * 0.6, w * 0.5),
           scaled(G.dome, pick(p.walls, r), x, y + h * 0.6, z, w * 0.5, h * 0.45, w * 0.5),
           scaled(G.cyl, pick(p.roofs, r), x, y + h * 0.55, z, w * 0.51, h * 0.08, w * 0.51),
+          scaled(G.cyl, pick(p.roofs, r), x, y + h * 0.18, z, w * 0.505, h * 0.05, w * 0.505),
         );
         return;
       case 'long':
         parts.push(
           scaled(G.box, pick(p.walls, r), x, y + h * 0.35, z, w * 1.5, h * 0.7, d * 0.8, rot),
           scaled(
-            G.roof,
+            G.gable,
             pick(p.roofs, r),
             x,
-            y + h * 0.7 + h * 0.4,
+            y + h * 0.68,
             z,
-            w * 1.55,
-            h * 0.8,
-            d * 0.75,
-            rot,
+            d * 1.05,
+            h * 0.75,
+            w * 1.62,
+            rot + Math.PI / 2,
           ),
         );
         return;
@@ -234,6 +300,7 @@ export function building(
           h * 1.1,
           rot,
         );
+        openings(parts, x, y, z, rot, w * 0.9, d * 0.9, h, 1, r, big * 0.8);
         return;
     }
   }
@@ -247,48 +314,114 @@ export function building(
         : core < 0.4 && r() < 0.5
           ? 2
           : 1;
-    const hh = h * (0.75 + stories * 0.35);
-    parts.push(scaled(G.box, pick(p.walls, r), x, y + hh / 2, z, w, hh, d, rot));
-    if (stories > 1) {
-      // A cornice between floors.
-      parts.push(scaled(G.box, p.stone, x, y + hh * 0.52, z, w * 1.03, 0.006, d * 1.03, rot));
+    const storyH = h * 0.62;
+    const hh = h * 0.3 + storyH * stories;
+    const wall = pick(p.walls, r);
+    parts.push(scaled(G.box, wall, x, y + hh / 2, z, w, hh, d, rot));
+    // A stone footing, and a cornice between floors.
+    parts.push(scaled(G.box, p.stone, x, y + 0.006, z, w * 1.03, 0.012, d * 1.03, rot));
+    if (stories > 1)
+      parts.push(
+        scaled(G.box, p.stone, x, y + h * 0.3 + storyH, z, w * 1.03, 0.006, d * 1.03, rot),
+      );
+    // Half-timbering on European town houses.
+    if (style === 'european' && r() < 0.6)
+      for (const along of [-0.42, 0, 0.42]) {
+        const [tx, tz] = off(x, z, rot, w * along, d / 2 + 0.0015);
+        parts.push(scaled(G.box, TIMBER, tx, y + hh / 2, tz, 0.006, hh, 0.003, rot));
+      }
+    openings(parts, x, y + h * 0.15, z, rot, w, d, storyH, stories, r, big);
+    const roof = pick(p.roofs, r);
+    roofOn(parts, p.roof, roof, x, y + hh, z, w, d, h, rot);
+    // Chimneys on pitched roofs; an awning over some flat-roofed doors.
+    if (p.roof === 'gable' || p.roof === 'hip') {
+      if (r() < 0.55) {
+        const [cx, cz] = off(x, z, rot, w * 0.28, d * 0.18);
+        parts.push(scaled(G.box, p.stone, cx, y + hh + h * 0.42, cz, 0.014, h * 0.5, 0.014, rot));
+      }
+    } else if (p.roof === 'flat' && r() < 0.5) {
+      const [ax, az] = off(x, z, rot, w / 2 + 0.012, 0);
+      parts.push(scaled(G.box, p.accent, ax, y + h * 0.5, az, 0.026, 0.004, 0.05 * big, rot));
     }
-    roofOn(parts, p.roof, pick(p.roofs, r), x, y + hh, z, w, d, h, rot);
+    // A smaller wing on some houses, so streets aren't all boxes.
+    if (r() < 0.35) {
+      const [ox, oz] = off(x, z, rot, -w * 0.62, d * 0.18);
+      const ww = w * 0.5;
+      const wh = h * 0.68;
+      parts.push(scaled(G.box, wall, ox, y + wh / 2, oz, ww, wh, d * 0.7, rot));
+      roofOn(parts, p.roof, roof, ox, y + wh, oz, ww, d * 0.7, h * 0.7, rot);
+    }
     return;
   }
   if (age === 3) {
     // Brick rows, slate roofs, chimneys.
-    const hh = h * (core < 0.5 ? 1.9 : 1.4);
+    const storyH = h * 0.62;
+    const stories = core < 0.5 ? 3 : 2;
+    const hh = h * 0.2 + storyH * stories;
     parts.push(scaled(G.box, pick(BRICK, r), x, y + hh / 2, z, w, hh, d, rot));
-    parts.push(scaled(G.roof, pick(SLATE, r), x, y + hh + h * 0.25, z, w, h * 0.5, d, rot));
+    parts.push(scaled(G.box, 0x6e6a64, x, y + hh - 0.004, z, w * 1.04, 0.008, d * 1.04, rot));
+    openings(parts, x, y + h * 0.1, z, rot, w, d, storyH, stories, r, big);
     parts.push(
-      scaled(G.box, 0x5a3a2e, x + w * 0.25, y + hh + h * 0.35, z, 0.012, h * 0.5, 0.012, rot),
+      scaled(
+        G.gable,
+        pick(SLATE, r),
+        x,
+        y + hh,
+        z,
+        d * 1.08,
+        h * 0.45,
+        w * 1.04,
+        rot + Math.PI / 2,
+      ),
     );
+    for (const along of [0.3, -0.3]) {
+      const [cx, cz] = off(x, z, rot, w * along, 0);
+      parts.push(scaled(G.box, 0x5a3a2e, cx, y + hh + h * 0.38, cz, 0.014, h * 0.5, 0.02, rot));
+    }
     return;
   }
   // Modern: blocks near the center, towers in big cities, houses at the edge.
   if (core < 0.45) {
     const tall = h * (2.4 + r() * 2.6) * (core < 0.25 ? 1.5 : 1);
     const glass = r() < 0.5;
+    const body = glass ? pick(GLASS, r) : pick(CONCRETE, r);
     parts.push(
-      scaled(
-        G.box,
-        glass ? pick(GLASS, r) : pick(CONCRETE, r),
-        x,
-        y + tall / 2,
-        z,
-        w * 0.9,
-        tall,
-        d * 0.9,
-        rot,
-      ),
+      scaled(G.box, body, x, y + tall / 2, z, w * 0.9, tall, d * 0.9, rot),
       scaled(G.box, 0x8e969e, x, y + tall + 0.006, z, w * 0.7, 0.012, d * 0.7, rot),
+      scaled(G.box, 0x6e767e, x, y + tall + 0.02, z, w * 0.3, 0.02, d * 0.3, rot),
     );
+    // Window bands.
+    const bands = Math.floor(tall / (h * 0.45));
+    for (let i = 1; i < bands; i++)
+      parts.push(
+        scaled(
+          G.box,
+          glass ? 0xb8c2c8 : r() < 0.3 ? GLASS_LIT : 0x3a4048,
+          x,
+          y + i * (tall / bands),
+          z,
+          w * 0.91,
+          0.004,
+          d * 0.91,
+          rot,
+        ),
+      );
   } else {
     const hh = h * 1.2;
     parts.push(scaled(G.box, pick(CONCRETE, r), x, y + hh / 2, z, w, hh, d, rot));
     roofOn(parts, 'flat', 0x6a6e72, x, y + hh, z, w, d, h, rot);
+    openings(parts, x, y, z, rot, w, d, hh * 0.7, 1, r, big);
   }
+}
+
+/** A small tree in a settlement's gardens and squares. */
+export function gardenTree(parts: Parts, x: number, y: number, z: number, r: () => number) {
+  const s = 0.6 + r() * 0.5;
+  const greens = [0x4e6b32, 0x5c7a3a, 0x445f2c, 0x6b8040];
+  parts.push(
+    scaled(G.cyl, 0x4a3524, x, y + 0.03 * s, z, 0.008 * s, 0.06 * s, 0.008 * s),
+    scaled(G.canopy, pick(greens, r), x, y + 0.085 * s, z, 0.045 * s, 0.05 * s, 0.045 * s, r() * 3),
+  );
 }
 
 /** The capital's palace, in the civ's style. */
