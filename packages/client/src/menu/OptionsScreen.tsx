@@ -263,7 +263,11 @@ function GameTab() {
       <Section title="Remembered on this device">
         <Row
           label="Hall of Fame"
-          hint={`${games} finished game${games === 1 ? '' : 's'} kept here, with replays of the newest.`}
+          hint={
+            games === 0
+              ? 'No finished games yet.'
+              : `${games} finished game${games === 1 ? '' : 's'} kept here, with replays of the newest.`
+          }
         >
           {confirm ? (
             <>

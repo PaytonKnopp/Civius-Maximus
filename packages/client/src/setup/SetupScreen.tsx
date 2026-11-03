@@ -48,6 +48,8 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
   const [presets, setPresets] = useState<Preset[]>(loadPresets);
   const [presetName, setPresetName] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
+  // The map is being made for the latest settings (it checks the map can fit every civ).
+  const [checking, setChecking] = useState(true);
   const t = (text: string) => resolveText(content, text);
   const e = content.entities;
   const sizes = byOrder(e.mapSize);
@@ -112,7 +114,7 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
     setO({ ...o, picks });
   };
 
-  const canStart = seats >= 2 && seats <= MAX_SEATS && !problem;
+  const canStart = seats >= 2 && seats <= MAX_SEATS && !problem && !checking;
   const applyPreset = (p: Preset) =>
     setO({ ...o, ...p.options, humans: p.options.humans ?? o.humans, seed: randomSeed() });
 
@@ -424,6 +426,7 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
             seed={o.seed}
             seatColors={seatColors}
             onProblem={setProblem}
+            onBusy={setChecking}
           />
           {problem && (
             <p className="mx-problem" role="alert">
@@ -661,6 +664,19 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
         {page === 'players' && playersPage}
         {page === 'world' && worldPage}
         {page === 'rules' && rulesPage}
+        {page !== 'world' && (
+          // The same check off the World page, so a change anywhere is caught.
+          <div hidden>
+            <MapPreview
+              content={content}
+              settings={mapSettings}
+              seed={o.seed}
+              seatColors={seatColors}
+              onProblem={setProblem}
+              onBusy={setChecking}
+            />
+          </div>
+        )}
       </div>
       <footer className="mx-start-bar">
         <ul className="mx-summary" aria-label="Your game">
@@ -674,8 +690,10 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
         </ul>
         {problem ? (
           <span className="mx-problem">{problem}</span>
-        ) : !canStart ? (
+        ) : seats < 2 || seats > MAX_SEATS ? (
           <span className="mx-problem">A game needs 2–{MAX_SEATS} civilizations.</span>
+        ) : checking ? (
+          <span className="muted">Checking the map…</span>
         ) : null}
         <div className="mx-start-actions">
           {page !== 'rules' ? (

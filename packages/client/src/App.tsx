@@ -8,6 +8,7 @@ import { CivilopediaScreen } from './game/CivilopediaScreen';
 import { HallOfFameScreen } from './game/HallOfFameScreen';
 import { type GameStart, GameScreen } from './game/GameScreen';
 import { Gallery } from './Gallery';
+import { GameErrorBoundary } from './ui/ErrorBoundary';
 import {
   DEFAULT_OPTIONS,
   loadLastOptions,
@@ -93,10 +94,21 @@ export function App() {
   const [options, setOptions] = useState<NewGameOptions>(() =>
     sanitize(content, { ...DEFAULT_OPTIONS, ...loadLastOptions(), seed: randomSeed() }),
   );
-  const [start, setStart] = useState<GameStart>(() => ({
+  const [start, setStartState] = useState<GameStart>(() => ({
     id: startId(),
     setup: makeSetup({ ...DEFAULT_OPTIONS, seed: randomSeed() }),
   }));
+  // The game behind the title screen is a quick game nobody has played yet (true), or the
+  // player's own game, which the title screen then offers to return to.
+  const [fresh, setFresh] = useState(true);
+  const setStart = useCallback((s: GameStart, isFresh = false) => {
+    setStartState(s);
+    setFresh(isFresh);
+  }, []);
+  const quickGame = (): GameStart => ({
+    id: startId(),
+    setup: makeSetup({ ...DEFAULT_OPTIONS, seed: randomSeed() }),
+  });
   // Screens over the title screen and the game: setup, saves, Hall of Fame, Civilopedia...
   const [dialog, setDialog] = useState<
     'new' | 'saves' | 'account' | 'options' | 'fame' | 'pedia' | null
@@ -119,16 +131,20 @@ export function App() {
   const onGame = useCallback((g: GameHandle) => {
     game.current = g;
   }, []);
-  const onOnlineGame = useCallback((handle: GameHandle) => {
-    history.replaceState(null, '', location.pathname + location.search);
-    setStart({ id: startId(), handle });
-    setOnline(null);
-    setHome(false);
-  }, []);
+  const onOnlineGame = useCallback(
+    (handle: GameHandle) => {
+      history.replaceState(null, '', location.pathname + location.search);
+      setStart({ id: startId(), handle });
+      setOnline(null);
+      setHome(false);
+    },
+    [setStart],
+  );
+  // A finished game goes back to the title screen, over a new quick game.
   const backHome = useCallback(() => {
-    setStart({ id: startId(), setup: makeSetup({ ...options, seed: randomSeed() }) });
+    setStart({ id: startId(), setup: makeSetup({ ...DEFAULT_OPTIONS, seed: randomSeed() }) }, true);
     setHome(true);
-  }, [options]);
+  }, [setStart]);
   // Leaving an online game any way (a new game, a load, the menu) closes its connections.
   useEffect(() => () => ('handle' in start ? start.handle.online?.leave() : undefined), [start]);
 
@@ -137,21 +153,29 @@ export function App() {
 
   return (
     <div className="app">
-      <GameScreen
-        key={start.id}
-        content={content}
-        start={start}
-        mode={mode}
-        quality={quality}
-        onGame={onGame}
-        onExit={backHome}
-        covered={home || dialog !== null || online !== null}
-      />
+      <GameErrorBoundary key={start.id} onReset={backHome}>
+        <GameScreen
+          key={start.id}
+          content={content}
+          start={start}
+          mode={mode}
+          quality={quality}
+          onGame={onGame}
+          onExit={backHome}
+          covered={home || dialog !== null || online !== null}
+        />
+      </GameErrorBoundary>
       {home && !online && (
         <HomeScreen
           ctx={ctx}
           active={dialog === null}
-          onPlay={() => setHome(false)}
+          {...(fresh ? {} : { onResume: () => setHome(false) })}
+          onPlay={() => {
+            // The quick game behind the title screen, or a new one if that's your own game.
+            if (!fresh) setStart(quickGame());
+            else setFresh(false);
+            setHome(false);
+          }}
           onNewGame={() => setDialog('new')}
           onLoadGame={() => setDialog('saves')}
           onContinue={(state) => {

@@ -87,13 +87,17 @@ turn, era, settlements, score, map, difficulty; or a welcome card when there's n
 game you host (to host it again), your record (games, victories, best score, most played leader)
 and a "how to play" note that opens the Civilopedia. Top right: sign in, full screen, Options.
 At the bottom: the version, an update notice, and the Map Lab. The game's HUD hides while it's
-open. On tablets and phones it is one column that scrolls.
+open. On tablets and phones it is one column that scrolls. Opened from a game's menu, it leads
+with **Return to game** (R, or Esc), and Quick game then starts a new game rather than resuming
+yours. If a game can't start (a setup or save the rules reject), a message says why and leads
+back here instead of a blank page.
 
 **Menu screens (the menus pass):** everything before a game (Options, New game, the leader
 picker, Load game, Play online, Civilopedia, Hall of Fame) is one kind of full screen: a gold
 header with Back (Esc closes the topmost screen), and one set of controls (switches, segmented
 choices, sliders with their value, cards). All of them fit a phone: side panels become tabs,
-strips or a drawer.
+strips or a drawer. **Account** is one of them too: sign in or create an account (or connect a
+Supabase project), beside what an account adds.
 
 **Options:** Sound (master, music, effects and ambience volumes, mute, mute in a background tab,
 test sounds), Graphics (3D or 2D map, 3D quality, frame rate counter, full screen, reduce
@@ -174,7 +178,10 @@ Help screen (?) lists every shortcut and turns hints back on.
   what their effects do in plain words (from the content's effects), the reverse links (what
   leads to a tech, what upgrades into a unit, where a resource is found and what improves it),
   "Mentioned in" for everything that links to them, and the previous and next article in their
-  group. Back and Forward (Alt+←/→) walk the history. On phones the tree is a drawer.
+  group. Units get a one-line summary (era, class, where they fight, what they replace), units
+  and buildings show the era they arrive in, and unit classes, kinds of great people and kinds
+  of city-state have their own articles listing their members. A test checks that every link
+  leads to an article and that no article shows a raw value. Back and Forward (Alt+←/→) walk the history. On phones the tree is a drawer.
 - **Advisors** (V1 final F19): each turn, tips from the military, economic, culture and foreign
   advisors about what needs attention (enemies near a settlement, losing gold, a pile of gold,
   free trade routes, unhappiness, starvation, room to expand, falling loyalty, a hostile

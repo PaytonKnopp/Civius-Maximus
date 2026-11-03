@@ -184,6 +184,61 @@ if (want('online')) {
   await page.close();
 }
 
+if (want('account')) {
+  for (const size of ['desktop', 'phone']) {
+    const page = await open(size);
+    await page.click('.home-chip:has-text("Sign in")');
+    await page.waitForSelector('.mx-account');
+    await page.waitForTimeout(300);
+    await shot(page, `account-${size}`);
+    await overflow(page, `account-${size}`);
+    await page.close();
+  }
+}
+
+if (want('large')) {
+  // Options: larger menu text, then the title screen and the setup at that size.
+  const page = await open(
+    'desktop',
+    `localStorage.setItem('cx.settings', JSON.stringify({ view: '2d', largeText: true }));`,
+    '3d-skip',
+  );
+  await page.waitForTimeout(400);
+  await shot(page, 'large-title');
+  await overflow(page, 'large-title');
+  await page.keyboard.press('n');
+  await page.waitForSelector('.mx-setup');
+  await page.waitForTimeout(300);
+  await shot(page, 'large-setup');
+  await overflow(page, 'large-setup');
+  await page.close();
+}
+
+if (want('resume')) {
+  // Quick game, then the title screen from the game's menu: Return to game is offered, and
+  // Escape goes back.
+  const page = await open('desktop');
+  await page.keyboard.press('q');
+  await page.waitForSelector('.home', { state: 'hidden' });
+  await page.waitForSelector('.leader-intro .primary', { timeout: 15000 }).catch(() => {});
+  if (await page.$('.leader-intro .primary')) await page.click('.leader-intro .primary');
+  await page.click('.menu-button');
+  await page.click('.menu-pop button:has-text("Title screen")');
+  await page.waitForSelector('.home-entry:has-text("Return to game")');
+  await page.waitForTimeout(800);
+  await shot(page, 'resume-title');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.home', { state: 'hidden' });
+  // The game menu opens Options and the Civilopedia over the game.
+  await page.click('.menu-button');
+  await page.click('.menu-pop button:has-text("Options")');
+  await page.waitForSelector('.mx-options');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.mx-options', { state: 'detached' });
+  await shot(page, 'resume-game');
+  await page.close();
+}
+
 await browser.close();
 if (errors.length) {
   console.error(errors.join('\n'));

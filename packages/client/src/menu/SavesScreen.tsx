@@ -239,7 +239,7 @@ export function SavesScreen({
                       </span>
                       <small>
                         {d
-                          ? `${d.settlements} settlements · score ${d.score} · ${d.civs} civs · `
+                          ? `${d.settlements} settlement${d.settlements === 1 ? '' : 's'} · score ${d.score} · ${d.civs} civs · `
                           : ''}
                         {ago(s.savedAt)}
                       </small>

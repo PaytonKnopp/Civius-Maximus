@@ -23,6 +23,8 @@ interface Props {
   seatColors: (string | null)[];
   /** The map can't be made (too many civs for it), or null when it can. */
   onProblem: (problem: string | null) => void;
+  /** Still making the map for the latest settings. */
+  onBusy?: (busy: boolean) => void;
 }
 
 const shade = (hex: string, amount: number) => {
@@ -37,7 +39,7 @@ const shade = (hex: string, amount: number) => {
   return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
 };
 
-export function MapPreview({ content, settings, seed, seatColors, onProblem }: Props) {
+export function MapPreview({ content, settings, seed, seatColors, onProblem, onBusy }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [made, setMade] = useState<{ map: MapState; starts: Record<string, number> } | null>(null);
   const [busy, setBusy] = useState(true);
@@ -45,9 +47,12 @@ export function MapPreview({ content, settings, seed, seatColors, onProblem }: P
   const key = JSON.stringify([settings, seed, seats]);
   const problem = useRef(onProblem);
   problem.current = onProblem;
+  const busyRef = useRef(onBusy);
+  busyRef.current = onBusy;
 
   useEffect(() => {
     setBusy(true);
+    busyRef.current?.(true);
     const timer = setTimeout(() => {
       try {
         // Exactly what createGame does for a local game: same seed, same player order.
@@ -67,6 +72,7 @@ export function MapPreview({ content, settings, seed, seatColors, onProblem }: P
         );
       }
       setBusy(false);
+      busyRef.current?.(false);
     }, 140);
     return () => clearTimeout(timer);
     // `key` carries every input.

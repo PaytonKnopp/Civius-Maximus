@@ -31,7 +31,10 @@ function nameIndex(content: CompiledContent): Map<string, string> {
 }
 
 const humanize = (id: string) => {
-  const s = id.replace(/^[a-z]+_(?=[a-z])/i, '').replace(/_/g, ' ');
+  const s = id
+    .replace(/^[a-z]+_(?=[a-z])/i, '')
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2');
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
@@ -44,19 +47,46 @@ export function effectLines(
 ): string[] {
   if (!effects) return [];
   const idx = nameIndex(content);
-  const nm = (v: unknown): string =>
-    typeof v === 'string'
-      ? (idx.get(v) ?? humanize(v))
-      : v && typeof v === 'object' && typeof (v as { kind?: unknown }).kind === 'string'
-        ? humanize((v as { kind: string }).kind) + 's'
-        : String(v);
+  /**
+   * Any value in words: an id is its name, a list is "A or B", a condition object reads
+   * as its parts ("all" → and, "any" → or, "not"), and `{ kind: 'wonder' }` is "wonders".
+   */
+  const nm = (v: unknown): string => {
+    if (typeof v === 'string') return idx.get(v) ?? humanize(v);
+    if (typeof v === 'number') return String(v);
+    if (typeof v === 'boolean') return v ? 'yes' : 'no';
+    if (Array.isArray(v)) return [...new Set(v.map(nm))].join(' or ');
+    if (v && typeof v === 'object') {
+      const o = v as Record<string, unknown>;
+      if (typeof o.kind === 'string' && Object.keys(o).length === 1) return `${humanize(o.kind)}s`;
+      return Object.entries(o)
+        .map(([k, x]) =>
+          k === 'all' && Array.isArray(x)
+            ? x.map(nm).join(' and ')
+            : k === 'any' && Array.isArray(x)
+              ? x.map(nm).join(' or ')
+              : k === 'not'
+                ? `not ${nm(x)}`
+                : x === true
+                  ? humanize(k).toLowerCase()
+                  : `${humanize(k).toLowerCase()} ${nm(x)}`,
+        )
+        .join(', ');
+    }
+    return '';
+  };
+  /** The values alone, without their keys: `{ features: ['woods'] }` → "Woods". */
+  const values = (v: unknown): string =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.entries(v as Record<string, unknown>)
+          .map(([k, x]) => (x === true ? humanize(k).toLowerCase() : nm(x)))
+          .join(', ')
+      : nm(v);
   const lower = (v: unknown) => nm(v).toLowerCase();
   return effects.map((e) => {
     const line = one(e);
-    const cond = e.condition
-      ? Object.entries(e.condition).map(([k, v]) => `${humanize(k).toLowerCase()} ${nm(v)}`)
-      : [];
-    return cond.length ? `${line} (needs: ${cond.join(', ')})` : line;
+    const cond = e.condition ? nm(e.condition) : '';
+    return cond ? `${line} (needs: ${cond})` : line;
   });
 
   function one(e: EffectLike): string {
@@ -112,10 +142,13 @@ export function effectLines(
           : p.unit
             ? ` for ${lower(p.unit)}`
             : '';
+        const when: Record<string, string> = { attack: 'when attacking', defend: 'when defending' };
         const bits = [
-          p.vs ? `against ${lower(p.vs)}` : '',
-          p.when ? `when ${String(p.when).replace(/_/g, ' ')}` : '',
-          p.on ? `on ${String(p.on).replace(/_/g, ' ')}` : '',
+          p.vs ? `against ${values(p.vs).toLowerCase()}` : '',
+          typeof p.when === 'string' && p.when !== 'always'
+            ? (when[p.when] ?? `when ${p.when.replace(/_/g, ' ')}`)
+            : '',
+          p.on ? `on ${values(p.on).toLowerCase()}` : '',
           num('afterDeclaringWar')
             ? `for ${num('afterDeclaringWar')} turns after declaring war`
             : '',
@@ -147,7 +180,9 @@ export function effectLines(
       case 'road_to_capital':
         return 'New settlements get a road to the capital';
       case 'yield_per_adjacent':
-        return `${signed(amount ?? 0)} ${lower(p.yield)} per ${num('per') ?? 1} adjacent ${lower(p.of ?? 'tile')}${where}`;
+        return `${signed(amount ?? 0)} ${lower(p.yield)} per adjacent ${
+          p.per && typeof p.per === 'object' ? `${values(p.per).toLowerCase()} ` : ''
+        }tile${where}`;
       case 'yield_per_follower':
         return `${signed(amount ?? 0)} ${lower(p.yield)} per ${num('per') ?? 1} follower${(num('per') ?? 1) === 1 ? '' : 's'}`;
       case 'capture_on_kill':

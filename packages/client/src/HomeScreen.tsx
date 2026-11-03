@@ -10,6 +10,7 @@ import { AUTOSAVE, loadSave, ONLINE_AUTOSAVE } from './game/storage';
 import { isFullscreen, toggleFullscreen } from './settings';
 import { Emblem } from './ui/Emblem';
 import { Icon } from './ui/Icon';
+import { useEscape } from './ui/Menu';
 import { LeaderCard, leaderArt } from './ui/LeaderCard';
 import { ago, describeSave as describe } from './menu/saveInfo';
 import { newVersionOut, versionLabel } from './update';
@@ -18,8 +19,10 @@ interface Props {
   ctx: EngineContext;
   /** Keys work only while no other screen is open over this one. */
   active: boolean;
-  /** Play the game that's already set up behind this screen. */
+  /** Play a quick game. */
   onPlay: () => void;
+  /** Back to the game in progress (opened from the game's menu); absent when there's none. */
+  onResume?: (() => void) | undefined;
   onNewGame: () => void;
   onLoadGame: () => void;
   onContinue: (state: GameState) => void;
@@ -109,8 +112,22 @@ export function HomeScreen(props: Props) {
     run: () => void;
     primary?: boolean;
   };
+  const resume = props.onResume;
   const entries: Entry[] = [
-    ...(autosave
+    ...(resume
+      ? [
+          {
+            key: 'resume',
+            hot: 'r',
+            icon: 'next',
+            label: 'Return to game',
+            sub: 'Back to the game you were playing (Esc)',
+            run: resume,
+            primary: true,
+          },
+        ]
+      : []),
+    ...(autosave && !resume
       ? [
           {
             key: 'continue',
@@ -119,7 +136,7 @@ export function HomeScreen(props: Props) {
             label: 'Continue',
             sub: `Turn ${autosave.turn} · ${ago(autosave.savedAt)}`,
             run: () => onContinue(autosave.state),
-            primary: true,
+            primary: !resume,
           },
         ]
       : []),
@@ -130,7 +147,7 @@ export function HomeScreen(props: Props) {
       label: 'Quick game',
       sub: 'You and three rivals, small map',
       run: onPlay,
-      primary: !autosave,
+      primary: !autosave && !resume,
     },
     {
       key: 'new',
@@ -184,6 +201,9 @@ export function HomeScreen(props: Props) {
       run: props.onOptions,
     },
   ];
+
+  // Escape goes back to the game in progress.
+  useEscape(() => resume?.(), active && !!resume);
 
   useEffect(() => {
     if (!active) return;
@@ -304,7 +324,9 @@ export function HomeScreen(props: Props) {
                     {info.era && <> · {info.era}</>}
                   </p>
                   <ul className="home-facts">
-                    <li>{info.settlements} settlements</li>
+                    <li>
+                      {info.settlements} settlement{info.settlements === 1 ? '' : 's'}
+                    </li>
                     <li>Score {info.score}</li>
                     <li>
                       {info.civs} civs{info.humans > 1 ? ` · ${info.humans} players` : ''}
@@ -321,6 +343,18 @@ export function HomeScreen(props: Props) {
                   </button>
                 </div>
               </div>
+            </article>
+          ) : resume ? (
+            <article className="home-card home-welcome">
+              <span className="home-kicker">In progress</span>
+              <h2>Your game is waiting</h2>
+              <p>
+                It saves itself at the start of every turn; once it has, Continue brings it back
+                here any time.
+              </p>
+              <button type="button" className="primary" onClick={resume}>
+                Return to game
+              </button>
             </article>
           ) : loaded ? (
             <article className="home-card home-welcome">

@@ -123,11 +123,20 @@ export function toggleFullscreen() {
   else void document.documentElement.requestFullscreen?.().catch(() => {});
 }
 
-/** Whether the 3D view can run here (otherwise the map is 2D). */
-export function hasWebGL2() {
+let webgl2: boolean | undefined;
+
+/**
+ * Whether the 3D view can run here (otherwise the map is 2D). Asked once: every test makes a
+ * WebGL context, and browsers drop the oldest when there are too many (the map's own).
+ */
+export function hasWebGL2(): boolean {
+  if (webgl2 !== undefined) return webgl2;
   try {
-    return !!document.createElement('canvas').getContext('webgl2');
+    const gl = document.createElement('canvas').getContext('webgl2');
+    webgl2 = !!gl;
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
   } catch {
-    return false;
+    webgl2 = false;
   }
+  return webgl2;
 }

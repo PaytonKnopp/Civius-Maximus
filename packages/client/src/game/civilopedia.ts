@@ -205,6 +205,12 @@ export function buildArticles(content: CompiledContent): Article[] {
         ([k, n]) => `${n > 0 ? '+' : ''}${n} ${e.yield[k] ? t(e.yield[k]!.name).toLowerCase() : k}`,
       )
       .join(', ');
+  /** Great work slots by kind: `{ writing: 2, any: 1 }` → "2 writing, 1 of any kind". */
+  const slotsText = (slots: Partial<Record<string, number>> | undefined) =>
+    Object.entries(slots ?? {})
+      .filter((e): e is [string, number] => (e[1] ?? 0) > 0)
+      .map(([k, n]) => (k === 'any' ? `${n} of any kind` : `${n} ${k}`))
+      .join(', ') || undefined;
   const requires = (x: {
     requiresTech?: string | undefined;
     requiresCivic?: string | undefined;
@@ -336,11 +342,32 @@ export function buildArticles(content: CompiledContent): Article[] {
     });
   }
 
+  /** The era a thing becomes available in: its tech's or civic's era. */
+  const unlockEra = (x: {
+    requiresTech?: string | undefined;
+    requiresCivic?: string | undefined;
+  }) =>
+    x.requiresTech
+      ? e.tech[x.requiresTech]?.era
+      : x.requiresCivic
+        ? e.civic[x.requiresCivic]?.era
+        : undefined;
+
   // Units.
   for (const id of ids.unit) {
     const u = e.unit[id]!;
     const cls = e.unitClass[u.class];
     const promos = ids.promotion.filter((p) => e.promotion[p]!.classes.includes(u.class));
+    const era = unlockEra(u);
+    const domain =
+      cls?.domain === 'sea' ? 'at sea' : cls?.domain === 'air' ? 'in the air' : 'on land';
+    const summary = [
+      `${era ? `${cap(eraName(era))}-era` : 'A starting'} ${cls ? t(cls.name).toLowerCase() : ''} unit`,
+      cls?.combat === false ? `that works ${domain}` : `that fights ${domain}`,
+      u.civ
+        ? `, unique to ${name('civ', u.civ)}${u.replaces ? ` in place of the ${name('unit', u.replaces)}` : ''}`
+        : '',
+    ].join(' ');
     push({
       id: `unit:${id}`,
       category: 'units',
@@ -350,8 +377,10 @@ export function buildArticles(content: CompiledContent): Article[] {
       subtitle: cls ? t(cls.name) : undefined,
       group: cls ? t(cls.name) : 'Units',
       blocks: [
+        { kind: 'text', text: `${summary.replace(/ ,/g, ',').replace(/\s+/g, ' ').trim()}.` },
         facts([
           ['Class', cls ? `${t(cls.name)} (${cls.domain})` : undefined],
+          ['Era', link('era', era)],
           ['Strength', u.strength || undefined],
           [
             'Ranged strength',
@@ -427,11 +456,12 @@ export function buildArticles(content: CompiledContent): Article[] {
       blocks: [
         ...text(b.description),
         facts([
+          ['Era', link('era', unlockEra(b))],
           ['Yields', yieldsText(b.yields)],
           ['Happiness', b.happiness ? `+${b.happiness}` : undefined],
           ['Cost', `${b.cost} production`],
           ['Maintenance', b.maintenance ? `${b.maintenance} gold` : undefined],
-          ['Specialist slots', b.slots ? `${b.slots}` : undefined],
+          ['Great work slots', slotsText(b.slots)],
           ['District', link('district', b.district)],
           ['Needs', link('building', b.requiresBuilding)],
           ['Requires', requires(b)],
@@ -508,7 +538,7 @@ export function buildArticles(content: CompiledContent): Article[] {
           ['Era', link('era', w.era)],
           ['Cost', `${w.cost} production`],
           ['Yields', yieldsText(w.yields)],
-          ['Great work slots', w.slots ? `${w.slots}` : undefined],
+          ['Great work slots', slotsText(w.slots)],
           ['Requires', requires(w)],
         ]),
         ...effects('Effects', w.effects),
@@ -701,6 +731,90 @@ export function buildArticles(content: CompiledContent): Article[] {
           [`Suzerain: ${t(c.suzerain.name)}`, t(c.suzerain.description)],
         ]),
         ...effects('Suzerain bonus', c.suzerain.effects),
+      ],
+    });
+  }
+
+  // Kinds of things: unit classes, great people and city-states, each listing its members.
+  for (const id of ids.unitClass) {
+    const c = e.unitClass[id]!;
+    const members = ids.unit.filter((u) => e.unit[u]!.class === id);
+    push({
+      id: `unitClass:${id}`,
+      category: 'units',
+      kind: 'Unit class',
+      icon: iconOf(members.map((u) => e.unit[u]!.model).find((m) => ICONS[m])),
+      title: t(c.name),
+      subtitle: `${members.length} unit${members.length === 1 ? '' : 's'}`,
+      group: 'Unit classes',
+      blocks: [
+        facts([
+          [
+            'Fights',
+            c.combat === false
+              ? 'no: a civilian'
+              : `on ${c.domain === 'land' ? 'land' : c.domain === 'sea' ? 'the sea' : c.domain}`,
+          ],
+          ['Units', links('unit', members)],
+          [
+            'Promotions',
+            links(
+              'promotion',
+              ids.promotion.filter((p) => e.promotion[p]!.classes.includes(id)),
+            ),
+          ],
+        ]),
+      ],
+    });
+  }
+  for (const id of ids.greatPersonClass) {
+    const c = e.greatPersonClass[id]!;
+    const members = ids.greatPerson.filter((g) => e.greatPerson[g]!.class === id);
+    push({
+      id: `greatPersonClass:${id}`,
+      category: 'greatPeople',
+      kind: 'Kind of great person',
+      icon: iconOf(id),
+      title: t(c.name),
+      subtitle: `${members.length} in the game`,
+      group: 'Kinds of great people',
+      blocks: [
+        facts([
+          ['First one costs', c.baseCost ? `${c.baseCost} points` : undefined],
+          ['Each after', c.costStep ? `+${c.costStep} points` : undefined],
+          ['In order', links('greatPerson', members)],
+        ]),
+      ],
+    });
+  }
+  for (const id of ids.cityStateType) {
+    const c = e.cityStateType[id]!;
+    const members = ids.cityState.filter((x) => e.cityState[x]!.cityStateType === id);
+    push({
+      id: `cityStateType:${id}`,
+      category: 'cityStates',
+      kind: 'Kind of city-state',
+      icon: 'cityStates',
+      color: c.color,
+      title: t(c.name),
+      subtitle: `${members.length} city-states`,
+      group: 'Kinds',
+      blocks: [
+        facts([
+          ['District', link('district', c.district)],
+          ['City-states', links('cityState', members)],
+        ]),
+        ...(c.tiers?.length
+          ? [
+              {
+                kind: 'list' as const,
+                title: 'Envoy bonuses',
+                items: c.tiers.map((tier) => [
+                  `${tier.envoys} envoy${tier.envoys === 1 ? '' : 's'}: ${tier.description ? t(tier.description) : effectLines(content, tier.effects).join('; ')}`,
+                ]),
+              },
+            ]
+          : []),
       ],
     });
   }
