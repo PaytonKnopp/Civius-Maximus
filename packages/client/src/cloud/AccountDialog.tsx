@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { cloud, cloudConfig, resetCloud, setCloudConfig } from './cloud';
+import { cloud, cloudConfig, keyProblem, projectUrl, resetCloud, setCloudConfig } from './cloud';
 
 const GUIDE = 'https://github.com/PaytonKnopp/Civius-Maximus/blob/main/docs/guides/supabase.md';
 
@@ -56,15 +56,17 @@ export function AccountDialog({ onClose }: { onClose: () => void }) {
               <a href={GUIDE} target="_blank" rel="noreferrer">
                 setup guide
               </a>{' '}
-              takes about ten minutes; then paste the project’s URL and anon key here (they’re kept
-              in this browser only), or build the game with them for everyone.
+              takes about ten minutes; then paste the project’s URL and publishable key here
+              (they’re kept in this browser only), or build the game with them for everyone.
             </p>
             <form
               className="account-form"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (!url.trim().startsWith('https://') || !key.trim())
-                  return setMessage('Paste the project URL (https://…) and its anon public key.');
+                if (!/^https:\/\/[^/]+/.test(projectUrl(url)))
+                  return setMessage('Paste the project URL, like https://abcd.supabase.co');
+                const problem = keyProblem(key);
+                if (problem) return setMessage(problem);
                 setCloudConfig({ url, anonKey: key });
                 resetCloud();
                 refresh();
@@ -79,8 +81,12 @@ export function AccountDialog({ onClose }: { onClose: () => void }) {
                 />
               </label>
               <label>
-                Anon public key
-                <input value={key} onChange={(e) => setKey(e.target.value)} />
+                Publishable key
+                <input
+                  value={key}
+                  placeholder="sb_publishable_… (or the anon key, eyJ…)"
+                  onChange={(e) => setKey(e.target.value)}
+                />
               </label>
               <button type="submit" className="primary">
                 Connect
