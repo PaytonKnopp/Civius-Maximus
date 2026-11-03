@@ -13,6 +13,8 @@ export interface SeatInfo {
   online: boolean;
   /** The leader they picked in the lobby (a `leader` content id), or null for a random one. */
   leader?: string | null;
+  /** The color they picked in the lobby (`#rrggbb`), or null for their civ's own. */
+  color?: string | null;
   /** The seat is kept for its player (only their key gets it back) until the host frees it. */
   reserved?: boolean;
 }
@@ -45,8 +47,8 @@ export type ClientMessage =
   | { t: 'act'; id: number; action: Action }
   | { t: 'chat'; text: string }
   | { t: 'ping'; tile: number }
-  /** In the lobby: the leader to play (null: random). */
-  | { t: 'pick'; leader: string | null };
+  /** In the lobby: the leader to play (null: random) and the color to play it in (null: the civ's own). */
+  | { t: 'pick'; leader: string | null; color?: string | null };
 
 /** Host → client. */
 export type HostMessage =

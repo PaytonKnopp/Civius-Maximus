@@ -5,6 +5,10 @@ import { isJoinCode, normalizeCode, type SeatInfo } from '@cx/protocol';
 import { useEffect, useRef, useState } from 'react';
 import { cloud, type PublicLobby } from '../cloud/cloud';
 import { createAiRunner } from '../game/aiRunner';
+import { PALETTE } from '../setup/palette';
+import { LeaderHead, leaderArt } from '../ui/LeaderCard';
+import { LeaderDetail, LeaderPicker } from '../ui/LeaderPicker';
+import { Choice, MenuScreen, Row, Section, Switch } from '../ui/Menu';
 import { browserSeatKeys, hostedGame, rememberHosted } from './keys';
 import { joinHost, type Network, newCode, openHost } from './transports';
 
@@ -41,21 +45,25 @@ export interface OnlineOptions {
   absent?: 'wait' | 'ai';
 }
 
-const RULES: [keyof NonNullable<OnlineOptions['rules']>, string][] = [
-  ['camps', 'Hostile camps'],
-  ['huts', 'Tribal villages'],
-  ['cityStates', 'City-states'],
-  ['domination', 'Domination victory'],
-  ['religion', 'Religious victory'],
-  ['science', 'Science victory'],
-  ['culture', 'Culture victory'],
-  ['loyalty', 'Loyalty'],
-  ['espionage', 'Espionage'],
-  ['congress', 'World Congress'],
-  ['diplomatic', 'Diplomatic victory'],
-  ['disasters', 'Climate and disasters'],
-  ['nukes', 'Nuclear weapons'],
-  ['theologicalCombat', 'Theological combat'],
+const RULES: [keyof NonNullable<OnlineOptions['rules']>, string, string][] = [
+  ['camps', 'Hostile camps', 'Raider camps that spawn units until cleared.'],
+  ['huts', 'Tribal villages', 'The first unit to reach one finds a gift.'],
+  ['cityStates', 'City-states', 'Minor powers to win over with envoys.'],
+  ['domination', 'Domination victory', 'Hold every rival’s original capital.'],
+  [
+    'religion',
+    'Religious victory',
+    'Your religion followed in most settlements of every other civ.',
+  ],
+  ['science', 'Science victory', 'Build a spaceport and finish the space projects.'],
+  ['culture', 'Culture victory', 'Attract more visiting tourists than any civ has at home.'],
+  ['loyalty', 'Loyalty', 'Settlements far from home and close to a rival can break away.'],
+  ['espionage', 'Espionage', 'Spies that guard your settlements or work against others.'],
+  ['congress', 'World Congress', 'Sessions every few turns vote on resolutions.'],
+  ['diplomatic', 'Diplomatic victory', 'Win the most diplomatic victory points in the Congress.'],
+  ['disasters', 'Climate and disasters', 'Floods, storms, droughts and eruptions.'],
+  ['nukes', 'Nuclear weapons', 'Atomic bombs and nuclear missiles in the late game.'],
+  ['theologicalCombat', 'Theological combat', 'Religious units can fight rival faiths.'],
 ];
 
 interface Props {
@@ -66,7 +74,12 @@ interface Props {
   joinCode?: string;
   /** Open on Host with this game to resume (an online game's autosave). */
   resume?: GameState;
-  makeSetup: (names: string[], o: OnlineOptions, leaders: (string | null)[]) => GameSetup;
+  makeSetup: (
+    names: string[],
+    o: OnlineOptions,
+    leaders: (string | null)[],
+    colors: (string | null)[],
+  ) => GameSetup;
   onGame: (game: GameHandle) => void;
   onCancel: () => void;
 }
@@ -129,6 +142,7 @@ export function OnlineDialog(props: Props) {
   });
   const [friends, setFriends] = useState(1);
   const [myLeader, setMyLeader] = useState<string | null>(null);
+  const [myColor, setMyColor] = useState<string | null>(null);
   // Public games (cloud/cloud.ts): a signed-in host can list the lobby; anyone can browse.
   const remoteCloud = cloud();
   const [listPublicly, setListPublicly] = useState(false);
@@ -153,7 +167,6 @@ export function OnlineDialog(props: Props) {
   const sizes = [...content.ids.mapSize].sort(
     (a, b) => content.entities.mapSize[a]!.order - content.entities.mapSize[b]!.order,
   );
-  const maxPlayers = content.entities.mapSize[o.size]?.players ?? 8;
 
   // Follow the lobby; a client's game opens with its first view (once).
   const opened = useRef(false);
@@ -239,162 +252,142 @@ export function OnlineDialog(props: Props) {
   };
 
   const lobby = host ?? remote;
+  const size = content.entities.mapSize[o.size];
+  const t = (text: string) => resolveText(content, text);
+  const e = content.entities;
+  const speeds = Object.values(e.gameSpeed).sort((a, b) => a.order - b.order);
+  const difficulties = Object.values(e.difficulty).sort((a, b) => a.order - b.order);
+  const eras = Object.values(e.era).sort((a, b) => a.order - b.order);
+  const rule = (key: keyof NonNullable<OnlineOptions['rules']>) => {
+    const [, label, hint] = RULES.find(([k]) => k === key)!;
+    return (
+      <Switch
+        key={key}
+        label={label}
+        hint={hint}
+        checked={o.rules?.[key] ?? true}
+        onChange={(on) => setO({ ...o, rules: { ...o.rules!, [key]: on } })}
+      />
+    );
+  };
+  const total = friends + 1 + o.rivals;
+  const title = lobby
+    ? 'Lobby'
+    : resume
+      ? 'Host your online game again'
+      : mode === 'host'
+        ? 'Host an online game'
+        : 'Join an online game';
+
   return (
-    <div className="dialog-backdrop" role="presentation">
-      <div className="dialog online-dialog" role="dialog" aria-labelledby="online-title">
-        <h2 id="online-title">{resume ? 'Host your online game again' : 'Play online'}</h2>
+    <MenuScreen
+      title={title}
+      icon="diplomacy"
+      sub={
+        lobby
+          ? 'Share the code, pick your leader and start when everyone is in'
+          : 'Play with friends: your browser runs the game, theirs connect to it'
+      }
+      onClose={leave}
+      closeLabel={lobby ? 'Leave' : 'Back'}
+      className="mx-online"
+    >
+      <div className="mx-online-scroll">
         {!lobby && !resume && (
-          <div className="segmented" role="group" aria-label="Host or join">
-            {(['host', 'join'] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                aria-pressed={mode === m}
-                className={mode === m ? 'on' : ''}
-                onClick={() => setMode(m)}
-              >
-                {m === 'host' ? 'Host a game' : 'Join with a code'}
-              </button>
-            ))}
-          </div>
+          <Choice
+            label="Host or join"
+            className="mx-online-mode"
+            value={mode}
+            options={[
+              { value: 'host', label: 'Host a game' },
+              { value: 'join', label: 'Join with a code' },
+            ]}
+            onChange={setMode}
+          />
         )}
 
         {!lobby && (
-          <>
-            <label htmlFor="online-name">Your name</label>
-            <input
-              id="online-name"
-              value={name}
-              maxLength={24}
-              placeholder={mode === 'host' ? 'Host' : 'Friend'}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </>
+          <div className="mx-panel mx-online-name">
+            <Row label="Your name" hint="What friends see in the lobby and in the game.">
+              <input
+                id="online-name"
+                value={name}
+                maxLength={24}
+                placeholder={mode === 'host' ? 'Host' : 'Friend'}
+                onChange={(ev) => setName(ev.target.value)}
+              />
+            </Row>
+          </div>
         )}
 
         {!lobby && mode === 'host' && !resume && (
-          <>
-            <div className="row">
-              <div>
-                <label htmlFor="online-friends">Friends</label>
-                <select
-                  id="online-friends"
-                  value={friends}
-                  onChange={(e) => setFriends(Number(e.target.value))}
-                >
-                  {Array.from({ length: 7 }, (_, i) => i + 1).map((n) => (
-                    <option key={n} value={n} disabled={n + 1 > maxPlayers}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="online-rivals">AI rivals</label>
-                <select
-                  id="online-rivals"
-                  value={o.rivals}
-                  onChange={(e) => setO({ ...o, rivals: Number(e.target.value) })}
-                >
-                  {Array.from({ length: 7 }, (_, i) => i).map((n) => (
-                    <option key={n} value={n} disabled={n + friends + 1 > maxPlayers}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="row">
-              <div>
-                <label htmlFor="online-script">Map type</label>
-                <select
-                  id="online-script"
-                  value={o.script}
-                  onChange={(e) => setO({ ...o, script: e.target.value })}
-                >
-                  {content.ids.mapScript.map((id) => (
-                    <option key={id} value={id}>
-                      {content.entities.mapScript[id]!.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="online-size">Map size</label>
-                <select
-                  id="online-size"
-                  value={o.size}
-                  onChange={(e) => setO({ ...o, size: e.target.value })}
-                >
-                  {sizes.map((id) => (
-                    <option key={id} value={id}>
-                      {content.entities.mapSize[id]!.name} (up to{' '}
-                      {content.entities.mapSize[id]!.players})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="row">
-              <div>
-                <label htmlFor="online-speed">Game speed</label>
-                <select
-                  id="online-speed"
-                  value={o.speed}
-                  onChange={(e) => setO({ ...o, speed: e.target.value })}
-                >
-                  {Object.values(content.entities.gameSpeed)
-                    .sort((a, b) => a.order - b.order)
-                    .map((x) => (
-                      <option key={x.id} value={x.id}>
-                        {resolveText(content, x.name)}
-                      </option>
-                    ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="online-difficulty">AI difficulty</label>
-                <select
-                  id="online-difficulty"
-                  value={o.difficulty}
-                  onChange={(e) => setO({ ...o, difficulty: e.target.value })}
-                >
-                  {Object.values(content.entities.difficulty)
-                    .sort((a, b) => a.order - b.order)
-                    .map((x) => (
-                      <option key={x.id} value={x.id}>
-                        {resolveText(content, x.name)}
-                      </option>
-                    ))}
-                </select>
-              </div>
-            </div>
-            <details className="online-rules">
-              <summary>More rules</summary>
-              <div className="row">
-                <div>
-                  <label htmlFor="online-era">Start era</label>
+          <div className="mx-online-grid">
+            <div className="mx-panel">
+              <Section
+                title="Players"
+                hint={`${total} civilizations: you, ${friends} friend${friends === 1 ? '' : 's'} and ${o.rivals} AI.${size && total > size.players ? ' That is more than this map is made for.' : ''}`}
+              >
+                <Row label="Friends" hint="Seats for people who join with the code.">
+                  <Choice
+                    label="Friends"
+                    className="compact"
+                    value={friends}
+                    options={Array.from({ length: 7 }, (_, i) => i + 1).map((n) => ({
+                      value: n,
+                      label: n,
+                    }))}
+                    onChange={setFriends}
+                  />
+                </Row>
+                <Row label="AI rivals" hint="Computer players on top of your friends.">
+                  <Choice
+                    label="AI rivals"
+                    className="compact"
+                    value={o.rivals}
+                    options={Array.from({ length: 8 }, (_, i) => i).map((n) => ({
+                      value: n,
+                      label: n,
+                    }))}
+                    onChange={(rivals) => setO({ ...o, rivals })}
+                  />
+                </Row>
+                <Row label="AI difficulty">
                   <select
-                    id="online-era"
-                    value={o.startEra ?? 'era_ancient'}
-                    onChange={(e) => setO({ ...o, startEra: e.target.value })}
+                    id="online-difficulty"
+                    aria-label="AI difficulty"
+                    value={o.difficulty}
+                    onChange={(ev) => setO({ ...o, difficulty: ev.target.value })}
                   >
-                    {Object.values(content.entities.era)
-                      .sort((a, b) => a.order - b.order)
-                      .map((x) => (
-                        <option key={x.id} value={x.id}>
-                          {resolveText(content, x.name)}
-                        </option>
-                      ))}
+                    {difficulties.map((x) => (
+                      <option key={x.id} value={x.id}>
+                        {t(x.name)}
+                      </option>
+                    ))}
                   </select>
-                </div>
-                <div>
-                  <label htmlFor="online-timer">Turn timer</label>
+                </Row>
+              </Section>
+              <Section title="Pace">
+                <Row label="Game speed" hint={t(e.gameSpeed[o.speed]?.description ?? '')}>
+                  <select
+                    id="online-speed"
+                    aria-label="Game speed"
+                    value={o.speed}
+                    onChange={(ev) => setO({ ...o, speed: ev.target.value })}
+                  >
+                    {speeds.map((x) => (
+                      <option key={x.id} value={x.id}>
+                        {t(x.name)}
+                      </option>
+                    ))}
+                  </select>
+                </Row>
+                <Row label="Turn timer" hint="When time runs out, everyone still playing is ended.">
                   <select
                     id="online-timer"
+                    aria-label="Turn timer"
                     value={o.turnSeconds ?? ''}
-                    onChange={(e) =>
-                      setO({ ...o, turnSeconds: e.target.value ? Number(e.target.value) : null })
+                    onChange={(ev) =>
+                      setO({ ...o, turnSeconds: ev.target.value ? Number(ev.target.value) : null })
                     }
                   >
                     <option value="">Off</option>
@@ -404,35 +397,39 @@ export function OnlineDialog(props: Props) {
                       </option>
                     ))}
                   </select>
-                </div>
-                <div>
-                  <label htmlFor="online-absent">If a friend drops</label>
+                </Row>
+                <Row label="If a friend drops" hint="You can always end their turn yourself.">
                   <select
                     id="online-absent"
+                    aria-label="If a friend drops"
                     value={o.absent ?? 'wait'}
-                    onChange={(e) => setO({ ...o, absent: e.target.value as 'wait' | 'ai' })}
+                    onChange={(ev) => setO({ ...o, absent: ev.target.value as 'wait' | 'ai' })}
                   >
-                    <option value="wait">Wait (you can end their turn)</option>
+                    <option value="wait">Wait for them</option>
                     <option value="ai">An AI plays until they’re back</option>
                   </select>
-                </div>
-                {remoteCloud?.signedIn && (
-                  <label className="check">
-                    <input
-                      type="checkbox"
-                      checked={listPublicly}
-                      onChange={(e) => setListPublicly(e.target.checked)}
-                    />
-                    List this game publicly
-                  </label>
-                )}
-                <div>
-                  <label htmlFor="online-limit">Turn limit</label>
+                </Row>
+                <Row label="Start era">
+                  <select
+                    id="online-era"
+                    aria-label="Start era"
+                    value={o.startEra ?? 'era_ancient'}
+                    onChange={(ev) => setO({ ...o, startEra: ev.target.value })}
+                  >
+                    {eras.map((x) => (
+                      <option key={x.id} value={x.id}>
+                        {t(x.name)}
+                      </option>
+                    ))}
+                  </select>
+                </Row>
+                <Row label="Turn limit">
                   <select
                     id="online-limit"
+                    aria-label="Turn limit"
                     value={o.turnLimit ?? ''}
-                    onChange={(e) =>
-                      setO({ ...o, turnLimit: e.target.value ? Number(e.target.value) : null })
+                    onChange={(ev) =>
+                      setO({ ...o, turnLimit: ev.target.value ? Number(ev.target.value) : null })
                     }
                   >
                     <option value="">None</option>
@@ -442,72 +439,134 @@ export function OnlineDialog(props: Props) {
                       </option>
                     ))}
                   </select>
-                </div>
-              </div>
-              {RULES.map(([key, label]) => (
-                <label key={key} className="check">
-                  <input
-                    type="checkbox"
-                    checked={o.rules?.[key] ?? true}
-                    onChange={(e) =>
-                      setO({ ...o, rules: { ...o.rules!, [key]: e.target.checked } })
-                    }
+                </Row>
+                {remoteCloud?.signedIn && (
+                  <Switch
+                    label="List this game publicly"
+                    hint="Anyone can find it in the Join list."
+                    checked={listPublicly}
+                    onChange={setListPublicly}
                   />
-                  {label}
-                </label>
-              ))}
-            </details>
-          </>
+                )}
+              </Section>
+            </div>
+            <div className="mx-panel">
+              <Section title="Map type" hint={t(e.mapScript[o.script]?.description ?? '')}>
+                <div className="mx-cards">
+                  {content.ids.mapScript.map((id) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className={`mx-card ${o.script === id ? 'on' : ''}`}
+                      aria-pressed={o.script === id}
+                      onClick={() => setO({ ...o, script: id })}
+                    >
+                      <strong>{t(e.mapScript[id]!.name)}</strong>
+                    </button>
+                  ))}
+                </div>
+              </Section>
+              <Section title="Map size">
+                <Choice
+                  label="Map size"
+                  value={o.size}
+                  options={sizes.map((id) => ({
+                    value: id,
+                    label: (
+                      <>
+                        {t(e.mapSize[id]!.name)} <small>{e.mapSize[id]!.players}</small>
+                      </>
+                    ),
+                  }))}
+                  onChange={(s) => setO({ ...o, size: s })}
+                />
+              </Section>
+              <Section title="Victories">
+                {rule('domination')}
+                {rule('science')}
+                {rule('culture')}
+                {rule('religion')}
+                {rule('diplomatic')}
+              </Section>
+              <Section title="World and systems">
+                {rule('cityStates')}
+                {rule('camps')}
+                {rule('huts')}
+                {rule('disasters')}
+                {rule('congress')}
+                {rule('espionage')}
+                {rule('loyalty')}
+                {rule('nukes')}
+                {rule('theologicalCombat')}
+              </Section>
+            </div>
+          </div>
         )}
 
         {!lobby && resume && (
-          <p className="hint">
-            Turn {resume.turn}. Friends who are still in the game reconnect by themselves; others
-            rejoin with the code from the device they played on and get their seat back. Someone on
-            a new device: free their seat (in the bar at the top of the map) and they join with the
-            same name.
-          </p>
+          <div className="mx-panel">
+            <p className="hint">
+              Turn {resume.turn}. Friends who are still in the game reconnect by themselves; others
+              rejoin with the code from the device they played on and get their seat back. Someone
+              on a new device: free their seat (in the bar at the top of the map) and they join with
+              the same name.
+            </p>
+          </div>
         )}
 
         {!lobby && mode === 'join' && (
-          <>
-            <label htmlFor="online-code">Code</label>
-            <input
-              id="online-code"
-              className="code-input"
-              value={code}
-              placeholder="ABC123"
-              autoCapitalize="characters"
-              onChange={(e) => setCode(normalizeCode(e.target.value).slice(0, 6))}
-            />
+          <div className="mx-online-grid join">
+            <div className="mx-panel">
+              <Section
+                title="Enter the code"
+                hint="Six letters and digits from your friend, or open their invite link."
+              >
+                <input
+                  id="online-code"
+                  className="code-input mx-code-input"
+                  value={code}
+                  placeholder="ABC123"
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  spellCheck={false}
+                  onChange={(ev) => setCode(normalizeCode(ev.target.value).slice(0, 6))}
+                  onKeyDown={(ev) => ev.key === 'Enter' && void join()}
+                />
+              </Section>
+            </div>
             {remoteCloud && (
-              <div className="public-games">
-                <h3>Public games</h3>
-                {publicGames === null ? (
-                  <p className="hint">Looking…</p>
-                ) : publicGames.length === 0 ? (
-                  <p className="hint">No public games open right now.</p>
-                ) : (
-                  <ul className="save-list">
-                    {publicGames.map((g) => (
-                      <li key={g.code}>
-                        <span className="save-name">
-                          <strong>{g.hostName}’s game</strong>
-                          <span className="muted small-text">
-                            {g.openSeats} seat{g.openSeats === 1 ? '' : 's'} ·{' '}
-                            {String(g.info.size ?? '')} {String(g.info.script ?? '')}
-                          </span>
-                        </span>
-                        <button type="button" className="small" onClick={() => setCode(g.code)}>
-                          Use code {g.code}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+              <div className="mx-panel public-games">
+                <Section title="Public games" hint="Games hosts have listed for anyone to join.">
+                  {publicGames === null ? (
+                    <p className="hint">Looking…</p>
+                  ) : publicGames.length === 0 ? (
+                    <p className="hint">No public games open right now.</p>
+                  ) : (
+                    <ul className="mx-save-list">
+                      {publicGames.map((g) => (
+                        <li key={g.code}>
+                          <div className="mx-save-text">
+                            <strong>{g.hostName}’s game</strong>
+                            <span>
+                              {g.openSeats} seat{g.openSeats === 1 ? '' : 's'} open
+                            </span>
+                            <small>
+                              {String(g.info.size ?? '')} {String(g.info.script ?? '')}
+                            </small>
+                          </div>
+                          <div className="mx-save-actions">
+                            <button type="button" onClick={() => setCode(g.code)}>
+                              Use code {g.code}
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Section>
               </div>
             )}
-          </>
+          </div>
         )}
 
         {lobby && (
@@ -519,47 +578,63 @@ export function OnlineDialog(props: Props) {
             open={host ? friends : null}
             {...(host ? { onRemove: (i: number) => host.removeFromLobby(i) } : {})}
             myLeader={myLeader}
-            onPick={(leader) => {
+            myColor={myColor}
+            onPick={(leader, color) => {
               setMyLeader(leader);
-              if (host) host.pickForHost(leader);
-              else remote?.online.pick(leader);
+              setMyColor(color);
+              if (host) host.pickForHost(leader, color);
+              else remote?.online.pick(leader, color);
             }}
           />
         )}
 
         {error && (
-          <p className="error" role="alert">
+          <p className="mx-problem" role="alert">
             {error}
           </p>
         )}
         {net === 'peer' && !lobby && (
-          <p className="hint">
+          <p className="hint mx-online-note">
             Browsers connect directly to the host; a free public service only introduces them. The
             host’s browser runs the game, so it needs to stay open.
           </p>
         )}
+      </div>
 
-        <div className="dialog-actions">
+      <footer className="mx-start-bar dialog-actions">
+        <span className="mx-summary muted">
+          {lobby
+            ? host
+              ? 'Seats nobody took are left out when you start.'
+              : 'Waiting for the host to start the game.'
+            : mode === 'host' && !resume
+              ? `${total} civilizations · ${size ? t(size.name) : ''} map · ${t(e.mapScript[o.script]?.name ?? '')}`
+              : ''}
+        </span>
+        <div className="mx-start-actions">
           <button type="button" className="ghost" onClick={leave}>
             {lobby ? 'Leave' : 'Cancel'}
           </button>
           {!lobby && mode === 'host' && (
-            <button type="button" className="primary" disabled={connecting} onClick={openLobby}>
+            <button type="button" className="primary big" disabled={connecting} onClick={openLobby}>
               {connecting ? 'Opening…' : resume ? 'Host it' : 'Open the lobby'}
             </button>
           )}
           {!lobby && mode === 'join' && (
-            <button type="button" className="primary" disabled={connecting} onClick={join}>
+            <button type="button" className="primary big" disabled={connecting} onClick={join}>
               {connecting ? 'Connecting…' : 'Join'}
             </button>
           )}
           {host && (
             <button
               type="button"
-              className="primary"
+              className="primary big"
               onClick={() => {
                 unlist();
-                host.start((names, leaders) => makeSetup(names, o, leaders), createAiRunner());
+                host.start(
+                  (names, leaders, colors) => makeSetup(names, o, leaders, colors),
+                  createAiRunner(),
+                );
                 onGame(host.handle());
               }}
             >
@@ -567,12 +642,12 @@ export function OnlineDialog(props: Props) {
             </button>
           )}
         </div>
-      </div>
-    </div>
+      </footer>
+    </MenuScreen>
   );
 }
 
-/** The code to share, who's in so far, and the leader each wants. */
+/** The code to share, who's in so far, and the leader and color each wants. */
 function Lobby({
   content,
   code,
@@ -581,6 +656,7 @@ function Lobby({
   open,
   onRemove,
   myLeader,
+  myColor,
   onPick,
 }: {
   content: CompiledContent;
@@ -592,18 +668,11 @@ function Lobby({
   /** The host's view: sends away the friend at this place in the list. */
   onRemove?: (index: number) => void;
   myLeader: string | null;
-  onPick: (leader: string | null) => void;
+  myColor: string | null;
+  onPick: (leader: string | null, color: string | null) => void;
 }) {
-  const leaderName = (id: string | null | undefined) => {
-    const l = id ? content.entities.leader[id] : undefined;
-    if (!l) return 'random leader';
-    const civ = content.entities.civ[l.civ];
-    return `${resolveText(content, l.name)}${civ ? ` (${resolveText(content, civ.name)})` : ''}`;
-  };
-  const leaders = [...content.ids.leader].sort((a, b) =>
-    leaderName(a).localeCompare(leaderName(b)),
-  );
   const [copied, setCopied] = useState(false);
+  const [picking, setPicking] = useState(false);
   const copy = () => {
     void navigator.clipboard
       ?.writeText(inviteLink(code, net))
@@ -611,60 +680,136 @@ function Lobby({
       .catch(() => {});
   };
   const empty = open === null ? 0 : Math.max(0, open + 1 - seats.length);
+  const taken: Record<string, string> = {};
+  seats.forEach((s, i) => {
+    // Mine is whatever I picked; the others' come from the lobby.
+    if (s.leader && s.leader !== myLeader) taken[s.leader] = s.name || `Player ${i + 1}`;
+  });
+  const colorOf = (s: { leader?: string | null; color?: string | null }) =>
+    s.color ?? (s.leader ? leaderArt(content, s.leader).primary : null);
   return (
-    <div className="lobby">
-      <p className="lobby-label">Join code</p>
-      <p className="join-code" aria-label={`Join code ${code.split('').join(' ')}`}>
-        {code}
-      </p>
-      <button type="button" className="ghost small" onClick={copy}>
-        {copied ? 'Invite link copied' : 'Copy invite link'}
-      </button>
-      <ul className="seats" aria-label="Players">
-        {seats.map((s, i) => (
-          <li key={`${s.name}-${i}`}>
-            <span className={`dot ${s.online ? 'on' : ''}`} aria-hidden="true" />
-            {s.name}
-            {s.host && <span className="muted"> · host</span>}
-            <span className="muted"> · {leaderName(s.leader)}</span>
-            {onRemove && !s.host && (
-              <button
-                type="button"
-                className="ghost small seat-remove"
-                aria-label={`Remove ${s.name} from the lobby`}
-                title="Remove from the lobby"
-                onClick={() => onRemove(i)}
-              >
-                Remove
+    <div className="lobby mx-lobby">
+      <div className="mx-panel mx-lobby-code">
+        <p className="lobby-label home-kicker">Join code</p>
+        <p className="join-code" aria-label={`Join code ${code.split('').join(' ')}`}>
+          {code}
+        </p>
+        <button type="button" onClick={copy}>
+          {copied ? 'Invite link copied' : 'Copy invite link'}
+        </button>
+        <p className="hint">
+          {open === null
+            ? 'Waiting for the host to start the game.'
+            : 'Send the code or the link to your friends. Start whenever you’re ready.'}
+        </p>
+      </div>
+      <div className="mx-panel">
+        <Section title="Players">
+          <ul className="seats mx-lobby-seats" aria-label="Players">
+            {seats.map((s, i) => {
+              const c = colorOf(s);
+              return (
+                <li key={`${s.name}-${i}`} style={{ ['--seat' as string]: c ?? '#59687a' }}>
+                  {s.leader ? (
+                    <LeaderHead content={content} leader={s.leader} size={44} />
+                  ) : (
+                    <span className="mx-random-head small">?</span>
+                  )}
+                  <span className="mx-seat-text">
+                    <strong>
+                      <span className={`dot ${s.online ? 'on' : ''}`} aria-hidden="true" />
+                      {s.name}
+                      {s.host && <span className="muted"> · host</span>}
+                    </strong>
+                    <small>{s.leader ? leaderArt(content, s.leader).name : 'Random leader'}</small>
+                  </span>
+                  {onRemove && !s.host && (
+                    <button
+                      type="button"
+                      className="ghost small seat-remove"
+                      aria-label={`Remove ${s.name} from the lobby`}
+                      title="Remove from the lobby"
+                      onClick={() => onRemove(i)}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+            {Array.from({ length: empty }, (_, i) => (
+              <li key={`open-${i}`} className="muted empty">
+                <span className="mx-random-head small">+</span>
+                <span className="mx-seat-text">
+                  <strong>Waiting for a friend…</strong>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+        <Section title="Your leader and color">
+          <div className="mx-lobby-me">
+            <button type="button" className="primary" onClick={() => setPicking(true)}>
+              {myLeader
+                ? `Change leader (${leaderArt(content, myLeader).name})`
+                : 'Choose your leader'}
+            </button>
+            {myLeader && (
+              <button type="button" className="ghost" onClick={() => onPick(null, myColor)}>
+                Random
               </button>
             )}
-          </li>
-        ))}
-        {Array.from({ length: empty }, (_, i) => (
-          <li key={`open-${i}`} className="muted">
-            <span className="dot" aria-hidden="true" />
-            Waiting for a friend…
-          </li>
-        ))}
-      </ul>
-      <label htmlFor="online-leader">Your leader</label>
-      <select
-        id="online-leader"
-        value={myLeader ?? ''}
-        onChange={(e) => onPick(e.target.value || null)}
-      >
-        <option value="">Random</option>
-        {leaders.map((id) => (
-          <option key={id} value={id}>
-            {leaderName(id)}
-          </option>
-        ))}
-      </select>
-      <p className="hint">
-        {open === null
-          ? 'Waiting for the host to start the game.'
-          : 'Send the code or the link to your friends. Start whenever you’re ready: seats nobody took are left out.'}
-      </p>
+          </div>
+          <div className="mx-swatches" role="radiogroup" aria-label="Your color">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!myColor}
+              className={`mx-swatch auto ${myColor ? '' : 'on'}`}
+              title="Your civilization’s own colors"
+              onClick={() => onPick(myLeader, null)}
+            >
+              {myLeader ? (
+                <span style={{ background: leaderArt(content, myLeader).primary }} />
+              ) : (
+                <span className="unknown">A</span>
+              )}
+            </button>
+            {PALETTE.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                role="radio"
+                aria-checked={myColor === p.color}
+                aria-label={p.name}
+                title={p.name}
+                className={`mx-swatch ${myColor === p.color ? 'on' : ''}`}
+                onClick={() => onPick(myLeader, p.color)}
+              >
+                <span style={{ background: p.color }} />
+              </button>
+            ))}
+          </div>
+          {myLeader && (
+            <div className="mx-lobby-leader">
+              <LeaderDetail content={content} leader={myLeader} />
+            </div>
+          )}
+        </Section>
+      </div>
+      {picking && (
+        <LeaderPicker
+          content={content}
+          value={myLeader}
+          seatLabel="You"
+          takenBy={taken}
+          onClose={() => setPicking(false)}
+          onPick={(leader) => {
+            onPick(leader, myColor);
+            setPicking(false);
+          }}
+        />
+      )}
     </div>
   );
 }

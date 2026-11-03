@@ -16,14 +16,27 @@ page.on('pageerror', (e) => errors.push(`pageerror: ${e.stack ?? e.message}`));
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 await page.goto(url, { waitUntil: 'networkidle' });
 await page.waitForSelector('canvas');
+// The quick game behind opens on its leader's introduction.
+await page.waitForSelector('.leader-intro .primary', { timeout: 15000 }).catch(() => {});
+if (await page.$('.leader-intro .primary')) await page.click('.leader-intro .primary');
 
 // New game: two humans and one AI rival on a small map.
-await page.click('button:has-text("New game")');
-await page.click('button:has-text("Add a player")');
+await page.click('.menu-button');
+await page.click('.menu-pop button:has-text("New game")');
+await page.waitForSelector('.mx-setup');
+await page.click('button:has-text("Reset seats")');
+await page.click('button:has-text("+ Human (hotseat)")');
+await page.click('.mx-seat >> nth=0');
 await page.fill('input[aria-label="Player 1 name"]', 'Ada');
+await page.click('.mx-seat >> nth=1');
 await page.fill('input[aria-label="Player 2 name"]', 'Bo');
-await page.fill('#ng-rivals', '1');
-await page.selectOption('#ng-limit', '60');
+// Down to one AI rival.
+while ((await page.$$('.mx-seat')).length > 3) {
+  await page.click('.mx-seat >> nth=-1');
+  await page.click('.mx-seat-head-actions button.danger');
+}
+await page.click('.mx-steps button:has-text("Rules")');
+await page.selectOption('select[aria-label="Turn limit"]', '60');
 await page.screenshot({ path: `${out}/hotseat-setup.png` });
 await page.click('button:has-text("Start game")');
 await page.waitForSelector('.pass-screen');
@@ -89,13 +102,15 @@ if (await page.$('.turn-summary')) {
 }
 
 // Save, then load it back.
-await page.click('button:has-text("Save / Load")');
+await page.click('.menu-button');
+await page.click('.menu-pop button:has-text("Save / Load")');
 await page.fill('input[aria-label="Save name"]', 'Hotseat test');
-await page.click('button:has-text("Save game")');
-await page.waitForSelector('.save-list li:has-text("Hotseat test")');
+await page.click('button:has-text("Save here")');
+await page.waitForSelector('.mx-save-list li:has-text("Hotseat test") .mx-save-text span');
+await page.waitForTimeout(500);
 await page.screenshot({ path: `${out}/hotseat-saves.png` });
-console.log('saves:', (await page.textContent('.save-list'))?.replace(/\s+/g, ' '));
-await page.click('.save-list li:has-text("Hotseat test") button:has-text("Load")');
+console.log('saves:', (await page.textContent('.mx-save-list'))?.replace(/\s+/g, ' '));
+await page.click('.mx-save-list li:has-text("Hotseat test") button:has-text("Load")');
 await page.waitForSelector('.pass-screen');
 console.log('after load:', (await page.textContent('.pass-card'))?.replace(/\s+/g, ' '));
 console.log('errors:', errors.length ? errors.join('\n') : 'none');

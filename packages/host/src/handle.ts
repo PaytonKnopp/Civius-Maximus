@@ -51,8 +51,8 @@ export interface OnlineSession {
   onPing(fn: (ping: Ping) => void): () => void;
   /** When this turn's timer runs out (this device's clock, ms), or null for no timer. */
   deadline(): number | null;
-  /** In the lobby: the leader this device's player wants (null: random). */
-  pick(leader: string | null): void;
+  /** In the lobby: the leader (null: random) and color (null: the civ's own) this device's player wants. */
+  pick(leader: string | null, color?: string | null): void;
   /** Leaves the game (the host leaving ends it for everyone). */
   leave(): void;
 }

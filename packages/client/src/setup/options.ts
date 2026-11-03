@@ -14,6 +14,8 @@ export interface SeatPick {
   team?: number;
   /** AI seats only: a `difficulty` for this seat (absent = the game's). */
   difficulty?: string;
+  /** A `#rrggbb` to play in instead of the civ's own color (absent = the civ's). */
+  color?: string;
 }
 
 export interface NewGameOptions {
@@ -97,6 +99,7 @@ export function makeSetup(o: NewGameOptions): GameSetup {
     return {
       ...(p.leader ? { leader: p.leader } : {}),
       ...(p.team !== undefined ? { team: p.team } : {}),
+      ...(p.color ? { color: p.color } : {}),
     };
   };
   return {
@@ -243,6 +246,7 @@ export function sanitize(content: CompiledContent, o: NewGameOptions): NewGameOp
     const clean: SeatPick = {};
     if (p.leader && e.leader[p.leader]) clean.leader = p.leader;
     if (p.team !== undefined) clean.team = p.team;
+    if (p.color && /^#[0-9a-f]{6}$/i.test(p.color)) clean.color = p.color;
     if (p.difficulty && e.difficulty[p.difficulty]) clean.difficulty = p.difficulty;
     picks[Number(i)] = clean;
   }

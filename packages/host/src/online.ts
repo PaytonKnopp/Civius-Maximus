@@ -30,14 +30,20 @@ import type { HostTransport } from './transport';
  * who's playing; after, each friend's seat is theirs: it has a secret key (seatKeys.ts) and only
  * that key gets it back after a drop, until the host frees the seat for someone else.
  */
+/** A player color from a lobby pick: `#rrggbb`, or null. */
+function validColor(c: unknown): string | null {
+  return typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c) ? c.toLowerCase() : null;
+}
+
 export class OnlineHost {
   game: LocalGame | null = null;
   /** The player the host plays, once the game started. */
   hostPlayer: PlayerId | null = null;
   /** Friends in the lobby before the start (the host isn't listed), with their leader picks. */
-  private lobby: { name: string; peer: string; leader: string | null }[] = [];
-  /** The host's own leader pick in the lobby. */
+  private lobby: { name: string; peer: string; leader: string | null; color: string | null }[] = [];
+  /** The host's own leader and color picks in the lobby. */
   private hostLeader: string | null = null;
+  private hostColor: string | null = null;
   /** Seconds each turn lasts before everyone still playing is ended (null: no timer). */
   turnSeconds: number | null = null;
   /** An AI plays the seat of a friend who dropped, until they rejoin (otherwise the host waits). */
@@ -86,13 +92,21 @@ export class OnlineHost {
     const game = this.game;
     if (!game)
       return [
-        { name: this.hostName, player: null, host: true, online: true, leader: this.hostLeader },
+        {
+          name: this.hostName,
+          player: null,
+          host: true,
+          online: true,
+          leader: this.hostLeader,
+          color: this.hostColor,
+        },
         ...this.lobby.map((l) => ({
           name: l.name,
           player: null,
           host: false,
           online: true,
           leader: l.leader,
+          color: l.color,
         })),
       ];
     const taken = new Set(this.peers.values());
@@ -115,12 +129,17 @@ export class OnlineHost {
    * random), the host first.
    */
   start(
-    makeSetup: (names: string[], leaders: (string | null)[]) => GameSetup,
+    makeSetup: (
+      names: string[],
+      leaders: (string | null)[],
+      colors: (string | null)[],
+    ) => GameSetup,
     runner?: AiRunner,
   ): LocalGame {
     const setup = makeSetup(
       [this.hostName, ...this.lobby.map((l) => l.name)],
       [this.hostLeader, ...this.lobby.map((l) => l.leader)],
+      [this.hostColor, ...this.lobby.map((l) => l.color)],
     );
     const humans = setup.players.filter((p) => p.kind === 'human').map((p) => p.id);
     this.begin(new LocalGame(setup, this.ctx, runner), humans[0]!);
@@ -185,7 +204,7 @@ export class OnlineHost {
         return () => this.pingFns.delete(fn);
       },
       deadline: () => this.deadlineAt,
-      pick: (leader) => this.pickForHost(leader),
+      pick: (leader, color) => this.pickForHost(leader, color ?? null),
       leave: () => this.close(),
     };
     return {
@@ -212,9 +231,10 @@ export class OnlineHost {
     this.net.close();
   }
 
-  /** The lobby: the host picks a leader (null: random). */
-  pickForHost(leader: string | null) {
+  /** The lobby: the host picks a leader (null: random) and a color (null: the civ's own). */
+  pickForHost(leader: string | null, color: string | null = null) {
     this.hostLeader = leader;
+    this.hostColor = validColor(color);
     this.changed();
   }
 
@@ -348,6 +368,7 @@ export class OnlineHost {
       const leader = typeof m.leader === 'string' ? m.leader : null;
       if (l && !this.game) {
         l.leader = leader && this.ctx.content.entities.leader[leader] ? leader : null;
+        l.color = validColor(m.color);
         this.changed();
       }
     }
@@ -368,7 +389,7 @@ export class OnlineHost {
     const game = this.game;
     if (!game) {
       if (this.lobby.length >= this.openSeats) return this.refuse(peer, 'The game is full.');
-      this.lobby.push({ name, peer, leader: null });
+      this.lobby.push({ name, peer, leader: null, color: null });
       this.peers.set(peer, null);
     } else {
       const seat = this.seatFor(peer, name, m.proofs);

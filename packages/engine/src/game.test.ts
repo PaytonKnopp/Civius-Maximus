@@ -94,6 +94,16 @@ describe('createGame', () => {
     expect(createGame(other, ctx).rng).not.toEqual(createGame(setup(8), ctx).rng);
   });
 
+  it('gives a player the color picked in the setup, and rejects one that is not #rrggbb', () => {
+    const s = setup(2);
+    s.players[0]!.color = '#1FA39A';
+    const state = createGame(s, ctx);
+    expect(state.players.p1!.color).toBe('#1fa39a');
+    expect(state.players.p2!.color).toBeUndefined();
+    s.players[1]!.color = 'teal';
+    expect(() => createGame(s, ctx)).toThrow('Bad color');
+  });
+
   it('records the content it was created with', () => {
     expect(createGame(setup(2), ctx).contentHash).toBe(ctx.content.hash);
   });

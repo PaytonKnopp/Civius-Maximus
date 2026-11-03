@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSettings } from '../settings';
 import { Rich } from './Icon';
 
 /**
@@ -9,12 +10,14 @@ import { Rich } from './Icon';
  * icons; a first line ending in "(K)" shows the K as a key.
  */
 export function Tooltips() {
+  const { tooltips } = useSettings();
   const [tip, setTip] = useState<{ text: string; rect: DOMRect } | null>(null);
   const card = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || matchMedia('(pointer: coarse)').matches) return;
+    if (!tooltips || typeof window === 'undefined' || matchMedia('(pointer: coarse)').matches)
+      return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let current: Element | null = null;
     const hide = () => {
@@ -61,8 +64,9 @@ export function Tooltips() {
       document.removeEventListener('pointerdown', hide, true);
       document.removeEventListener('keydown', hide, true);
       document.removeEventListener('wheel', hide, true);
+      setTip(null);
     };
-  }, []);
+  }, [tooltips]);
 
   // Below the element when there's room, else above; kept on screen.
   useEffect(() => {

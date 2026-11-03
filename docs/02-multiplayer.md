@@ -76,6 +76,31 @@ tabs.
 - Leader picks in the online lobby and turn timers come with F20. World settings (age,
   temperature, rainfall, sea level) come with the map work (F7).
 
+**Redone (menus pass):** the setup is three pages with a bar at the bottom that always shows the
+game you are about to start (map, size and civs, difficulty, speed, victories) and Start.
+- **Players:** every seat as a card (portrait, name, leader and civ, team, its color down the
+  side). The chosen seat shows the leader in full, like Civ's leader select: portrait, civ and
+  emblem, introduction, the civ's and the leader's abilities, each unique unit, building,
+  district or improvement with what it does, the agenda, and how the AI plays them (bars from
+  the leader's personality). Each seat picks its **color** (its civ's own, or one of 16), its
+  team (1–4) and, for AI, its difficulty; colors that look alike on the map are flagged, with a
+  button that fixes them. Add AI rivals or hotseat humans, or reset every seat.
+- **Leader picker:** every leader as a tile with portrait, civ and emblem, a search, filters by
+  playstyle (conquest, science, culture, faith, gold, seas), the full detail of the one you point
+  at, and Random. Leaders another seat has are marked.
+- **World:** map types as cards, sizes with their civ counts, resources, start positions, age,
+  temperature, rainfall, sea level and wrap, beside a **live preview** of the exact map (the
+  game's generator with the game's seed, starts drawn in each seat's color). A map that can't fit
+  its civs says so and Start waits.
+- **Rules:** difficulty and speed (each explained), start era, turn limit, the five victories,
+  the world's systems, and presets (built in and your own).
+- **Online:** hosting has the same choices laid out as Players, Pace, Map and Rules; the lobby
+  shows the code big with the invite link, each player with their portrait and color, and you
+  pick your leader with the same picker and your color with the same swatches (sent to the host
+  with the pick).
+- A picked color replaces the civ's main color everywhere (map, borders, lists, replays); it is
+  part of the setup (`players[].color`) and of the player's state.
+
 **Rules (toggles)**
 
 Religion, theological combat, great people, independent powers (city-states and barbarians),

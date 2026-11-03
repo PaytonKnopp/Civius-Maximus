@@ -102,7 +102,7 @@ export function replayOf(ctx: EngineContext, state: GameState): Replay {
       leader: content.entities.leader[pl.leader]
         ? resolveText(content, content.entities.leader[pl.leader]!.name)
         : pl.leader,
-      color: civ?.colors.primary ?? '#888888',
+      color: pl.color ?? civ?.colors.primary ?? '#888888',
     };
   });
   const frames = state.history.flatMap((h) =>
@@ -164,4 +164,18 @@ export function recordGame(
   };
   save([entry, ...entries]);
   return entry;
+}
+
+/** Forgets every finished game. */
+export function clearHallOfFame() {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    // Nothing kept to clear.
+  }
+}
+
+/** Forgets one finished game. */
+export function removeFromHallOfFame(id: string) {
+  save(hallOfFame().filter((e) => e.id !== id));
 }

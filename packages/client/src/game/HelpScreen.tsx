@@ -3,7 +3,7 @@ import { advisorsOn, setAdvisors } from './advisors';
 import { hintsOn, setHints } from './hints';
 import { Icon } from '../ui/Icon';
 
-const KEYS: [string, string][] = [
+export const KEYS: [string, string][] = [
   ['Enter', 'The next thing that needs you (then End turn)'],
   ['Esc', 'Close a screen, cancel placing, deselect'],
   ['Space', 'Skip the selected unit this turn'],
@@ -31,7 +31,7 @@ const KEYS: [string, string][] = [
   ['F1', 'Civilopedia: every unit, building, wonder, leader and rule'],
 ];
 
-const MOUSE: [string, string][] = [
+export const MOUSE: [string, string][] = [
   [
     'Click',
     'Select a unit or settlement (again to cycle what’s on the tile); a tile to inspect it',

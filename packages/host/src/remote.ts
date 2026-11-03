@@ -118,7 +118,7 @@ export class RemoteGame implements GameHandle {
         return () => this.pingFns.delete(fn);
       },
       deadline: () => this.deadlineAt,
-      pick: (leader) => this.net.send({ t: 'pick', leader }),
+      pick: (leader, color) => this.net.send({ t: 'pick', leader, color: color ?? null }),
       leave: () => {
         this.leaving = true;
         this.net.close();

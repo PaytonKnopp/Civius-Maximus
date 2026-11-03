@@ -64,6 +64,7 @@ import { World3D } from '../map3d/World3D';
 import { CombatPreview, type Side } from './CombatPreview';
 import { CaptureDialog, GameOver, PlayerPanel, WarPrompt } from './Diplomacy';
 import { cloudAutosave } from '../cloud/autosave';
+import { getSettings, useSettings } from '../settings';
 import { AUTOSAVE, ONLINE_AUTOSAVE, storeSave } from './storage';
 import {
   civName,
@@ -701,6 +702,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   const [placing, setPlacing] = useState<Placing | null>(null);
   const [notices, setNotices] = useState<{ id: number; text: string }[]>([]);
   const [fps, setFps] = useState(0);
+  const settings = useSettings();
   const [overlay, setOverlay] = useState<
     | { kind: 'tree'; tree: TreeKind }
     | { kind: 'government' }
@@ -974,7 +976,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       if (events.some((e) => e.type === 'turn_started')) {
         // An online game's host keeps its own autosave (resumed online); clients only see a view.
         // Signed in, it goes to the cloud too, to continue on another device.
-        if (game.saves) {
+        if (game.saves && getSettings().autosave) {
           const id = game.online ? ONLINE_AUTOSAVE : AUTOSAVE;
           const save = makeSave(
             s,
@@ -1757,7 +1759,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
                 {me.ages.score}
               </span>
             )}
-            <span className="fps">{fps} fps</span>
+            {settings.showFps && <span className="fps">{fps} fps</span>}
           </button>
         </div>
       </header>

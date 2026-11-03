@@ -13,7 +13,7 @@ happened and what needs you".
 
 | Screen | Contents |
 |---|---|
-| **Home** | Single player, host multiplayer, join with code, hotseat, load game, mod manager, civ creator, settings, hall of fame, profile / log in (built so far: Continue the autosave, Quick game, New game, Load game, Map Lab, over the live map) |
+| **Home** | Single player, host multiplayer, join with code, hotseat, load game, mod manager, civ creator, settings, hall of fame, profile / log in (built: Continue, Quick game, New game, Play online, Load game, Hall of Fame, Civilopedia, Options, account, Map Lab, over the live map; see "Title screen" below) |
 | **Lobby** | Join code, settings, seats, leader picks or draft, mods, chat, ready check |
 | **Map (main)** | The world view, plus the overlays below |
 | **Settlement** | Tiles (with yields and lock buttons), citizens, production queue (cities) or specialization (towns), upgrade to city, buy, districts and buildings, growth and happiness breakdown, religion |
@@ -77,12 +77,34 @@ the Religion screen shows the pantheon and your beliefs as cards, and each relig
 toward victory as a meter. Costs show the game's yield icons instead of emoji. Graphs grow to
 fill the screen.
 
-**Title screen (polish P6):** the menu stands in a column on the left over the living world
-(a quick game plays behind it), like the Civ games' title screens: the laurel and the title in
-gold, the tagline, then the main choices as large engraved words (Continue or Quick game
-highlighted in gold, New game, Play online, Load game) that light up and slide on hover, with
-Hall of Fame, Civilopedia, Account and Map Lab as small links under a rule. The game's HUD hides
-while it's open. On phones the column sits at the bottom over a dark fade.
+**Title screen (polish P6, redone in the menus pass):** the menu stands in a column on the left
+over the living world (a quick game plays behind it), like the Civ games' title screens: the crest
+and the title in gold, the tagline, then eight entries, each with an icon, a line saying what it
+does and a key: Continue (C, with the turn and how long ago), Quick game (Q), New game (N), Play
+online (O), Load game (L), Hall of Fame (H), Civilopedia (P) and Options (,). The arrows move
+between them and Enter picks one. On the right: the game you'd continue (leader portrait, civ,
+turn, era, settlements, score, map, difficulty; or a welcome card when there's none), the online
+game you host (to host it again), your record (games, victories, best score, most played leader)
+and a "how to play" note that opens the Civilopedia. Top right: sign in, full screen, Options.
+At the bottom: the version, an update notice, and the Map Lab. The game's HUD hides while it's
+open. On tablets and phones it is one column that scrolls. Opened from a game's menu, it leads
+with **Return to game** (R, or Esc), and Quick game then starts a new game rather than resuming
+yours. If a game can't start (a setup or save the rules reject), a message says why and leads
+back here instead of a blank page.
+
+**Menu screens (the menus pass):** everything before a game (Options, New game, the leader
+picker, Load game, Play online, Civilopedia, Hall of Fame) is one kind of full screen: a gold
+header with Back (Esc closes the topmost screen), and one set of controls (switches, segmented
+choices, sliders with their value, cards). All of them fit a phone: side panels become tabs,
+strips or a drawer. **Account** is one of them too: sign in or create an account (or connect a
+Supabase project), beside what an account adds.
+
+**Options:** Sound (master, music, effects and ambience volumes, mute, mute in a background tab,
+test sounds), Graphics (3D or 2D map, 3D quality, frame rate counter, full screen, reduce
+motion), Interface (larger menu text, tooltips, first-game hints, advisor tips), Game and saves
+(autosave every turn, clear the Hall of Fame, reset options), Controls (every key and mouse
+action) and About. Everything applies at once and is kept in the browser (`settings.ts`); the
+game menu's quality switch and the game bar's 3D/2D switch change the same settings.
 
 **Feel (polish P8):** a banner sweeps across the map when a new turn begins ("Turn 121" in
 gold over the era's name, with gold rules either side) and fades away, in place of the old
@@ -148,6 +170,18 @@ Help screen (?) lists every shortcut and turns hints back on.
   governors, eras and the world), a search across titles and text, and links between articles
   (what a tech unlocks, what a unit upgrades to, a leader's civ...). "How to play" has 22 short
   articles on the systems, with numbers from the rules.
+  *Redone (menus pass):* a front page (every category with what's in it, the articles you read
+  lately, where to start), a tree to browse (category, then group such as an era or a unit
+  class, then article), and a ranked search where every word must match, with results filtered
+  by category, a line of the text around each match, and Enter to open the best one (/ jumps to
+  the search). Articles have their icon, portrait or emblem, a breadcrumb, every fact with links,
+  what their effects do in plain words (from the content's effects), the reverse links (what
+  leads to a tech, what upgrades into a unit, where a resource is found and what improves it),
+  "Mentioned in" for everything that links to them, and the previous and next article in their
+  group. Units get a one-line summary (era, class, where they fight, what they replace), units
+  and buildings show the era they arrive in, and unit classes, kinds of great people and kinds
+  of city-state have their own articles listing their members. A test checks that every link
+  leads to an article and that no article shows a raw value. Back and Forward (Alt+←/→) walk the history. On phones the tree is a drawer.
 - **Advisors** (V1 final F19): each turn, tips from the military, economic, culture and foreign
   advisors about what needs attention (enemies near a settlement, losing gold, a pile of gold,
   free trade routes, unhappiness, starvation, room to expand, falling loyalty, a hostile
@@ -181,6 +215,10 @@ Available any time for what you know about, and in full for everyone at the end 
 - **Hall of Fame** (V1 final F19, home screen): every finished game in this browser, newest
   first: date, leader, result and how, turn, score, map and difficulty, with a replay for the
   eight newest (kept in local storage; the oldest replays go first when it fills).
+  *Redone (menus pass):* your record at the top (games, victories and win rate, best score,
+  fastest win, most played leader, victories by kind), then every game as a card with the
+  leader's portrait and emblem, the result, the map and settings, the score and Replay. Filter
+  by result and ending, sort by date, score or length, and forget a game.
 
 **Built so far (V1 part 10):** the game keeps every civ's numbers each turn (score, science,
 culture and tourism per turn, military, citizens, settlements). The Graphs screen (H, or from

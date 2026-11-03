@@ -1,23 +1,14 @@
 import type { EngineContext, GameSetup, GameState } from '@cx/engine';
-import { type GameHandle, makeSave, readSave } from '@cx/host';
+import type { GameHandle } from '@cx/host';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadContent } from './content';
 import { HomeScreen } from './HomeScreen';
 import { AccountDialog } from './cloud/AccountDialog';
-import { cloud, type CloudSave } from './cloud/cloud';
 import { CivilopediaScreen } from './game/CivilopediaScreen';
 import { HallOfFameScreen } from './game/HallOfFameScreen';
 import { type GameStart, GameScreen } from './game/GameScreen';
-import {
-  AUTOSAVE,
-  deleteSave,
-  downloadSave,
-  listSaves,
-  loadSave,
-  type SaveSummary,
-  storeSave,
-} from './game/storage';
 import { Gallery } from './Gallery';
+import { GameErrorBoundary } from './ui/ErrorBoundary';
 import {
   DEFAULT_OPTIONS,
   loadLastOptions,
@@ -28,7 +19,9 @@ import {
   saveLastOptions,
 } from './setup/options';
 import { SetupScreen } from './setup/SetupScreen';
-import { SoundSettings } from './ui/SoundSettings';
+import { OptionsScreen } from './menu/OptionsScreen';
+import { SavesScreen } from './menu/SavesScreen';
+import { hasWebGL2, setSettings, useSettings } from './settings';
 import { MapLab } from './lab/MapLab';
 import { Icon } from './ui/Icon';
 import type { Quality } from './map/renderer';
@@ -43,6 +36,7 @@ function makeOnlineSetup(
   names: string[],
   o: OnlineOptions,
   leaders: (string | null)[] = [],
+  colors: (string | null)[] = [],
 ): GameSetup {
   const rules = o.rules;
   return makeSetup({
@@ -70,30 +64,29 @@ function makeOnlineSetup(
     speed: o.speed,
     difficulty: o.difficulty,
     ...(o.startEra ? { startEra: o.startEra } : {}),
-    picks: Object.fromEntries(leaders.flatMap((leader, i) => (leader ? [[i, { leader }]] : []))),
+    picks: Object.fromEntries(
+      leaders.flatMap((leader, i) => {
+        const color = colors[i];
+        return leader || color
+          ? [[i, { ...(leader ? { leader } : {}), ...(color ? { color } : {}) }]]
+          : [];
+      }),
+    ),
   });
 }
 
 /** `#join=ABC123` (an invite link) opens the Join screen with the code. */
 const joinCodeFromUrl = () => /^#join=(\w+)$/.exec(location.hash)?.[1];
 
-function hasWebGL2() {
-  try {
-    return !!document.createElement('canvas').getContext('webgl2');
-  } catch {
-    return false;
-  }
-}
-
 export function App() {
   const content = useMemo(loadContent, []);
   const ctx: EngineContext = useMemo(() => ({ content }), [content]);
   // `#lab` opens the Map Lab directly (handy for sharing a map, and for the screenshot scripts).
   // `#gallery` shows every leader portrait and civ emblem.
-  const [screen, setScreenState] = useState<'game' | 'lab' | 'gallery' | 'fame' | 'pedia'>(() =>
+  const [screen, setScreenState] = useState<'game' | 'lab' | 'gallery'>(() =>
     location.hash === '#lab' ? 'lab' : location.hash === '#gallery' ? 'gallery' : 'game',
   );
-  const setScreen = (s: 'game' | 'lab' | 'fame' | 'pedia') => {
+  const setScreen = (s: 'game' | 'lab') => {
     history.replaceState(null, '', s === 'lab' ? '#lab' : location.pathname + location.search);
     setScreenState(s);
   };
@@ -101,11 +94,26 @@ export function App() {
   const [options, setOptions] = useState<NewGameOptions>(() =>
     sanitize(content, { ...DEFAULT_OPTIONS, ...loadLastOptions(), seed: randomSeed() }),
   );
-  const [start, setStart] = useState<GameStart>(() => ({
+  const [start, setStartState] = useState<GameStart>(() => ({
     id: startId(),
     setup: makeSetup({ ...DEFAULT_OPTIONS, seed: randomSeed() }),
   }));
-  const [dialog, setDialog] = useState<'new' | 'saves' | 'account' | null>(null);
+  // The game behind the title screen is a quick game nobody has played yet (true), or the
+  // player's own game, which the title screen then offers to return to.
+  const [fresh, setFresh] = useState(true);
+  const setStart = useCallback((s: GameStart, isFresh = false) => {
+    setStartState(s);
+    setFresh(isFresh);
+  }, []);
+  const quickGame = (): GameStart => ({
+    id: startId(),
+    setup: makeSetup({ ...DEFAULT_OPTIONS, seed: randomSeed() }),
+  });
+  // Screens over the title screen and the game: setup, saves, Hall of Fame, Civilopedia...
+  const [dialog, setDialog] = useState<
+    'new' | 'saves' | 'account' | 'options' | 'fame' | 'pedia' | null
+  >(null);
+  const [pediaArticle, setPediaArticle] = useState<string | undefined>();
   // Online play: the host/join dialog, opened from the home screen or an invite link.
   const [online, setOnline] = useState<{ joinCode?: string; resume?: GameState } | null>(() => {
     const code = joinCodeFromUrl();
@@ -113,47 +121,61 @@ export function App() {
   });
   // The title screen at startup (`#play` skips it, for scripts and links straight into a game).
   const [home, setHome] = useState(() => location.hash !== '#play' && !joinCodeFromUrl());
-  const [mode, setMode] = useState<'3d' | '2d'>(() => (hasWebGL2() ? '3d' : '2d'));
-  const [quality, setQuality] = useState<Quality>('medium');
+  // The map view and its quality are options (settings.ts), also changed from the game's menu.
+  const settings = useSettings();
+  const mode: '3d' | '2d' = hasWebGL2() ? settings.view : '2d';
+  const setMode = (view: '3d' | '2d') => setSettings({ view });
+  const quality: Quality = settings.quality;
+  const setQuality = (q: Quality) => setSettings({ quality: q });
   const game = useRef<GameHandle>(undefined);
   const onGame = useCallback((g: GameHandle) => {
     game.current = g;
   }, []);
-  const onOnlineGame = useCallback((handle: GameHandle) => {
-    history.replaceState(null, '', location.pathname + location.search);
-    setStart({ id: startId(), handle });
-    setOnline(null);
-    setHome(false);
-  }, []);
+  const onOnlineGame = useCallback(
+    (handle: GameHandle) => {
+      history.replaceState(null, '', location.pathname + location.search);
+      setStart({ id: startId(), handle });
+      setOnline(null);
+      setHome(false);
+    },
+    [setStart],
+  );
+  // A finished game goes back to the title screen, over a new quick game.
   const backHome = useCallback(() => {
-    setStart({ id: startId(), setup: makeSetup({ ...options, seed: randomSeed() }) });
+    setStart({ id: startId(), setup: makeSetup({ ...DEFAULT_OPTIONS, seed: randomSeed() }) }, true);
     setHome(true);
-  }, [options]);
+  }, [setStart]);
   // Leaving an online game any way (a new game, a load, the menu) closes its connections.
   useEffect(() => () => ('handle' in start ? start.handle.online?.leave() : undefined), [start]);
 
   if (screen === 'lab') return <MapLab content={content} onBack={() => setScreen('game')} />;
   if (screen === 'gallery') return <Gallery content={content} onBack={() => setScreen('game')} />;
-  if (screen === 'fame') return <HallOfFameScreen onClose={() => setScreen('game')} />;
-  if (screen === 'pedia')
-    return <CivilopediaScreen content={content} onClose={() => setScreen('game')} />;
 
   return (
     <div className="app">
-      <GameScreen
-        key={start.id}
-        content={content}
-        start={start}
-        mode={mode}
-        quality={quality}
-        onGame={onGame}
-        onExit={backHome}
-        covered={home || dialog !== null || online !== null}
-      />
-      {home && !dialog && !online && (
+      <GameErrorBoundary key={start.id} onReset={backHome}>
+        <GameScreen
+          key={start.id}
+          content={content}
+          start={start}
+          mode={mode}
+          quality={quality}
+          onGame={onGame}
+          onExit={backHome}
+          covered={home || dialog !== null || online !== null}
+        />
+      </GameErrorBoundary>
+      {home && !online && (
         <HomeScreen
           ctx={ctx}
-          onPlay={() => setHome(false)}
+          active={dialog === null}
+          {...(fresh ? {} : { onResume: () => setHome(false) })}
+          onPlay={() => {
+            // The quick game behind the title screen, or a new one if that's your own game.
+            if (!fresh) setStart(quickGame());
+            else setFresh(false);
+            setHome(false);
+          }}
           onNewGame={() => setDialog('new')}
           onLoadGame={() => setDialog('saves')}
           onContinue={(state) => {
@@ -162,9 +184,13 @@ export function App() {
           }}
           onMapLab={() => setScreen('lab')}
           onOnline={() => setOnline({})}
-          onHallOfFame={() => setScreen('fame')}
+          onHallOfFame={() => setDialog('fame')}
           onAccount={() => setDialog('account')}
-          onPedia={() => setScreen('pedia')}
+          onOptions={() => setDialog('options')}
+          onPedia={(article) => {
+            setPediaArticle(article);
+            setDialog('pedia');
+          }}
           onResumeOnline={(state) => setOnline({ resume: state })}
         />
       )}
@@ -193,6 +219,11 @@ export function App() {
             onNewGame={() => setDialog('new')}
             onSaves={() => setDialog('saves')}
             onAccount={() => setDialog('account')}
+            onOptions={() => setDialog('options')}
+            onPedia={() => {
+              setPediaArticle(undefined);
+              setDialog('pedia');
+            }}
             onMapLab={() => setScreen('lab')}
             onHome={() => setHome(true)}
             quality={mode === '3d' ? quality : null}
@@ -228,10 +259,19 @@ export function App() {
         />
       )}
       {dialog === 'account' && <AccountDialog onClose={() => setDialog(null)} />}
+      {dialog === 'options' && <OptionsScreen onClose={() => setDialog(null)} />}
+      {dialog === 'fame' && <HallOfFameScreen content={content} onClose={() => setDialog(null)} />}
+      {dialog === 'pedia' && (
+        <CivilopediaScreen
+          content={content}
+          initial={pediaArticle}
+          onClose={() => setDialog(null)}
+        />
+      )}
       {dialog === 'saves' && (
-        <SavesDialog
+        <SavesScreen
           ctx={ctx}
-          current={() => (game.current?.saves ? game.current.state : undefined)}
+          current={() => (!home && game.current?.saves ? game.current.state : undefined)}
           onClose={() => setDialog(null)}
           onLoad={(state) => {
             setStart({ id: startId(), state });
@@ -249,6 +289,8 @@ function GameMenu(props: {
   onNewGame: () => void;
   onSaves: () => void;
   onAccount: () => void;
+  onOptions: () => void;
+  onPedia: () => void;
   onMapLab: () => void;
   onHome: () => void;
   /** The 3D view's graphics quality (null in the 2D view). */
@@ -286,6 +328,12 @@ function GameMenu(props: {
           <button type="button" role="menuitem" onClick={pick(props.onSaves)}>
             Save / Load…
           </button>
+          <button type="button" role="menuitem" onClick={pick(props.onOptions)}>
+            Options…
+          </button>
+          <button type="button" role="menuitem" onClick={pick(props.onPedia)}>
+            Civilopedia
+          </button>
           <button type="button" role="menuitem" onClick={pick(props.onAccount)}>
             Account…
           </button>
@@ -313,10 +361,6 @@ function GameMenu(props: {
               </div>
             </div>
           )}
-          <div className="menu-section">
-            <h4>Sound</h4>
-            <SoundSettings />
-          </div>
         </div>
       )}
     </div>
@@ -340,220 +384,5 @@ function OnlineCode({ code }: { code: string }) {
     >
       {copied ? 'Link copied' : `🌐 ${code}`}
     </button>
-  );
-}
-
-function SavesDialog({
-  ctx,
-  current,
-  onClose,
-  onLoad,
-}: {
-  ctx: EngineContext;
-  current: () => GameState | undefined;
-  onClose: () => void;
-  onLoad: (state: GameState) => void;
-}) {
-  const [saves, setSaves] = useState<SaveSummary[] | null>(null);
-  // Cloud saves, when signed in (cloud/cloud.ts).
-  const remote = cloud();
-  const [cloudSaves, setCloudSaves] = useState<CloudSave[] | null>(null);
-  const refreshCloud = useCallback(() => {
-    if (!remote?.signedIn) return;
-    remote
-      .listSaves()
-      .then(setCloudSaves)
-      .catch((e: Error) => setMessage(e.message));
-  }, [remote]);
-  useEffect(refreshCloud, [refreshCloud]);
-  const saveToCloud = async () => {
-    const state = current();
-    if (!state || !remote) return;
-    try {
-      const label = name.trim() || `Turn ${state.turn}`;
-      await remote.putSave(`save-${Date.now()}`, label, state.turn, makeSave(state, label));
-      setMessage('Saved to the cloud.');
-      refreshCloud();
-    } catch (e) {
-      setMessage((e as Error).message);
-    }
-  };
-  const loadFromCloud = async (id: string) => {
-    try {
-      const data = await remote!.getSave(id);
-      const read = readSave(JSON.stringify(data), ctx);
-      if (!read.ok) setMessage(read.message);
-      else onLoad(read.save.state);
-    } catch (e) {
-      setMessage((e as Error).message);
-    }
-  };
-  const [name, setName] = useState(() => `Turn ${current()?.turn ?? 1}`);
-  const [message, setMessage] = useState<string | null>(null);
-  const file = useRef<HTMLInputElement>(null);
-  const refresh = useCallback(() => {
-    listSaves()
-      .then(setSaves)
-      .catch(() => {
-        setSaves([]);
-        setMessage("This browser can't keep saved games here; use Export file instead.");
-      });
-  }, []);
-  useEffect(refresh, [refresh]);
-
-  const save = async () => {
-    const state = current();
-    if (!state) return;
-    try {
-      await storeSave(`save-${Date.now()}`, makeSave(state, name.trim() || `Turn ${state.turn}`));
-      setMessage('Saved.');
-      refresh();
-    } catch {
-      setMessage('Saving failed (is the browser out of space?). Try Export file.');
-    }
-  };
-  const load = async (id: string) => {
-    const s = await loadSave(id).catch(() => undefined);
-    const read = s ? readSave(JSON.stringify(s), ctx) : undefined;
-    if (!read) setMessage('That save is gone.');
-    else if (!read.ok) setMessage(read.message);
-    else onLoad(read.save.state);
-  };
-  const importFile = async (f: File) => {
-    const read = readSave(await f.text(), ctx);
-    if (!read.ok) setMessage(read.message);
-    else onLoad(read.save.state);
-  };
-
-  return (
-    <div className="dialog-backdrop" role="presentation" onClick={onClose}>
-      <div
-        className="dialog saves"
-        role="dialog"
-        aria-labelledby="saves-title"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 id="saves-title">Save / Load</h2>
-        <form
-          className="save-row"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void save();
-          }}
-        >
-          <input aria-label="Save name" value={name} onChange={(e) => setName(e.target.value)} />
-          <button type="submit" className="primary">
-            Save game
-          </button>
-          <button
-            type="button"
-            className="ghost"
-            onClick={() => {
-              const state = current();
-              if (state) downloadSave(makeSave(state, name.trim() || `Turn ${state.turn}`));
-            }}
-          >
-            Export file
-          </button>
-        </form>
-        {message && <p className="hint">{message}</p>}
-        <h3>Saved games</h3>
-        {saves === null ? (
-          <p className="hint">Loading…</p>
-        ) : saves.length === 0 ? (
-          <p className="hint">No saved games yet. An autosave is made at the start of each turn.</p>
-        ) : (
-          <ul className="save-list">
-            {saves.map((s) => (
-              <li key={s.id}>
-                <span className="save-name">
-                  <strong>{s.id === AUTOSAVE ? 'Autosave' : s.name}</strong>
-                  <span className="muted small-text">
-                    turn {s.turn} · {new Date(s.savedAt).toLocaleString()}
-                  </span>
-                </span>
-                <button type="button" className="primary small" onClick={() => void load(s.id)}>
-                  Load
-                </button>
-                <button
-                  type="button"
-                  className="ghost small"
-                  aria-label={`Delete ${s.name}`}
-                  onClick={() => void deleteSave(s.id).then(refresh)}
-                >
-                  ✕
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {remote?.signedIn && (
-          <>
-            <h3>
-              Cloud saves{' '}
-              <button type="button" className="ghost small" onClick={() => void saveToCloud()}>
-                Save to the cloud
-              </button>
-            </h3>
-            {cloudSaves === null ? (
-              <p className="hint">Loading…</p>
-            ) : cloudSaves.length === 0 ? (
-              <p className="hint">Nothing in the cloud yet.</p>
-            ) : (
-              <ul className="save-list">
-                {cloudSaves.map((s) => (
-                  <li key={s.id}>
-                    <span className="save-name">
-                      <strong>{s.name}</strong>
-                      <span className="muted small-text">
-                        turn {s.turn} · {new Date(s.updatedAt).toLocaleString()}
-                      </span>
-                    </span>
-                    <button
-                      type="button"
-                      className="primary small"
-                      onClick={() => void loadFromCloud(s.id)}
-                    >
-                      Load
-                    </button>
-                    <button
-                      type="button"
-                      className="ghost small"
-                      aria-label={`Delete ${s.name} from the cloud`}
-                      onClick={() =>
-                        void remote
-                          .deleteSave(s.id)
-                          .then(refreshCloud)
-                          .catch((e: Error) => setMessage(e.message))
-                      }
-                    >
-                      ✕
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-        <div className="dialog-actions">
-          <input
-            ref={file}
-            type="file"
-            accept=".json,application/json"
-            hidden
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) void importFile(f);
-            }}
-          />
-          <button type="button" className="ghost" onClick={() => file.current?.click()}>
-            Import file…
-          </button>
-          <button type="button" className="primary" onClick={onClose}>
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }
