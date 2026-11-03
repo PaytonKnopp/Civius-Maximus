@@ -55,7 +55,9 @@ re-run, and later ones build on earlier ones).
 ## 3. Accounts with just a username (2 minutes)
 
 The game signs players up with a private placeholder address (`name@players.civiusmaximus.invalid`)
-unless they type a real email, so confirmation emails can't be delivered.
+unless they type a real email, so confirmation emails can't be delivered. **If Confirm email
+stays on, a username account can never be confirmed, and a real-email one gets a link to the wrong
+address (below).** Do this step before anyone creates an account.
 
 1. Left sidebar → **Authentication** → **Sign In / Providers** (older dashboards: **Providers**
    → **Email**).
@@ -63,6 +65,15 @@ unless they type a real email, so confirmation emails can't be delivered.
 3. Same page (or **Authentication** → **Policies/Settings**, depending on the dashboard):
    **Minimum password length: 8** (the game asks for 8 too). If your plan shows **Prevent use of
    leaked passwords**, turn it on.
+4. Left sidebar → **Authentication** → **URL Configuration** (under **Configuration**) →
+   **Site URL**: your game's address, `https://paytonknopp.github.io/Civius-Maximus/` (swap in
+   your own if it differs). Save. Supabase's default is `http://localhost:3000`, which is where
+   any link in an email it sends (a confirmation, a password reset) would otherwise take people:
+   to a page that doesn't exist ("Unable to connect").
+
+Already made an account before doing this? Its email link did its job even though the page it
+ended on showed an error: just **Sign in**. If the game says "Email not confirmed", open
+**Authentication** → **Users**, delete that user (the ⋯ menu), and create the account again.
 
 ## 4. Copy the two values the game needs (1 minute)
 
@@ -150,7 +161,8 @@ nothing but strangers' sign-ups.
 
 | You see | Fix |
 |---|---|
-| "Email not confirmed" | Step 3: turn **Confirm email** off. |
+| "Email not confirmed" | Step 3: turn **Confirm email** off, then delete the user (**Authentication** → **Users**) and create the account again. |
+| An email link opens "Unable to connect" (`localhost:3000`) | Step 3, item 4: set the **Site URL**. The account itself is fine: just sign in. |
 | "Invalid login credentials" | Wrong username or password (usernames aren't case-sensitive). |
 | "Signups not allowed for this instance" | Step 7 turned sign-ups off: create the account yourself, or turn them on briefly. |
 | "new row violates row-level security" | Sign in again; or step 2 didn't run. |
