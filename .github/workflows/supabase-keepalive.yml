@@ -22,7 +22,12 @@ jobs:
           URL: ${{ vars.SUPABASE_URL }}
           KEY: ${{ vars.SUPABASE_ANON_KEY }}
         run: |
+          URL="${URL%/}"; URL="${URL%/rest/v1}"
+          # The publishable key (sb_publishable_…) goes only as apikey; the legacy anon key is
+          # also a Bearer token.
+          AUTH=()
+          case "$KEY" in eyJ*) AUTH=(-H "Authorization: Bearer $KEY") ;; esac
           curl --fail --silent --show-error \
             "$URL/rest/v1/lobbies?select=code&limit=1" \
-            -H "apikey: $KEY" -H "Authorization: Bearer $KEY" > /dev/null
+            -H "apikey: $KEY" "${AUTH[@]}" > /dev/null
           echo "Supabase answered."

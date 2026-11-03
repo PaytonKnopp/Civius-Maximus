@@ -262,8 +262,9 @@ Realtime messages per month, 5 GB egress, and 2 active projects.
 - Supabase row-level security on every table: you can only read games you're seated in, only your
   own private channel, and only your own profile's private fields. **As built:** players read and
   change only their own saves; lobbies are public to read and changed only by their host;
-  triggers enforce sizes, counts and times (`packages/backend/supabase/migrations/`). The anon
-  key is public by design; the `service_role` key never leaves the Supabase dashboard.
+  triggers enforce sizes, counts and times (`packages/backend/supabase/migrations/`). The
+  publishable key (or the legacy anon key) is public by design; the secret key never leaves the
+  Supabase dashboard, and the game refuses one pasted by mistake.
 - Online seats are claimed with a secret per seat (`packages/host/src/seatKeys.ts`), never by
   name alone; the key itself never travels after it's given, only a hash bound to the join code.
 - Mods are data only in v1 (no executable code), so loading a friend's mod is safe (D10).

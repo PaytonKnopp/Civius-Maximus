@@ -1,8 +1,8 @@
 /**
  * Accounts, cloud saves and public lobbies on Supabase (docs/01-architecture.md, "Accounts";
  * docs/guides/supabase.md). Switched on by configuration: the build's `VITE_SUPABASE_URL` and
- * `VITE_SUPABASE_ANON_KEY`, or a project URL and key pasted into the Account dialog (kept in this
- * browser). Without either, everything here stays off and the game needs no account.
+ * `VITE_SUPABASE_ANON_KEY` (the publishable key, or the legacy anon key), or a project URL and
+ * key pasted into the Account dialog (kept in this browser). Without either, everything here stays off and the game needs no account.
  *
  * It talks to Supabase's REST endpoints directly (no SDK): GoTrue for sign-up and sign-in,
  * PostgREST for the `saves` and `lobbies` tables, whose row-level security only lets players
@@ -58,16 +58,53 @@ const browserStore = (): KeyStore | undefined => {
   }
 };
 
+/**
+ * The project's address as the game uses it: the dashboard also shows longer ones (the REST
+ * endpoint `…/rest/v1/`), so anything after the host is dropped.
+ */
+export function projectUrl(url: string): string {
+  return url
+    .trim()
+    .replace(/\/(rest|auth)\/v1\/?.*$/, '')
+    .replace(/\/+$/, '');
+}
+
+/**
+ * Why `key` can't be the key players' browsers use, if it can't: the secret (`service_role`)
+ * key skips every row-level rule, so it must never be put in the game.
+ */
+export function keyProblem(key: string): string | undefined {
+  const k = key.trim();
+  if (!k) return 'Paste the publishable key (sb_publishable_…) or the anon public key (eyJ…).';
+  if (k.startsWith('sb_secret_') || jwtRole(k) === 'service_role')
+    return 'That is the secret key: it must never go in the game. Use the publishable key (sb_publishable_…) or the anon public key.';
+  return undefined;
+}
+
+/** The `role` inside a legacy JWT key (anon or service_role), if it is one. */
+function jwtRole(key: string): string | undefined {
+  try {
+    const payload = key.split('.')[1];
+    if (!key.startsWith('eyJ') || !payload) return undefined;
+    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    return (JSON.parse(json) as { role?: string }).role;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The project this build or this browser is set up for, if any. */
 export function cloudConfig(store: KeyStore | undefined = browserStore()): CloudConfig | null {
   const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {};
-  if (env.VITE_SUPABASE_URL && env.VITE_SUPABASE_ANON_KEY)
-    return { url: env.VITE_SUPABASE_URL.replace(/\/$/, ''), anonKey: env.VITE_SUPABASE_ANON_KEY };
+  const usable = (url: string | undefined, key: string | undefined): CloudConfig | null =>
+    url && key && !keyProblem(key) ? { url: projectUrl(url), anonKey: key.trim() } : null;
+  const built = usable(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY);
+  if (built) return built;
   try {
     const saved = store?.getItem(CONFIG_KEY);
     if (!saved) return null;
     const c = JSON.parse(saved) as CloudConfig;
-    return c.url && c.anonKey ? { url: c.url.replace(/\/$/, ''), anonKey: c.anonKey } : null;
+    return usable(c.url, c.anonKey);
   } catch {
     return null;
   }
@@ -80,7 +117,10 @@ export function setCloudConfig(
 ) {
   if (!store) return;
   if (c)
-    store.setItem(CONFIG_KEY, JSON.stringify({ url: c.url.trim(), anonKey: c.anonKey.trim() }));
+    store.setItem(
+      CONFIG_KEY,
+      JSON.stringify({ url: projectUrl(c.url), anonKey: c.anonKey.trim() }),
+    );
   else store.removeItem(CONFIG_KEY);
 }
 
@@ -237,8 +277,9 @@ export class Cloud {
   private async rest(path: string, init: RequestInit = {}, needsAccount = true): Promise<unknown> {
     if (needsAccount && !this.session) throw new Error('Sign in first');
     if (this.session && this.session.expiresAt - 60 < Date.now() / 1000) await this.refresh();
-    // Signed out, the key alone identifies the game. The legacy anon key is a token too; a
-    // newer publishable key (sb_publishable_…) isn't, so it only goes as `apikey`.
+    // Signed out, the key alone identifies the game. The legacy anon key is a token too; the
+    // publishable key (sb_publishable_…) isn't, and Supabase refuses it as a Bearer token, so it
+    // only goes as `apikey`.
     const token =
       this.session?.accessToken ??
       (this.config.anonKey.startsWith('eyJ') ? this.config.anonKey : null);

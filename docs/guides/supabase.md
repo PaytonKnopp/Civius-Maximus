@@ -66,33 +66,46 @@ unless they type a real email, so confirmation emails can't be delivered.
 
 ## 4. Copy the two values the game needs (1 minute)
 
-Left sidebar → **Project Settings** (gear) → **Data API** (or **API Keys**):
+In Supabase, left sidebar → **Project Settings** (the gear at the bottom) → **API Keys**. (The
+**Connect** button at the top of the project's home page shows the same values.)
 
-- **Project URL**, like `https://abcdefghijkl.supabase.co`
-- the **anon public** key: a long string starting `eyJ`. Newer dashboards put it under
-  **API Keys** → **Legacy API Keys**. (The newer "publishable" key, `sb_publishable_…`, is meant
-  to work the same way, but the game was built around the anon key: use that one.)
+- **Project URL:** just the address, like `https://abcdefghijkl.supabase.co`. If you copy one
+  that ends in `/rest/v1/`, drop that part (the game ignores it anyway).
+- **Publishable key:** on the **API Keys** tab, the key starting `sb_publishable_`, with its copy
+  button. Older projects may only have a **Legacy API Keys** tab: there, use the **anon public**
+  key (a long string starting `eyJ`). Supabase is retiring the legacy keys at the end of 2026, so
+  take the publishable one when you have both.
 
-**Never use the `service_role` / `secret` key anywhere in the game, in GitHub, or in a chat.** It
-skips every rule from step 2. If it ever leaks, roll it in the same settings page.
+**Never use the secret key** (`sb_secret_…`, or the legacy `service_role` key) anywhere: not in
+the game, not in GitHub, not in a chat. It skips every rule from step 2. The game refuses it if
+it's pasted by mistake; if it ever leaks, delete or roll it on the same page.
 
-The anon key is meant to be public: it's inside the website for anyone to see, and what it can
-do is limited by the rules from step 2.
+The publishable key is meant to be public: it's inside the website for anyone to see, and what
+it can do is limited by the rules from step 2.
 
 ## 5. Tell the game (3 minutes)
 
 1. GitHub → your repository → **Settings** → **Secrets and variables** → **Actions** → the
-   **Variables** tab (not Secrets: the website needs to read them) → **New repository variable**:
-   - `SUPABASE_URL` = the Project URL
-   - `SUPABASE_ANON_KEY` = the anon key
+   **Variables** tab (not Secrets: the website needs to read them) → **New repository variable**.
+   Add two, with exactly these names (capitals and underscore included):
+
+   | Name | Value |
+   |---|---|
+   | `SUPABASE_URL` | the Project URL, e.g. `https://abcdefghijkl.supabase.co` |
+   | `SUPABASE_ANON_KEY` | the publishable key (`sb_publishable_…`), or the legacy anon key |
+
+   (The second is still called `ANON_KEY` because that's what Supabase called it first; the
+   publishable key goes there.) A variable with another name does nothing: rename it with the
+   pencil icon, or delete it and add it again.
 2. **Actions** → **Deploy to GitHub Pages** → **Run workflow** → **Run workflow** (or merge
-   anything to `main`). When it's green (about 2 minutes), the website has **Account** with
-   sign-in.
+   anything to `main`). When it's green (about 2 minutes), reload the website: **Account** now
+   shows sign-in instead of the "Project URL" form.
 3. The desktop app opens the website, so it gets accounts too, with nothing to rebuild.
 
-Other ways, for testing: in the game **Account** → paste the URL and key → **Connect** (that
-browser only); or, running the game locally, copy `packages/client/.env.example` to
-`packages/client/.env.local` and fill them in.
+Other ways, for testing: in the game, **Account** → paste the URL and the publishable key →
+**Connect** (that browser only; on the website, once step 5 is done, you don't need this); or,
+running the game locally, copy `packages/client/.env.example` to `packages/client/.env.local`
+and fill them in.
 
 ## 6. Try it (5 minutes)
 
@@ -142,6 +155,6 @@ nothing but strangers' sign-ups.
 | "Signups not allowed for this instance" | Step 7 turned sign-ups off: create the account yourself, or turn them on briefly. |
 | "new row violates row-level security" | Sign in again; or step 2 didn't run. |
 | "You have 30 cloud saves already" | Save / Load → delete an old cloud save. |
-| "The cloud said no (401)" | The key is wrong or is the `service_role` key; use the anon key. |
-| No **Account** sign-in on the website | The variables in step 5 are missing (or are Secrets instead of Variables), or the site hasn't been rebuilt since. |
+| "The cloud said no (401)" or "Invalid API key" | The key is wrong: copy the publishable key again (step 4). |
+| **Account** still shows the "Project URL" form on the website | The variables in step 5 are missing, named differently, or are Secrets instead of Variables; or the site hasn't been rebuilt since (run **Deploy to GitHub Pages**, then reload). |
 | **Continue** doesn't offer the other device's game | Sign in on both; the cloud autosave is made at the start of each turn, so play one more turn on the first device. |

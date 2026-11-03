@@ -3,6 +3,7 @@ import {
   Cloud,
   cloudConfig,
   emailFor,
+  keyProblem,
   type KeyStore,
   setCloudConfig,
   usernameProblem,
@@ -87,6 +88,38 @@ describe('the cloud', () => {
     expect(cloudConfig(store)).toEqual({ url: 'https://x.supabase.co', anonKey: 'key' });
     setCloudConfig(null, store);
     expect(cloudConfig(store)).toBeNull();
+  });
+
+  it('takes the project URL as the dashboard shows it, and never the secret key', () => {
+    const store = memory();
+    setCloudConfig(
+      { url: ' https://x.supabase.co/rest/v1/ ', anonKey: 'sb_publishable_abc' },
+      store,
+    );
+    expect(cloudConfig(store)).toEqual({
+      url: 'https://x.supabase.co',
+      anonKey: 'sb_publishable_abc',
+    });
+    expect(keyProblem('sb_publishable_abc')).toBeUndefined();
+    expect(keyProblem('sb_secret_abc')).toMatch(/secret key/);
+    const jwt = (role: string) => `eyJhbGciOiJIUzI1NiJ9.${btoa(JSON.stringify({ role }))}.sig`;
+    expect(keyProblem(jwt('anon'))).toBeUndefined();
+    expect(keyProblem(jwt('service_role'))).toMatch(/secret key/);
+    // A secret key saved by mistake is never used.
+    setCloudConfig({ url: 'https://x.supabase.co', anonKey: jwt('service_role') }, store);
+    expect(cloudConfig(store)).toBeNull();
+  });
+
+  it('sends the publishable key only as apikey, never as a Bearer token', async () => {
+    const fake = fakeSupabase();
+    const c = new Cloud(
+      { url: 'https://x.supabase.co', anonKey: 'sb_publishable_abc' },
+      fake.fetcher,
+      memory(),
+    );
+    await c.listLobbies();
+    expect(fake.calls[0]!.headers).toMatchObject({ apikey: 'sb_publishable_abc' });
+    expect(fake.calls[0]!.headers.Authorization).toBeUndefined();
   });
 
   it('turns usernames into private sign-in addresses and checks them', () => {

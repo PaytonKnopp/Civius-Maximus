@@ -30,7 +30,7 @@ The guides were rewritten as step-by-step instructions: [supabase.md](guides/sup
 1. **Merge this update** (it's merged when you read this on `main`), and wait for **Deploy to
    GitHub Pages** to go green.
 2. **Supabase** (~20 minutes): [guides/supabase.md](guides/supabase.md), steps 1–6. Run *both*
-   SQL files. Use the **anon** key, never the `service_role` key.
+   SQL files. Use the **publishable** key (`sb_publishable_…`), never the secret key.
 3. **Desktop installers** (~15 minutes of waiting): Actions → **Desktop installers** → Run
    workflow. Then install it yourself ([desktop.md](guides/desktop.md), step 2) and send
    friends the message in step 3.
