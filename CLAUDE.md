@@ -32,7 +32,9 @@ Client checks: `pnpm build`, then `pnpm --filter @cx/client exec vite preview --
 size, plus console errors); `node packages/client/scripts/screenshot-3d.mjs <out-dir>` captures
 the 3D view at Medium, in fog view, at High, every unit model close up, and every building style and age; `node packages/client/scripts/screenshot-game.mjs
 <out-dir>` plays the first turns of a local game (select, path preview, move, end turn, lenses,
-help, 2D view, phone size); `node packages/client/scripts/screenshot-online.mjs <out-dir>` plays
+help, 2D view, phone size); `node packages/client/scripts/screenshot-menus.mjs <out-dir>` captures every screen before a game
+(title, Options, New game and the leader picker, Civilopedia, Hall of Fame, Load, Play online) at
+desktop and phone size and flags anything wider than the screen; `node packages/client/scripts/screenshot-online.mjs <out-dir>` plays
 an online game between two tabs (`?net=local`): lobby, join, a turn, a friend dropping. The app opens on a home screen over a quick game; `#play` in the URL skips it (the game scripts use it) and `#lab` opens the Map Lab.
 `pnpm --filter @cx/client build:artifact <file.html>` builds the client as one self-contained
 HTML page for sharing.

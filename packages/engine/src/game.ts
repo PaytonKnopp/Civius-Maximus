@@ -60,6 +60,8 @@ export interface GameSetup {
     startBias?: StartBias[];
     /** AI seats: a `difficulty` for this seat only (otherwise the game's). */
     difficulty?: string;
+    /** A color (`#rrggbb`) to play in instead of the civ's own. */
+    color?: string;
   }[];
 }
 
@@ -109,6 +111,9 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
     if (p.leader !== undefined && !ctx.content.entities.leader[p.leader])
       throw new Error(`Unknown leader "${p.leader}" for ${p.id}`);
   }
+  for (const p of setup.players)
+    if (p.color !== undefined && !/^#[0-9a-f]{6}$/i.test(p.color))
+      throw new Error(`Bad color "${p.color}" for ${p.id}`);
   const civOf = (p: GameSetup['players'][number]) =>
     p.civ ?? (p.leader ? ctx.content.entities.leader[p.leader]!.civ : undefined);
   const chosen = new Set(setup.players.flatMap((p) => civOf(p) ?? []));
@@ -129,6 +134,7 @@ export function createGame(setup: GameSetup, ctx: EngineContext): GameState {
       name: p.name,
       kind: p.kind,
       team: p.team ?? null,
+      ...(p.color ? { color: p.color.toLowerCase() } : {}),
       alive: true,
       turnEnded: false,
       startTile: starts[id]!,

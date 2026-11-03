@@ -257,20 +257,28 @@ describe('online play', () => {
 
   it('relays chat and map pings, and keeps lobby leader picks', async () => {
     const { net, host, bo, cy } = await lobby();
-    bo.online.pick('leader_caesar');
+    bo.online.pick('leader_caesar', '#1FA39A');
+    cy.online.pick(null, 'not a color');
     bo.online.say('hello all');
     await net.flush();
-    expect(host.seats().find((x) => x.name === 'Bo')).toMatchObject({ leader: 'leader_caesar' });
+    expect(host.seats().find((x) => x.name === 'Bo')).toMatchObject({
+      leader: 'leader_caesar',
+      color: '#1fa39a',
+    });
     expect(cy.online.chat().map((l) => `${l.from}: ${l.text}`)).toEqual(['Bo: hello all']);
     expect(host.lobbyChat()).toHaveLength(1);
 
     let leaders: (string | null)[] = [];
-    host.start((names, picks) => {
+    let colors: (string | null)[] = [];
+    host.start((names, picks, colorPicks) => {
       leaders = picks;
+      colors = colorPicks;
       return makeSetup(names);
     });
     await net.flush();
     expect(leaders).toEqual([null, 'leader_caesar', null]);
+    // A color that isn't #rrggbb is dropped.
+    expect(colors).toEqual([null, '#1fa39a', null]);
     const me = host.handle().online!;
     const pings: number[] = [];
     me.onPing((p) => pings.push(p.tile));

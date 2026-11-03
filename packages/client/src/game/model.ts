@@ -56,10 +56,15 @@ const hex = (s: string) => Number.parseInt(s.slice(1), 16);
 export function playerColors(content: CompiledContent, state: GameState): Record<PlayerId, Colors> {
   const out: Record<PlayerId, Colors> = {};
   for (const id of state.playerOrder) {
-    const civ = content.entities.civ[state.players[id]!.civ];
+    const player = state.players[id]!;
+    const civ = content.entities.civ[player.civ];
+    // A color picked in the setup replaces the civ's own main color.
     out[id] = civ
-      ? { main: hex(civ.colors.primary), accent: hex(civ.colors.secondary) }
-      : { main: 0x8d9db6, accent: 0x10161d };
+      ? {
+          main: hex(player.color ?? civ.colors.primary),
+          accent: hex(civ.colors.secondary),
+        }
+      : { main: player.color ? hex(player.color) : 0x8d9db6, accent: 0x10161d };
   }
   // City-states: their kind's color.
   for (const [id, cs] of Object.entries(state.cityStates ?? {})) {

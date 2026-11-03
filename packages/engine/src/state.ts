@@ -433,6 +433,8 @@ export interface PlayerState {
   handicap?: string;
   /** Team number; players on the same team share victory. `null` = no team. */
   team: number | null;
+  /** A color (`#rrggbb`) picked in the setup, instead of the civ's own. */
+  color?: string;
   alive: boolean;
   /** Simultaneous turns: true once the player clicked End Turn this turn. */
   turnEnded: boolean;
