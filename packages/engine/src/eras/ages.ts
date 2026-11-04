@@ -1,6 +1,6 @@
 import { type AgeDef, type MomentDef, resolveText } from '@cx/content';
-import type { Draft } from 'immer';
-import { decodeBits, getBit } from '../bitset';
+import { type Draft, isDraft, original } from 'immer';
+import { testBit } from '../bitset';
 import type { ActionHandler, Emit, EngineContext } from '../context';
 import type { GameEvent } from '../events';
 import { playerEra } from '../progress/rules';
@@ -168,26 +168,37 @@ export function awardMoments(
   discoverWonders(draft, ctx, emit);
 }
 
-/** Natural wonders a player has seen for the first time. */
+/**
+ * Natural wonders a player has seen for the first time. This runs after every action, so it
+ * reads the tiles as they were before the action (plain objects) instead of through the draft,
+ * which would make a proxy for every tile on the map. Natural wonders never move or vanish.
+ */
 function discoverWonders(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
-  const wonders: number[] = [];
-  draft.map.tiles.forEach((t, i) => {
-    if (t.feature && ctx.content.entities.feature[t.feature]?.naturalWonder) wonders.push(i);
-  });
+  const live = draft.map.tiles;
+  const tiles = (isDraft(live) ? original(live) : live) ?? live;
+  const wonders: { tile: number; feature: string }[] = [];
+  for (let i = 0; i < tiles.length; i++) {
+    const feature = tiles[i]!.feature;
+    if (feature && ctx.content.entities.feature[feature]?.naturalWonder)
+      wonders.push({ tile: i, feature });
+  }
   if (wonders.length === 0) return;
-  const n = draft.map.tiles.length;
   for (const id of draft.playerOrder) {
     const p = draft.players[id]!;
     if (!p.alive || !p.ages) continue;
-    const fresh = wonders.filter((t) => !p.ages!.seen.includes(draft.map.tiles[t]!.feature!));
+    const fresh = wonders.filter((w) => !p.ages!.seen.includes(w.feature));
     if (fresh.length === 0) continue;
-    const bits = decodeBits(p.explored, n);
-    for (const t of fresh) {
-      if (!getBit(bits, t)) continue;
-      const feature = draft.map.tiles[t]!.feature!;
-      p.ages.seen.push(feature);
+    for (const w of fresh) {
+      if (!testBit(p.explored, w.tile)) continue;
+      p.ages.seen.push(w.feature);
       award(draft, ctx, id, 'natural_wonder', emit);
-      emit({ type: 'natural_wonder_found', player: id, feature, tile: t, visibleTo: [id] });
+      emit({
+        type: 'natural_wonder_found',
+        player: id,
+        feature: w.feature,
+        tile: w.tile,
+        visibleTo: [id],
+      });
     }
   }
 }

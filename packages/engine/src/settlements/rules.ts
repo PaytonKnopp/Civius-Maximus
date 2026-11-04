@@ -9,18 +9,19 @@ import {
   type WonderDef,
 } from '@cx/content';
 import { type EngineContext, type RuleError, unitDef } from '../context';
-import { computeTileYields, type YieldBreakdown } from '../effects/yields';
+import { computeTileYields, type EffectSource, type YieldBreakdown } from '../effects/yields';
 import { type Fixed, percentOf, powFloor, toFixed } from '../fixed';
 import { distance, neighbors, tilesWithin, tileTouchesRiver } from '../map/hex';
 import type { MapState } from '../map/types';
 import type { BuildItem, CitizenFocus, GameState, PlayerId, SettlementState } from '../state';
-import type { TileFacts } from '../effects/tile';
+import type { PlayerFacts, TileFacts } from '../effects/tile';
 import {
   playerEffects,
   playerFacts,
   playerPercent,
   settlementLimitOf,
   sourcesFor,
+  withSourceMemo,
 } from '../progress/sources';
 import { followersOf, founderSeat } from '../religion/rules';
 import { obsoletedBy } from '../units/upgrades';
@@ -63,40 +64,78 @@ export function tileOnRiver(map: MapState, tile: number): boolean {
   return tileTouchesRiver(map, map.tiles, tile);
 }
 
+/**
+ * What a player's tiles all share: their facts and the effect sources that apply to them. Working
+ * these out is most of the cost of a tile's yields, so code that looks at many tiles of one
+ * state makes a scope once and passes it to every `tileYields` call. A scope is only good for the
+ * state it was made from: don't keep one after the state changes.
+ */
+export type YieldScope = Map<PlayerId, { facts: PlayerFacts; sources: EffectSource[] }>;
+
 /** A tile's yields as its owner (or `viewer`, if unowned) gets them, with the "why?" lines. */
 export function tileYields(
   ctx: EngineContext,
   state: GameState,
   tile: number,
   viewer: PlayerId | null = null,
+  scope?: YieldScope,
 ): YieldBreakdown {
   const t = state.map.tiles[tile]!;
   const pid = t.owner ?? viewer;
   const p = pid === null ? undefined : state.players[pid];
   const here = t.settlement === null ? undefined : state.settlements[t.settlement];
+  // A settlement's own center also gets that settlement's sources, so it can't share the scope's.
+  const local = here?.owner === pid ? here : undefined;
+  let shared = p && pid !== null && !local ? scope?.get(pid) : undefined;
+  if (p && pid !== null && !local && scope && !shared) {
+    shared = { facts: playerFacts(ctx, p), sources: sourcesFor(ctx, state, pid) };
+    scope.set(pid, shared);
+  }
   return computeTileYields(
     {
       content: ctx.content,
       tile: tileFacts(state, tile),
-      neighbors: neighbors(state.map, tile).map((n) => tileFacts(state, n)),
+      neighbors: neighbors(state.map, tile).map((n) => tileFacts(state, n, true)),
       playerId: pid ?? '',
-      ...(p ? { player: playerFacts(ctx, p) } : {}),
+      ...(p ? { player: shared?.facts ?? playerFacts(ctx, p) } : {}),
     },
-    p && pid !== null ? sourcesFor(ctx, state, pid, here?.owner === pid ? here : undefined) : [],
+    p && pid !== null ? (shared?.sources ?? sourcesFor(ctx, state, pid, local)) : [],
   );
 }
 
-/** What effects and adjacency rules see on a tile. */
-export function tileFacts(state: GameState, i: number): TileFacts {
+/**
+ * What effects and adjacency rules see on a tile. With `lazyRiver` the river flag is worked out
+ * the first time a rule reads it: a tile's yields look at its six neighbors, and few rules ask
+ * whether those touch a river.
+ */
+export function tileFacts(state: GameState, i: number, lazyRiver = false): TileFacts {
   const t = state.map.tiles[i]!;
-  return {
-    ...t,
+  // Only the fields rules can see (copying a whole tile through a draft is slow).
+  const facts: TileFacts = {
+    terrain: t.terrain,
+    feature: t.feature,
+    elevation: t.elevation,
+    resource: t.resource,
     // A damaged improvement does nothing until it's repaired.
     improvement: t.pillaged !== undefined ? null : t.improvement,
-    river: tileOnRiver(state.map, i),
+    district: t.district,
+    wonder: t.wonder,
+    river: false,
     ownerId: t.owner,
     center: t.settlement !== null && state.settlements[t.settlement]?.tile === i,
+    fertile: t.fertile,
+    fallout: t.fallout,
   };
+  if (!lazyRiver) {
+    facts.river = tileOnRiver(state.map, i);
+    return facts;
+  }
+  let river: boolean | undefined;
+  Object.defineProperty(facts, 'river', {
+    enumerable: true,
+    get: () => (river ??= tileOnRiver(state.map, i)),
+  });
+  return facts;
 }
 
 /** Whether a player has what something requires (its tech and civic). */
@@ -394,6 +433,14 @@ export function settlementYields(
   state: GameState,
   s: SettlementState,
 ): SettlementYields {
+  return withSourceMemo(state, () => computeSettlementYields(ctx, state, s));
+}
+
+function computeSettlementYields(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+): SettlementYields {
   const rules = ctx.content.rules.settlements;
   const lines: Record<string, Line[]> = {};
   const add = (y: string, label: string, amount: Fixed) => {
@@ -407,8 +454,9 @@ export function settlementYields(
   for (const y of Object.keys(center).sort()) add(y, 'Settlement center', center[y]!);
 
   const worked: Record<string, Fixed> = {};
+  const scope: YieldScope = new Map();
   for (const t of s.worked) {
-    const yields = tileYields(ctx, state, t).total;
+    const yields = tileYields(ctx, state, t, null, scope).total;
     for (const [y, v] of Object.entries(yields)) worked[y] = (worked[y] ?? 0) + v;
   }
   for (const y of Object.keys(worked).sort())
@@ -584,15 +632,24 @@ export function assignCitizens(
   state: GameState,
   s: SettlementState,
 ): { worked: number[]; locked: number[]; specialists: Record<string, number> } {
+  return withSourceMemo(state, () => computeAssignment(ctx, state, s));
+}
+
+function computeAssignment(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+): { worked: number[]; locked: number[]; specialists: Record<string, number> } {
   const workable = workableTiles(ctx, state, s);
   const locked = s.locked.filter((t) => workable.includes(t)).slice(0, s.population);
   type Choice = { tile: number; district: string; score: number };
+  const scope: YieldScope = new Map();
   const choices: Choice[] = workable
     .filter((t) => !locked.includes(t))
     .map((t) => ({
       tile: t,
       district: '',
-      score: tileScore(ctx, tileYields(ctx, state, t).total, s.focus),
+      score: tileScore(ctx, tileYields(ctx, state, t, null, scope).total, s.focus),
     }));
   for (const [id, n] of Object.entries(specialistSlots(ctx, s)).sort()) {
     const yields: Record<string, Fixed> = {};
@@ -623,14 +680,23 @@ export function nextBorderTile(
   state: GameState,
   s: SettlementState,
 ): number | undefined {
+  return withSourceMemo(state, () => computeNextBorderTile(ctx, state, s));
+}
+
+function computeNextBorderTile(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+): number | undefined {
   const rules = ctx.content.rules.settlements;
   let best: { t: number; score: number } | undefined;
+  const scope: YieldScope = new Map();
   for (const t of tilesWithin(state.map, s.tile, rules.ownRadius)) {
     const tile = state.map.tiles[t]!;
     if (tile.owner !== null) continue;
     if (!neighbors(state.map, t).some((n) => state.map.tiles[n]!.settlement === s.id)) continue;
     const dist = distance(state.map, s.tile, t);
-    let score = tileScore(ctx, tileYields(ctx, state, t, s.owner).total, 'balanced');
+    let score = tileScore(ctx, tileYields(ctx, state, t, s.owner, scope).total, 'balanced');
     if (tile.resource !== null) {
       const cls = ctx.content.entities.resource[tile.resource]!.class;
       score += cls === 'luxury' ? 6000 : cls === 'strategic' ? 4000 : 2000;

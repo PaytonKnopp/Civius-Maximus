@@ -1,6 +1,6 @@
 import type { Action, ActionResult, EngineContext, GameState, PlayerId } from '@cx/engine';
 import type { ChatLine, Ping, SeatInfo } from '@cx/protocol';
-import type { GameListener } from './local';
+import type { GameListener, TurnProgress } from './local';
 
 /**
  * A game as the game screen sees it, whoever runs it: this tab (single player, hotseat, or the
@@ -12,6 +12,8 @@ export interface GameHandle {
   readonly state: GameState;
   /** Rivals are moving: actions wait. */
   readonly busy: boolean;
+  /** While `busy`: how far along the turn's work is, if the runner says. */
+  readonly progress?: TurnProgress | null;
   act(action: Action): ActionResult;
   subscribe(listener: GameListener): () => void;
   /** The humans who play on this device (more than one is hotseat). */

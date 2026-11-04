@@ -15,7 +15,7 @@ import { distance, tilesWithin } from '../map/hex';
 import type { BuildItem, GameState, PlayerId, SettlementState } from '../state';
 import { view } from '../draft';
 import { empireTurn } from '../progress/handlers';
-import { playerEffects } from '../progress/sources';
+import { playerEffects, withSourceMemo } from '../progress/sources';
 import { roadToCapital } from '../trade/handlers';
 import { countsAs } from '../uniques';
 import { ownedUnit, watchers } from '../units/handlers';
@@ -47,6 +47,7 @@ import {
   tilePurchaseCost,
   tileScore,
   tileYields,
+  type YieldScope,
   townUpgradeCost,
   workableTiles,
 } from './rules';
@@ -442,11 +443,20 @@ export function bestDevelopChoice(
   state: GameState,
   s: SettlementState,
 ): { tile: number; improvement: string } | undefined {
+  return withSourceMemo(state, () => chooseDevelopment(ctx, state, s));
+}
+
+function chooseDevelopment(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+): { tile: number; improvement: string } | undefined {
   let best: { tile: number; improvement: string; score: number } | undefined;
+  const scope: YieldScope = new Map();
   for (const tile of developCandidates(ctx, state, s)) {
     // Every improvement that fits, best match first (a resource's improvement wins ties).
     for (const improvement of improvementsFor(ctx, state, tile, s.owner)) {
-      const yields = { ...tileYields(ctx, state, tile, s.owner).total };
+      const yields = { ...tileYields(ctx, state, tile, s.owner, scope).total };
       const extra = ctx.content.entities.improvement[improvement]!.yields;
       for (const [y, v] of Object.entries(extra)) yields[y] = (yields[y] ?? 0) + toFixed(v);
       const score = tileScore(ctx, yields, s.focus);

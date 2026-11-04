@@ -10,7 +10,7 @@ import {
 } from '../context';
 import { type Fixed, toFixed } from '../fixed';
 import { distance } from '../map/hex';
-import { playerEffects } from '../progress/sources';
+import { playerEffects, withSourceMemo } from '../progress/sources';
 import { goldPerTurn, settlementYields } from '../settlements/rules';
 import type { DealTerms, DiplomacyState, GameState, PlayerId, Proposal } from '../state';
 
@@ -102,6 +102,11 @@ export function isSurpriseWar(
 
 /** Influence a player earns each turn: the base, plus influence from their settlements. */
 export function influencePerTurn(ctx: EngineContext, state: GameState, player: PlayerId): Fixed {
+  // Every settlement's yields look at the same sources: share them while reading.
+  return withSourceMemo(state, () => influenceNow(ctx, state, player));
+}
+
+function influenceNow(ctx: EngineContext, state: GameState, player: PlayerId): Fixed {
   let total = toFixed(ctx.content.rules.diplomacy.baseInfluence);
   for (const s of Object.values(state.settlements)) {
     if (s.owner === player) total += settlementYields(ctx, state, s).total.influence ?? 0;

@@ -127,10 +127,13 @@ for (let guard = 0; guard < TURNS * 15 && (await turn(page)) < TURNS; guard++) {
     await page.click('.dedication-card');
     await page.click('.dedication-choice .primary');
     await page.keyboard.press('Escape');
-  } else if (next === 'Rivals are moving…') {
+  } else if (/^(Rivals are moving|The world is turning)/.test(next ?? '')) {
     // The AI plays in a background worker: wait for it (it doesn't count as a step).
     await page.waitForFunction(
-      () => document.querySelector('.next-label')?.textContent !== 'Rivals are moving…',
+      () =>
+        !/^(Rivals are moving|The world is turning)/.test(
+          document.querySelector('.next-label')?.textContent ?? '',
+        ),
       null,
       { timeout: 60000 },
     );

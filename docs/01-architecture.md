@@ -214,7 +214,11 @@ Realtime messages per month, 5 GB egress, and 2 active projects.
   database every few days so the project never pauses between game nights.
 - **Database size:** snapshots are compressed (target < 300 KB each, gzip). We keep the last 5
   snapshots plus the full action log per game. Replays rebuild from the action log, so old
-  snapshots aren't needed. Finished games can be exported to a file and pruned.
+  snapshots aren't needed. Finished games can be exported to a file and pruned. **As built:** a
+  save is the whole game state as JSON (no action log is kept; the in-game replay is drawn from
+  the map snapshots kept in the state's `history`), capped at 8 MB by the database. A save grows
+  by about 1.7 KB per turn on an 8-player Standard game (1.2 MB raw, 63 KB gzipped at turn 250),
+  so the cap is thousands of turns away; `cx profile` watches it.
 
 ## Client
 
@@ -276,3 +280,55 @@ Realtime messages per month, 5 GB egress, and 2 active projects.
 - End-of-turn processing takes under 300 ms for human-only games. AI turns take under 3 s per AI
   in the late game.
 - A compressed snapshot is under 300 KB.
+
+### Where it stands (V1 performance pass)
+
+Measured with `pnpm cx profile 8 300 1 standard` (8 AI seats, Standard map, one machine; absolute
+times depend on the machine, the shape of the curve doesn't):
+
+| Turn | Turn processing, before → after | All 8 AIs, before → after | Save (gzip) |
+|---|---|---|---|
+| 100 | 1.4 s → 0.6 s | 0.7 s → 0.25 s | 38 KB |
+| 200 | 2.5 s → 1.2 s | 1.5 s → 0.6 s | 57 KB |
+| 250 | 2.9 s → 1.1 s | 1.2 s → 0.5 s | 63 KB |
+
+- **What was slow:** the world's turn (settlements working out their tile yields, the unit step
+  at the start of each turn) rather than the AI's thinking; it grew with the size of the empire
+  and the number of techs, buildings and policies, and levelled off once empires stopped
+  growing. Memory stays flat (no leak), and saves grow slowly.
+- **Still short of the 300 ms target** for an 8-player Standard game at turn 250 (about 1.1 s).
+  The turn runs in a Web Worker, so the page never freezes; the End Turn button shows
+  "The world is turning…" and then "Rivals are moving… 3 of 7". Closing the rest of the gap
+  needs a different shape of turn processing (reading unchanged parts of the state without
+  Immer proxies), which is its own piece of work.
+- **Games are identical to before the pass:** the same seed plays out to the same state hash
+  (checked on five seeds, map types and player counts, 2–8 players), so old saves and replays
+  are unaffected.
+
+### How it is kept from getting worse
+
+- `pnpm cx profile [players] [turns] [seed] [size] [script]` plays an all-AI game and prints, as
+  it goes on, the turn processing time, AI time, save size (raw and gzipped), memory and the
+  number of settlements and units. `--save` writes the final state, `--from` carries a saved
+  state on for more turns (quick to re-measure a late game), and `--check` fails if a budget in
+  `packages/tools/src/profile.ts` is broken, including **growth** (how much slower late turns are
+  than early ones, which is what "gets laggy" means). CI runs it as its own job.
+- `packages/client/scripts/perf-lategame.mjs` loads an early and a late save into a real browser
+  and compares how long frames take while panning and zooming, in 3D and 2D. It needs a graphics
+  card to say anything about absolute speed; on software rendering it still shows whether late
+  games draw slower than early ones (they do, by about 1.2× in 3D and 1.4× in 2D on the test
+  saves).
+- Rules for engine code that runs every turn or every action (they are why the pass worked):
+  - Don't rebuild what many tiles or settlements share inside a per-tile loop: pass a
+    `YieldScope` to `tileYields`, or read inside `withSourceMemo(state, …)` so effect sources and
+    player facts are worked out once. Both only for pure reads of one state.
+  - Don't scan the whole map in something that runs after every action (`discoverWonders` used to,
+    through Immer proxies, for every unit step). Read the pre-action state (`original`) or keep an
+    index.
+  - Map neighbors and radius lookups come from per-map-size tables (`map/hex.ts`); don't recompute
+    them with arithmetic in hot loops.
+  - Reading through an Immer draft is much slower than through a plain object. Take one
+    `current()` snapshot and keep it up to date for the one thing that changes (see
+    `startTurnForUnits`) rather than copying again for each unit.
+  - Any speed-up must leave the game's behavior exactly as it was: run a few seeds before and after
+    with `cx profile` and compare the final state hash (it is printed).

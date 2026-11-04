@@ -22,7 +22,9 @@ interface Request {
 scope.onmessage = (e) => {
   const { id, state, action } = e.data;
   try {
-    const done = runTurn(ctx, deepFreeze(state), action);
+    const done = runTurn(ctx, deepFreeze(state), action, (progress) =>
+      scope.postMessage({ id, progress }),
+    );
     scope.postMessage({ id, state: done.state, events: done.events });
   } catch (err) {
     scope.postMessage({ id, error: err instanceof Error ? err.message : String(err) });

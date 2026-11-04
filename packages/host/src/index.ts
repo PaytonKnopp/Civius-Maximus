@@ -5,6 +5,7 @@ export {
   type GameListener,
   LocalGame,
   runTurn,
+  type TurnProgress,
   type TurnWork,
 } from './local';
 export { OnlineHost } from './online';
