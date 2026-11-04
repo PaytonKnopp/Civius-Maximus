@@ -56,6 +56,7 @@ import { drawIcon } from '../ui/drawIcon';
 import { FloatLayer } from './floats';
 import { type PropKind, propGeometries, placeProps } from './props';
 import { center3, type Sample, TerrainSampler } from './sampler';
+import { loadSurfaceTextures, withSurface } from './surface';
 import { loadTerrainTextures } from './terrainTextures';
 import { SettlementLayer } from './settlements3d';
 import { UnitLayer } from './units3d';
@@ -233,11 +234,14 @@ export class World3D implements MapRenderer {
     transparent: true,
     depthWrite: false,
   });
-  private propMaterial = new MeshStandardMaterial({
-    roughness: 0.9,
-    metalness: 0,
-    vertexColors: true,
-  });
+  private propMaterial = withSurface(
+    new MeshStandardMaterial({
+      roughness: 0.9,
+      metalness: 0,
+      vertexColors: true,
+    }),
+    'props',
+  );
   private propGeometry = propGeometries();
   private gridMaterial = new LineBasicMaterial({
     color: 0x0a0d0a,
@@ -293,6 +297,7 @@ export class World3D implements MapRenderer {
       Math.min(8, this.renderer.capabilities.getMaxAnisotropy()),
       () => {},
     );
+    loadSurfaceTextures(Math.min(8, this.renderer.capabilities.getMaxAnisotropy()));
 
     const sun = new DirectionalLight(SUN, 6.2);
     sun.position.copy(this.uniforms.uLightDir.value).multiplyScalar(50);
@@ -979,6 +984,7 @@ export class World3D implements MapRenderer {
     const tan = Math.tan(((FOV / 2) * Math.PI) / 180);
     const halfW = this.dist * tan * this.camera.aspect * 2.2 + CHUNK_W;
     const ahead = this.dist * (3.4 - 1.8 * t) + CHUNK_H;
+    this.settlements.setCameraDistance(this.dist);
     const showSprites = this.dist < 30;
     for (const c of this.chunks) {
       const shift = this.data.map.wrapX

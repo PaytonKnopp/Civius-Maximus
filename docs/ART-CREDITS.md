@@ -20,9 +20,30 @@ to give credit ... You can redistribute them".
 | `packages/client/src/assets/terrain/rock.webp` | `rock_face_03` | Dario Barresi (photography), Rico Cilliers (processing) |
 | `packages/client/src/assets/terrain/snow.webp` | `snow_02` | Rob Tuytel |
 
-Each file is the original photograph resized to 1024 px, with its colors divided by their average
+Terrain files are the original photograph resized to 1024 px, with its colors divided by their average
 (so it only adds detail) and saved as WebP. The original is at
 `https://polyhaven.com/a/<asset name>`.
+
+### Surface grain for trees, rocks, houses and figures
+
+`packages/client/src/assets/surface/*.webp` (512 px, same treatment as above; one texture array
+in `map3d/surface.ts`):
+
+| File | Poly Haven asset |
+|---|---|
+| `foliage.webp` | `forest_leaves_02` |
+| `bark.webp` | `bark_brown_01` |
+| `stone.webp` | `medieval_blocks_05` |
+| `plaster.webp` | `white_rough_plaster` |
+| `roof.webp` | `roof_tiles_14` |
+| `wood.webp` | `weathered_brown_planks` |
+| `cloth.webp` | `rough_linen` |
+| `rock.webp` | `rock_face_03` |
+
+### Portraits
+
+`packages/client/src/assets/portrait/canvas.webp`: the Poly Haven `hessian_230` photograph,
+greyscale, 256 px, flattened to a canvas weave that overlays every painted leader portrait.
 
 ## Not used, on purpose
 

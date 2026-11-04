@@ -32,6 +32,7 @@ import {
 import { campParts, districtParts, districtStacks, hutParts, wonderParts } from './districts3d';
 import { type Emitter, EffectsLayer } from './effects3d';
 import { naturalWonderParts } from './naturalWonders3d';
+import { withSurface } from './surface';
 import { G, house, off, part, scaled, seeded } from './parts';
 
 /**
@@ -435,12 +436,15 @@ function labelMaterial(text: string, color: number): SpriteMaterial {
 
 // --- The layer -------------------------------------------------------------------------------
 
-const buildingMaterial = new MeshStandardMaterial({
-  vertexColors: true,
-  flatShading: true,
-  roughness: 0.88,
-  metalness: 0,
-});
+const buildingMaterial = withSurface(
+  new MeshStandardMaterial({
+    vertexColors: true,
+    flatShading: true,
+    roughness: 0.88,
+    metalness: 0,
+  }),
+  'buildings',
+);
 const ribbonMaterial = new MeshBasicMaterial({
   vertexColors: true,
   side: DoubleSide,
@@ -824,7 +828,8 @@ export class SettlementLayer {
         }),
       );
       const h = 0.42;
-      sprite.scale.set(h * aspect, h, 1);
+      sprite.scale.set(h * aspect * this.bannerScale, h * this.bannerScale, 1);
+      sprite.userData.banner = [h * aspect, h];
       sprite.position.set(cx, Math.max(0, height(cx, cz)) + 0.95, cz + 0.2);
       sprite.renderOrder = 30;
       if (remembered) sprite.material.color.setScalar(0.6);
@@ -879,6 +884,22 @@ export class SettlementLayer {
       this.highlights.add(holder);
       this.highlightX.push(cx);
     }
+  }
+
+  private bannerScale = 1;
+
+  /**
+   * City banners are read at screen size, not world size: smaller as the camera comes in close,
+   * a little larger when zoomed far out. Called every frame with the camera distance.
+   */
+  setCameraDistance(dist: number) {
+    const k = Math.min(1.25, Math.max(0.32, dist / 24));
+    if (Math.abs(k - this.bannerScale) < 0.02) return;
+    this.bannerScale = k;
+    this.group.traverse((o) => {
+      const base = o.userData.banner as [number, number] | undefined;
+      if (base) o.scale.set(base[0] * k, base[1] * k, 1);
+    });
   }
 
   /** Keeps everything in the copy of the world nearest the camera (east-west wrap). */

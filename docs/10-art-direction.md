@@ -60,6 +60,12 @@ dim, cold slate.
 
 ## Where art comes from
 
+> **Update (art pass, November 2026):** real CC0 photographs now sit under the painted look: a
+> ground texture set, a surface grain for trees, rocks, houses and figures, and a canvas weave
+> on portraits. They are listed, with their licenses, in [ART-CREDITS.md](ART-CREDITS.md). Model
+> packs are still not used (the free ones either have conditions on redistribution or are too
+> heavy to instance); geometry stays procedural. Decision D93.
+
 1. **Procedural first:** terrain, water, trees, rocks, clouds and simple buildings are generated in
    code with the painterly shaders, so the world looks finished without any asset files.
 2. **Free CC0 model packs** (e.g. Quaternius, Kenney) for units and buildings, restyled by our
@@ -164,3 +170,17 @@ found, upgrade...). Each is a colored disc with a white glyph, so they read at 1
 path data draws as SVG in the interface, on a canvas for 3D labels, and as textures in the 2D
 map, so one set looks the same everywhere. Text that mentions a yield ("+2🔬") shows the icon in
 its place.
+
+**Built in the art pass (CC0 textures).** *Ground:* `map3d/terrainTextures.ts` loads six
+brightness-neutral detail maps (grass, dry plains, sand, forest floor, rock, snow);
+`TerrainSampler` gives every vertex material weights (`aMat`, `aRock`) and the terrain shader
+blends them, two scales per map to hide the tiling, with cliffs sampled from three sides. The
+palette still sets the color and mood; the textures add grain and color variation, and far away
+they settle to the palette because every map averages to 1. *Props:* `map3d/surface.ts` adds a
+grain to trees, rocks, buildings and figures by judging each vertex color (green is leaves,
+brown is bark or timber, grey is stone, red is tile...) and multiplying a texture from one
+array, looked up in the model's own coordinates so it never swims on a moving unit. *Painterly
+filter:* now on at Medium (brush radius 2, 50%) and High (radius 3, 60%) (D94). *Portraits:*
+streaky brush displacement, a canvas weave and the world's vignette. *City banners* now shrink
+as the camera comes in close. `node packages/client/scripts/screenshot-art.mjs <dir>` takes the
+close-ups used to judge all of this.
