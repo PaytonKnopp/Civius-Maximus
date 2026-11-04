@@ -163,6 +163,8 @@ interface Chunk {
   midZ: number;
   terrain: BufferGeometry;
   terrainY: Float32Array;
+  /** The terrain grid (columns, rows, spacing, origin), for matching normals along chunk edges. */
+  gridInfo: { nx: number; nz: number; sx: number; sz: number; x0: number; z0: number };
   terrainVis: BufferAttribute;
   water: BufferGeometry;
   waterVis: BufferAttribute;
@@ -773,6 +775,7 @@ export class World3D implements MapRenderer {
       midX: (x0 + x1) / 2,
       midZ: (z0 + z1) / 2,
       terrain,
+      gridInfo: { nx: g.nx, nz: g.nz, sx: g.sx, sz: g.sz, x0, z0 },
       terrainY,
       terrainVis,
       water,
@@ -957,6 +960,40 @@ export class World3D implements MapRenderer {
    * Fog of war: smooth per-vertex visibility (soft edges), unexplored land flattened under a
    * dark mist so it reveals nothing, remembered land darkened, props hidden or dimmed.
    */
+  /**
+   * Each chunk computes normals from its own triangles, so vertices on a shared edge get
+   * different normals on either side and the lighting steps in a hard straight line. Give every
+   * edge vertex the normal of the terrain itself (from the height function, as shown through the
+   * fog) so both chunks agree.
+   */
+  private matchEdgeNormals(c: Chunk, smooth: (x: number, z: number) => number) {
+    const { nx, nz, sx, sz, x0, z0 } = c.gridInfo;
+    const sampler = this.sampler!;
+    const tmp: Sample = { height: 0, color: new Color() };
+    const shown = (x: number, z: number) => {
+      const reveal = Math.min(1, Math.max(0, (smooth(x, z) - 0.08) / 0.3));
+      return FOG_FLOOR + (sampler.sample(x, z, tmp).height - FOG_FLOOR) * reveal;
+    };
+    const normal = c.terrain.getAttribute('normal');
+    const edge = (i: number, j: number) => {
+      const x = x0 + i * sx;
+      const z = z0 + j * sz;
+      const dx = (shown(x + sx, z) - shown(x - sx, z)) / (2 * sx);
+      const dz = (shown(x, z + sz) - shown(x, z - sz)) / (2 * sz);
+      const len = Math.hypot(dx, 1, dz);
+      normal.setXYZ(j * nx + i, -dx / len, 1 / len, -dz / len);
+    };
+    for (let i = 0; i < nx; i++) {
+      edge(i, 0);
+      edge(i, nz - 1);
+    }
+    for (let j = 1; j < nz - 1; j++) {
+      edge(0, j);
+      edge(nx - 1, j);
+    }
+    normal.needsUpdate = true;
+  }
+
   private applyVisibility(c: Chunk) {
     const vis = this.visibility;
     const sampler = this.sampler!;
@@ -976,6 +1013,7 @@ export class World3D implements MapRenderer {
     pos.needsUpdate = true;
     c.terrainVis.needsUpdate = true;
     c.terrain.computeVertexNormals();
+    this.matchEdgeNormals(c, smooth);
 
     const wPos = c.water.getAttribute('position');
     for (let i = 0; i < wPos.count; i++) c.waterVis.setX(i, smooth(wPos.getX(i), wPos.getZ(i)));

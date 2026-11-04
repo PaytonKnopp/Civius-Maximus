@@ -242,3 +242,10 @@ that grows as the camera zooms out (top and bottom of the screen soften, colors 
 richer: the strategic view reads as a painted miniature; 8 taps at Medium, 12 at High, off at
 Low) and a **bloom** on High that spills a soft glow from anything brighter than the picture can
 show (sun glints on water, lit windows). Both live in one full-screen pass and cost nothing on Low.
+
+**Terrain seams and tablet layout (art pass 8, cont.).** Chunk edges used to show a faint straight
+lighting step because each chunk computed normals from its own triangles; edge vertices now take
+the normal of the terrain itself (`matchEdgeNormals` in `World3D.ts`), so both sides agree. On
+tablets (641 to 1000 px) the top bar is two rows (yields, then the screen buttons) instead of
+overlapping, and the hint card starts below the civ chips. Birds were tried and dropped: from this
+camera angle they read as dark shards, not birds.
