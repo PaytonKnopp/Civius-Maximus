@@ -146,6 +146,9 @@ export const terrainFragment = /* glsl */ `
     float patchy = fbm(wp * 1.6 + 3.1);
     float dry = smoothstep(0.55, 0.82, fbm(wp * 0.85 + 7.3)) * (1.0 - snow) * (1.0 - rock);
     base *= 0.86 + 0.28 * patchy;
+    // Wet sand: the strip of beach the water has just left, darker and a touch cooler.
+    float wet = smoothstep(0.075, 0.0, vWorld.y) * smoothstep(-0.04, 0.015, vWorld.y) * (1.0 - rock);
+    base *= mix(vec3(1.0), vec3(0.7, 0.72, 0.74), wet);
     base = mix(base, base * vec3(1.1, 1.03, 0.82), dry * 0.55);
     float nearCam = 1.0 - smoothstep(7.0, 26.0, distance(cameraPosition, vWorld));
     float grain = vnoise(wp * 11.0) * 0.6 + vnoise(wp * 27.0) * 0.4;

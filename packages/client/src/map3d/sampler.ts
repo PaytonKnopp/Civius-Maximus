@@ -64,7 +64,7 @@ export interface Sample {
 /** Ground texture weights per base terrain: [grass, dry plains, sand, dirt]. */
 const TERRAIN_MAT: Record<string, [number, number, number, number]> = {
   grassland: [1, 0, 0, 0],
-  plains: [0.1, 0.9, 0, 0],
+  plains: [0.4, 0.6, 0, 0],
   desert: [0, 0.1, 0.9, 0],
   tundra: [0, 0.25, 0, 0.75],
   snow: [0, 0, 0, 0],
@@ -340,8 +340,12 @@ export class TerrainSampler {
    * A smooth blend of a per-tile value around a point (e.g. visibility), so edges between
    * tiles fade instead of following hex outlines.
    */
-  blend(xIn: number, z: number, value: (tile: number) => number, outside: number): number {
-    const x = this.map.wrapX ? ((xIn % this.width) + this.width) % this.width : xIn;
+  blend(xIn: number, zIn: number, value: (tile: number) => number, outside: number): number {
+    // Warp the lookup with slow noise so the edges of fog, mist and explored land wander like
+    // weather instead of following the hex grid.
+    const wx = xIn + (smoothNoise(xIn * 1.25 + 2.7, zIn * 1.25 - 1.3) - 0.5) * 1.0;
+    const z = zIn + (smoothNoise(xIn * 1.25 - 6.1, zIn * 1.25 + 4.9) - 0.5) * 1.0;
+    const x = this.map.wrapX ? ((wx % this.width) + this.width) % this.width : wx;
     const tile = this.tileAt(x, z);
     if (tile === undefined) return outside;
     let wSum = 0;
