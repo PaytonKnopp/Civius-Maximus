@@ -1,4 +1,5 @@
 import { Texture } from 'pixi.js';
+import { drawResourceBadge, type ResourceClass } from '../map3d/resourceBadge';
 import { drawIcon, drawRichText, measureRichText } from '../ui/drawIcon';
 
 /** Icons and icon labels as PixiJS textures for the 2D map, drawn at 2× for crispness. */
@@ -19,6 +20,20 @@ export function iconTexture(
   const ctx = canvas.getContext('2d')!;
   if (!drawIcon(ctx, name, (px * SCALE) / 2, (px * SCALE) / 2, px * SCALE, variant, color))
     return null;
+  const tex = Texture.from(canvas);
+  cache.set(key, tex);
+  return tex;
+}
+
+/** A resource's medal (the same one the 3D map wears), for the 2D map. */
+export function resourceTexture(id: string, cls: ResourceClass, px: number): Texture | null {
+  const key = `resource:${id}:${cls}:${px}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = px * SCALE;
+  const ctx = canvas.getContext('2d')!;
+  if (!drawResourceBadge(ctx, id, cls, canvas.width)) return null;
   const tex = Texture.from(canvas);
   cache.set(key, tex);
   return tex;

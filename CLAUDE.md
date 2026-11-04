@@ -30,7 +30,7 @@
 Client checks: `pnpm build`, then `pnpm --filter @cx/client exec vite preview --port 4173` and
 `pnpm --filter @cx/client screenshot <out-dir>` (Map Lab screenshots at desktop and phone
 size, plus console errors); `node packages/client/scripts/screenshot-3d.mjs <out-dir>` captures
-the 3D view at Medium, in fog view, at High, every unit model close up, and every building style and age; `node packages/client/scripts/screenshot-game.mjs
+the 3D view at Medium, in fog view, at High, every unit model close up, and every building style and age; `node packages/client/scripts/screenshot-art.mjs <out-dir>` captures close-ups of towns and figures at High (`QUALITY=medium` for another preset); `node packages/client/scripts/screenshot-game.mjs
 <out-dir>` plays the first turns of a local game (select, path preview, move, end turn, lenses,
 help, 2D view, phone size); `node packages/client/scripts/screenshot-menus.mjs <out-dir>` captures every screen before a game
 (title, Options, New game and the leader picker, Civilopedia, Hall of Fame, Load, Play online) at

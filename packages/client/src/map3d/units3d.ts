@@ -27,6 +27,7 @@ import type { PathView, UnitView } from '../map/renderer';
 import { drawIcon } from '../ui/drawIcon';
 import { type AttackAnim, animateRigs, restOffsets } from './figures';
 import type { Rig } from './rig';
+import { withSurface } from './surface';
 import { type UnitGeometry, unitGeometry } from './unitModels';
 
 /**
@@ -100,9 +101,12 @@ function withRim<T extends MeshStandardMaterial>(m: T, strength: number): T {
   return m;
 }
 
-const matte = withRim(
-  new MeshStandardMaterial({ vertexColors: true, roughness: 0.74, side: DoubleSide }),
-  0.26,
+const matte = withSurface(
+  withRim(
+    new MeshStandardMaterial({ vertexColors: true, roughness: 0.74, side: DoubleSide }),
+    0.26,
+  ),
+  'figures',
 );
 const metal = withRim(
   new MeshStandardMaterial({ vertexColors: true, roughness: 0.36, metalness: 0.7 }),

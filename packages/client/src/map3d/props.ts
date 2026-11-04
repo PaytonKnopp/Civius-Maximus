@@ -25,6 +25,11 @@ export type PropKind =
   | 'broadTrunk'
   | 'jungleCrown'
   | 'jungleTrunk'
+  | 'cypressCrown'
+  | 'cypressTrunk'
+  | 'palmCrown'
+  | 'palmTrunk'
+  | 'reeds'
   | 'rock'
   | 'shrub';
 
@@ -74,32 +79,166 @@ function facets(g: BufferGeometry): BufferGeometry {
   return out;
 }
 
+/** Pushes every vertex in or out by a smooth function of its position (shared corners agree). */
+function rough(g: BufferGeometry, amount: number, freq = 29): BufferGeometry {
+  const pos = g.getAttribute('position');
+  g.computeBoundingBox();
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    const k =
+      1 +
+      amount *
+        Math.sin(x * freq + y * freq * 0.7) *
+        Math.cos(z * freq * 1.1 - y * freq * 0.5) *
+        Math.sin((x + z) * freq * 0.6);
+    // Only sideways, so tiers keep their heights.
+    pos.setXYZ(i, x * k, y, z * k);
+  }
+  return g;
+}
+
+/** A conifer: tiers of drooping, uneven skirts, narrower toward the top, like a spruce. */
+function spruceCrown(): BufferGeometry {
+  const tiers: BufferGeometry[] = [];
+  const n = 6;
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    const r = 0.215 * (1 - t) ** 0.85 + 0.035;
+    const h = 0.25 - t * 0.07;
+    tiers.push(
+      rough(flat(new ConeGeometry(r, h, 10, 1)), 0.13, 31 + i * 7).translate(0, 0.2 + i * 0.105, 0),
+    );
+  }
+  tiers.push(flat(new ConeGeometry(0.03, 0.12, 6)).translate(0, 0.2 + n * 0.105 + 0.02, 0));
+  return mergeGeometries(tiers)!;
+}
+
+/** A broadleaf crown: many lobes of different sizes in a rounded, uneven cap. */
+function oakCrown(): BufferGeometry {
+  const lobes: [number, number, number, number][] = [
+    [0.16, 0, 0.46, 0],
+    [0.13, 0.13, 0.4, 0.05],
+    [0.125, -0.12, 0.41, -0.06],
+    [0.115, 0.04, 0.38, -0.13],
+    [0.12, -0.05, 0.39, 0.13],
+    [0.1, 0.09, 0.56, -0.04],
+    [0.095, -0.08, 0.57, 0.05],
+    [0.085, 0.2, 0.34, -0.05],
+    [0.08, -0.2, 0.35, 0.04],
+  ];
+  return mergeGeometries(lobes.map(([r, x, y, z]) => lobe(r, x, y, z, 0.88)))!;
+}
+
+/** A trunk that forks into two branches under the crown. */
+function forkedTrunk(): BufferGeometry {
+  const stem = new CylinderGeometry(0.024, 0.045, 0.3, 7).translate(0, 0.15, 0);
+  const branch = (dx: number, dz: number, len: number) => {
+    const g = new CylinderGeometry(0.012, 0.022, len, 5).translate(0, len / 2, 0);
+    g.rotateZ(-dx * 1.1);
+    g.rotateX(dz * 1.1);
+    return g.translate(0, 0.26, 0);
+  };
+  return mergeGeometries([
+    stem,
+    branch(0.45, 0.1, 0.22),
+    branch(-0.4, -0.18, 0.2),
+    branch(0.05, 0.4, 0.18),
+  ])!;
+}
+
+/** A Mediterranean cypress: a tall, dark flame. */
+function cypressCrown(): BufferGeometry {
+  return mergeGeometries([
+    lobe(0.075, 0, 0.2, 0, 1.9),
+    lobe(0.07, 0.005, 0.36, 0, 2.0),
+    lobe(0.06, -0.004, 0.5, 0, 1.9),
+    lobe(0.04, 0, 0.62, 0, 1.7),
+  ])!;
+}
+
+/** A date palm: a gently curved trunk (and where its top ends up). */
+function palmTrunk(): { geometry: BufferGeometry; top: [number, number] } {
+  const parts: BufferGeometry[] = [];
+  let x = 0;
+  let y = 0;
+  for (let i = 0; i < 7; i++) {
+    const len = 0.1;
+    const g = new CylinderGeometry(0.018 - i * 0.0014, 0.022 - i * 0.0014, len, 6);
+    g.translate(0, len / 2, 0).rotateZ(-0.075 * i);
+    parts.push(g.translate(x, y, 0));
+    x += Math.sin(0.075 * (i + 0.5)) * len;
+    y += Math.cos(0.075 * (i + 0.5)) * len;
+  }
+  return { geometry: mergeGeometries(parts)!, top: [x, y] };
+}
+
+/** The palm's crown: a dozen drooping fronds around a knot of dates, at the trunk's top. */
+function palmCrown(): BufferGeometry {
+  const [topX, topY] = palmTrunk().top;
+  const top = { x: topX, y: topY };
+  const parts: BufferGeometry[] = [];
+  const fronds = 11;
+  for (let i = 0; i < fronds; i++) {
+    const a = (i / fronds) * Math.PI * 2 + (i % 2) * 0.2;
+    // From nearly level to hanging over, so the crown arches.
+    const tilt = 1.1 + (i % 3) * 0.32;
+    // A wide, thin leaf (flat sideways, so it reads as foliage from above, not a spike).
+    const g = flat(new ConeGeometry(0.05, 0.36, 4, 1)).deleteAttribute('uv');
+    g.scale(0.16, 1, 1).translate(0, 0.18, 0);
+    g.rotateZ(-tilt).rotateY(a);
+    parts.push(g.translate(top.x, top.y, 0));
+  }
+  parts.push(flat(lobe(0.032, top.x, top.y - 0.025, 0, 1)));
+  return mergeGeometries(parts)!;
+}
+
+/** Reeds: a tuft of thin leaning blades. */
+function reeds(): BufferGeometry {
+  const parts: BufferGeometry[] = [];
+  for (let i = 0; i < 9; i++) {
+    const a = i * 2.4;
+    const r = 0.03 + (i % 3) * 0.028;
+    const h = 0.2 + ((i * 7) % 5) * 0.045;
+    const g = flat(new ConeGeometry(0.011, h, 4, 1)).translate(0, h / 2, 0);
+    g.rotateZ(Math.sin(a * 1.7) * 0.28).rotateY(a);
+    parts.push(g.translate(Math.cos(a) * r, 0, Math.sin(a) * r));
+  }
+  return mergeGeometries(parts)!;
+}
+
+/** A boulder with a couple of smaller stones beside it. */
+function boulders(): BufferGeometry {
+  const stone = (r: number, x: number, z: number, sy: number, detail: number) =>
+    facets(
+      rough(flat(new DodecahedronGeometry(r, detail)), 0.18, 23 + x * 40)
+        .scale(1, sy, 1.1)
+        .translate(x, r * sy * 0.55, z),
+    );
+  return mergeGeometries([
+    stone(0.085, 0, 0, 0.66, 0),
+    stone(0.05, 0.1, 0.045, 0.7, 0),
+    stone(0.035, -0.07, 0.08, 0.6, 0),
+  ])!;
+}
+
 export function propGeometries(): Record<PropKind, BufferGeometry> {
   return {
-    pineCrown: shade(
-      mergeGeometries([
-        new ConeGeometry(0.2, 0.34, 11).translate(0, 0.3, 0),
-        new ConeGeometry(0.165, 0.3, 11).translate(0, 0.46, 0),
-        new ConeGeometry(0.125, 0.26, 10).translate(0, 0.6, 0),
-        new ConeGeometry(0.08, 0.2, 9).translate(0, 0.73, 0),
-      ])!,
-      0.45,
-      1.12,
+    pineCrown: shade(spruceCrown(), 0.42, 1.14, 0.08),
+    pineTrunk: shade(new CylinderGeometry(0.022, 0.038, 0.3, 7).translate(0, 0.15, 0), 0.8, 1, 0),
+    broadCrown: shade(oakCrown(), 0.4, 1.18, 0.1),
+    broadTrunk: shade(forkedTrunk(), 0.8, 1, 0),
+    cypressCrown: shade(cypressCrown(), 0.4, 1.12, 0.06),
+    cypressTrunk: shade(
+      new CylinderGeometry(0.014, 0.024, 0.14, 6).translate(0, 0.07, 0),
+      0.8,
+      1,
+      0,
     ),
-    pineTrunk: shade(new CylinderGeometry(0.022, 0.038, 0.26, 7).translate(0, 0.13, 0), 0.8, 1, 0),
-    broadCrown: shade(
-      mergeGeometries([
-        lobe(0.15, 0, 0.44, 0),
-        lobe(0.12, 0.1, 0.37, 0.06),
-        lobe(0.115, -0.09, 0.38, -0.05),
-        lobe(0.1, 0.02, 0.36, -0.1),
-        lobe(0.095, -0.04, 0.52, 0.06),
-      ])!,
-      0.42,
-      1.15,
-      0.09,
-    ),
-    broadTrunk: shade(new CylinderGeometry(0.026, 0.044, 0.34, 7).translate(0, 0.17, 0), 0.8, 1, 0),
+    palmCrown: shade(palmCrown(), 0.55, 1.15, 0.06),
+    palmTrunk: shade(palmTrunk().geometry, 0.7, 1.05, 0.05),
+    reeds: shade(reeds(), 0.6, 1.15, 0.05),
     jungleCrown: shade(
       mergeGeometries([
         lobe(0.2, 0, 0.66, 0, 0.5),
@@ -116,12 +255,7 @@ export function propGeometries(): Record<PropKind, BufferGeometry> {
       1,
       0,
     ),
-    rock: shade(
-      facets(new DodecahedronGeometry(0.08, 0).scale(1, 0.62, 1).translate(0, 0.02, 0)),
-      0.7,
-      1.1,
-      0.05,
-    ),
+    rock: shade(boulders(), 0.7, 1.1, 0.05),
     shrub: shade(lobe(0.08, 0, 0.04, 0, 0.7), 0.55, 1.1, 0.08),
   };
 }
@@ -131,6 +265,10 @@ const PINE = palette([0x253a23, 0x2d4328, 0x23372a, 0x30482b]);
 const BROAD = palette([0x3b5527, 0x46602c, 0x52612b, 0x5f5f2a, 0x3f5a30]);
 const JUNGLE = palette([0x22422a, 0x2a4e2d, 0x1f3b27]);
 const TRUNK = palette([0x463527, 0x3d2f24]);
+const CYPRESS = palette([0x1f3322, 0x263b25, 0x1b2d20]);
+const PALM = palette([0x4d6a2c, 0x56742f, 0x45622a]);
+const PALM_TRUNK = palette([0x7d6446, 0x6e5a40]);
+const REEDS = palette([0x6b7440, 0x5e6b3a, 0x77803f]);
 const ROCKS = palette([0x6a665e, 0x5b5852, 0x75705f, 0x625e55]);
 const SANDSTONE = palette([0x8c7a5c, 0x7d6c52, 0x96845f]);
 const SHRUBS: Record<string, Color[]> = {
@@ -197,21 +335,42 @@ export function placeProps(map: MapState, tiles: number[], density: PropDensity)
       });
       n++;
     };
-    const tree = (crown: PropKind, trunk: PropKind, colors: Color[], size: number, stretch = 1) => {
+    const tree = (
+      crown: PropKind,
+      trunk: PropKind,
+      colors: Color[],
+      size: number,
+      stretch = 1,
+      trunks = TRUNK,
+    ) => {
       const at = spot(0.08, 0.82);
       const before = n;
       add(crown, colors, size, stretch, at);
       // Trunk shares the crown's position and scale.
       const crownInstance = out[out.length - 1]!;
-      out.push({ ...crownInstance, kind: trunk, color: TRUNK[before % TRUNK.length]! });
+      out.push({ ...crownInstance, kind: trunk, color: trunks[before % trunks.length]! });
     };
 
     if (tile.feature === 'woods') {
       const cold = tile.terrain === 'tundra' || tile.terrain === 'snow';
+      const dry = tile.terrain === 'plains' || tile.terrain === 'desert';
       for (let i = 0; i < density.trees; i++) {
-        if (cold || rand(t, i, 7) < 0.45) tree('pineCrown', 'pineTrunk', PINE, 1, 1.1);
+        const roll = rand(t, i, 7);
+        if (cold || roll < 0.4) tree('pineCrown', 'pineTrunk', PINE, 1, 1.1);
+        // Dry ground is Mediterranean: dark cypresses among the oaks.
+        else if (dry && roll < 0.75) tree('cypressCrown', 'cypressTrunk', CYPRESS, 0.9, 1.05);
         else tree('broadCrown', 'broadTrunk', BROAD, 0.8);
       }
+    } else if (tile.feature === 'oasis') {
+      for (let i = 0; i < 4; i++) tree('palmCrown', 'palmTrunk', PALM, 1, 1, PALM_TRUNK);
+      for (let i = 0; i < 2; i++) add('reeds', REEDS, 1.0, 1, spot(0.2, 0.5));
+    } else if (tile.feature?.startsWith('floodplains') && density.scatter > 0) {
+      // River valleys of dry lands: date palms and reeds on the banks.
+      const palms = tile.terrain === 'desert' || tile.terrain === 'plains' ? 2 : 1;
+      for (let i = 0; i < palms; i++) tree('palmCrown', 'palmTrunk', PALM, 0.95, 1, PALM_TRUNK);
+      add('reeds', REEDS, 1.0, 1, spot(0.3, 0.8));
+    } else if (tile.feature === 'marsh' && density.scatter > 0) {
+      for (let i = 0; i < 3 + density.scatter; i++) add('reeds', REEDS, 1.05, 1, spot(0.1, 0.85));
     } else if (tile.feature === 'rainforest') {
       for (let i = 0; i < density.trees + 2; i++) tree('jungleCrown', 'jungleTrunk', JUNGLE, 0.85);
     } else if (density.scatter > 0 && tile.elevation !== 'mountain') {

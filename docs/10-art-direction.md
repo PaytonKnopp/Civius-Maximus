@@ -60,6 +60,12 @@ dim, cold slate.
 
 ## Where art comes from
 
+> **Update (art pass, November 2026):** real CC0 photographs now sit under the painted look: a
+> ground texture set, a surface grain for trees, rocks, houses and figures, and a canvas weave
+> on portraits. They are listed, with their licenses, in [ART-CREDITS.md](ART-CREDITS.md). Model
+> packs are still not used (the free ones either have conditions on redistribution or are too
+> heavy to instance); geometry stays procedural. Decision D93.
+
 1. **Procedural first:** terrain, water, trees, rocks, clouds and simple buildings are generated in
    code with the painterly shaders, so the world looks finished without any asset files.
 2. **Free CC0 model packs** (e.g. Quaternius, Kenney) for units and buildings, restyled by our
@@ -164,3 +170,43 @@ found, upgrade...). Each is a colored disc with a white glyph, so they read at 1
 path data draws as SVG in the interface, on a canvas for 3D labels, and as textures in the 2D
 map, so one set looks the same everywhere. Text that mentions a yield ("+2🔬") shows the icon in
 its place.
+
+**Built in the art pass (CC0 textures).** *Ground:* `map3d/terrainTextures.ts` loads six
+brightness-neutral detail maps (grass, dry plains, sand, forest floor, rock, snow);
+`TerrainSampler` gives every vertex material weights (`aMat`, `aRock`) and the terrain shader
+blends them, two scales per map to hide the tiling, with cliffs sampled from three sides. The
+palette still sets the color and mood; the textures add grain and color variation, and far away
+they settle to the palette because every map averages to 1. *Props:* `map3d/surface.ts` adds a
+grain to trees, rocks, buildings and figures by judging each vertex color (green is leaves,
+brown is bark or timber, grey is stone, red is tile...) and multiplying a texture from one
+array, looked up in the model's own coordinates so it never swims on a moving unit. *Painterly
+filter:* now on at Medium (brush radius 2, 50%) and High (radius 3, 60%) (D94). *Portraits:*
+streaky brush displacement, a canvas weave and the world's vignette. *City banners* now shrink
+as the camera comes in close. `node packages/client/scripts/screenshot-art.mjs <dir>` takes the
+close-ups used to judge all of this.
+
+**Built in the second art pass (shapes and readability).** *Mountains* (`TerrainSampler`):
+each summit sits a little off its tile's center and neighbours join as a soft union (a p-norm),
+so mountains gather into ranges with saddles; three scales of ridged noise grow toward the
+summit, with faint rock strata. *Vegetation* (`map3d/props.ts`) is chosen for the place: layered,
+uneven spruce in cold or mixed woods; oaks with many lobes and forked trunks; dark cypress among
+the oaks on dry (Mediterranean) ground; date palms and reeds on oases and the river valleys of
+dry lands; reed tufts in marshes; boulders with smaller stones beside them. *Resources* wear a
+medal (`map3d/resourceBadge.ts`): a dark plate in a metal rim whose color tells the class (brass
+bonus, amethyst luxury, copper strategic), the glyph in the middle, a soft ground shadow; the 2D
+map uses the same medal. They draw after the water and before the fog mist. *Minimap:* painted
+colors in step with the 3D palette (hills, mountains, forests, water), a night-colored unexplored
+area, a soft gold-trimmed frame. Grass and plains are a little darker than the first pass.
+
+**Built in the third art pass (figures, buildings, portraits).** *Figures:* the owner's color on
+clothes is now "dyed cloth" (`dyed()` in `unitModels.ts`): saturation pulled to about 60%
+(trim 78%) and lightness capped, so squads read as people in muted madder, woad and weld, not
+candy; the ring under a unit and its shield keep the pure color for readability. *Buildings:*
+`bakeLight()` in `settlements3d.ts` darkens wall bottoms into an earth-stained band and adds a
+weathering grain to every merged settlement mesh (towns, districts, improvements), so houses
+sit in the ground instead of floating as clean blocks. *Portraits:* `ui/paintify.ts` turns each
+big drawn portrait (96 px and up) into an oil painting once, in the browser, and caches it:
+pigment drift over flat color, a Kuwahara filter (the same family as the 3D brush pass), dry-brush
+streaks along a slanted stroke, a canvas weave, the world's split-tone grade and vignette. The
+drawing shows for the instant that takes, and at small sizes. Truly painted art can still replace
+any of them through `portrait.image`.

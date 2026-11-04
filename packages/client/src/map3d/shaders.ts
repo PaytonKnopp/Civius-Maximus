@@ -50,13 +50,19 @@ const ATMOSPHERE = /* glsl */ `
 
 export const terrainVertex = /* glsl */ `
   attribute vec3 aColor;
+  attribute vec4 aMat;
+  attribute float aRock;
   attribute float aVis;
   varying vec3 vColor;
+  varying vec4 vMat;
+  varying float vRock;
   varying vec3 vNormal;
   varying vec3 vWorld;
   varying float vVis;
   void main() {
     vColor = aColor;
+    vMat = aMat;
+    vRock = aRock;
     vVis = aVis;
     vNormal = normalize(mat3(modelMatrix) * normal);
     vec4 world = modelMatrix * vec4(position, 1.0);
@@ -70,10 +76,31 @@ export const terrainFragment = /* glsl */ `
   ${ATMOSPHERE}
   uniform vec3 uRock;
   uniform vec3 uSnow;
+  uniform sampler2D tGrass;
+  uniform sampler2D tDry;
+  uniform sampler2D tSand;
+  uniform sampler2D tDirt;
+  uniform sampler2D tRock;
+  uniform sampler2D tSnow;
   varying vec3 vColor;
+  varying vec4 vMat;
+  varying float vRock;
   varying vec3 vNormal;
   varying vec3 vWorld;
   varying float vVis;
+
+  // Ground detail maps average 0.4, so x2.5 leaves brightness alone. Two scales, the second
+  // turned and offset, hide the repeat; far away the mip levels settle on the average.
+  vec3 ground(sampler2D t, vec2 p) {
+    vec3 a = texture2D(t, p * 0.34).rgb * 2.5;
+    #ifdef DETAIL
+      vec2 q = mat2(0.8, 0.6, -0.6, 0.8) * p * 0.093 + vec2(0.37, 0.19);
+      vec3 b = texture2D(t, q).rgb * 2.5;
+      return a * mix(vec3(1.0), b, 0.7);
+    #else
+      return a;
+    #endif
+  }
 
   vec3 detailNormal(vec3 n, vec2 p) {
     #ifdef DETAIL
@@ -92,13 +119,25 @@ export const terrainFragment = /* glsl */ `
     vec2 wp = vWorld.xz;
     vec3 base = vColor;
 
+    // Painted ground texture: blend the detail maps by the tile materials, then rock on steep
+    // slopes (looked at from three sides so cliffs don't smear), and snow by height.
+    float matSum = vMat.x + vMat.y + vMat.z + vMat.w;
+    vec3 groundDet = (ground(tGrass, wp) * vMat.x + ground(tDry, wp) * vMat.y +
+      ground(tSand, wp) * vMat.z + ground(tDirt, wp) * vMat.w +
+      texture2D(tSnow, wp * 0.3).rgb * 2.5 * max(0.0, 1.0 - matSum)) / max(matSum + max(0.0, 1.0 - matSum), 0.001);
+    vec3 nAbs = abs(n0);
+    vec3 rockDet = (texture2D(tRock, wp * 0.26).rgb * nAbs.y +
+      texture2D(tRock, vWorld.xy * 0.26).rgb * nAbs.z +
+      texture2D(tRock, vWorld.zy * 0.26).rgb * nAbs.x) * 2.5 / max(nAbs.x + nAbs.y + nAbs.z, 0.001);
+    base *= groundDet;
+
     // Rock on steep slopes, snow on high ground that isn't too steep.
     float slope = 1.0 - n0.y;
-    float rock = smoothstep(0.22, 0.42, slope) * smoothstep(0.1, 0.45, vWorld.y);
-    base = mix(base, uRock * (0.75 + 0.45 * fbm(wp * 2.4)), rock);
+    float rock = max(smoothstep(0.22, 0.42, slope) * smoothstep(0.1, 0.45, vWorld.y), vRock * 0.8);
+    base = mix(base, uRock * rockDet * (0.75 + 0.3 * fbm(wp * 2.4)), rock);
     float snowLine = 1.28 + (fbm(wp * 1.3) - 0.5) * 0.4;
     float snow = smoothstep(snowLine, snowLine + 0.3, vWorld.y) * smoothstep(0.62, 0.32, slope);
-    base = mix(base, uSnow, snow);
+    base = mix(base, uSnow * texture2D(tSnow, wp * 0.3).rgb * 2.5, snow);
 
     // Painted ground: broad patches of lusher and drier growth, then fine grain up close (it
     // fades with distance so it never shimmers on the strategic view).
@@ -241,13 +280,16 @@ export const mistFragment = /* glsl */ `
 
 /** Final pass: optional Kuwahara brush filter (High), color grade and vignette. */
 export const paintPassFragment = /* glsl */ `
+  #ifndef KUW_R
+  #define KUW_R 2
+  #endif
   uniform sampler2D tScene;
   uniform vec2 uTexel;
   uniform float uPaint;
   varying vec2 vUv;
 
   vec3 kuwahara() {
-    const int R = 3;
+    const int R = KUW_R;
     vec3 m[4]; vec3 s[4];
     for (int k = 0; k < 4; k++) { m[k] = vec3(0.0); s[k] = vec3(0.0); }
     ivec2 starts[4];

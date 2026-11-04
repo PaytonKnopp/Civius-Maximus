@@ -32,6 +32,7 @@ import {
 import { campParts, districtParts, districtStacks, hutParts, wonderParts } from './districts3d';
 import { type Emitter, EffectsLayer } from './effects3d';
 import { naturalWonderParts } from './naturalWonders3d';
+import { withSurface } from './surface';
 import { G, house, off, part, scaled, seeded } from './parts';
 
 /**
@@ -49,6 +50,85 @@ export interface SettlementWorld {
   wrap(): boolean;
   /** Fog level per tile: 2 visible, 1 remembered, 0 unexplored. */
   fog(tile: number): number;
+}
+
+/**
+ * Life on the plaza: market stalls with striped awnings and heaped goods, barrels, and (once
+ * streets are lit, in the Industrial age and after) lamp posts that glow at dusk. Small touches
+ * that make a settlement read as a place people live in, not a pile of houses.
+ */
+function streetLife(
+  parts: BufferGeometry[],
+  cx: number,
+  cz: number,
+  ground: (x: number, z: number) => number,
+  r: () => number,
+  age: number,
+  city: boolean,
+  accent: number,
+) {
+  const n = city ? 4 : 2;
+  const a0 = r() * Math.PI * 2;
+  for (let i = 0; i < n; i++) {
+    const a = a0 + (i / n) * Math.PI * 2 + (r() - 0.5) * 0.4;
+    const ring = 0.2 + r() * 0.05;
+    const x = cx + Math.cos(a) * ring;
+    const z = cz + Math.sin(a) * ring;
+    const y = ground(x, z);
+    // Face the middle of the plaza.
+    const rot = -a + Math.PI / 2;
+    if (age >= 3) {
+      // A lamp post with a lit lantern.
+      parts.push(
+        scaled(G.cyl, 0x2b2b2e, x, y + 0.045, z, 0.004, 0.09, 0.004),
+        scaled(G.box, 0xf2c46a, x, y + 0.098, z, 0.014, 0.016, 0.014),
+        scaled(G.box, 0x2b2b2e, x, y + 0.109, z, 0.018, 0.004, 0.018),
+      );
+      continue;
+    }
+    const wood = 0x5a3e28;
+    parts.push(
+      scaled(G.box, wood, x, y + 0.012, z, 0.075, 0.024, 0.04, rot),
+      scaled(G.box, 0x7a5a3c, x, y + 0.026, z, 0.08, 0.006, 0.046, rot),
+    );
+    // Goods heaped on the table.
+    const goods = [0xb5452f, 0x6b8a38, 0xc79a3c, 0xd9c9a0, 0x8a5a9a];
+    for (const k of [-1, 0, 1]) {
+      const [gx, gz] = off(x, z, rot, k * 0.022, 0);
+      parts.push(
+        scaled(
+          G.bush,
+          goods[Math.floor(r() * goods.length)]!,
+          gx,
+          y + 0.036,
+          gz,
+          0.011,
+          0.009,
+          0.011,
+          r() * 3,
+        ),
+      );
+    }
+    // Poles and a striped awning.
+    for (const side of [-1, 1]) {
+      const [px, pz] = off(x, z, rot, side * 0.037, -0.02);
+      parts.push(scaled(G.box, wood, px, y + 0.045, pz, 0.004, 0.09, 0.004, rot));
+    }
+    for (let k = 0; k < 5; k++) {
+      const [sx, sz] = off(x, z, rot, (k - 2) * 0.016, -0.01);
+      parts.push(
+        scaled(G.box, k % 2 ? 0xe8dfca : accent, sx, y + 0.093, sz, 0.016, 0.005, 0.056, rot),
+      );
+    }
+    // Barrels beside it.
+    if (r() < 0.7) {
+      const [bx, bz] = off(x, z, rot, 0.06, 0.01);
+      parts.push(
+        scaled(G.cyl, 0x6b4a2e, bx, y + 0.016, bz, 0.013, 0.032, 0.013),
+        scaled(G.cyl, 0x2e2a26, bx, y + 0.016, bz, 0.0135, 0.006, 0.0135),
+      );
+    }
+  }
 }
 
 /** The buildings of one settlement, around its center tile at (cx, cz), and its smoke and fire. */
@@ -79,6 +159,16 @@ function settlementParts(
       scaled(G.box, 0x6b4a2e, cx, y + 0.09, cz, 0.12, 0.012, 0.012),
     );
   }
+  streetLife(
+    parts,
+    cx,
+    cz,
+    ground,
+    r,
+    age,
+    city,
+    [0xa8382f, 0x3f6b8a, 0xb08a3e, 0x4f7a4a][view.tile % 4]!,
+  );
   const count = Math.min(60, (city ? 10 : 5) + Math.round(view.population * (city ? 3.6 : 2.4)));
   const radius = city ? 0.78 : 0.62;
   const homes: [number, number][] = [];
@@ -433,14 +523,51 @@ function labelMaterial(text: string, color: number): SpriteMaterial {
   return m;
 }
 
+/**
+ * Bakes grounding into a merged building mesh: wall bottoms sit in a darker, earth-stained band
+ * (the contact shadow and splashed dirt every real building has), and a soft grain of weathering
+ * runs over everything, so houses stop reading as clean toy blocks. Per-vertex colors only.
+ */
+function bakeLight(geo: BufferGeometry, groundAt: (x: number, z: number) => number): void {
+  const pos = geo.getAttribute('position');
+  const col = geo.getAttribute('color');
+  if (!col) return;
+  const cache = new Map<string, number>();
+  const earth = new Color(0x3b2e22);
+  const c = new Color();
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    const key = `${Math.round(x * 30)},${Math.round(z * 30)}`;
+    let g = cache.get(key);
+    if (g === undefined) {
+      g = groundAt(x, z);
+      cache.set(key, g);
+    }
+    const h = Math.max(0, y - g);
+    const t = Math.min(1, h / 0.085);
+    const k = 0.6 + 0.4 * (t * t * (3 - 2 * t));
+    const grain =
+      0.93 + 0.1 * Math.sin(x * 61 + y * 37) * Math.cos(z * 53 - y * 29) + 0.04 * Math.sin(y * 140);
+    c.setRGB(col.getX(i), col.getY(i), col.getZ(i));
+    c.lerp(earth, (1 - k) * 0.55);
+    c.multiplyScalar(k * grain);
+    col.setXYZ(i, c.r, c.g, c.b);
+  }
+}
+
 // --- The layer -------------------------------------------------------------------------------
 
-const buildingMaterial = new MeshStandardMaterial({
-  vertexColors: true,
-  flatShading: true,
-  roughness: 0.88,
-  metalness: 0,
-});
+const buildingMaterial = withSurface(
+  new MeshStandardMaterial({
+    vertexColors: true,
+    flatShading: true,
+    roughness: 0.88,
+    metalness: 0,
+  }),
+  'buildings',
+);
 const ribbonMaterial = new MeshBasicMaterial({
   vertexColors: true,
   side: DoubleSide,
@@ -781,6 +908,7 @@ export class SettlementLayer {
       const merged = mergeGeometries(parts);
       for (const p of parts) p.dispose();
       if (merged) {
+        bakeLight(merged, (x, z) => Math.max(0, height(x, z)) - 0.005);
         if (remembered) {
           const c = merged.getAttribute('color');
           for (let i = 0; i < c.count; i++) {
@@ -824,7 +952,8 @@ export class SettlementLayer {
         }),
       );
       const h = 0.42;
-      sprite.scale.set(h * aspect, h, 1);
+      sprite.scale.set(h * aspect * this.bannerScale, h * this.bannerScale, 1);
+      sprite.userData.banner = [h * aspect, h];
       sprite.position.set(cx, Math.max(0, height(cx, cz)) + 0.95, cz + 0.2);
       sprite.renderOrder = 30;
       if (remembered) sprite.material.color.setScalar(0.6);
@@ -879,6 +1008,22 @@ export class SettlementLayer {
       this.highlights.add(holder);
       this.highlightX.push(cx);
     }
+  }
+
+  private bannerScale = 1;
+
+  /**
+   * City banners are read at screen size, not world size: smaller as the camera comes in close,
+   * a little larger when zoomed far out. Called every frame with the camera distance.
+   */
+  setCameraDistance(dist: number) {
+    const k = Math.min(1.25, Math.max(0.55, dist / 24));
+    if (Math.abs(k - this.bannerScale) < 0.02) return;
+    this.bannerScale = k;
+    this.group.traverse((o) => {
+      const base = o.userData.banner as [number, number] | undefined;
+      if (base) o.scale.set(base[0] * k, base[1] * k, 1);
+    });
   }
 
   /** Keeps everything in the copy of the world nearest the camera (east-west wrap). */

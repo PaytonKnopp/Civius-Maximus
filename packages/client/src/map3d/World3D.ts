@@ -32,6 +32,7 @@ import {
   Sprite,
   SpriteMaterial,
   SRGBColorSpace,
+  type Texture,
   Vector2,
   Vector3,
   WebGLRenderer,
@@ -51,10 +52,12 @@ import {
   type TileHighlight,
   type UnitView,
 } from '../map/renderer';
-import { drawIcon } from '../ui/drawIcon';
 import { FloatLayer } from './floats';
+import { drawResourceBadge } from './resourceBadge';
 import { type PropKind, propGeometries, placeProps } from './props';
 import { center3, type Sample, TerrainSampler } from './sampler';
+import { loadSurfaceTextures, withSurface } from './surface';
+import { loadTerrainTextures } from './terrainTextures';
 import { SettlementLayer } from './settlements3d';
 import { UnitLayer } from './units3d';
 import {
@@ -92,6 +95,8 @@ const QUALITY: Record<
     scatter: number;
     post: boolean;
     paint: number;
+    /** Brush radius of the painterly filter, in pixels (cost grows with its square). */
+    brush: number;
     detail: boolean;
   }
 > = {
@@ -103,6 +108,7 @@ const QUALITY: Record<
     scatter: 0,
     post: false,
     paint: 0,
+    brush: 2,
     detail: false,
   },
   medium: {
@@ -112,7 +118,8 @@ const QUALITY: Record<
     trees: 5,
     scatter: 2,
     post: true,
-    paint: 0,
+    paint: 0.5,
+    brush: 2,
     detail: true,
   },
   high: {
@@ -122,7 +129,8 @@ const QUALITY: Record<
     trees: 8,
     scatter: 3,
     post: true,
-    paint: 0.55,
+    paint: 0.6,
+    brush: 3,
     detail: true,
   },
 };
@@ -200,6 +208,12 @@ export class World3D implements MapRenderer {
     uDeep: { value: new Color(0x143650) },
     uAbyss: { value: new Color(0x0b2136) },
     uFoam: { value: new Color(0xd6d1c0) },
+    tGrass: { value: null as unknown as Texture },
+    tDry: { value: null as unknown as Texture },
+    tSand: { value: null as unknown as Texture },
+    tDirt: { value: null as unknown as Texture },
+    tRock: { value: null as unknown as Texture },
+    tSnow: { value: null as unknown as Texture },
   };
   private terrainMaterial = new ShaderMaterial({
     vertexShader: terrainVertex,
@@ -220,11 +234,14 @@ export class World3D implements MapRenderer {
     transparent: true,
     depthWrite: false,
   });
-  private propMaterial = new MeshStandardMaterial({
-    roughness: 0.9,
-    metalness: 0,
-    vertexColors: true,
-  });
+  private propMaterial = withSurface(
+    new MeshStandardMaterial({
+      roughness: 0.9,
+      metalness: 0,
+      vertexColors: true,
+    }),
+    'props',
+  );
   private propGeometry = propGeometries();
   private gridMaterial = new LineBasicMaterial({
     color: 0x0a0d0a,
@@ -275,6 +292,12 @@ export class World3D implements MapRenderer {
     this.scene.fog = new Fog(HAZE, 38, 160);
     host.appendChild(this.renderer.domElement);
     this.renderer.domElement.style.display = 'block';
+    loadTerrainTextures(
+      this.uniforms,
+      Math.min(8, this.renderer.capabilities.getMaxAnisotropy()),
+      () => {},
+    );
+    loadSurfaceTextures(Math.min(8, this.renderer.capabilities.getMaxAnisotropy()));
 
     const sun = new DirectionalLight(SUN, 6.2);
     sun.position.copy(this.uniforms.uLightDir.value).multiplyScalar(50);
@@ -607,7 +630,7 @@ export class World3D implements MapRenderer {
     q: (typeof QUALITY)[Quality],
   ): Chunk {
     const sampler = this.sampler!;
-    const sample: Sample = { height: 0, color: new Color() };
+    const sample: Sample = { height: 0, color: new Color(), mat: new Float32Array(5) };
     const group = new Group();
 
     // Terrain.
@@ -615,6 +638,8 @@ export class World3D implements MapRenderer {
     const count = g.nx * g.nz;
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
+    const mats = new Float32Array(count * 4);
+    const rocks = new Float32Array(count);
     const terrainY = new Float32Array(count);
     for (let j = 0; j < g.nz; j++) {
       for (let i = 0; i < g.nx; i++) {
@@ -625,11 +650,15 @@ export class World3D implements MapRenderer {
         pos.set([x, sample.height, z], k * 3);
         terrainY[k] = sample.height;
         col.set([sample.color.r, sample.color.g, sample.color.b], k * 3);
+        mats.set(sample.mat!.subarray(0, 4), k * 4);
+        rocks[k] = sample.mat![4]!;
       }
     }
     const terrain = new BufferGeometry();
     terrain.setAttribute('position', new BufferAttribute(pos, 3));
     terrain.setAttribute('aColor', new BufferAttribute(col, 3));
+    terrain.setAttribute('aMat', new BufferAttribute(mats, 4));
+    terrain.setAttribute('aRock', new BufferAttribute(rocks, 1));
     const terrainVis = new BufferAttribute(new Float32Array(count), 1);
     terrain.setAttribute('aVis', terrainVis);
     terrain.setIndex(g.index);
@@ -798,7 +827,9 @@ export class World3D implements MapRenderer {
         const x = cx + 0.42;
         const z = cz + 0.38;
         sprite.position.set(x, Math.max(0, this.heightAt(x, z)) + 0.34, z);
-        sprite.scale.set(0.4, 0.4, 1);
+        sprite.scale.set(0.62, 0.62, 1);
+        // After the water (1), before the fog mist (2), so neither washes the badge out.
+        sprite.renderOrder = 1.5;
         chunk.group.add(sprite);
         chunk.sprites.push({ sprite, tile: t });
       }
@@ -813,34 +844,27 @@ export class World3D implements MapRenderer {
     const key = `${id}:${cls}`;
     const cached = this.spriteCache.get(key);
     if (cached) return cached;
-    const size = 128;
+    const size = 160;
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d')!;
-    if (drawIcon(ctx, id, size / 2, size / 2, size - 6)) {
-      const tex = new CanvasTexture(canvas);
-      tex.colorSpace = SRGBColorSpace;
-      const material = new SpriteMaterial({ map: tex, toneMapped: false, fog: true });
-      this.spriteCache.set(key, material);
-      return material;
+    if (!drawResourceBadge(ctx, id, cls, size)) {
+      ctx.fillStyle = '#f2e8cc';
+      ctx.font = '600 52px "Source Sans 3 Variable", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(name.slice(0, 2), size / 2, size * 0.47);
     }
-    const ring = { bonus: '#c9b98a', luxury: '#b98ad6', strategic: '#d9785a' }[cls];
-    ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
-    ctx.fillStyle = ring;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2 - 13, 0, Math.PI * 2);
-    ctx.fillStyle = '#121a22';
-    ctx.fill();
-    ctx.fillStyle = '#eadfc4';
-    ctx.font = '600 44px "Source Sans 3 Variable", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(name.slice(0, 2), size / 2, size / 2 + 2);
     const tex = new CanvasTexture(canvas);
     tex.colorSpace = SRGBColorSpace;
-    const material = new SpriteMaterial({ map: tex, toneMapped: false, fog: true });
+    tex.anisotropy = 4;
+    // No depth write: the empty corners of the sprite must not hide the water behind them.
+    const material = new SpriteMaterial({
+      map: tex,
+      toneMapped: false,
+      fog: true,
+      depthWrite: false,
+    });
     this.spriteCache.set(key, material);
     return material;
   }
@@ -908,6 +932,8 @@ export class World3D implements MapRenderer {
     const q = QUALITY[this.options.quality];
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
     this.post.material.uniforms.uPaint!.value = q.paint;
+    this.post.material.defines = { KUW_R: q.brush };
+    this.post.material.needsUpdate = true;
     this.fit();
   }
 
@@ -953,6 +979,7 @@ export class World3D implements MapRenderer {
     const tan = Math.tan(((FOV / 2) * Math.PI) / 180);
     const halfW = this.dist * tan * this.camera.aspect * 2.2 + CHUNK_W;
     const ahead = this.dist * (3.4 - 1.8 * t) + CHUNK_H;
+    this.settlements.setCameraDistance(this.dist);
     const showSprites = this.dist < 30;
     for (const c of this.chunks) {
       const shift = this.data.map.wrapX
