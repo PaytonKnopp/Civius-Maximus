@@ -29,7 +29,9 @@ const ATMOSPHERE = /* glsl */ `
   uniform vec3 uHaze;
   uniform vec3 uFogDark;
   // vis: 1 visible, ~0.5 remembered, 0 unexplored.
-  vec3 applyVisibility(vec3 col, float vis, vec2 wp) {
+  vec3 applyVisibility(vec3 col, float visIn, vec2 wp) {
+    // Fine noise on the edge so it frays like mist instead of showing the mesh's steps.
+    float vis = visIn + (fbm(wp * 2.3 + 5.0) - 0.5) * 0.32 * (1.0 - smoothstep(0.7, 1.0, visIn));
     float grey = dot(col, vec3(0.299, 0.587, 0.114));
     // Bright things (snow) shouldn't glow through the fog: compress them first.
     grey = grey / (1.0 + grey * 1.5);
@@ -280,7 +282,8 @@ export const mistFragment = /* glsl */ `
   varying float vVis;
   varying vec3 vWorld;
   void main() {
-    float cover = 1.0 - smoothstep(0.03, 0.5, vVis);
+    float edgeNoise = (fbm(vWorld.xz * 2.3 + 5.0) - 0.5) * 0.32 * (1.0 - smoothstep(0.7, 1.0, vVis));
+    float cover = 1.0 - smoothstep(0.03, 0.5, vVis + edgeNoise);
     if (cover < 0.01) discard;
     vec2 wp = vWorld.xz;
     float swirl = fbm(wp * 0.3 + vec2(uTime * 0.02, uTime * 0.012)) + 0.6 * fbm(wp * 0.85 - vec2(uTime * 0.03, -uTime * 0.02));
@@ -303,7 +306,47 @@ export const paintPassFragment = /* glsl */ `
   uniform sampler2D tScene;
   uniform vec2 uTexel;
   uniform float uPaint;
+  uniform float uTilt;
   varying vec2 vUv;
+
+  // Golden-angle spiral: evenly spread sample offsets inside a unit disc.
+  vec2 spiral(int i, int n) {
+    float r = sqrt((float(i) + 0.5) / float(n));
+    float a = float(i) * 2.39996323;
+    return vec2(cos(a), sin(a)) * r;
+  }
+  // Pixels in x are narrower than in y by the aspect ratio; keep blurs round.
+  vec2 round2(float radius) { return vec2(radius * uTexel.y / uTexel.x, radius); }
+
+  // Tilt-shift: the middle of the screen stays sharp and the top and bottom blur, more the
+  // farther the camera is, so the strategic view reads as a painted miniature.
+  vec3 tilt(vec3 sharp) {
+    #ifdef TILT
+      float band = smoothstep(0.14, 0.5, abs(vUv.y - 0.5));
+      float radius = band * uTilt * 0.0075;
+      if (radius < 0.0003) return sharp;
+      vec3 acc = sharp;
+      for (int i = 0; i < TILT_TAPS; i++) acc += texture2D(tScene, vUv + spiral(i, TILT_TAPS) * round2(radius)).rgb;
+      return acc / float(TILT_TAPS + 1);
+    #else
+      return sharp;
+    #endif
+  }
+
+  // Bloom: only what is brighter than the picture can show (sun glints, lit windows, fires)
+  // spills a soft glow. The scene is still linear and unclamped here, so this is real HDR.
+  vec3 bloom() {
+    #ifdef BLOOM
+      vec3 glow = vec3(0.0);
+      for (int i = 0; i < 14; i++) {
+        vec3 c = texture2D(tScene, vUv + spiral(i, 14) * round2(0.011)).rgb;
+        glow += max(c - vec3(1.25), vec3(0.0));
+      }
+      return glow / 14.0 * 0.85;
+    #else
+      return vec3(0.0);
+    #endif
+  }
 
   vec3 kuwahara() {
     const int R = KUW_R;
@@ -333,6 +376,13 @@ export const paintPassFragment = /* glsl */ `
   void main() {
     vec3 c = texture2D(tScene, vUv).rgb;
     if (uPaint > 0.0) c = mix(c, kuwahara(), uPaint);
+    c = tilt(c);
+    c += bloom();
+    // Zoomed out, colors are a touch richer (the miniature look).
+    #ifdef TILT
+      float lum = dot(c, vec3(0.2126, 0.7152, 0.0722));
+      c = mix(vec3(lum), c, 1.0 + uTilt * 0.14);
+    #endif
     // Split-tone grade: cool shadows, warm highlights.
     float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
     c = mix(c * vec3(0.9, 0.97, 1.1), c * vec3(1.06, 1.0, 0.9), smoothstep(0.05, 0.7, l));

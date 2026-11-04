@@ -20,6 +20,7 @@ import {
   LineLoop,
   LineSegments,
   Matrix4,
+  MathUtils,
   Mesh,
   MeshStandardMaterial,
   PerspectiveCamera,
@@ -99,6 +100,10 @@ const QUALITY: Record<
     /** Brush radius of the painterly filter, in pixels (cost grows with its square). */
     brush: number;
     detail: boolean;
+    /** Taps for the tilt-shift blur when zoomed out (0 = off). */
+    tilt: number;
+    /** Bloom on very bright things (High only). */
+    bloom: boolean;
   }
 > = {
   low: {
@@ -111,6 +116,8 @@ const QUALITY: Record<
     paint: 0,
     brush: 2,
     detail: false,
+    tilt: 0,
+    bloom: false,
   },
   medium: {
     step: 0.22,
@@ -122,6 +129,8 @@ const QUALITY: Record<
     paint: 0.5,
     brush: 2,
     detail: true,
+    tilt: 8,
+    bloom: false,
   },
   high: {
     step: 0.17,
@@ -133,6 +142,8 @@ const QUALITY: Record<
     paint: 0.6,
     brush: 3,
     detail: true,
+    tilt: 12,
+    bloom: true,
   },
 };
 
@@ -354,7 +365,12 @@ export class World3D implements MapRenderer {
     const material = new ShaderMaterial({
       vertexShader: paintPassVertex,
       fragmentShader: paintPassFragment,
-      uniforms: { tScene: { value: null }, uTexel: { value: new Vector2() }, uPaint: { value: 0 } },
+      uniforms: {
+        tScene: { value: null },
+        uTexel: { value: new Vector2() },
+        uPaint: { value: 0 },
+        uTilt: { value: 0 },
+      },
       depthTest: false,
     });
     const quadScene = new Scene();
@@ -1000,7 +1016,11 @@ export class World3D implements MapRenderer {
     const q = QUALITY[this.options.quality];
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
     this.post.material.uniforms.uPaint!.value = q.paint;
-    this.post.material.defines = { KUW_R: q.brush };
+    this.post.material.defines = {
+      KUW_R: q.brush,
+      ...(q.tilt > 0 ? { TILT: '', TILT_TAPS: q.tilt } : {}),
+      ...(q.bloom ? { BLOOM: '' } : {}),
+    };
     this.post.material.needsUpdate = true;
     this.fit();
   }
@@ -1082,6 +1102,7 @@ export class World3D implements MapRenderer {
         this.renderer.render(this.scene, this.camera);
         this.renderer.setRenderTarget(null);
         this.post.material.uniforms.tScene!.value = this.post.target.texture;
+        this.post.material.uniforms.uTilt!.value = MathUtils.smoothstep(this.dist, 26, 70);
         this.renderer.render(this.post.scene, this.post.camera);
       } else {
         this.renderer.render(this.scene, this.camera);
