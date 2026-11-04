@@ -82,6 +82,8 @@ export const terrainFragment = /* glsl */ `
   uniform sampler2D tDirt;
   uniform sampler2D tRock;
   uniform sampler2D tSnow;
+  uniform sampler2D tShade;
+  uniform vec4 uShadeRect;
   varying vec3 vColor;
   varying vec4 vMat;
   varying float vRock;
@@ -155,11 +157,23 @@ export const terrainFragment = /* glsl */ `
     // Soft wrapped light with a hint of painted banding.
     float diff = smoothstep(-0.1, 0.9, ndl);
     diff = mix(diff, floor(diff * 4.0 + 0.5) / 4.0, 0.2);
-    float shade = 1.0 - cloudShadow(wp) * 0.55;
-    vec3 ambient = mix(uGroundColor, uSkyColor, 0.5 + 0.5 * n.y);
+    // Baked shadows of trees, rocks and towns: red is the shadow thrown from the sun, green the
+    // dark pool at the foot of each thing (see groundShade.ts).
+    vec2 shd = texture2D(tShade, (wp - uShadeRect.xy) * uShadeRect.zw).rg;
+    float shade = (1.0 - cloudShadow(wp) * 0.55) * (1.0 - min(shd.r, 1.0) * 0.88);
+    vec3 ambient = mix(uGroundColor, uSkyColor, 0.5 + 0.5 * n.y) * (1.0 - min(shd.g, 1.0) * 0.5);
     // Lower ground sits a little deeper in shadow, which reads as scale.
     float valley = mix(0.78, 1.0, smoothstep(-0.2, 0.7, vWorld.y));
     vec3 col = base * (uSunColor * diff * shade + ambient) * valley * (0.95 + stroke * 0.1);
+
+    // Golden hour on open ground: slopes that face the low sun glow warm, and broad pools of
+    // direct light drift across meadows, so open land is bright and the forest floor, in
+    // shade, stays cool and dark. This is what separates the clearing from the wood.
+    float facing = smoothstep(0.5, 1.0, ndl);
+    float pool = smoothstep(0.4, 0.8, fbm(wp * 0.17 + vec2(uTime * 0.004, 4.0)));
+    float openness = clamp(vMat.x * 0.85 + vMat.y + vMat.z * 0.7, 0.0, 1.0) * (1.0 - rock) * (1.0 - snow);
+    col = mix(col, col * vec3(1.16, 1.05, 0.84), facing * 0.36 * (1.0 - cloudShadow(wp) * 0.6));
+    col += base * vec3(1.0, 0.82, 0.5) * uSunColor * pool * facing * openness * 0.11 * (1.0 - cloudShadow(wp));
 
     col = applyVisibility(col, vVis, wp);
     col = applyHaze(col, vWorld);

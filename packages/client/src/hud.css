@@ -5,6 +5,9 @@
 
 :root {
   --topbar-h: 48px;
+  /* Where the left column's panels start: under the research and civic trackers. */
+  --tracker-h: 62px;
+  --stack-top: calc(var(--topbar-h) + 10px + var(--tracker-h) * 2 + 8px + 14px);
   --gold: #c9a14f;
   --gold-hi: #f0d48c;
   --gold-lo: #7a5c22;
@@ -379,7 +382,9 @@ button:disabled {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 10px;
+  box-sizing: border-box;
   width: 290px;
+  height: var(--tracker-h);
   margin: 0;
   padding: 6px 14px 6px 6px;
   color: var(--text);
@@ -443,13 +448,18 @@ button:disabled {
   color: var(--muted);
 }
 
+/* An empty tracker is a quiet reminder; it only pulses when it is the next thing that needs you,
+   so the Next button, not three things at once, is what draws the eye. */
 .tracker.idle {
   border-color: var(--gold);
-  animation: tracker-call 1.6s ease-in-out infinite;
 }
 
 .tracker.idle .tracker-name {
   color: var(--gold-hi);
+}
+
+.tracker.idle.call {
+  animation: tracker-call 1.6s ease-in-out infinite;
 }
 
 @keyframes tracker-call {
@@ -564,7 +574,7 @@ button:disabled {
 }
 
 .settlement-panel {
-  top: calc(var(--topbar-h) + 134px);
+  top: var(--stack-top);
 }
 
 .notices {
