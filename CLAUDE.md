@@ -26,6 +26,7 @@
 | `pnpm cx map [script] [size] [seed]` | Print a generated map as text |
 | `pnpm cx mapcheck [count] [sizes]` | Generate + validate many maps (run after map generator changes) |
 | `pnpm cx simulate [players] [turns] [seed] [size] [script] [--afk]` | Play an all-AI game and report on it (run after AI or balance changes) |
+| `pnpm cx profile [players] [turns] [seed] [size] [script] [--every N] [--from f] [--save f] [--check]` | Play an all-AI game and report turn time, AI time, save size and memory as it goes on, plus the final state hash. Run it before and after any engine change that touches turn processing, the AI or map code: the hash must not change for a speed-up, and `--check` (CI runs it) fails if late games get slow. `--save`/`--from` keep a mid-game state to re-measure quickly |
 
 Client checks: `pnpm build`, then `pnpm --filter @cx/client exec vite preview --port 4173` and
 `pnpm --filter @cx/client screenshot <out-dir>` (Map Lab screenshots at desktop and phone
@@ -36,6 +37,7 @@ help, 2D view, phone size); `node packages/client/scripts/screenshot-menus.mjs <
 (title, Options, New game and the leader picker, Civilopedia, Hall of Fame, Load, Play online) at
 desktop and phone size and flags anything wider than the screen; `node packages/client/scripts/screenshot-online.mjs <out-dir>` plays
 an online game between two tabs (`?net=local`): lobby, join, a turn, a friend dropping. The app opens on a home screen over a quick game; `#play` in the URL skips it (the game scripts use it) and `#lab` opens the Map Lab.
+`node packages/client/scripts/perf-lategame.mjs early=<save.json> late=<save.json>` loads saves made with `cx profile --save` and compares frame times in a real browser (see its header; it needs the client built and served).
 `pnpm --filter @cx/client build:artifact <file.html>` builds the client as one self-contained
 HTML page for sharing.
 

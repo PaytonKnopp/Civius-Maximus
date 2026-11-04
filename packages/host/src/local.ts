@@ -23,16 +23,37 @@ export interface TurnWork {
 }
 
 /**
+ * How far a turn's slow part has got, for a progress line: first the world takes its turn (the
+ * End Turn that closes the round), then the rival seats play one after another.
+ */
+export interface TurnProgress {
+  phase: 'world' | 'rivals';
+  /** Rival seats finished so far, of `total` (both 0 while the world takes its turn). */
+  done: number;
+  total: number;
+}
+
+/**
  * Runs the slow part of a turn somewhere else (a Web Worker in the browser): applies `action`
  * if given (End Turn, which may process the turn), then AI seats answer deals and play.
+ * `onProgress` hears how it's going.
  */
-export type AiRunner = (state: GameState, action: Action | null) => Promise<TurnWork>;
+export type AiRunner = (
+  state: GameState,
+  action: Action | null,
+  onProgress?: (progress: TurnProgress) => void,
+) => Promise<TurnWork>;
 
 /**
  * Applies `action` (if any), then lets AI seats answer the deals offered to them and play their
  * turns. Deterministic: a worker and the page get the same result from the same state.
  */
-export function runTurn(ctx: EngineContext, start: GameState, action: Action | null): TurnWork {
+export function runTurn(
+  ctx: EngineContext,
+  start: GameState,
+  action: Action | null,
+  onProgress?: (progress: TurnProgress) => void,
+): TurnWork {
   let state = start;
   const events: GameEvent[] = [];
   const apply = (a: Action) => {
@@ -42,7 +63,10 @@ export function runTurn(ctx: EngineContext, start: GameState, action: Action | n
     events.push(...r.events);
     return r.state;
   };
-  if (action) apply(action);
+  if (action) {
+    onProgress?.({ phase: 'world', done: 0, total: 0 });
+    apply(action);
+  }
   // AI seats answer deals offered to them right away (the same verdict the deal screen shows).
   const waiting = [
     ...new Set(
@@ -57,7 +81,10 @@ export function runTurn(ctx: EngineContext, start: GameState, action: Action | n
       return p.alive && p.kind === 'ai' && !p.turnEnded;
     });
     if (ais.length === 0) break;
-    for (const player of ais) state = playAiTurn(ctx, state, player, apply);
+    for (const [i, player] of ais.entries()) {
+      onProgress?.({ phase: 'rivals', done: i, total: ais.length });
+      state = playAiTurn(ctx, state, player, apply);
+    }
   }
   return { state, events };
 }
@@ -80,6 +107,8 @@ export class LocalGame implements GameHandle {
   readonly saves = true;
   /** Rivals are moving (in the runner): actions are refused until they're done. */
   busy = false;
+  /** While `busy`: how far along the turn's work is (null until the runner says). */
+  progress: TurnProgress | null = null;
   private listeners = new Set<GameListener>();
 
   /** A new game from a setup, or a saved game from its state. */
@@ -145,13 +174,19 @@ export class LocalGame implements GameHandle {
   /** Hands the turn's work to the runner (falling back to this page if it fails). */
   private work(action: Action | null) {
     this.busy = true;
+    this.progress = null;
     this.tell([]);
     const from = this.state;
-    void this.runner!(from, action)
-      .catch(() => runTurn(this.ctx, from, action))
+    const onProgress = (progress: TurnProgress) => {
+      this.progress = progress;
+      this.tell([]);
+    };
+    void this.runner!(from, action, onProgress)
+      .catch(() => runTurn(this.ctx, from, action, onProgress))
       .then((done) => {
         this.state = deepFreeze(done.state);
         this.busy = false;
+        this.progress = null;
         this.tell(done.events);
       });
   }

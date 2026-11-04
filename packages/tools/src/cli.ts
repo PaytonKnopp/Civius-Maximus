@@ -1,8 +1,9 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { contentFileJsonSchema, manifestJsonSchema } from '@cx/content';
 import { compileFromDirs } from '@cx/content/node';
 import { previewMap, runMapCheck } from './maps';
+import { DEFAULT_BUDGET, formatRow, PROFILE_HEADER, checkProfile, runProfile } from './profile';
 import { religionLine, runSimulation } from './simulate';
 import { runValidate } from './validate';
 
@@ -17,6 +18,10 @@ Usage: pnpm cx <command> [args]
   simulate [players] [turns] [seed] [size] [script] [--afk]
                               Play an all-AI game and report on it (default: 4 150 1);
                               --afk makes p1 a player who only ends turns
+  profile [players] [turns] [seed] [size] [script] [--every N] [--from save.json] [--save out.json] [--check]
+                              Play an all-AI game and report turn time, save size, log size and
+                              memory as it goes on (default: 8 150 1 standard). --from continues a
+                              saved state for N more turns; --check fails if a budget is broken
 `;
 
 const [command, ...args] = process.argv.slice(2);
@@ -81,6 +86,48 @@ switch (command) {
     console.log(`AI turn: average ${r.average.toFixed(1)} ms, slowest ${r.slowest.toFixed(0)} ms`);
     console.log(`events: ${JSON.stringify(r.events)}`);
     console.log(`refused actions: ${JSON.stringify(r.rejected)}`);
+    break;
+  }
+  case 'profile': {
+    const content = compileFromDirs().content!;
+    const flag = (name: string) => {
+      const i = args.indexOf(name);
+      return i >= 0 ? args[i + 1] : undefined;
+    };
+    // Positional arguments are what is left once flags (and the value after each) are dropped.
+    const positional = args.filter(
+      (a, i) => !a.startsWith('--') && !['--every', '--from', '--save'].includes(args[i - 1] ?? ''),
+    );
+    const [players = '8', turns = '150', seed = '1', size = 'standard', script] = positional;
+    const fromFile = flag('--from');
+    const r = (() => {
+      console.log(PROFILE_HEADER);
+      return runProfile(
+        content,
+        {
+          players: Number(players),
+          turns: Number(turns),
+          seed,
+          size,
+          ...(script ? { script } : {}),
+          every: Number(flag('--every') ?? 25),
+          ...(fromFile ? { from: JSON.parse(readFileSync(fromFile, 'utf8')) } : {}),
+        },
+        () => performance.now(),
+        (row) => console.log(formatRow(row)),
+      );
+    })();
+    const saveFile = flag('--save');
+    if (saveFile) writeFileSync(saveFile, JSON.stringify(r.state));
+    console.log(`result: ${JSON.stringify(r.state.result)}`);
+    console.log(`slowest turn processing: ${r.slowestProcessMs.toFixed(0)} ms`);
+    console.log(`final state hash: ${r.hash}`);
+    if (args.includes('--check')) {
+      const problems = checkProfile(r.rows, DEFAULT_BUDGET);
+      for (const p of problems) console.log(`PROBLEM: ${p}`);
+      console.log(problems.length ? 'profile check FAILED' : 'profile check passed');
+      process.exitCode = problems.length ? 1 : 0;
+    }
     break;
   }
   default:

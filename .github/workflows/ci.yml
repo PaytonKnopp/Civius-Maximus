@@ -25,3 +25,18 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+
+  # Long games must stay smooth: play an 8-player game to turn 120 and fail if turn processing,
+  # AI time, save size or memory break their budgets, or late turns get much slower than early
+  # ones (packages/tools/src/profile.ts, docs/01-architecture.md "Performance targets").
+  performance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm cx profile 8 120 1 standard --check

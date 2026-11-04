@@ -51,7 +51,7 @@ import {
   blastTiles,
   nukeProblem,
 } from '@cx/engine';
-import { type GameHandle, LocalGame, makeSave, RemoteGame } from '@cx/host';
+import { type GameHandle, LocalGame, makeSave, RemoteGame, type TurnProgress } from '@cx/host';
 import { Icon, Rich } from '../ui/Icon';
 import { ScreenButton } from '../ui/ScreenButton';
 import type { SeatInfo } from '@cx/protocol';
@@ -665,6 +665,14 @@ interface Props {
 }
 
 /** The main game view: the map, your units and settlements, and the controls to play a turn. */
+/** What the End Turn button says while the turn's work runs, so a long wait never looks stuck. */
+function waitLabel(progress: TurnProgress | null): string {
+  if (progress?.phase === 'world') return 'The world is turning…';
+  if (progress?.phase === 'rivals' && progress.total > 1)
+    return `Rivals are moving… ${progress.done + 1} of ${progress.total}`;
+  return 'Rivals are moving…';
+}
+
 export function GameScreen({ content, start, mode, quality, onGame, onExit, covered }: Props) {
   const ctx: EngineContext = useMemo(() => ({ content }), [content]);
   // One background worker for the slow part of each turn (End Turn and the AI seats).
@@ -677,6 +685,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     [start, ctx, runner],
   );
   const [busy, setBusy] = useState(game.busy);
+  const [progress, setProgress] = useState(game.progress ?? null);
   useEffect(() => onGame?.(game), [game, onGame]);
   // Whose eyes the screen shows: the only human, or (hotseat) whoever holds the device now.
   const [viewer, setViewer] = useState<PlayerId>(
@@ -1035,10 +1044,12 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       }
       busyRef.current = game.busy;
       setBusy(game.busy);
+      setProgress(game.progress ?? null);
     });
     // In case the rivals finished before this subscribed.
     busyRef.current = game.busy;
     setBusy(game.busy);
+    setProgress(game.progress ?? null);
     setState(game.state);
     return off;
   }, [game, content, notify]);
@@ -2113,7 +2124,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             name={next.kind === 'end' ? 'next' : next.kind === 'unit' ? 'movement' : 'check'}
             size={34}
           />
-          <span className="next-label">{busy ? 'Rivals are moving…' : next.label}</span>
+          <span className="next-label">{busy ? waitLabel(progress) : next.label}</span>
           <kbd>Enter</kbd>
         </button>
         {secondsLeft !== null && state.status === 'playing' && (

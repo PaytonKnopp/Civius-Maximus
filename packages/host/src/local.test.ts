@@ -1,7 +1,7 @@
 import { compileFromDirs } from '@cx/content/node';
 import { describe, expect, it } from 'vitest';
 import { stateHash } from '@cx/engine';
-import { type AiRunner, LocalGame, runTurn } from './local';
+import { type AiRunner, LocalGame, runTurn, type TurnProgress } from './local';
 import { makeSave, readSave } from './saves';
 
 const ctx = { content: compileFromDirs().content! };
@@ -33,6 +33,38 @@ describe('LocalGame', () => {
     expect(game.state.turn).toBe(2);
     expect(game.state.players.p2!.turnEnded).toBe(true);
     expect(seen).toContain('turn_started');
+  });
+
+  it('reports progress while the world turns and each rival seat plays', async () => {
+    const reports: TurnProgress[] = [];
+    const game = new LocalGame(setup(['human', 'ai', 'ai', 'ai']), ctx);
+    const from = game.state;
+    runTurn(ctx, from, { type: 'end_turn', player: 'p1' }, (p) => reports.push({ ...p }));
+    expect(reports[0]).toEqual({ phase: 'world', done: 0, total: 0 });
+    const rivals = reports.filter((r) => r.phase === 'rivals');
+    // Three rival seats, counted one by one.
+    expect(rivals.map((r) => `${r.done}/${r.total}`)).toEqual(['0/3', '1/3', '2/3']);
+  });
+
+  it('keeps the latest progress on the game while the runner works, and clears it after', async () => {
+    const seen: (TurnProgress | null)[] = [];
+    // Like a worker, answers on a later tick, after the screen has subscribed.
+    const runner: AiRunner = async (state, action, onProgress) => {
+      await new Promise((r) => setTimeout(r, 0));
+      return runTurn(ctx, structuredClone(state), action, onProgress);
+    };
+    const game = new LocalGame(setup(['human', 'ai', 'ai']), ctx, runner);
+    await new Promise<void>((done) => {
+      const off = game.subscribe(() => {
+        seen.push(game.progress);
+        if (!game.busy) {
+          off();
+          done();
+        }
+      });
+    });
+    expect(seen.some((p) => p?.phase === 'rivals' && p.total === 2)).toBe(true);
+    expect(game.progress).toBeNull();
   });
 
   it('can run End Turn and the AI turns in a runner, refusing actions meanwhile', async () => {
