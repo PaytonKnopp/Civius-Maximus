@@ -106,6 +106,17 @@ motion), Interface (larger menu text, tooltips, first-game hints, advisor tips),
 action) and About. Everything applies at once and is kept in the browser (`settings.ts`); the
 game menu's quality switch and the game bar's 3D/2D switch change the same settings.
 
+**Tech and civics trees (art pass 7):** cards are larger (264 x 138 px) with the name in full,
+a status line (Ready, In progress, Queued number N, Done, or "Needs X" for locked cards), the
+boost on up to two lines and up to four unlock chips; eras are shaded bands with their name on
+top. Wires run out of a card along its row and turn in the empty gutter before the next card, so
+they never cut across a card they are not joined to. Hovering or focusing a card lights its whole
+path: everything it needs in gold, everything it leads to in blue, everything else dimmed. The
+header has zoom (50 to 125%, also Ctrl or pinch and wheel) and "Find current". **First turn
+(art pass 7):** the left column's panels (city, advisors) start under the research and civic cards
+instead of overlapping them; an empty research or civic card only pulses when it is the next thing
+the Next button would ask for; the first hint waits about a second after the intro closes.
+
 **Feel (polish P8):** a banner sweeps across the map when a new turn begins ("Turn 121" in
 gold over the era's name, with gold rules either side) and fades away, in place of the old
 "Turn 121" notice. Panels slide in (units and cities from the left, notices and hints from the

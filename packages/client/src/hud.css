@@ -728,6 +728,12 @@ button:disabled {
     top: calc(var(--topbar-h) + 150px);
   }
 
+  /* Phones: the hint sits above the Next button (styles.css). Without this the desktop `top`
+     above wins over that rule and stretches the card over the whole screen. */
+  .hint-card {
+    top: auto;
+  }
+
   .corner {
     left: max(8px, env(safe-area-inset-left, 0px));
     right: max(8px, env(safe-area-inset-right, 0px));

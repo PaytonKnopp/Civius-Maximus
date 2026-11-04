@@ -1172,7 +1172,18 @@ export function Portrait({
         alt={title ?? ''}
         width={typeof width === 'number' ? width : undefined}
         height={typeof height === 'number' ? height : undefined}
-        style={{ objectFit: 'cover' }}
+        // Painted portraits are whole busts (5:6, eyes about 40% down); the round chips show
+        // just the head, so zoom in on the face instead of showing the shoulders.
+        style={
+          crop === 'head'
+            ? {
+                objectFit: 'cover',
+                objectPosition: '50% 30%',
+                transform: 'scale(1.7)',
+                transformOrigin: '50% 40%',
+              }
+            : { objectFit: 'cover' }
+        }
       />
     );
   }
