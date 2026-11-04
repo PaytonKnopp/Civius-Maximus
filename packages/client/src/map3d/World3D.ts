@@ -32,6 +32,7 @@ import {
   Sprite,
   SpriteMaterial,
   SRGBColorSpace,
+  type Texture,
   Vector2,
   Vector3,
   WebGLRenderer,
@@ -55,6 +56,7 @@ import { drawIcon } from '../ui/drawIcon';
 import { FloatLayer } from './floats';
 import { type PropKind, propGeometries, placeProps } from './props';
 import { center3, type Sample, TerrainSampler } from './sampler';
+import { loadTerrainTextures } from './terrainTextures';
 import { SettlementLayer } from './settlements3d';
 import { UnitLayer } from './units3d';
 import {
@@ -92,6 +94,8 @@ const QUALITY: Record<
     scatter: number;
     post: boolean;
     paint: number;
+    /** Brush radius of the painterly filter, in pixels (cost grows with its square). */
+    brush: number;
     detail: boolean;
   }
 > = {
@@ -103,6 +107,7 @@ const QUALITY: Record<
     scatter: 0,
     post: false,
     paint: 0,
+    brush: 2,
     detail: false,
   },
   medium: {
@@ -112,7 +117,8 @@ const QUALITY: Record<
     trees: 5,
     scatter: 2,
     post: true,
-    paint: 0,
+    paint: 0.5,
+    brush: 2,
     detail: true,
   },
   high: {
@@ -122,7 +128,8 @@ const QUALITY: Record<
     trees: 8,
     scatter: 3,
     post: true,
-    paint: 0.55,
+    paint: 0.6,
+    brush: 3,
     detail: true,
   },
 };
@@ -200,6 +207,12 @@ export class World3D implements MapRenderer {
     uDeep: { value: new Color(0x143650) },
     uAbyss: { value: new Color(0x0b2136) },
     uFoam: { value: new Color(0xd6d1c0) },
+    tGrass: { value: null as unknown as Texture },
+    tDry: { value: null as unknown as Texture },
+    tSand: { value: null as unknown as Texture },
+    tDirt: { value: null as unknown as Texture },
+    tRock: { value: null as unknown as Texture },
+    tSnow: { value: null as unknown as Texture },
   };
   private terrainMaterial = new ShaderMaterial({
     vertexShader: terrainVertex,
@@ -275,6 +288,11 @@ export class World3D implements MapRenderer {
     this.scene.fog = new Fog(HAZE, 38, 160);
     host.appendChild(this.renderer.domElement);
     this.renderer.domElement.style.display = 'block';
+    loadTerrainTextures(
+      this.uniforms,
+      Math.min(8, this.renderer.capabilities.getMaxAnisotropy()),
+      () => {},
+    );
 
     const sun = new DirectionalLight(SUN, 6.2);
     sun.position.copy(this.uniforms.uLightDir.value).multiplyScalar(50);
@@ -607,7 +625,7 @@ export class World3D implements MapRenderer {
     q: (typeof QUALITY)[Quality],
   ): Chunk {
     const sampler = this.sampler!;
-    const sample: Sample = { height: 0, color: new Color() };
+    const sample: Sample = { height: 0, color: new Color(), mat: new Float32Array(5) };
     const group = new Group();
 
     // Terrain.
@@ -615,6 +633,8 @@ export class World3D implements MapRenderer {
     const count = g.nx * g.nz;
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
+    const mats = new Float32Array(count * 4);
+    const rocks = new Float32Array(count);
     const terrainY = new Float32Array(count);
     for (let j = 0; j < g.nz; j++) {
       for (let i = 0; i < g.nx; i++) {
@@ -625,11 +645,15 @@ export class World3D implements MapRenderer {
         pos.set([x, sample.height, z], k * 3);
         terrainY[k] = sample.height;
         col.set([sample.color.r, sample.color.g, sample.color.b], k * 3);
+        mats.set(sample.mat!.subarray(0, 4), k * 4);
+        rocks[k] = sample.mat![4]!;
       }
     }
     const terrain = new BufferGeometry();
     terrain.setAttribute('position', new BufferAttribute(pos, 3));
     terrain.setAttribute('aColor', new BufferAttribute(col, 3));
+    terrain.setAttribute('aMat', new BufferAttribute(mats, 4));
+    terrain.setAttribute('aRock', new BufferAttribute(rocks, 1));
     const terrainVis = new BufferAttribute(new Float32Array(count), 1);
     terrain.setAttribute('aVis', terrainVis);
     terrain.setIndex(g.index);
@@ -908,6 +932,8 @@ export class World3D implements MapRenderer {
     const q = QUALITY[this.options.quality];
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
     this.post.material.uniforms.uPaint!.value = q.paint;
+    this.post.material.defines = { KUW_R: q.brush };
+    this.post.material.needsUpdate = true;
     this.fit();
   }
 

@@ -52,7 +52,30 @@ const RIVER_BANK = new Color(0x4a5a34);
 export interface Sample {
   height: number;
   color: Color;
+  /**
+   * Which ground textures show here: [grass, dry plains, sand, dirt, rock]. Snow is whatever is
+   * left over (and the shader adds more by height). Only filled when the caller supplies it.
+   */
+  mat?: Float32Array;
 }
+
+/** Ground texture weights per base terrain: [grass, dry plains, sand, dirt]. */
+const TERRAIN_MAT: Record<string, [number, number, number, number]> = {
+  grassland: [1, 0, 0, 0],
+  plains: [0.1, 0.9, 0, 0],
+  desert: [0, 0.1, 0.9, 0],
+  tundra: [0, 0.25, 0, 0.75],
+  snow: [0, 0, 0, 0],
+  coast: [0, 0, 1, 0],
+  lake: [0, 0, 1, 0],
+  ocean: [0, 0, 1, 0],
+};
+const FEATURE_MAT: Record<string, [number, number, number, number]> = {
+  woods: [0.35, 0, 0, 0.65],
+  rainforest: [0.25, 0, 0, 0.75],
+  marsh: [0.3, 0, 0, 0.7],
+  ice: [0, 0, 0, 0],
+};
 
 interface TileInfo {
   x: number;
@@ -62,6 +85,7 @@ interface TileInfo {
   hills: boolean;
   mountain: boolean;
   color: Color;
+  mat: [number, number, number, number];
   feature: string | null;
   /** River segments on this tile's edges: [x1, z1, x2, z2] each. */
   rivers: number[][];
@@ -120,6 +144,9 @@ export class TerrainSampler {
       if (t.feature && FEATURE_TINT[t.feature] !== undefined)
         color.lerp(new Color(FEATURE_TINT[t.feature]), 0.55);
       if (t.feature === 'ice') color.set(0x8f9ba4);
+      const mat: [number, number, number, number] = [
+        ...(FEATURE_MAT[t.feature ?? ''] ?? TERRAIN_MAT[t.terrain] ?? [0.5, 0.5, 0, 0]),
+      ];
       const rivers: number[][] = [];
       for (const d of DIRECTIONS) {
         const n = neighbor(map, i, d);
@@ -141,6 +168,7 @@ export class TerrainSampler {
         hills: t.elevation === 'hills',
         mountain: t.elevation === 'mountain',
         color,
+        mat,
         feature: t.feature,
         rivers,
       };
@@ -167,6 +195,8 @@ export class TerrainSampler {
     if (tile === undefined) {
       out.height = -0.6;
       out.color.copy(SEABED_DEEP);
+      out.mat?.fill(0);
+      if (out.mat) out.mat[2] = 1;
       return out;
     }
     let wSum = 0;
@@ -178,6 +208,10 @@ export class TerrainSampler {
     let b = 0;
     let mountain = 0;
     let nearWater = false;
+    let m0 = 0;
+    let m1 = 0;
+    let m2 = 0;
+    let m3 = 0;
     for (const i of this.around[tile]!) {
       const t = this.tiles[i]!;
       const d = Math.hypot(this.wrapDx(t.x - x), t.z - z);
@@ -197,6 +231,10 @@ export class TerrainSampler {
       r += cwI * t.color.r;
       g += cwI * t.color.g;
       b += cwI * t.color.b;
+      m0 += cwI * t.mat[0];
+      m1 += cwI * t.mat[1];
+      m2 += cwI * t.mat[2];
+      m3 += cwI * t.mat[3];
     }
     let height = base / wSum + bumps + mountain * 1.75;
     if (mountain > 0)
@@ -242,6 +280,32 @@ export class TerrainSampler {
       color.lerp(k > 0.45 ? RIVER : RIVER_BANK, Math.min(1, k * 1.8));
     }
     out.height = height;
+    if (out.mat) {
+      const mat = out.mat;
+      mat[0] = m0 / cw;
+      mat[1] = m1 / cw;
+      mat[2] = m2 / cw;
+      mat[3] = m3 / cw;
+      if (!land) {
+        // Seabed is sand.
+        mat[0] = mat[1] = mat[3] = 0;
+        mat[2] = 1;
+      } else {
+        // Beaches along the water.
+        if (nearWater && height < 0.15) {
+          const k = mountain < 0.05 ? 0.5 : 0;
+          for (let c = 0; c < 4; c++) mat[c] = mat[c]! * (1 - k);
+          mat[2] = mat[2]! + k;
+        }
+        // River banks are mud.
+        if (riverDist < 0.22) {
+          const k = Math.min(1, (1 - riverDist / 0.22) * 1.4);
+          for (let c = 0; c < 4; c++) mat[c] = mat[c]! * (1 - k);
+          mat[3] = mat[3]! + k;
+        }
+      }
+      mat[4] = Math.min(1, mountain * 1.5);
+    }
     return out;
   }
 
