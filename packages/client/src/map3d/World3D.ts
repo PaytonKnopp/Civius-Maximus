@@ -52,8 +52,8 @@ import {
   type TileHighlight,
   type UnitView,
 } from '../map/renderer';
-import { drawIcon } from '../ui/drawIcon';
 import { FloatLayer } from './floats';
+import { drawResourceBadge } from './resourceBadge';
 import { type PropKind, propGeometries, placeProps } from './props';
 import { center3, type Sample, TerrainSampler } from './sampler';
 import { loadSurfaceTextures, withSurface } from './surface';
@@ -827,7 +827,9 @@ export class World3D implements MapRenderer {
         const x = cx + 0.42;
         const z = cz + 0.38;
         sprite.position.set(x, Math.max(0, this.heightAt(x, z)) + 0.34, z);
-        sprite.scale.set(0.4, 0.4, 1);
+        sprite.scale.set(0.62, 0.62, 1);
+        // After the water (1), before the fog mist (2), so neither washes the badge out.
+        sprite.renderOrder = 1.5;
         chunk.group.add(sprite);
         chunk.sprites.push({ sprite, tile: t });
       }
@@ -842,34 +844,27 @@ export class World3D implements MapRenderer {
     const key = `${id}:${cls}`;
     const cached = this.spriteCache.get(key);
     if (cached) return cached;
-    const size = 128;
+    const size = 160;
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d')!;
-    if (drawIcon(ctx, id, size / 2, size / 2, size - 6)) {
-      const tex = new CanvasTexture(canvas);
-      tex.colorSpace = SRGBColorSpace;
-      const material = new SpriteMaterial({ map: tex, toneMapped: false, fog: true });
-      this.spriteCache.set(key, material);
-      return material;
+    if (!drawResourceBadge(ctx, id, cls, size)) {
+      ctx.fillStyle = '#f2e8cc';
+      ctx.font = '600 52px "Source Sans 3 Variable", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(name.slice(0, 2), size / 2, size * 0.47);
     }
-    const ring = { bonus: '#c9b98a', luxury: '#b98ad6', strategic: '#d9785a' }[cls];
-    ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
-    ctx.fillStyle = ring;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2 - 13, 0, Math.PI * 2);
-    ctx.fillStyle = '#121a22';
-    ctx.fill();
-    ctx.fillStyle = '#eadfc4';
-    ctx.font = '600 44px "Source Sans 3 Variable", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(name.slice(0, 2), size / 2, size / 2 + 2);
     const tex = new CanvasTexture(canvas);
     tex.colorSpace = SRGBColorSpace;
-    const material = new SpriteMaterial({ map: tex, toneMapped: false, fog: true });
+    tex.anisotropy = 4;
+    // No depth write: the empty corners of the sprite must not hide the water behind them.
+    const material = new SpriteMaterial({
+      map: tex,
+      toneMapped: false,
+      fog: true,
+      depthWrite: false,
+    });
     this.spriteCache.set(key, material);
     return material;
   }

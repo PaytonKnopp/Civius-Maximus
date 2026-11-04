@@ -25,8 +25,8 @@ export function worldSize3(map: { width: number; height: number }): [number, num
  * terrains color the seabed seen through the shallows.
  */
 const TERRAIN_PALETTE: Record<string, number> = {
-  grassland: 0x5a7a36,
-  plains: 0x857f4a,
+  grassland: 0x52703a,
+  plains: 0x7c7849,
   desert: 0xab9066,
   tundra: 0x6d715e,
   snow: 0xcfd6dc,
@@ -206,7 +206,7 @@ export class TerrainSampler {
     let r = 0;
     let g = 0;
     let b = 0;
-    let mountain = 0;
+    let mountainSum = 0;
     let nearWater = false;
     let m0 = 0;
     let m1 = 0;
@@ -221,10 +221,14 @@ export class TerrainSampler {
       if (t.water && d < 1.6) nearWater = true;
       if (t.hills) bumps += 0.4 * Math.max(0, 1 - d / 1.1) ** 2;
       if (t.mountain) {
-        // Broad bases merge neighbouring mountains into ranges; ridged noise makes crags.
+        // Each summit sits a little off its tile's center, and neighbouring mountains join as a
+        // soft union (a p-norm), so they gather into ranges with saddles, not a row of cones.
+        const jx = (noise2(i * 1.7, 3.1) - 0.5) * 0.7;
+        const jz = (noise2(i * 2.3, 7.9) - 0.5) * 0.7;
+        const dm = Math.hypot(this.wrapDx(t.x + jx - x), t.z + jz - z);
         const ridge = 1 - Math.abs(smoothNoise(x * 1.6, z * 1.6) * 2 - 1);
-        const m = Math.max(0, 1 - d / 1.32) ** 1.15 * (0.62 + 0.6 * ridge);
-        mountain = Math.max(mountain, m);
+        const m = Math.max(0, 1 - dm / 1.45) ** 1.2 * (0.62 + 0.6 * ridge);
+        mountainSum += m ** 3;
       }
       const cwI = Math.max(0, 1.08 - d) ** 3;
       cw += cwI;
@@ -236,9 +240,17 @@ export class TerrainSampler {
       m2 += cwI * t.mat[2];
       m3 += cwI * t.mat[3];
     }
-    let height = base / wSum + bumps + mountain * 1.75;
-    if (mountain > 0)
-      height += (1 - Math.abs(smoothNoise(x * 4.3, z * 4.3) * 2 - 1)) * 0.22 * mountain;
+    const mountain = Math.min(1.15, Math.cbrt(mountainSum));
+    let height = base / wSum + bumps + mountain * 1.55;
+    if (mountain > 0) {
+      // Crags: ridged noise at three scales, growing toward the summit so slopes are rough and
+      // peaks are sharp, plus faint rock strata (horizontal banding the light picks out).
+      const ridged = (f: number, o: number) =>
+        1 - Math.abs(smoothNoise(x * f + o, z * f - o) * 2 - 1);
+      const crag = ridged(3.1, 5.1) * 0.5 + ridged(6.3, 9.7) * 0.3 + ridged(9.1, 2.3) * 0.2;
+      height += crag * 0.62 * mountain ** 1.35;
+      height += Math.sin(height * 26 + crag * 3) * 0.014 * mountain;
+    }
     // Wandering shorelines: broad noise so coasts and lakes don't follow hex outlines.
     height +=
       (smoothNoise(x * 0.8 + 11.3, z * 0.8 - 4.2) - 0.5) * 0.2 +

@@ -893,7 +893,7 @@ export class SettlementLayer {
    * a little larger when zoomed far out. Called every frame with the camera distance.
    */
   setCameraDistance(dist: number) {
-    const k = Math.min(1.25, Math.max(0.32, dist / 24));
+    const k = Math.min(1.25, Math.max(0.55, dist / 24));
     if (Math.abs(k - this.bannerScale) < 0.02) return;
     this.bannerScale = k;
     this.group.traverse((o) => {
