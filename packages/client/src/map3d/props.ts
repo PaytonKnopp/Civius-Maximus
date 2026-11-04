@@ -272,10 +272,10 @@ const PALM = palette([0x4d6a2c, 0x56742f, 0x45622a]);
 const PALM_TRUNK = palette([0x7d6446, 0x6e5a40]);
 const REEDS = palette([0x6b7440, 0x5e6b3a, 0x77803f]);
 const ROCKS = palette([0x6a665e, 0x5b5852, 0x75705f, 0x625e55]);
-const SANDSTONE = palette([0x8c7a5c, 0x7d6c52, 0x96845f]);
+const SANDSTONE = palette([0xc2aa7c, 0xb39d72, 0xcdb583]);
 const SHRUBS: Record<string, Color[]> = {
-  grassland: palette([0x46602f, 0x3e5629, 0x52673a]),
-  plains: palette([0x6b6638, 0x5d5c33, 0x75703e]),
+  grassland: palette([0x56733a, 0x4c6a33, 0x627d44]),
+  plains: palette([0x8f8c42, 0x82853a, 0x9d9650]),
   tundra: palette([0x51554a, 0x5b5d4b]),
   marsh: palette([0x56664a, 0x4b5c45, 0x627048]),
 };
