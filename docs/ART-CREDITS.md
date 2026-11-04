@@ -43,7 +43,7 @@ in `map3d/surface.ts`):
 ### Portraits
 
 `packages/client/src/assets/portrait/canvas.webp`: the Poly Haven `hessian_230` photograph,
-greyscale, 256 px, flattened to a canvas weave that overlays every painted leader portrait.
+greyscale, 256 px, flattened to a canvas weave that `ui/paintify.ts` lays over every painted leader portrait.
 
 ## Not used, on purpose
 

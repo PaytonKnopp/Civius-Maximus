@@ -1,6 +1,7 @@
 import type { LeaderDef } from '@cx/content';
-import { type ReactNode, useId } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import canvasUrl from '../assets/portrait/canvas.webp';
+import { paintedPortrait } from './paintify';
 
 /**
  * A leader's portrait (docs/10-art-direction.md, "Leaders"): an illustrated bust drawn from the
@@ -1136,6 +1137,27 @@ export function Portrait({
 }: Props) {
   const uid = useId().replace(/:/g, '');
   const spec = portrait ?? FALLBACK;
+  // Big painted portraits are rendered once into an oil painting (ui/paintify.ts) and shown as
+  // an image; the drawing is what you see for the instant that takes, and at small sizes.
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [oil, setOil] = useState<string | null>(null);
+  const oilWanted =
+    painted && !spec.image && crop === 'bust' && typeof size === 'number' && size >= 96;
+  const recipe = JSON.stringify([spec, primary, secondary, sceneKind, size]);
+  useEffect(() => {
+    setOil(null);
+    const el = svgRef.current;
+    if (!oilWanted || !el || typeof size !== 'number') return;
+    let alive = true;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = Math.round(size * dpr);
+    paintedPortrait(el, recipe, w, Math.round((w * 240) / 200))
+      .then((url) => alive && setOil(url))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [recipe, oilWanted, size]);
   const f = FACES[spec.face];
   const skin = spec.skin;
   const lip = mix(skin, '#a0463c', 0.38);
@@ -1154,8 +1176,21 @@ export function Portrait({
       />
     );
   }
+  if (oil) {
+    return (
+      <img
+        className={`portrait ${framed ? 'framed' : ''} ${className ?? ''}`}
+        src={oil}
+        alt={title ?? ''}
+        width={typeof width === 'number' ? width : undefined}
+        height={typeof height === 'number' ? height : undefined}
+        style={{ objectFit: 'cover' }}
+      />
+    );
+  }
   return (
     <svg
+      ref={svgRef}
       className={`portrait ${framed ? 'framed' : ''} ${className ?? ''}`}
       viewBox={viewBox}
       width={width}
@@ -1311,11 +1346,12 @@ export function Portrait({
             y="0"
             width="200"
             height="240"
+            data-finish="1"
             fill={`url(#canvas${uid})`}
             style={{ mixBlendMode: 'overlay' }}
             opacity="0.9"
           />
-          <rect x="0" y="0" width="200" height="240" fill={`url(#vig${uid})`} />
+          <rect x="0" y="0" width="200" height="240" data-finish="1" fill={`url(#vig${uid})`} />
         </>
       )}
     </svg>

@@ -434,6 +434,40 @@ function labelMaterial(text: string, color: number): SpriteMaterial {
   return m;
 }
 
+/**
+ * Bakes grounding into a merged building mesh: wall bottoms sit in a darker, earth-stained band
+ * (the contact shadow and splashed dirt every real building has), and a soft grain of weathering
+ * runs over everything, so houses stop reading as clean toy blocks. Per-vertex colors only.
+ */
+function bakeLight(geo: BufferGeometry, groundAt: (x: number, z: number) => number): void {
+  const pos = geo.getAttribute('position');
+  const col = geo.getAttribute('color');
+  if (!col) return;
+  const cache = new Map<string, number>();
+  const earth = new Color(0x3b2e22);
+  const c = new Color();
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    const key = `${Math.round(x * 30)},${Math.round(z * 30)}`;
+    let g = cache.get(key);
+    if (g === undefined) {
+      g = groundAt(x, z);
+      cache.set(key, g);
+    }
+    const h = Math.max(0, y - g);
+    const t = Math.min(1, h / 0.085);
+    const k = 0.6 + 0.4 * (t * t * (3 - 2 * t));
+    const grain =
+      0.93 + 0.1 * Math.sin(x * 61 + y * 37) * Math.cos(z * 53 - y * 29) + 0.04 * Math.sin(y * 140);
+    c.setRGB(col.getX(i), col.getY(i), col.getZ(i));
+    c.lerp(earth, (1 - k) * 0.55);
+    c.multiplyScalar(k * grain);
+    col.setXYZ(i, c.r, c.g, c.b);
+  }
+}
+
 // --- The layer -------------------------------------------------------------------------------
 
 const buildingMaterial = withSurface(
@@ -785,6 +819,7 @@ export class SettlementLayer {
       const merged = mergeGeometries(parts);
       for (const p of parts) p.dispose();
       if (merged) {
+        bakeLight(merged, (x, z) => Math.max(0, height(x, z)) - 0.005);
         if (remembered) {
           const c = merged.getAttribute('color');
           for (let i = 0; i < c.count; i++) {

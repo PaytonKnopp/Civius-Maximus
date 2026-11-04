@@ -197,3 +197,16 @@ bonus, amethyst luxury, copper strategic), the glyph in the middle, a soft groun
 map uses the same medal. They draw after the water and before the fog mist. *Minimap:* painted
 colors in step with the 3D palette (hills, mountains, forests, water), a night-colored unexplored
 area, a soft gold-trimmed frame. Grass and plains are a little darker than the first pass.
+
+**Built in the third art pass (figures, buildings, portraits).** *Figures:* the owner's color on
+clothes is now "dyed cloth" (`dyed()` in `unitModels.ts`): saturation pulled to about 60%
+(trim 78%) and lightness capped, so squads read as people in muted madder, woad and weld, not
+candy; the ring under a unit and its shield keep the pure color for readability. *Buildings:*
+`bakeLight()` in `settlements3d.ts` darkens wall bottoms into an earth-stained band and adds a
+weathering grain to every merged settlement mesh (towns, districts, improvements), so houses
+sit in the ground instead of floating as clean blocks. *Portraits:* `ui/paintify.ts` turns each
+big drawn portrait (96 px and up) into an oil painting once, in the browser, and caches it:
+pigment drift over flat color, a Kuwahara filter (the same family as the 3D brush pass), dry-brush
+streaks along a slanted stroke, a canvas weave, the world's split-tone grade and vignette. The
+drawing shows for the instant that takes, and at small sizes. Truly painted art can still replace
+any of them through `portrait.image`.

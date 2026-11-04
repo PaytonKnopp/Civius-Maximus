@@ -43,6 +43,8 @@ await zoom(-900);
 await shot('art-town-close', 3000);
 await zoom(-500);
 await shot('art-town-closer', 2500);
+await zoom(-700);
+await shot('art-town-closest', 2500);
 
 // Figures close up.
 await page.click('.controls-toggle');
@@ -55,5 +57,7 @@ await zoom(-1400);
 await shot('art-figures-close', 3000);
 await zoom(-400);
 await shot('art-figures-closer', 2500);
+await zoom(-900);
+await shot('art-figures-closest', 2500);
 console.log('errors:', errors.length ? errors : 'none');
 await browser.close();

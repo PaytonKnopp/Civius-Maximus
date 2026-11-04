@@ -1,6 +1,7 @@
 import {
   BoxGeometry,
   type BufferGeometry,
+  Color,
   ConeGeometry,
   CylinderGeometry,
   PlaneGeometry,
@@ -549,13 +550,26 @@ export interface UnitGeometry {
 
 const cache = new Map<string, UnitGeometry>();
 
+/**
+ * Dyed cloth, not paint: the owner's color on clothes is pulled toward the muted, earthy tones
+ * real dyes gave (madder, woad, weld), so a squad reads as people in the world, not candy. The
+ * ring under the unit and its shield carry the pure color for readability.
+ */
+function dyed(hex: number, keep: number): number {
+  const c = new Color(hex);
+  const hsl = { h: 0, s: 0, l: 0 };
+  c.getHSL(hsl);
+  c.setHSL(hsl.h, hsl.s * keep, Math.min(0.52, hsl.l * 0.86));
+  return c.getHex();
+}
+
 /** The merged geometry for a model in an owner's colors (cached). */
 export function unitGeometry(model: string, body: number, trim: number): UnitGeometry {
   const key = `${model}:${body}:${trim}`;
   let g = cache.get(key);
   if (!g) {
     resetRig();
-    build(model, body, trim, rig.out);
+    build(model, dyed(body, 0.6), dyed(trim, 0.78), rig.out);
     const motion = VEHICLES[model];
     if (motion) rig.rigs.push({ kind: 'vehicle', motion });
     const merge = (list: BufferGeometry[]) => {
