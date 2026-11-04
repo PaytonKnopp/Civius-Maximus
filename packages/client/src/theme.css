@@ -1666,3 +1666,32 @@ input[type='range'] {
 .unlock.more {
   padding-left: 8px;
 }
+
+/* --- Phone fixes for full screens --------------------------------------------------------------- */
+
+/* A long header line must grow the header, not spill over the screen's content below it. */
+.screen-head {
+  flex: none;
+}
+
+@media (max-width: 640px) {
+  /* The victory table is wider than a phone: it scrolls sideways on its own, so the notes
+     under it wrap to the screen instead of running off its right edge. */
+  .victory-table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .victory-body {
+    overflow-x: hidden;
+  }
+}
+
+/* With auto side margins a column-flex child shrinks to its content, so a wide table made the
+   whole body (and its notes) wider than the screen. Fill the screen, up to the max width. */
+.religion-body,
+.victory-body {
+  width: 100%;
+  box-sizing: border-box;
+}
