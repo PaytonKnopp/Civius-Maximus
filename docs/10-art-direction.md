@@ -210,3 +210,25 @@ pigment drift over flat color, a Kuwahara filter (the same family as the 3D brus
 streaks along a slanted stroke, a canvas weave, the world's split-tone grade and vignette. The
 drawing shows for the instant that takes, and at small sizes. Truly painted art can still replace
 any of them through `portrait.image`.
+
+**Built in the seventh art pass (the world reads as a place).** *Forests:* trees gather in
+groves with open ground between them (`groves()` in `map3d/props.ts`), woods lean to pine,
+broadleaf or a mix by region (coarse three-tile cells), about one tree in six stands taller, and
+foliage colors are lighter and more varied (olive, gold and blue-green pines, not near-black).
+Fewer trees per forest tile (4 at Medium, 6 at High, was 5 and 8) read as more of a wood. *Land:*
+clearer families (brighter meadow, straw plains, ochre-dry hills, dark leaf-litter wood floors,
+deeper rainforest) and a golden-hour term in the terrain shader: sun-facing open ground glows warm
+and broad pools of direct light drift across meadows, so a clearing is bright and the wood beside it
+is cool and dark. *Shores:* the shoreline wanders most exactly where land meets water
+(`sampler.ts`), so a lone lake is no longer a hexagon. *Grounding:* every tree, rock, shrub, town,
+district and wonder casts a soft shadow thrown away from the sun plus a dark pool of ambient
+occlusion at its foot. They are baked into one world-space texture (`map3d/groundShade.ts`, about
+12 px per tile unit, one canvas) that the terrain shader reads, so shadows follow every slope,
+cost no draw calls and update when a settlement is founded or woods are cleared. This closes the
+"no shadows on buildings and trees" gap listed in the polish review. *Models:* units and
+buildings stay procedural. Third-party model packs were checked and rejected for now (Quaternius's
+license since 2026-08-28 forbids redistribution, Kenney's site is unreachable from the build
+environment, and an unmatched pack would break the one-look rule); see D102.
+*Portraits:* [portrait-prompts.md](portrait-prompts.md) is the full prompt pack for painted
+leader portraits; images go in `packages/client/public/leaders/` and the round head chips zoom in
+on the face automatically.

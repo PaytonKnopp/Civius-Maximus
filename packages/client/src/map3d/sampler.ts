@@ -25,9 +25,9 @@ export function worldSize3(map: { width: number; height: number }): [number, num
  * terrains color the seabed seen through the shallows.
  */
 const TERRAIN_PALETTE: Record<string, number> = {
-  grassland: 0x52703a,
-  plains: 0x7c7849,
-  desert: 0xab9066,
+  grassland: 0x5a8040,
+  plains: 0x948748,
+  desert: 0xb09468,
   tundra: 0x6d715e,
   snow: 0xcfd6dc,
   coast: 0x7d7052,
@@ -35,13 +35,15 @@ const TERRAIN_PALETTE: Record<string, number> = {
   ocean: 0x2a3b3c,
 };
 const FEATURE_TINT: Record<string, number> = {
-  woods: 0x3c5229,
-  rainforest: 0x2c4424,
+  woods: 0x34482a,
+  rainforest: 0x214a2c,
   marsh: 0x4a5c46,
   floodplains: 0x8f8752,
   floodplains_grassland: 0x62823a,
   floodplains_plains: 0x878144,
 };
+/** Hills dry out toward warm ochre, so rolling country reads apart from flat meadow. */
+const HILL_TINT = new Color(0x92804a);
 const ROCK = new Color(0x55534f);
 const SAND = new Color(0xa89870);
 const SEABED_SHALLOW = new Color(0x8a7c58);
@@ -144,6 +146,7 @@ export class TerrainSampler {
       if (t.feature && FEATURE_TINT[t.feature] !== undefined)
         color.lerp(new Color(FEATURE_TINT[t.feature]), 0.55);
       if (t.feature === 'ice') color.set(0x8f9ba4);
+      if (t.elevation === 'hills' && !water) color.lerp(HILL_TINT, t.feature ? 0.16 : 0.3);
       const mat: [number, number, number, number] = [
         ...(FEATURE_MAT[t.feature ?? ''] ?? TERRAIN_MAT[t.terrain] ?? [0.5, 0.5, 0, 0]),
       ];
@@ -208,6 +211,7 @@ export class TerrainSampler {
     let b = 0;
     let mountainSum = 0;
     let nearWater = false;
+    let waterW = 0;
     let m0 = 0;
     let m1 = 0;
     let m2 = 0;
@@ -218,6 +222,7 @@ export class TerrainSampler {
       const w = Math.max(0, 1.3 - d) ** 2;
       wSum += w;
       base += w * t.base;
+      if (t.water) waterW += w;
       if (t.water && d < 1.6) nearWater = true;
       if (t.hills) bumps += 0.4 * Math.max(0, 1 - d / 1.1) ** 2;
       if (t.mountain) {
@@ -255,6 +260,16 @@ export class TerrainSampler {
     height +=
       (smoothNoise(x * 0.8 + 11.3, z * 0.8 - 4.2) - 0.5) * 0.2 +
       (smoothNoise(x * 2.1, z * 2.1) - 0.5) * 0.06;
+    // Shores wander most exactly where land meets water (the blend of tile heights makes a
+    // lone lake a tidy hexagon otherwise): bays, points and ragged edges, not ruler lines.
+    const waterShare = waterW / wSum;
+    const shore = 4 * waterShare * (1 - waterShare);
+    if (shore > 0.02) {
+      height +=
+        shore *
+        ((smoothNoise(x * 1.7 - 5.2, z * 1.7 + 8.4) - 0.5) * 0.5 +
+          (smoothNoise(x * 2.9 + 2.9, z * 2.9 - 6.1) - 0.5) * 0.14);
+    }
     const land = height > 0;
     // Fine relief so flat land isn't perfectly flat.
     if (land) height += (smoothNoise(x * 3.3, z * 3.3) - 0.5) * 0.05;

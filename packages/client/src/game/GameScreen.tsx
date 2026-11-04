@@ -1916,7 +1916,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             <button
               key={k}
               type="button"
-              className={`tracker ${k} ${id ? '' : 'idle'}`}
+              className={`tracker ${k} ${id ? '' : 'idle'} ${
+                next.kind === (k === 'tech' ? 'research' : 'civic') ? 'call' : ''
+              }`}
               onClick={() => setOverlay({ kind: 'tree', tree: k })}
               title={k === 'tech' ? 'Technologies (T)' : 'Civics (C)'}
             >

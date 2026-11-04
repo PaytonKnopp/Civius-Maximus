@@ -53,6 +53,7 @@ import {
   type UnitView,
 } from '../map/renderer';
 import { FloatLayer } from './floats';
+import { type Caster, GroundShade } from './groundShade';
 import { drawResourceBadge } from './resourceBadge';
 import { type PropKind, propGeometries, placeProps } from './props';
 import { center3, type Sample, TerrainSampler } from './sampler';
@@ -115,7 +116,7 @@ const QUALITY: Record<
     step: 0.22,
     waterStep: 0.36,
     pixelRatio: 1.25,
-    trees: 5,
+    trees: 4,
     scatter: 2,
     post: true,
     paint: 0.5,
@@ -126,7 +127,7 @@ const QUALITY: Record<
     step: 0.17,
     waterStep: 0.28,
     pixelRatio: 2,
-    trees: 8,
+    trees: 6,
     scatter: 3,
     post: true,
     paint: 0.6,
@@ -189,6 +190,10 @@ export class World3D implements MapRenderer {
   onFps: (fps: number) => void = () => {};
 
   private renderer: WebGLRenderer;
+  /** Baked soft shadows of trees, rocks and towns, read by the terrain shader. */
+  private shade = new GroundShade();
+  /** Everything that casts a ground shadow: props (hidden with their tile) and settlements. */
+  private casters: (Caster & { tile: number })[] = [];
   private scene = new Scene();
   private camera = new PerspectiveCamera(FOV, 1, 0.3, 400);
   private uniforms = {
@@ -214,6 +219,8 @@ export class World3D implements MapRenderer {
     tDirt: { value: null as unknown as Texture },
     tRock: { value: null as unknown as Texture },
     tSnow: { value: null as unknown as Texture },
+    tShade: { value: this.shade.texture as Texture },
+    uShadeRect: { value: this.shade.rect },
   };
   private terrainMaterial = new ShaderMaterial({
     vertexShader: terrainVertex,
@@ -243,6 +250,19 @@ export class World3D implements MapRenderer {
     'props',
   );
   private propGeometry = propGeometries();
+  /** Crown radius and height of each prop model, for its shadow. */
+  private propDims = (() => {
+    const dims = new Map<PropKind, { r: number; h: number }>();
+    for (const [kind, geo] of Object.entries(this.propGeometry) as [PropKind, BufferGeometry][]) {
+      geo.computeBoundingBox();
+      const b = geo.boundingBox!;
+      dims.set(kind, {
+        r: Math.max(-b.min.x, b.max.x, -b.min.z, b.max.z),
+        h: b.max.y,
+      });
+    }
+    return dims;
+  })();
   private gridMaterial = new LineBasicMaterial({
     color: 0x0a0d0a,
     transparent: true,
@@ -451,6 +471,7 @@ export class World3D implements MapRenderer {
     if (this.data) {
       const chunks = new Set(changed.map((t) => this.chunkOfTile[t]!));
       for (const i of chunks) if (this.chunks[i]) this.applyVisibility(this.chunks[i]!);
+      this.bakeShade();
     }
     this.refreshSettlements();
   }
@@ -541,6 +562,7 @@ export class World3D implements MapRenderer {
     for (const fn of this.cleanup) fn();
     this.clearChunks();
     this.settlements.clear();
+    this.shade.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
   }
@@ -566,6 +588,7 @@ export class World3D implements MapRenderer {
     this.terrainMaterial.defines = q.detail ? { DETAIL: '' } : {};
     this.terrainMaterial.needsUpdate = true;
     this.clearChunks();
+    this.casters = [];
     const tilesByChunk = new Map<string, number[]>();
     const key = (cx: number, cz: number) => `${cx},${cz}`;
     map.tiles.forEach((_, i) => {
@@ -594,6 +617,39 @@ export class World3D implements MapRenderer {
       }
     }
     for (const c of this.chunks) this.applyVisibility(c);
+    this.bakeShade();
+  }
+
+  /** Redraw the ground shadows (when the props, settlements or cleared woods change). */
+  private bakeShade() {
+    if (!this.data) return;
+    const out: Caster[] = [];
+    for (const c of this.casters) if (!this.cleared.has(c.tile)) out.push(c);
+    const { map } = this.data;
+    const settled = new Set<number>();
+    for (const v of this.settlementData?.views ?? []) {
+      settled.add(v.tile);
+      const [x, z] = center3(v.tile % map.width, Math.floor(v.tile / map.width));
+      const big = v.kind === 'city';
+      out.push({
+        x,
+        z,
+        r: big ? 0.62 : 0.5,
+        h: (big ? 0.5 : 0.34) + Math.min(0.2, v.population * 0.012),
+        k: 0.9,
+      });
+    }
+    const territory = this.settlementData?.territory;
+    if (territory) {
+      for (let t = 0; t < map.tiles.length; t++) {
+        if (settled.has(t) || (!territory.districts[t] && !territory.wonders[t])) continue;
+        const [x, z] = center3(t % map.width, Math.floor(t / map.width));
+        out.push({ x, z, r: 0.4, h: territory.wonders[t] ? 0.6 : 0.34, k: 0.8 });
+      }
+    }
+    const L = this.uniforms.uLightDir.value;
+    this.shade.bake(this.worldW, this.worldH, this.data.map.wrapX, [L.x, L.z], out);
+    this.uniforms.tShade.value = this.shade.texture;
   }
 
   private grid(x0: number, x1: number, z0: number, z1: number, step: number) {
@@ -745,7 +801,19 @@ export class World3D implements MapRenderer {
       const mesh = new InstancedMesh(this.propGeometry[kind], this.propMaterial, list.length);
       mesh.frustumCulled = false;
       const tileIds = new Int32Array(list.length);
+      const dim = this.propDims.get(kind);
+      const casts = dim !== undefined && !kind.endsWith('Trunk') && kind !== 'reeds';
       list.forEach((p, i) => {
+        if (casts) {
+          this.casters.push({
+            x: p.x,
+            z: p.z,
+            r: dim.r * p.scale[0],
+            h: dim.h * p.scale[1],
+            k: kind === 'rock' ? 0.7 : kind === 'shrub' ? 0.4 : 0.95,
+            tile: p.tile,
+          });
+        }
         quat.setFromEuler(euler.set(0, p.rotation, 0));
         m.compose(
           new Vector3(p.x, Math.max(this.heightAt(p.x, p.z), -0.05) - 0.02, p.z),

@@ -2785,7 +2785,7 @@ kbd {
 .advisor-card {
   position: absolute;
   left: 12px;
-  top: 196px;
+  top: var(--stack-top, 196px);
   width: min(300px, calc(100vw - 24px));
   padding: 10px 12px;
   background: rgba(14, 22, 32, 0.92);

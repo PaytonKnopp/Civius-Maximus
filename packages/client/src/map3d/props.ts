@@ -261,11 +261,13 @@ export function propGeometries(): Record<PropKind, BufferGeometry> {
 }
 
 const palette = (hexes: number[]) => hexes.map((h) => new Color(h));
-const PINE = palette([0x253a23, 0x2d4328, 0x23372a, 0x30482b]);
-const BROAD = palette([0x3b5527, 0x46602c, 0x52612b, 0x5f5f2a, 0x3f5a30]);
-const JUNGLE = palette([0x22422a, 0x2a4e2d, 0x1f3b27]);
+const PINE = palette([0x2c4630, 0x345235, 0x2a4a3e, 0x3a5a36, 0x30483a]);
+const BROAD = palette([
+  0x3f5c2a, 0x4b682e, 0x59702f, 0x6c6e2f, 0x7d7430, 0x486a36, 0x8a7a34, 0x5a7a3a,
+]);
+const JUNGLE = palette([0x24482c, 0x2e5a33, 0x1f4a35, 0x3a6a34, 0x2a5030]);
 const TRUNK = palette([0x463527, 0x3d2f24]);
-const CYPRESS = palette([0x1f3322, 0x263b25, 0x1b2d20]);
+const CYPRESS = palette([0x26402a, 0x2d4a2c, 0x233a2a]);
 const PALM = palette([0x4d6a2c, 0x56742f, 0x45622a]);
 const PALM_TRUNK = palette([0x7d6446, 0x6e5a40]);
 const REEDS = palette([0x6b7440, 0x5e6b3a, 0x77803f]);
@@ -342,24 +344,57 @@ export function placeProps(map: MapState, tiles: number[], density: PropDensity)
       size: number,
       stretch = 1,
       trunks = TRUNK,
+      at: readonly [number, number] = spot(0.08, 0.82),
     ) => {
-      const at = spot(0.08, 0.82);
       const before = n;
       add(crown, colors, size, stretch, at);
       // Trunk shares the crown's position and scale.
       const crownInstance = out[out.length - 1]!;
       out.push({ ...crownInstance, kind: trunk, color: trunks[before % trunks.length]! });
     };
+    // Trees gather in groves with open ground between them, not an even carpet: a few grove
+    // centers per tile, each tree set a little off its grove's heart (and kept inside the tile).
+    const groves = (count: number) => {
+      const centers = [0, 1, 2].map((k) => {
+        const a = rand(t, 40 + k, 3) * Math.PI * 2;
+        const r = 0.12 + 0.46 * Math.sqrt(rand(t, 40 + k, 4));
+        return [cx + Math.cos(a) * r, cz + Math.sin(a) * r] as const;
+      });
+      return (i: number, spread: number): readonly [number, number] => {
+        const c = centers[i % Math.min(3, Math.max(2, Math.ceil(count / 3)))]!;
+        const a = rand(t, i, 11) * Math.PI * 2;
+        const r = spread * Math.sqrt(rand(t, i, 12));
+        let x = c[0] + Math.cos(a) * r;
+        let z = c[1] + Math.sin(a) * r;
+        const dx = x - cx;
+        const dz = z - cz;
+        const out2 = Math.hypot(dx, dz);
+        if (out2 > 0.84) {
+          x = cx + (dx / out2) * 0.84;
+          z = cz + (dz / out2) * 0.84;
+        }
+        return [x, z];
+      };
+    };
 
     if (tile.feature === 'woods') {
       const cold = tile.terrain === 'tundra' || tile.terrain === 'snow';
       const dry = tile.terrain === 'plains' || tile.terrain === 'desert';
+      // Woods change character over distance: coarse regions lean to pine, to broadleaf or to a mix.
+      const col = t % map.width;
+      const region = rand(Math.floor(col / 3), Math.floor(t / map.width / 3), 31);
+      const pineShare = cold ? 0.9 : region < 0.35 ? 0.12 : region < 0.7 ? 0.4 : 0.78;
+      const grove = groves(density.trees);
       for (let i = 0; i < density.trees; i++) {
         const roll = rand(t, i, 7);
-        if (cold || roll < 0.4) tree('pineCrown', 'pineTrunk', PINE, 1, 1.1);
+        const at = grove(i, 0.3);
+        // An occasional tall emergent tree breaks the skyline.
+        const tall = rand(t, i, 13) < 0.16 ? 1.28 : 1;
+        if (roll < pineShare) tree('pineCrown', 'pineTrunk', PINE, 1 * tall, 1.1, TRUNK, at);
         // Dry ground is Mediterranean: dark cypresses among the oaks.
-        else if (dry && roll < 0.75) tree('cypressCrown', 'cypressTrunk', CYPRESS, 0.9, 1.05);
-        else tree('broadCrown', 'broadTrunk', BROAD, 0.8);
+        else if (dry && roll < pineShare + 0.3)
+          tree('cypressCrown', 'cypressTrunk', CYPRESS, 0.9 * tall, 1.05, TRUNK, at);
+        else tree('broadCrown', 'broadTrunk', BROAD, 0.8 * tall, 1, TRUNK, at);
       }
     } else if (tile.feature === 'oasis') {
       for (let i = 0; i < 4; i++) tree('palmCrown', 'palmTrunk', PALM, 1, 1, PALM_TRUNK);
@@ -372,7 +407,11 @@ export function placeProps(map: MapState, tiles: number[], density: PropDensity)
     } else if (tile.feature === 'marsh' && density.scatter > 0) {
       for (let i = 0; i < 3 + density.scatter; i++) add('reeds', REEDS, 1.05, 1, spot(0.1, 0.85));
     } else if (tile.feature === 'rainforest') {
-      for (let i = 0; i < density.trees + 2; i++) tree('jungleCrown', 'jungleTrunk', JUNGLE, 0.85);
+      const grove = groves(density.trees);
+      for (let i = 0; i < density.trees + 1; i++) {
+        const tall = rand(t, i, 13) < 0.2 ? 1.3 : 1;
+        tree('jungleCrown', 'jungleTrunk', JUNGLE, 0.85 * tall, 1, TRUNK, grove(i, 0.34));
+      }
     } else if (density.scatter > 0 && tile.elevation !== 'mountain') {
       const shrubs = SHRUBS[tile.feature === 'marsh' ? 'marsh' : tile.terrain];
       const count = Math.floor(rand(t, 99, 8) * (density.scatter + 1));

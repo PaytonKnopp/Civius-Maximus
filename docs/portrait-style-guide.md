@@ -6,6 +6,9 @@ expression). Painted portraits can replace them one at a time: put the image in
 `packages/client/public/leaders/<leader id>.webp` and set `"image": "leaders/<leader id>.webp"` in
 that leader's `portrait`. Nothing else changes; the game crops and frames it.
 
+The full copy-paste prompt pack for all 30 leaders, with the workflow, is in
+[portrait-prompts.md](portrait-prompts.md). The notes below are the technical rules behind it.
+
 ## The look (keep every leader consistent)
 
 - **Format:** 1000 × 1200 px (5:6), WebP, under 250 KB. Head and shoulders, the face centered
