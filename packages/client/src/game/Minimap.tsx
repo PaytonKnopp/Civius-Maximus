@@ -19,6 +19,30 @@ interface Props {
 const W = 236;
 const H = 148;
 
+/** Painted colors for the minimap, kept in step with the 3D world's palette. */
+const LAND: Record<string, string> = {
+  grassland: '#52703a',
+  plains: '#7c7849',
+  desert: '#ab9066',
+  tundra: '#6d715e',
+  snow: '#cfd6dc',
+  coast: '#245568',
+  lake: '#2a6176',
+  ocean: '#14304a',
+};
+const FEATURE: Record<string, string> = {
+  woods: '#2f4a28',
+  rainforest: '#24402a',
+  marsh: '#4a5c46',
+  ice: '#9fb0ba',
+};
+
+function shade(hex: string, k: number): string {
+  const n = Number.parseInt(hex.slice(1), 16);
+  const c = (v: number) => Math.max(0, Math.min(255, Math.round(v * k)));
+  return `rgb(${c((n >> 16) & 255)},${c((n >> 8) & 255)},${c(n & 255)})`;
+}
+
 /**
  * The whole map in the corner (docs/06-ui-ux.md, "HUD"): terrain, borders in civ colors, fog,
  * settlements and your units, as far as you know them. A click moves the camera there; the
@@ -40,9 +64,12 @@ export function Minimap({ ctx, state, viewer, fog, colors, lens, onLens, onPick 
     el.height = ph * dpr;
     const g = el.getContext('2d')!;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    g.fillStyle = '#05090d';
+    // Unexplored: deep night with a faint glow toward the middle, like the world's fog.
+    const night = g.createRadialGradient(pw / 2, ph / 2, 0, pw / 2, ph / 2, Math.max(pw, ph) * 0.7);
+    night.addColorStop(0, '#0d1822');
+    night.addColorStop(1, '#04070b');
+    g.fillStyle = night;
     g.fillRect(0, 0, pw, ph);
-    const terrain = ctx.content.entities.terrain;
     state.map.tiles.forEach((t, i) => {
       const seen = fog[i]!;
       if (seen === 0) return;
@@ -51,8 +78,15 @@ export function Minimap({ ctx, state, viewer, fog, colors, lens, onLens, onPick 
       const x = (col + (row % 2) * 0.5) * cw;
       const y = row * ch;
       g.globalAlpha = seen === 1 ? 0.55 : 1;
-      g.fillStyle = terrain[t.terrain]?.color ?? '#333';
+      let color = FEATURE[t.feature ?? ''] ?? LAND[t.terrain] ?? '#333';
+      if (t.elevation === 'hills') color = shade(color.startsWith('#') ? color : '#52703a', 1.18);
+      if (t.elevation === 'mountain') color = '#7a7a76';
+      g.fillStyle = color;
       g.fillRect(x, y, cw + 0.6, ch + 0.6);
+      if (t.elevation === 'mountain' && cw > 2) {
+        g.fillStyle = '#e8ecef';
+        g.fillRect(x + cw * 0.3, y + ch * 0.1, cw * 0.4, ch * 0.4);
+      }
       if (t.owner) {
         g.fillStyle = cssColor(colors[t.owner]?.main ?? 0x888888);
         g.globalAlpha = seen === 1 ? 0.35 : 0.62;

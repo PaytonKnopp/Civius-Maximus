@@ -184,3 +184,16 @@ filter:* now on at Medium (brush radius 2, 50%) and High (radius 3, 60%) (D94). 
 streaky brush displacement, a canvas weave and the world's vignette. *City banners* now shrink
 as the camera comes in close. `node packages/client/scripts/screenshot-art.mjs <dir>` takes the
 close-ups used to judge all of this.
+
+**Built in the second art pass (shapes and readability).** *Mountains* (`TerrainSampler`):
+each summit sits a little off its tile's center and neighbours join as a soft union (a p-norm),
+so mountains gather into ranges with saddles; three scales of ridged noise grow toward the
+summit, with faint rock strata. *Vegetation* (`map3d/props.ts`) is chosen for the place: layered,
+uneven spruce in cold or mixed woods; oaks with many lobes and forked trunks; dark cypress among
+the oaks on dry (Mediterranean) ground; date palms and reeds on oases and the river valleys of
+dry lands; reed tufts in marshes; boulders with smaller stones beside them. *Resources* wear a
+medal (`map3d/resourceBadge.ts`): a dark plate in a metal rim whose color tells the class (brass
+bonus, amethyst luxury, copper strategic), the glyph in the middle, a soft ground shadow; the 2D
+map uses the same medal. They draw after the water and before the fog mist. *Minimap:* painted
+colors in step with the 3D palette (hills, mountains, forests, water), a night-colored unexplored
+area, a soft gold-trimmed frame. Grass and plains are a little darker than the first pass.

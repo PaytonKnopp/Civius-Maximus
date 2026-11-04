@@ -1,7 +1,7 @@
 import { resolveText } from '@cx/content';
 import { computeTileYields, isOnRiver, neighbor, NO_TILE, tilesWithin } from '@cx/engine';
 import { Application, Container, Graphics, Sprite, Text } from 'pixi.js';
-import { ICON_TEXTURE_SCALE, iconTexture, labelTexture } from './iconTextures';
+import { ICON_TEXTURE_SCALE, iconTexture, labelTexture, resourceTexture } from './iconTextures';
 import {
   corner,
   EDGE_CORNERS,
@@ -813,12 +813,15 @@ export class MapView implements MapRenderer {
       if (this.options.grid)
         g.poly(hexPoints(cx, cy)).stroke({ width: 1, color: 0x000000, alpha: 0.18 });
 
-      const resourceIcon = t.resource === null ? null : iconTexture(t.resource, 20);
+      const resourceIcon =
+        t.resource === null
+          ? null
+          : resourceTexture(t.resource, content.entities.resource[t.resource]!.class, 30);
       if (resourceIcon) {
         const sprite = new Sprite(resourceIcon);
         sprite.anchor.set(0.5);
         sprite.scale.set(ICON_TEXTURE_SCALE);
-        sprite.position.set(cx + 14, cy + 14);
+        sprite.position.set(cx + 13, cy + 13);
         chunk.labels.addChild(sprite);
       } else if (t.resource !== null) {
         const r = content.entities.resource[t.resource]!;

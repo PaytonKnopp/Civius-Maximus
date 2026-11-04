@@ -184,8 +184,9 @@ function palmCrown(): BufferGeometry {
     const a = (i / fronds) * Math.PI * 2 + (i % 2) * 0.2;
     // From nearly level to hanging over, so the crown arches.
     const tilt = 1.1 + (i % 3) * 0.32;
-    const g = flat(new ConeGeometry(0.02, 0.34, 4, 1)).deleteAttribute('uv');
-    g.scale(1, 1, 0.22).translate(0, 0.17, 0);
+    // A wide, thin leaf (flat sideways, so it reads as foliage from above, not a spike).
+    const g = flat(new ConeGeometry(0.05, 0.36, 4, 1)).deleteAttribute('uv');
+    g.scale(0.16, 1, 1).translate(0, 0.18, 0);
     g.rotateZ(-tilt).rotateY(a);
     parts.push(g.translate(top.x, top.y, 0));
   }
