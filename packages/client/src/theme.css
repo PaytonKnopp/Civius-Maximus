@@ -1409,3 +1409,28 @@ input[type='range'] {
     width: 48px;
   }
 }
+
+/* Policy cards wear their slot's color, like the pips on the government list: a bar across the
+   top, a faint tint of the same color, and a colored name, so a card reads before its text. */
+.screen .policy-card {
+  position: relative;
+  overflow: hidden;
+  border-top: 3px solid var(--slot, var(--line-2));
+  background:
+    var(--grain),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--slot, #fff6de) 14%, transparent),
+      rgba(255, 246, 222, 0.02) 70%
+    );
+}
+
+.screen .policy-card .card-name {
+  color: color-mix(in srgb, var(--slot, var(--gold-hi)) 55%, #fff6de);
+}
+
+.screen .policy-card.empty {
+  border-style: dashed;
+  border-top-style: solid;
+  opacity: 0.75;
+}

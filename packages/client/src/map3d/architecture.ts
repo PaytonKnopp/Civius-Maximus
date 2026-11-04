@@ -196,6 +196,8 @@ function openings(
   stories: number,
   r: () => number,
   big: number,
+  /** Shutters beside the windows (a color), as on southern and European houses. */
+  shutters?: number,
 ) {
   const [fx, fz] = off(x, z, rot, w / 2 + 0.001, 0);
   parts.push(scaled(G.box, DOOR, fx, y + storyH * 0.32, fz, 0.004, storyH * 0.62, 0.02 * big, rot));
@@ -205,6 +207,18 @@ function openings(
       for (const along of story === 0 ? [-0.27] : [-0.27, 0.22]) {
         const [px, pz] = off(x, z, rot, w * along, side * (d / 2 + 0.001));
         const lit = r() < 0.3;
+        // A frame and sill around the glass (so windows sit in the wall, not on it).
+        parts.push(
+          scaled(G.box, 0x2a2018, px, wy, pz, 0.021 * big, storyH * 0.38, 0.003, rot),
+          scaled(G.box, 0xb8ae98, px, wy - storyH * 0.2, pz, 0.025 * big, 0.004, 0.008, rot),
+        );
+        if (shutters !== undefined) {
+          for (const s of [-1, 1]) {
+            const [sx, sz] = off(x, z, rot, w * along, side * (d / 2 + 0.002));
+            const [ex, ez] = off(sx, sz, rot, s * 0.014 * big, 0);
+            parts.push(scaled(G.box, shutters, ex, wy, ez, 0.007 * big, storyH * 0.36, 0.003, rot));
+          }
+        }
         parts.push(
           scaled(
             G.box,
@@ -330,14 +344,25 @@ export function building(
         const [tx, tz] = off(x, z, rot, w * along, d / 2 + 0.0015);
         parts.push(scaled(G.box, TIMBER, tx, y + hh / 2, tz, 0.006, hh, 0.003, rot));
       }
-    openings(parts, x, y + h * 0.15, z, rot, w, d, storyH, stories, r, big);
+    const shutters =
+      style === 'mediterranean'
+        ? 0x4f6f55
+        : style === 'european'
+          ? pick([0x6b3a2a, 0x3f5a6a, 0x4f6a3e], r)
+          : style === 'northern'
+            ? 0x8e2b22
+            : undefined;
+    openings(parts, x, y + h * 0.15, z, rot, w, d, storyH, stories, r, big, shutters);
     const roof = pick(p.roofs, r);
     roofOn(parts, p.roof, roof, x, y + hh, z, w, d, h, rot);
     // Chimneys on pitched roofs; an awning over some flat-roofed doors.
     if (p.roof === 'gable' || p.roof === 'hip') {
       if (r() < 0.55) {
         const [cx, cz] = off(x, z, rot, w * 0.28, d * 0.18);
-        parts.push(scaled(G.box, p.stone, cx, y + hh + h * 0.42, cz, 0.014, h * 0.5, 0.014, rot));
+        parts.push(
+          scaled(G.box, p.stone, cx, y + hh + h * 0.42, cz, 0.014, h * 0.5, 0.014, rot),
+          scaled(G.box, 0x4a4540, cx, y + hh + h * 0.68, cz, 0.019, 0.006, 0.019, rot),
+        );
       }
     } else if (p.roof === 'flat' && r() < 0.5) {
       const [ax, az] = off(x, z, rot, w / 2 + 0.012, 0);
