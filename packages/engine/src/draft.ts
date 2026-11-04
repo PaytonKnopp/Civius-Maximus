@@ -12,12 +12,18 @@ export const view = (draft: Draft<GameState>) => draft as unknown as GameState;
  * A snapshot for reading again and again while units move: units, players and camps are copied
  * fresh each time, everything else comes from `base` (one `current()` taken beforehand), so the
  * map isn't copied once per unit. Only for steps that don't change the map or settlements.
+ * A caller that keeps its own up-to-date copy of the units passes it as `units`, so they aren't
+ * all copied again for every unit that moves.
  */
-export function unitSnapshot(draft: Draft<GameState>, base: GameState): GameState {
+export function unitSnapshot(
+  draft: Draft<GameState>,
+  base: GameState,
+  units?: GameState['units'],
+): GameState {
   const live = <T extends object>(x: T): T => (isDraft(x) ? (current(x as Draft<T>) as T) : x);
   return {
     ...base,
-    units: live(draft.units) as GameState['units'],
+    units: units ?? (live(draft.units) as GameState['units']),
     players: live(draft.players) as GameState['players'],
     camps: live(draft.camps) as GameState['camps'],
   };

@@ -45,18 +45,72 @@ export function tileIndex(grid: Grid, col: number, row: number): number {
   return row * grid.width + col;
 }
 
-/** The neighbor in a direction, or NO_TILE past the top/bottom (or the sides, if not wrapping). */
-export function neighbor(grid: Grid, index: number, dir: Direction): number {
+/** Works out a neighbor from scratch (the tables below are filled with it). */
+function computeNeighbor(grid: Grid, index: number, dir: Direction): number {
   const [col, row] = colRow(grid, index);
   const [dc, dr] = (row & 1 ? ODD_ROW : EVEN_ROW)[dir]!;
   return tileIndex(grid, col + dc, row + dr);
 }
 
+/**
+ * Every tile's six neighbors for one map size (6 numbers per tile, in direction order). Rules ask
+ * for neighbors millions of times in a long game, and a map's shape never changes, so they are
+ * worked out once per size. The table depends only on width, height and wrapping.
+ */
+interface NeighborTable {
+  readonly size: number;
+  readonly cells: Int32Array;
+  /** `tilesWithin` answers by `center * 8 + radius`, for the small radii rules use all the time. */
+  readonly within: Map<number, readonly number[]>;
+}
+
+const tablesByShape = new Map<number, NeighborTable>();
+// Looked up by object, so the same map object (or the same Immer draft of it) costs no repeated
+// property reads: reading through a draft is much slower than through a plain object.
+const tablesByGrid = new WeakMap<object, NeighborTable>();
+
+function tableFor(grid: Grid): NeighborTable {
+  const known = tablesByGrid.get(grid);
+  if (known) return known;
+  const { width, height, wrapX } = grid;
+  const shape = (width * 65536 + height) * 2 + (wrapX ? 1 : 0);
+  let table = tablesByShape.get(shape);
+  if (!table) {
+    const size = width * height;
+    const cells = new Int32Array(size * 6);
+    const plain = { width, height, wrapX };
+    for (let i = 0; i < size; i++)
+      for (const d of DIRECTIONS) cells[i * 6 + d] = computeNeighbor(plain, i, d);
+    table = { size, cells, within: new Map() };
+    tablesByShape.set(shape, table);
+  }
+  tablesByGrid.set(grid, table);
+  return table;
+}
+
+/** The neighbor in a direction, or NO_TILE past the top/bottom (or the sides, if not wrapping). */
+export function neighbor(grid: Grid, index: number, dir: Direction): number {
+  const table = tableFor(grid);
+  return index >= 0 && index < table.size
+    ? table.cells[index * 6 + dir]!
+    : computeNeighbor(grid, index, dir);
+}
+
 /** All existing neighbors, in direction order. */
 export function neighbors(grid: Grid, index: number): number[] {
+  const table = tableFor(grid);
+  if (index < 0 || index >= table.size) {
+    const out: number[] = [];
+    for (const d of DIRECTIONS) {
+      const n = computeNeighbor(grid, index, d);
+      if (n !== NO_TILE) out.push(n);
+    }
+    return out;
+  }
   const out: number[] = [];
-  for (const d of DIRECTIONS) {
-    const n = neighbor(grid, index, d);
+  const base = index * 6;
+  for (let d = 0; d < 6; d++) {
+    const n = table.cells[base + d]!;
     if (n !== NO_TILE) out.push(n);
   }
   return out;
@@ -131,8 +185,18 @@ export function hexLine(grid: Grid, a: number, b: number, nudge: 1 | -1 = 1): nu
   return out;
 }
 
+/** Radii up to this are remembered per tile: rules look at the same few circles all game. */
+const REMEMBERED_RADIUS = 4;
+
 /** Every tile within `radius` steps (the tile itself included), nearest first. */
 export function tilesWithin(grid: Grid, center: number, radius: number): number[] {
+  const table = tableFor(grid);
+  const remember = radius >= 0 && radius <= REMEMBERED_RADIUS && center >= 0 && center < table.size;
+  const key = center * 8 + radius;
+  if (remember) {
+    const known = table.within.get(key);
+    if (known) return known.slice();
+  }
   const seen = new Set([center]);
   const out = [center];
   let frontier = [center];
@@ -148,6 +212,7 @@ export function tilesWithin(grid: Grid, center: number, radius: number): number[
     out.push(...next);
     frontier = next;
   }
+  if (remember) table.within.set(key, out.slice());
   return out;
 }
 

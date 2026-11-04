@@ -101,6 +101,8 @@ export function advanceAlongPath(
   emit: Emit,
   /** A `current()` copy to read the map from (see `unitSnapshot`), when moving many units. */
   base?: GameState,
+  /** With `base`: an up-to-date plain copy of the units, if the caller keeps one. */
+  units?: GameState['units'],
 ) {
   const unit = draft.units[unitId]!;
   const start = unit.tile;
@@ -112,7 +114,15 @@ export function advanceAlongPath(
   }
   unit.orders = now.length < path.length ? { kind: 'move', target } : null;
   if (now.length === 0) return;
-  const snapshot = base ? unitSnapshot(draft, base) : current(draft);
+  // The snapshot must show this unit where it is now (it has just moved), so refresh its entry
+  // in the caller's copy of the units.
+  const snapshot = base
+    ? unitSnapshot(
+        draft,
+        base,
+        units && { ...units, [unitId]: current(unit) as GameState['units'][string] },
+      )
+    : current(draft);
   // Raiders already know the whole map.
   if (unit.owner !== HOSTILE)
     draft.players[unit.owner]!.explored = exploreVisible(ctx, snapshot, unit.owner);
@@ -209,10 +219,26 @@ export function startTurnForUnits(draft: Draft<GameState>, ctx: EngineContext, e
     u.skippedTurn = null;
   }
   const base = current(draft);
+  // Keep our own plain copy of the units, so each journey doesn't copy all of them again. Only
+  // the unit that just moved changes, unless someone was added or removed (a village's reward
+  // can add a unit), in which case copy them all afresh.
+  let units = base.units;
+  let count = Object.keys(units).length;
+  let nextId = draft.nextEntityId;
+  const refreshUnits = (moved: string) => {
+    const now = draft.units[moved];
+    if (!now || draft.nextEntityId !== nextId || Object.keys(draft.units).length !== count) {
+      units = current(draft.units) as GameState['units'];
+      count = Object.keys(units).length;
+      nextId = draft.nextEntityId;
+    } else {
+      units = { ...units, [moved]: current(now) as GameState['units'][string] };
+    }
+  };
   for (const id of unitIds(draft)) {
     const orders = draft.units[id]?.orders;
     if (orders?.kind !== 'move') continue;
-    const snapshot = unitSnapshot(draft, base);
+    const snapshot = unitSnapshot(draft, base, units);
     const path = findPath(ctx, snapshot, snapshot.units[id]!, orders.target);
     if (!path) {
       draft.units[id]!.orders = null;
@@ -222,9 +248,11 @@ export function startTurnForUnits(draft: Draft<GameState>, ctx: EngineContext, e
         reason: 'path_blocked',
         visibleTo: [draft.units[id]!.owner],
       });
+      refreshUnits(id);
       continue;
     }
-    advanceAlongPath(draft, ctx, id, path, orders.target, emit, base);
+    advanceAlongPath(draft, ctx, id, path, orders.target, emit, base, units);
+    refreshUnits(id);
   }
 }
 

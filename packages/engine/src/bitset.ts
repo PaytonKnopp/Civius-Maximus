@@ -14,6 +14,23 @@ export function getBit(bits: Uint8Array, i: number): boolean {
   return ((bits[i >> 3] ?? 0) & (1 << (i & 7))) !== 0;
 }
 
+/**
+ * One bit of an encoded set, read straight from the text: the same answer as
+ * `getBit(decodeBits(text, size), i)` without decoding the whole set.
+ */
+export function testBit(text: string, i: number): boolean {
+  const byte = i >> 3;
+  const at = Math.floor(byte / 3) * 4;
+  if (at + 3 >= text.length) return false;
+  const n =
+    ((LOOKUP.get(text[at]!) ?? 0) << 18) |
+    ((LOOKUP.get(text[at + 1]!) ?? 0) << 12) |
+    ((LOOKUP.get(text[at + 2]!) ?? 0) << 6) |
+    (LOOKUP.get(text[at + 3]!) ?? 0);
+  const value = (n >> (16 - (byte % 3) * 8)) & 255;
+  return (value & (1 << (i & 7))) !== 0;
+}
+
 export function setBit(bits: Uint8Array, i: number): void {
   bits[i >> 3] = (bits[i >> 3] ?? 0) | (1 << (i & 7));
 }

@@ -18,6 +18,7 @@ import {
   settlementYields,
   tilePurchaseCost,
   tileYields,
+  type YieldScope,
   townUpgradeCost,
 } from '../settlements/rules';
 import type { BuildItem, SettlementState } from '../state';
@@ -398,12 +399,13 @@ function spaceDistricts(t: Turn): Set<string> {
 function withTile(t: Turn, s: SettlementState, item: BuildItem): BuildItem | undefined {
   const tiles = placementTiles(t.ctx, t.state, s, item.kind as 'district', item.id);
   let best: { tile: number; score: number } | undefined;
+  const scope: YieldScope = new Map();
   for (const tile of tiles) {
     const score =
       item.kind === 'district'
         ? fixedYieldsValue(t.me, districtYields(t.ctx, t.state, tile, item.id).total) * 10 -
-          fixedYieldsValue(t.me, tileYields(t.ctx, t.state, tile, t.player).total)
-        : -fixedYieldsValue(t.me, tileYields(t.ctx, t.state, tile, t.player).total);
+          fixedYieldsValue(t.me, tileYields(t.ctx, t.state, tile, t.player, scope).total)
+        : -fixedYieldsValue(t.me, tileYields(t.ctx, t.state, tile, t.player, scope).total);
     if (!best || score > best.score) best = { tile, score };
   }
   return best && { ...item, tile: best.tile };

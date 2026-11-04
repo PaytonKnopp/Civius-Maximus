@@ -73,6 +73,7 @@ function eraOrderOf(ctx: EngineContext, p: PlayerState): number {
 }
 
 export function settlementFacts(state: GameState, s: SettlementState): SettlementFacts {
+  const governor = governorOf(state, s.id);
   return {
     kind: s.kind,
     capital: s.capital,
@@ -81,7 +82,7 @@ export function settlementFacts(state: GameState, s: SettlementState): Settlemen
     districts: s.districts.map((d) => d.id),
     onRiver: tileTouchesRiver(state.map, state.map.tiles, s.tile),
     unitsTrained: s.unitsTrained,
-    ...(governorOf(state, s.id) ? { governor: governorOf(state, s.id)! } : {}),
+    ...(governor ? { governor } : {}),
   };
 }
 
@@ -237,8 +238,34 @@ export function religionSources(
 }
 
 /**
+ * A short memory for `sourcesFor` while code only reads one state. Turn processing works on a
+ * mutable draft, which the frozen-state caches above can't use, yet one settlement's yields ask
+ * for the same player's sources dozens of times. Inside `withSourceMemo` the answers are kept
+ * until the call returns; it is only for pure reads of the state it is given (nothing may change
+ * the state meanwhile), and it ignores calls made with any other state.
+ */
+interface SourceMemo {
+  state: GameState;
+  base: Map<PlayerId, EffectSource[]>;
+  full: WeakMap<SettlementState, EffectSource[]>;
+  facts: WeakMap<PlayerState, PlayerFacts>;
+}
+let activeMemo: SourceMemo | null = null;
+
+export function withSourceMemo<T>(state: GameState, read: () => T): T {
+  if (activeMemo?.state === state) return read();
+  const outer = activeMemo;
+  activeMemo = { state, base: new Map(), full: new WeakMap(), facts: new WeakMap() };
+  try {
+    return read();
+  } finally {
+    activeMemo = outer;
+  }
+}
+
+/**
  * Every source that applies to a player's tiles and settlements (city-state bonuses included),
- * plus one settlement's own and its religion's follower beliefs.
+ * plus one settlement's own and its religion's follower beliefs. Treat the result as read-only.
  */
 export function sourcesFor(
   ctx: EngineContext,
@@ -246,14 +273,37 @@ export function sourcesFor(
   player: PlayerId,
   settlement?: SettlementState,
 ): EffectSource[] {
-  const base = [
-    ...activeSources(ctx, state.players[player]!),
-    ...builtSources(ctx, state, player),
-    ...cityStateSources(ctx, state, player),
+  const memo = activeMemo?.state === state ? activeMemo : undefined;
+  const known = settlement ? memo?.full.get(settlement) : memo?.base.get(player);
+  if (known) return known;
+  let base = memo?.base.get(player);
+  if (!base) {
+    base = [
+      ...activeSources(ctx, state.players[player]!),
+      ...builtSources(ctx, state, player),
+      ...cityStateSources(ctx, state, player),
+    ];
+    memo?.base.set(player, base);
+  }
+  if (!settlement) return base;
+  const full = [
+    ...base,
+    ...localSources(ctx, settlement),
+    ...religionSources(ctx, state, settlement),
   ];
-  return settlement
-    ? [...base, ...localSources(ctx, settlement), ...religionSources(ctx, state, settlement)]
-    : base;
+  memo?.full.set(settlement, full);
+  return full;
+}
+
+/** A player's facts, remembered while `withSourceMemo` is reading the state they belong to. */
+function factsOf(ctx: EngineContext, state: GameState, player: PlayerId): PlayerFacts {
+  const p = state.players[player]!;
+  const memo = activeMemo?.state === state ? activeMemo : undefined;
+  const known = memo?.facts.get(p);
+  if (known) return known;
+  const facts = playerFacts(ctx, p);
+  memo?.facts.set(p, facts);
+  return facts;
 }
 
 /** Effects of one type from a player's sources whose conditions hold (player-level context). */
@@ -264,12 +314,14 @@ export function playerEffects<T extends Effect['effect']>(
   type: T,
   settlement?: SettlementState,
 ): { source: EffectSource; effect: Extract<Effect, { effect: T }> }[] {
-  const p = state.players[player]!;
-  const facts = playerFacts(ctx, p);
+  const facts = factsOf(ctx, state, player);
+  // The settlement's facts are the same for every effect, so they're worked out at most once.
+  let here: SettlementFacts | undefined;
   const out: { source: EffectSource; effect: Extract<Effect, { effect: T }> }[] = [];
   for (const source of sourcesFor(ctx, state, player, settlement)) {
     for (const effect of source.effects) {
       if (effect.effect !== type) continue;
+      if (settlement && effect.condition !== undefined) here ??= settlementFacts(state, settlement);
       const ok =
         effect.condition === undefined ||
         evaluateCondition(
@@ -277,7 +329,7 @@ export function playerEffects<T extends Effect['effect']>(
             content: ctx.content,
             playerId: player,
             player: facts,
-            ...(settlement ? { settlement: settlementFacts(state, settlement) } : {}),
+            ...(here ? { settlement: here } : {}),
           },
           effect.condition,
         );
