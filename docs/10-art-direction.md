@@ -232,3 +232,13 @@ environment, and an unmatched pack would break the one-look rule); see D102.
 *Portraits:* [portrait-prompts.md](portrait-prompts.md) is the full prompt pack for painted
 leader portraits; images go in `packages/client/public/leaders/` and the round head chips zoom in
 on the face automatically.
+
+**Built in art pass 8 (atmosphere).** The edges of fog, mist and explored land are warped with
+slow noise in `TerrainSampler.blend` and frayed with fine noise in the shaders, so they wander like
+weather instead of following the hex grid or the mesh. Plains mix meadow and dry ground, the strip
+of beach at the waterline is wet and cooler, and plains shrubs and desert stones are lighter (they
+used to read as black pits). The final pass (`paintPassFragment`) gained a **tilt-shift** blur
+that grows as the camera zooms out (top and bottom of the screen soften, colors get a little
+richer: the strategic view reads as a painted miniature; 8 taps at Medium, 12 at High, off at
+Low) and a **bloom** on High that spills a soft glow from anything brighter than the picture can
+show (sun glints on water, lit windows). Both live in one full-screen pass and cost nothing on Low.
