@@ -232,6 +232,13 @@ sizes, and fixed where it looked or worked worse than it should.
 - *End of the game* speaks to you ("your expedition reached another star" when you win, "their"
   when you lose); when you are eliminated it says "Japan has fallen" over your own portrait in
   grey. A captured city's choices keep their second line readable on the gold button.
+- *Leader picker:* the thirty rows keep their height and the list scrolls (they used to shrink,
+  squeezing each row under its portrait); the filter strip fades at its edge; on phones the list
+  gets half the screen and the portrait is smaller.
+- *New game World page:* a map type's picture shimmers in its place until it is drawn, instead of
+  leaving a bare title.
+- *Small marks from the icon set:* promotions on the unit card, the suzerain line and quests on
+  City-states. *Graphs* mark round turns (every 10, 25, 50... turns) along the bottom.
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top

@@ -162,7 +162,9 @@ export function CityStateCard({
               </li>
             ))}
             <li className={`suz ${cs.suzerain === viewer ? 'on' : ''}`}>
-              <span className="cs-tier-n">★</span>
+              <span className="cs-tier-n" title="Suzerain">
+                <Icon name="capital" size={18} />
+              </span>
               <span>
                 <strong>{t(def.suzerain.name)}</strong>: {t(def.suzerain.description)}
               </span>
@@ -171,8 +173,10 @@ export function CityStateCard({
           <ul className="cs-quests">
             {questsOf(ctx, state, id).map((q) => (
               <li key={q.id} className={done.includes(q.id) ? 'on' : ''}>
-                <span aria-hidden="true">{done.includes(q.id) ? '✓' : '◇'}</span> {q.text}{' '}
-                <small>+{ctx.content.rules.cityStates.questEnvoys} envoy</small>
+                <span className="cs-quest-mark" aria-label={done.includes(q.id) ? 'Done' : 'To do'}>
+                  {done.includes(q.id) && <Icon name="check" size={15} />}
+                </span>{' '}
+                {q.text} <small>+{ctx.content.rules.cityStates.questEnvoys} envoy</small>
               </li>
             ))}
           </ul>

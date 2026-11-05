@@ -167,10 +167,19 @@ export function HistoryChart({
               </text>
             </g>
           ))}
-          {[first, Math.round((first + last) / 2), last].map((t) => (
-            <text key={t} className="axis" x={x(t)} y={H - 8} textAnchor="middle">
-              {t}
-            </text>
+          {turnTicks(first, last).map((t) => (
+            <g key={`t${t}`}>
+              <line
+                className="grid turn"
+                x1={x(t)}
+                x2={x(t)}
+                y1={H - PAD.bottom}
+                y2={H - PAD.bottom + 4}
+              />
+              <text className="axis" x={x(t)} y={H - 8} textAnchor="middle">
+                {t}
+              </text>
+            </g>
           ))}
           {series.map((s) => (
             <polyline
@@ -250,4 +259,16 @@ function niceTicks(max: number): number[] {
   const out = [];
   for (let v = 0; v < max + step; v += step) out.push(Math.round(v));
   return out.length > 1 ? out : [0, step];
+}
+
+/** Turns to mark along the bottom: round numbers (every 10, 25, 50 or 100 turns), about six. */
+function turnTicks(first: number, last: number): number[] {
+  const span = Math.max(1, last - first);
+  const step = [5, 10, 25, 50, 100, 200].find((n) => span / n <= 7) ?? 500;
+  const out: number[] = [];
+  for (let t = Math.ceil(first / step) * step; t <= last; t += step) out.push(t);
+  // The first and last turns are worth showing too, unless a round tick is next to them.
+  if (out.length === 0 || out[0]! - first > step * 0.4) out.unshift(first);
+  if (last - out[out.length - 1]! > step * 0.4) out.push(last);
+  return out;
 }
