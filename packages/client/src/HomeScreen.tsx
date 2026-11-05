@@ -268,7 +268,7 @@ export function HomeScreen(props: Props) {
             setTimeout(() => setFull(isFullscreen()), 250);
           }}
         >
-          ⛶
+          <Icon name="fullscreen" size={18} variant="glyph" />
         </button>
         <button
           type="button"

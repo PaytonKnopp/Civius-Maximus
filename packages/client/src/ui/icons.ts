@@ -1204,6 +1204,17 @@ export const ICONS: Record<string, IconDef> = {
       ),
     ],
   },
+  fullscreen: {
+    bg: C.ui,
+    glyph: [
+      s(
+        'M4.6 4.6h5.2v2.2H6.8v3H4.6Z' +
+          'M19.4 4.6h-5.2v2.2h3v3h2.2Z' +
+          'M4.6 19.4h5.2v-2.2H6.8v-3H4.6Z' +
+          'M19.4 19.4h-5.2v-2.2h3v-3h2.2Z',
+      ),
+    ],
+  },
   trophy: { bg: C.brass, glyph: [] },
   water_drop: { bg: '#3f88a8', glyph: DROP },
 };

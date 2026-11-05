@@ -263,6 +263,11 @@ sizes, and fixed where it looked or worked worse than it should.
   headers.
 - *Tablets* keep the era beside the turn number (the second row has room); diplomacy's four tiles
   sit in one row where they fit and two by two where they don't.
+- *Wide screens (2560 px):* Options keeps its tabs and panel together in a centered column, and
+  the Civilopedia centers its article beside the tree, instead of leaving a narrow panel at the
+  top left.
+- *The last emoji* in menus are icons: cloud saves, the title screen's full-screen switch (a new
+  icon) and New world on the World page (refresh).
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top

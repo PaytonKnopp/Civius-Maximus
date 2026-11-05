@@ -2591,3 +2591,38 @@ button.close:hover:not(:disabled) {
   height: 32px;
   font-size: 14px;
 }
+
+/* --- Wide screens: menu screens with a side column keep their content together and centered,
+   instead of a narrow panel stranded at the top left of a 2560-pixel screen. ---------------- */
+
+@media (min-width: 1600px) {
+  .mx-options {
+    width: 100%;
+    max-width: 1240px;
+    margin: 0 auto;
+    border-left: 1px solid var(--line-2);
+    border-right: 1px solid var(--line-2);
+  }
+
+  .mx-options-main > .mx-panel,
+  .mx-options-main > div {
+    max-width: none;
+  }
+
+  /* The Civilopedia's article column centers in the space beside its tree. */
+  .pedia-main > * {
+    max-width: 1040px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.mx-preview-tools > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.home-chip.icon .icon-glyph {
+  color: var(--gold-hi);
+}
