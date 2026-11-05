@@ -75,11 +75,16 @@ export function TileCard({
           )}
         </p>
       )}
+      {Object.keys(breakdown.total).length > 0 && (
+        <p className="tile-totals" aria-label="Yields">
+          {Object.entries(breakdown.total).map(([id, v]) => (
+            <span key={id} className="total-yield">
+              <Icon name={id} size={20} /> {fmt(v)}
+            </span>
+          ))}
+        </p>
+      )}
       <dl className="facts">
-        <dt>Tile</dt>
-        <dd className="mono">
-          {tile % map.width}, {Math.floor(tile / map.width)}
-        </dd>
         {resource && (
           <>
             <dt>Resource</dt>
@@ -124,26 +129,22 @@ export function TileCard({
           </>
         )}
       </dl>
-      {lines.length > 0 ? (
-        <ul className="yields">
-          {lines.map((l) => (
-            <li key={l} className="mono">
-              <Rich text={l} />
-            </li>
-          ))}
-        </ul>
-      ) : (
+      {lines.length === 0 ? (
         <p className="hint">
           No yields. {t.elevation === 'mountain' ? 'Mountains block movement and sight.' : ''}
         </p>
+      ) : (
+        // The sources only when there is more than one to a yield ("Food 3 = Grassland 2 + Farm 1").
+        lines.some((l) => l.includes('+')) && (
+          <ul className="yields">
+            {lines.map((l) => (
+              <li key={l} className="mono">
+                <Rich text={l} />
+              </li>
+            ))}
+          </ul>
+        )
       )}
-      <p className="hint total">
-        {Object.entries(breakdown.total).map(([id, v]) => (
-          <span key={id} className="total-yield">
-            <Icon name={id} size={18} /> {fmt(v)}
-          </span>
-        ))}
-      </p>
     </aside>
   );
 }

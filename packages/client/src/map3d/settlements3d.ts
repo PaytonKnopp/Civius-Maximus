@@ -18,7 +18,7 @@ import {
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { SettlementView, TerritoryView, TileHighlight } from '../map/renderer';
-import { drawRichText, measureRichText } from '../ui/drawIcon';
+import { drawIcon, drawRichText, measureRichText } from '../ui/drawIcon';
 import {
   ageOfEra,
   architecture,
@@ -401,6 +401,12 @@ function improvementParts(
 
 // --- Banners and labels ----------------------------------------------------------------------
 
+/**
+ * A one-line banner's height as a share of the view (sprites that ignore distance are sized in
+ * units of 2·tan(fov/2) of the screen; the camera's FOV is 40°): about 4.2% of the screen.
+ */
+const BANNER_H = 0.042 * 2 * Math.tan((20 * Math.PI) / 180);
+
 const css = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
 
 function roundRect(
@@ -425,8 +431,10 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   const ctx = canvas.getContext('2d')!;
   const nameFont = '400 46px "Cinzel Variable", Georgia, serif';
   ctx.font = nameFont;
-  const name = `${view.capital ? '★ ' : ''}${view.name}`;
-  const nameW = ctx.measureText(name).width;
+  const name = view.name;
+  // A capital wears the game's capital star before its name.
+  const star = view.capital ? 46 : 0;
+  const nameW = ctx.measureText(name).width + star;
   ctx.font = '600 30px "Source Sans 3 Variable", sans-serif';
   const statusW = view.status ? ctx.measureText(view.status).width : 0;
   const bars = view.health < view.maxHealth || view.wallsMax > 0;
@@ -457,7 +465,9 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   ctx.textAlign = 'left';
   ctx.fillStyle = view.kind === 'city' ? '#f0e6cc' : '#d9cfb6';
   ctx.font = nameFont;
-  ctx.fillText(name, 94, view.status ? 42 : textH / 2 + 2);
+  const nameY = view.status ? 42 : textH / 2 + 2;
+  if (view.capital) drawIcon(ctx, 'capital', 94 + 18, nameY - 1, 36);
+  ctx.fillText(name, 94 + star, nameY);
   if (view.status) {
     ctx.font = '600 30px "Source Sans 3 Variable", sans-serif';
     ctx.fillStyle = '#d8c896';
@@ -943,15 +953,20 @@ export class SettlementLayer {
     // Name banner.
     if (centerKnown) {
       const { texture, aspect } = bannerTexture(view);
+      // Banners are read at screen size, like the Civ games': the same size wherever the city
+      // is in the view (no larger at the near edge of a tilted camera).
       const sprite = new Sprite(
         new SpriteMaterial({
           map: texture,
           toneMapped: false,
           depthTest: false,
           transparent: true,
+          sizeAttenuation: false,
         }),
       );
-      const h = 0.68;
+      // The same name size on every banner: a taller one (with a status line or bars) is
+      // drawn taller, not squeezed into the same height.
+      const h = BANNER_H * (texture.image.height / 84);
       sprite.scale.set(h * aspect * this.bannerScale, h * this.bannerScale, 1);
       sprite.userData.banner = [h * aspect, h];
       sprite.position.set(cx, Math.max(0, height(cx, cz)) + 0.95, cz + 0.2);
@@ -1013,11 +1028,21 @@ export class SettlementLayer {
   private bannerScale = 1;
 
   /**
-   * City banners are read at screen size, not world size: smaller as the camera comes in close,
-   * a little larger when zoomed far out. Called every frame with the camera distance.
+   * City banners keep their size on screen at every zoom, a little smaller right up close and
+   * far out. Called every frame with the camera distance.
    */
   setCameraDistance(dist: number) {
-    const k = Math.min(1.4, Math.max(0.5, dist / 24));
+    const smooth = (x: number) => {
+      const t = Math.min(1, Math.max(0, x));
+      return t * t * (3 - 2 * t);
+    };
+    // A little smaller right up close (the city shows) and far out (the map is not crowded).
+    const k =
+      dist < 14
+        ? 0.78 + 0.22 * smooth((dist - 8) / 6)
+        : dist > 40
+          ? 1 - 0.3 * smooth((dist - 40) / 40)
+          : 1;
     if (Math.abs(k - this.bannerScale) < 0.02) return;
     this.bannerScale = k;
     this.group.traverse((o) => {

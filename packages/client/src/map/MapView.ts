@@ -253,29 +253,79 @@ export class MapView implements MapRenderer {
       // A small walled town: houses inside a ring in the owner's color.
       g.circle(0, 0, 15).fill(0x10161d).circle(0, 0, 15).stroke({ width: 3, color: view.color });
       g.poly([-8, 1, 0, -7, 8, 1, 8, 8, -8, 8]).fill(view.kind === 'city' ? 0xe0d2b0 : 0xb8a888);
-      if (view.capital) g.star(0, -11, 5, 4.5, 2).fill(0xd4a94e);
+      // The banner, like the 3D one: the population in the owner's colors, the name (a capital
+      // with its star), and for your own settlements what they are making.
       const label = new Text({
-        text: `${view.population}  ${view.name}`,
-        style: { fontFamily: 'Cinzel Variable, Georgia, serif', fontSize: 12, fill: 0xf0e6cc },
+        text: view.name,
+        style: {
+          fontFamily: 'Cinzel Variable, Georgia, serif',
+          fontSize: 13,
+          fontWeight: '600',
+          fill: view.kind === 'city' ? 0xf0e6cc : 0xd9cfb6,
+        },
       });
-      label.anchor.set(0.5, 0);
-      label.position.set(0, 19);
+      const status = view.status
+        ? new Text({
+            text: view.status,
+            style: {
+              fontFamily: 'Source Sans 3 Variable, sans-serif',
+              fontSize: 10,
+              fontWeight: '600',
+              fill: 0xd8c896,
+            },
+          })
+        : null;
+      const star = view.capital ? 14 : 0;
+      const textW = Math.max(label.width + star, status?.width ?? 0);
+      const bw = textW + 34;
+      const bh = status ? 32 : 21;
+      const left = -bw / 2;
+      const top = 17;
       const bg = new Graphics()
-        .roundRect(-label.width / 2 - 6, 17, label.width + 12, 18, 5)
-        .fill({ color: 0x0e141b, alpha: 0.9 })
-        .roundRect(-label.width / 2 - 6, 17, label.width + 12, 18, 5)
+        .roundRect(left, top, bw, bh, 6)
+        .fill({ color: 0x0e141b, alpha: 0.92 })
+        .roundRect(left, top, bw, bh, 6)
         .stroke({ width: 1.5, color: view.mine ? 0xd4a94e : view.color });
-      node.addChild(g, bg, label);
+      // Population medallion.
+      const medal = new Graphics()
+        .circle(left + 13, top + bh / 2, 9)
+        .fill(view.color)
+        .circle(left + 13, top + bh / 2, 9)
+        .stroke({ width: 1.5, color: view.accent });
+      const pop = new Text({
+        text: String(view.population),
+        style: {
+          fontFamily: 'Source Sans 3 Variable, sans-serif',
+          fontSize: 11,
+          fontWeight: '800',
+          fill: view.accent,
+        },
+      });
+      pop.anchor.set(0.5);
+      pop.position.set(left + 13, top + bh / 2 + 0.5);
+      label.anchor.set(0, 0.5);
+      label.position.set(left + 27 + star, top + (status ? 10 : bh / 2));
+      node.addChild(g, bg, medal, pop, label);
+      if (view.capital)
+        node.addChild(
+          new Graphics().star(left + 32, top + (status ? 10 : bh / 2), 5, 5, 2.2).fill(0xd4a94e),
+        );
+      if (status) {
+        status.anchor.set(0, 0.5);
+        status.position.set(left + 27, top + 23);
+        node.addChild(status);
+      }
       if (view.health < view.maxHealth || view.wallsMax > 0) {
         const bars = new Graphics();
-        const w = Math.max(40, label.width + 12);
+        const w = bw - 8;
+        const y = top + bh + 2;
         const hp = view.health / view.maxHealth;
-        bars.rect(-w / 2, 36, w, view.wallsMax > 0 ? 9 : 5).fill(0x05080b);
+        bars.roundRect(-w / 2, y, w, view.wallsMax > 0 ? 9 : 5, 2).fill(0x05080b);
         bars
-          .rect(-w / 2 + 1, 37, (w - 2) * hp, 3)
+          .rect(-w / 2 + 1, y + 1 + (view.wallsMax > 0 ? 4 : 0), (w - 2) * hp, 3)
           .fill(hp > 0.6 ? 0x7fc35a : hp > 0.3 ? 0xe0b040 : 0xe0503c);
         if (view.wallsMax > 0)
-          bars.rect(-w / 2 + 1, 41, ((w - 2) * view.walls) / view.wallsMax, 3).fill(0x8fa8c0);
+          bars.rect(-w / 2 + 1, y + 1, ((w - 2) * view.walls) / view.wallsMax, 3).fill(0x8fa8c0);
         node.addChild(bars);
       }
       if (fog === 1) node.alpha = 0.6;

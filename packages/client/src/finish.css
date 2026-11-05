@@ -2172,3 +2172,159 @@
   display: block;
   margin-top: 2px;
 }
+
+/* --- Dialogs: a choice's second line stays readable on a gold button ---------------------- */
+
+.modal-choices button.primary span {
+  color: rgba(40, 28, 8, 0.82);
+}
+
+.modal-choices button.danger span {
+  color: rgba(255, 228, 218, 0.78);
+}
+
+.modal-choices button {
+  padding: 10px 14px;
+}
+
+.modal-choices button strong {
+  font-size: 14.5px;
+}
+
+/* A fallen civ's own portrait, grey. */
+.game-over-hero .fallen-portrait {
+  filter: grayscale(0.85) brightness(0.8);
+}
+
+/* The deal screen opens from the diplomacy dialog, so it sits above it. */
+.modal-backdrop:has(> .modal.deal) {
+  z-index: 40;
+}
+
+/* --- Deal screen: both faces, both sides, the pacts as toggles, their answer in advance ---- */
+
+.modal.deal {
+  width: min(620px, calc(100vw - 24px));
+  padding: 18px 20px 16px;
+}
+
+.deal-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.deal-head h3 {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  color: var(--gold-1);
+}
+
+.deal-side {
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-color: var(--line-2);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.deal-side legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: var(--gold-hi);
+}
+
+.deal-has {
+  margin: 0 0 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.deal-side label > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.deal-side label.check,
+.deal-shared label.check {
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-s);
+  background: rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+
+.deal-side label.check:has(input:checked),
+.deal-shared label.check:has(input:checked) {
+  border-color: rgba(240, 212, 140, 0.6);
+  background: rgba(240, 212, 140, 0.08);
+  color: var(--gold-1);
+}
+
+.deal-shared {
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.deal-verdict {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 9px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-s);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.deal-verdict.yes {
+  border-color: rgba(127, 207, 134, 0.45);
+  background: rgba(127, 207, 134, 0.08);
+}
+
+.deal-verdict.no {
+  border-color: rgba(224, 128, 114, 0.45);
+  background: rgba(224, 128, 114, 0.08);
+}
+
+/* --- Tile card: what the tile gives, first and large ------------------------------------- */
+
+.tile-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 2px 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-totals .total-yield {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tile-card .yields {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--text-2);
+}

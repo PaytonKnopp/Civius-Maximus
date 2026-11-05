@@ -541,7 +541,7 @@ interface GameOverProps {
   /** The score over the game (the recap). */
   chart?: ReactNode;
   /** The winner's leader and civ, for their portrait. */
-  winner?: { leader: string; civ: string } | undefined;
+  winner?: { leader: string; civ: string; fallen?: boolean } | undefined;
   /** An icon for how the game ended (science, culture...). */
   icon?: string | undefined;
   content?: CompiledContent;
@@ -569,7 +569,9 @@ export function GameOver({
       <div className={`modal game-over ${won ? 'won' : 'lost'}`} role="alertdialog">
         <header className="game-over-hero">
           {content && winner ? (
-            <LeaderCard content={content} leader={winner.leader} civ={winner.civ} size={150} />
+            <span className={winner.fallen ? 'fallen-portrait' : ''}>
+              <LeaderCard content={content} leader={winner.leader} civ={winner.civ} size={150} />
+            </span>
           ) : (
             icon && <Icon name={icon} size={96} />
           )}

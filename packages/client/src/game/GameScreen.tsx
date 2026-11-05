@@ -2450,29 +2450,36 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             teamOf(state, viewer).includes(state.result.winner)
           }
           title={
-            state.result?.winner
-              ? `${civName(content, state, state.result.winner)} wins`
-              : !me.alive
-                ? 'Defeat'
+            !me.alive && (!state.result?.winner || state.status !== 'ended')
+              ? `${civName(content, state, viewer)} has fallen`
+              : state.result?.winner
+                ? `${civName(content, state, state.result.winner)} wins`
                 : 'Game over'
           }
-          text={
-            !me.alive && state.status !== 'ended'
-              ? 'Your last settlement has fallen. Your civilization is no more.'
-              : state.result?.reason === 'domination'
-                ? 'A domination victory: every rival original capital is held.'
-                : state.result?.reason === 'science'
-                  ? 'A science victory: their expedition reached another star.'
-                  : state.result?.reason === 'diplomatic'
-                    ? 'A diplomatic victory: the World Congress has made them the leader of the world.'
-                    : state.result?.reason === 'culture'
-                      ? 'A culture victory: their visitors outnumber every other civilization’s own tourists.'
-                      : state.result?.reason === 'religion'
-                        ? `A religious victory: ${religionNameOf(state, state.result.winner ?? null)} is followed in most settlements of every other civilization.`
-                        : state.result?.reason === 'conquest'
-                          ? 'A conquest victory: the last civilization standing.'
-                          : 'A score victory: the highest score at the turn limit.'
-          }
+          text={(() => {
+            const won =
+              !!state.result?.winner && teamOf(state, viewer).includes(state.result.winner);
+            const their = won ? 'your' : 'their';
+            const they = won ? 'you' : 'they';
+            if (!me.alive && state.status !== 'ended')
+              return 'Your last settlement has fallen. Your civilization is no more.';
+            switch (state.result?.reason) {
+              case 'domination':
+                return `A domination victory: ${they} hold every rival’s original capital.`;
+              case 'science':
+                return `A science victory: ${their} expedition reached another star.`;
+              case 'diplomatic':
+                return `A diplomatic victory: the World Congress named ${won ? 'you' : 'them'} the leader of the world.`;
+              case 'culture':
+                return `A culture victory: ${their} visitors outnumber every other civilization’s own tourists.`;
+              case 'religion':
+                return `A religious victory: ${religionNameOf(state, state.result.winner ?? null)} is followed in most settlements of every other civilization.`;
+              case 'conquest':
+                return `A conquest victory: ${won ? 'you are' : 'they are'} the last civilization standing.`;
+              default:
+                return `A score victory: the highest score at the turn limit.`;
+            }
+          })()}
           scores={state.playerOrder
             .map((p) => ({
               name: civName(content, state, p),
@@ -2491,7 +2498,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
                   leader: state.players[state.result.winner]!.leader,
                   civ: state.players[state.result.winner]!.civ,
                 }
-              : undefined
+              : !me.alive
+                ? { leader: me.leader, civ: me.civ, fallen: true }
+                : undefined
           }
           icon={
             (

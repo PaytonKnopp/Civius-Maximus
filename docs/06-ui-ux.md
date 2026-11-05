@@ -220,6 +220,18 @@ sizes, and fixed where it looked or worked worse than it should.
   lit), then emissions, the latest disasters and what can strike.
 - *Eras:* the era score bar names its thresholds (Dark, Golden). *Help* uses the menus' switches.
   *Tech and civic trees:* "8 turns" instead of "8t", the boost and done marks are icons.
+- *City banners* keep one size on screen in 3D, wherever the city is in the view and at every
+  zoom (a little smaller right up close and far out); a banner with a status line is drawn
+  taller rather than squeezed, and a capital wears the icon set's star. The 2D banners match
+  them: the population in the owner's colors, the name, and what your own settlements are making.
+- *Tile card* leads with what the tile yields, large; the sources show only when there is more than
+  one (the raw coordinates are gone).
+- *Deal screen:* both leaders' faces, each side's treasury, gold fields with their icon, the pacts
+  as toggles with their icons, and the rival's answer in advance as a colored line (it opens above
+  the diplomacy dialog).
+- *End of the game* speaks to you ("your expedition reached another star" when you win, "their"
+  when you lose); when you are eliminated it says "Japan has fallen" over your own portrait in
+  grey. A captured city's choices keep their second line readable on the gold button.
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top

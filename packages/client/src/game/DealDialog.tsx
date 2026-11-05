@@ -13,6 +13,8 @@ import {
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { civName } from './model';
+import { Icon } from '../ui/Icon';
+import { LeaderHead } from '../ui/LeaderCard';
 
 type Deal = Omit<Proposal, 'id' | 'turn'>;
 
@@ -53,11 +55,32 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
     if (act({ type: 'propose_deal', player: viewer, ...deal })) onClose();
   };
 
-  const side = (label: string, terms: DealTerms, set: (t: DealTerms) => void, max: number) => (
+  const face = (p: PlayerId, size: number) => (
+    <LeaderHead
+      content={ctx.content}
+      leader={state.players[p]!.leader}
+      civ={state.players[p]!.civ}
+      size={size}
+    />
+  );
+  const side = (
+    who: PlayerId,
+    label: string,
+    terms: DealTerms,
+    set: (t: DealTerms) => void,
+    max: number,
+  ) => (
     <fieldset className="deal-side">
-      <legend>{label}</legend>
+      <legend>
+        {face(who, 26)} {label}
+      </legend>
+      <p className="deal-has">
+        <Icon name="gold" size={16} /> {max} gold in the treasury
+      </p>
       <label>
-        Gold now
+        <span>
+          <Icon name="gold" size={16} /> Gold now
+        </span>
         <input
           type="number"
           min={0}
@@ -69,7 +92,9 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
         />
       </label>
       <label>
-        Gold per turn
+        <span>
+          <Icon name="gold" size={16} /> Gold per turn
+        </span>
         <input
           type="number"
           min={0}
@@ -88,7 +113,7 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
           disabled={war && !peace}
           onChange={(e) => set({ ...terms, maps: e.target.checked })}
         />
-        Share maps
+        <Icon name="lens" size={16} /> Share maps
       </label>
     </fieldset>
   );
@@ -97,16 +122,20 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
   return createPortal(
     <div className="modal-backdrop">
       <div className="modal deal" role="dialog" aria-label={`Deal with ${name}`}>
-        <h3>Deal with {name}</h3>
+        <header className="deal-head">
+          {face(viewer, 44)}
+          <h3>Deal with {name}</h3>
+          {face(other, 44)}
+        </header>
         <div className="deal-sides">
-          {side('You give', give, setGive, Math.floor(state.players[viewer]!.gold / 100))}
-          {side(`${name} gives`, get, setGet, Math.floor(state.players[other]!.gold / 100))}
+          {side(viewer, 'You give', give, setGive, Math.floor(state.players[viewer]!.gold / 100))}
+          {side(other, `${name} gives`, get, setGet, Math.floor(state.players[other]!.gold / 100))}
         </div>
         <div className="deal-shared">
           {war ? (
             <label className="check">
               <input type="checkbox" checked={peace} onChange={(e) => setPeace(e.target.checked)} />
-              Make peace ({rules.peaceTreatyTurns} turns of treaty)
+              <Icon name="peace" size={18} /> Make peace ({rules.peaceTreatyTurns} turns of treaty)
             </label>
           ) : (
             <>
@@ -119,6 +148,7 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
                   checked={friendship}
                   onChange={(e) => setFriendship(e.target.checked)}
                 />
+                <Icon name="friends" size={18} />{' '}
                 {friends ? 'Renew our friendship' : 'Declare friendship'} ({rules.friendshipCost}{' '}
                 influence each)
               </label>
@@ -131,7 +161,8 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
                   checked={alliance}
                   onChange={(e) => setAlliance(e.target.checked)}
                 />
-                Form an alliance ({rules.allianceCost} influence each)
+                <Icon name="alliance" size={18} /> Form an alliance ({rules.allianceCost} influence
+                each)
               </label>
             </>
           )}
@@ -154,6 +185,7 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
           )}
         </div>
         <p className={`deal-verdict ${verdict ? (verdict.accept ? 'yes' : 'no') : ''}`}>
+          {verdict && <Icon name={verdict.accept ? 'check' : 'war'} size={18} />}
           {problem
             ? problem.message
             : verdict
