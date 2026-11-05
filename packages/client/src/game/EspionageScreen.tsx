@@ -65,16 +65,20 @@ export function EspionageScreen({
       </header>
       <div className="espionage-body">
         {spies.length === 0 && (
-          <p className="hint">
-            No spies yet. Your first comes with{' '}
-            {t(
-              content.entities.civic[content.rules.espionage.capacityCivics[0] ?? '']?.name ??
-                'a civic',
-            )}
-            . Spies guard your settlements or work against others: stealing gold and plans,
-            sabotage, stirring unrest. Each mission shows its chance; a spy whose mission fails may
-            be caught, and a caught spy angers its victim.
-          </p>
+          <div className="screen-empty">
+            <Icon name="spy" size={46} />
+            <strong>No spies yet</strong>
+            <p>
+              Your first comes with{' '}
+              {t(
+                content.entities.civic[content.rules.espionage.capacityCivics[0] ?? '']?.name ??
+                  'a civic',
+              )}
+              . Spies guard your settlements or work against others: stealing gold and plans,
+              sabotage, stirring unrest. Each mission shows its chance; a spy whose mission fails
+              may be caught, and a caught spy angers its victim.
+            </p>
+          </div>
         )}
         {spies.map(([id, spy]) => {
           const s = spy.at ? state.settlements[spy.at] : undefined;

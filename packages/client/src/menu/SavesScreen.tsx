@@ -141,7 +141,7 @@ export function SavesScreen({
   return (
     <MenuScreen
       title={canSave ? 'Save and load' : 'Load game'}
-      icon="check"
+      icon="save"
       sub="Saved games in this browser, in your account, and in files"
       onClose={onClose}
       className="mx-saves"

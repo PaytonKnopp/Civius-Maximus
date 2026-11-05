@@ -5,6 +5,7 @@ import { isJoinCode, normalizeCode, type SeatInfo } from '@cx/protocol';
 import { useEffect, useRef, useState } from 'react';
 import { cloud, type PublicLobby } from '../cloud/cloud';
 import { createAiRunner } from '../game/aiRunner';
+import { MapTypeCards } from '../setup/MapTypes';
 import { PALETTE } from '../setup/palette';
 import { LeaderHead, leaderArt } from '../ui/LeaderCard';
 import { LeaderDetail, LeaderPicker } from '../ui/LeaderPicker';
@@ -452,19 +453,11 @@ export function OnlineDialog(props: Props) {
             </div>
             <div className="mx-panel">
               <Section title="Map type" hint={t(e.mapScript[o.script]?.description ?? '')}>
-                <div className="mx-cards">
-                  {content.ids.mapScript.map((id) => (
-                    <button
-                      key={id}
-                      type="button"
-                      className={`mx-card ${o.script === id ? 'on' : ''}`}
-                      aria-pressed={o.script === id}
-                      onClick={() => setO({ ...o, script: id })}
-                    >
-                      <strong>{t(e.mapScript[id]!.name)}</strong>
-                    </button>
-                  ))}
-                </div>
+                <MapTypeCards
+                  content={content}
+                  value={o.script}
+                  onChange={(script) => setO({ ...o, script })}
+                />
               </Section>
               <Section title="Map size">
                 <Choice

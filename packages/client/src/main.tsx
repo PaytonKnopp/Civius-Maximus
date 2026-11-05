@@ -11,6 +11,7 @@ import './styles.css';
 import './hud.css';
 import './theme.css';
 import './menu.css';
+import './screens.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element');

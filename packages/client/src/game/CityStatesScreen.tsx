@@ -20,6 +20,7 @@ import {
 import { useEffect } from 'react';
 import { civName, whole } from './model';
 import { Icon } from '../ui/Icon';
+import { EMOJI_ICONS } from '../ui/icons';
 
 interface Props {
   ctx: EngineContext;
@@ -58,19 +59,27 @@ export function CityStatesScreen({ ctx, state, viewer, act, onClose }: Props) {
           ✕
         </button>
       </header>
-      <div className="gp-grid">
-        {met.map((id) => (
-          <CityStateCard key={id} ctx={ctx} state={state} viewer={viewer} id={id} act={act} />
-        ))}
+      <div className="screen-scroll">
+        {met.length === 0 ? (
+          <div className="screen-empty">
+            <Icon name="cityStates" size={44} />
+            <strong>No city-states met yet</strong>
+            <p>Explore to find them: the first civ to reach one gets a free envoy there.</p>
+          </div>
+        ) : (
+          <div className="cs-grid">
+            {met.map((id) => (
+              <CityStateCard key={id} ctx={ctx} state={state} viewer={viewer} id={id} act={act} />
+            ))}
+          </div>
+        )}
+        {ids.length - met.length > 0 && met.length > 0 && (
+          <p className="hint cs-unmet">
+            {`${ids.length - met.length} more city-state${ids.length - met.length === 1 ? '' : 's'} not found yet.`}
+          </p>
+        )}
+        <Camps ctx={ctx} state={state} viewer={viewer} act={act} />
       </div>
-      <Camps ctx={ctx} state={state} viewer={viewer} act={act} />
-      <p className="hint cs-unmet">
-        {met.length === 0
-          ? 'Explore to find city-states: the first to reach one gets a free envoy there.'
-          : ''}{' '}
-        {ids.length - met.length > 0 &&
-          `${ids.length - met.length} city-state${ids.length - met.length === 1 ? '' : 's'} not found yet.`}
-      </p>
     </div>
   );
 }
@@ -105,50 +114,71 @@ export function CityStateCard({
   const envoys = Object.entries(cs.envoys).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
   const done = cs.quests[viewer] ?? [];
   return (
-    <section className="gp-card cs-card" style={{ borderTopColor: type.color }}>
-      <h3>
-        <span aria-hidden="true">{type.icon}</span> {t(def.name)}{' '}
-        <span className="muted">({t(type.name)})</span>
-      </h3>
+    <section
+      className={`cs-card ${cs.suzerain === viewer ? 'suzerain' : ''}`}
+      style={{ ['--cs' as string]: type.color }}
+    >
+      <header className="cs-head">
+        <Icon name={EMOJI_ICONS[type.icon] ?? 'cityStates'} size={38} />
+        <div>
+          <h3>{t(def.name)}</h3>
+          <span className="cs-kind">{t(type.name)}</span>
+        </div>
+        {alive && (
+          <span className="cs-mine" title={`Your envoys here: ${mine}`}>
+            <b>{mine}</b>
+            <small>envoy{mine === 1 ? '' : 's'}</small>
+          </span>
+        )}
+      </header>
       {!alive ? (
         <p className="hint">Conquered. Free it to bring it back.</p>
       ) : (
         <>
-          <p className="gp-text">
-            Suzerain:{' '}
-            <strong>{cs.suzerain ? civName(content, state, cs.suzerain) : 'nobody'}</strong>
+          <p className="cs-suz">
+            <span>Suzerain</span>
+            <strong>
+              {cs.suzerain === viewer
+                ? 'You'
+                : cs.suzerain
+                  ? civName(content, state, cs.suzerain)
+                  : 'Nobody'}
+            </strong>
             {envoys.length > 0 && (
-              <span className="muted">
-                {' '}
-                · Envoys:{' '}
-                {envoys
-                  .map(([p, n]) => `${p === viewer ? 'you' : civName(content, state, p)} ${n}`)
-                  .join(' · ')}
+              <span className="cs-envoys">
+                {envoys.map(([p, n]) => (
+                  <span key={p} className={p === viewer ? 'you' : ''}>
+                    {p === viewer ? 'You' : civName(content, state, p)} {n}
+                  </span>
+                ))}
               </span>
             )}
           </p>
           <ul className="cs-tiers">
             {type.tiers.map((tier) => (
               <li key={tier.envoys} className={mine >= tier.envoys ? 'on' : ''}>
-                <span className="mono">{tier.envoys}</span> {t(tier.description)}
+                <span className="cs-tier-n">{tier.envoys}</span>
+                <span>{t(tier.description)}</span>
               </li>
             ))}
-            <li className={cs.suzerain === viewer ? 'on' : ''}>
-              <span className="mono">★</span> <strong>{t(def.suzerain.name)}</strong>:{' '}
-              {t(def.suzerain.description)}
+            <li className={`suz ${cs.suzerain === viewer ? 'on' : ''}`}>
+              <span className="cs-tier-n">★</span>
+              <span>
+                <strong>{t(def.suzerain.name)}</strong>: {t(def.suzerain.description)}
+              </span>
             </li>
           </ul>
           <ul className="cs-quests">
             {questsOf(ctx, state, id).map((q) => (
               <li key={q.id} className={done.includes(q.id) ? 'on' : ''}>
-                {done.includes(q.id) ? '✓' : '◇'} {q.text} (+
-                {ctx.content.rules.cityStates.questEnvoys} envoy)
+                <span aria-hidden="true">{done.includes(q.id) ? '✓' : '◇'}</span> {q.text}{' '}
+                <small>+{ctx.content.rules.cityStates.questEnvoys} envoy</small>
               </li>
             ))}
           </ul>
-          <div className="row-inline">
+          <div className="cs-actions">
             <button type="button" disabled={!!why} title={why} onClick={() => act(send)}>
-              Send envoy ({mine}){' '}
+              Send envoy{' '}
               {me.envoys > 0 ? (
                 '· free'
               ) : (

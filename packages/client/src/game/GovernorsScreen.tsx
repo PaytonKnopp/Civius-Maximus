@@ -47,7 +47,7 @@ export function GovernorsScreen({
     <div className="screen governors-screen" role="dialog" aria-label="Governors">
       <header className="screen-head">
         <h2>
-          <Icon name="capital" size={30} />
+          <Icon name="governor" size={30} />
           Governors
         </h2>
         <p className="screen-sub">
@@ -92,11 +92,12 @@ export function GovernorsScreen({
               {!g ? (
                 <button
                   type="button"
-                  className="primary"
+                  className={titles < 1 ? 'ghost' : 'primary'}
                   disabled={titles < 1}
+                  title={titles < 1 ? 'Every title is spent: civics earn more' : undefined}
                   onClick={() => act({ type: 'appoint_governor', player: viewer, governor: id })}
                 >
-                  Appoint (1 title)
+                  {titles < 1 ? 'Appoint · needs a title' : 'Appoint · 1 title'}
                 </button>
               ) : (
                 <>

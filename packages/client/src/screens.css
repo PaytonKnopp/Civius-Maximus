@@ -1,0 +1,600 @@
+/* In-game full screens, second UI pass: shared layout (content centered at a readable width,
+   scrolling under the header) and the screens redone in it. Loaded after menu.css. */
+
+/* --- Shared -------------------------------------------------------------------------------- */
+
+.screen-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px max(20px, env(safe-area-inset-right, 0px)) 28px
+    max(20px, env(safe-area-inset-left, 0px));
+}
+
+.screen-scroll > * {
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* A card's own title is a title, not an engraved section rule. */
+.screen
+  :is(.gp-card, .cs-card, .gov-card, .belief-card, .policy-card, .card, .governor-card, .spy-card)
+  :is(h3, h4) {
+  display: block;
+  margin: 0;
+  letter-spacing: 0.03em;
+  text-transform: none;
+}
+
+.screen
+  :is(.gp-card, .cs-card, .gov-card, .belief-card, .policy-card, .card, .governor-card, .spy-card)
+  :is(h3, h4)::after {
+  content: none;
+}
+
+.screen :is(.gp-actions, .cs-actions, .row-inline, .gov-confirm) button {
+  white-space: nowrap;
+}
+
+.screen-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 560px !important;
+  margin: 8vh auto 0;
+  padding: 30px 28px;
+  text-align: center;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background:
+    var(--grain), linear-gradient(180deg, rgba(255, 246, 222, 0.05), rgba(255, 246, 222, 0.01));
+  color: var(--text-2);
+  line-height: 1.55;
+}
+
+.screen-empty strong {
+  font-family: var(--font-display);
+  font-size: 19px;
+  letter-spacing: 0.04em;
+  color: var(--gold-hi);
+}
+
+.screen-empty p {
+  margin: 0;
+}
+
+/* A meter used inside cards: a label, a bar, a number. */
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(64px, 30%) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.bar-row > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-row > i {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--bar, var(--gold)) calc(var(--v) * 100%),
+    #0a141c calc(var(--v) * 100%)
+  );
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.bar-row > b {
+  min-width: 3ch;
+  text-align: right;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.bar-row.you > span {
+  color: var(--gold-hi);
+  font-weight: 700;
+}
+
+/* --- Great people -------------------------------------------------------------------------- */
+
+.screen .gp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+  padding: 0;
+  overflow: visible;
+}
+
+.screen .gp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 16px 14px;
+  border-top: 2px solid var(--gold-lo);
+}
+
+.screen .gp-card:hover {
+  border-color: var(--gold-lo);
+  transform: translateY(-2px);
+}
+
+.screen .gp-card.out {
+  opacity: 0.6;
+}
+
+.gp-head {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.gp-head .icon {
+  flex: none;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.6));
+}
+
+.gp-kind {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-3);
+}
+
+.screen .gp-card h3.gp-name {
+  margin: 1px 0 1px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.2;
+  color: var(--gold-hi);
+}
+
+.gp-era {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.screen .gp-text {
+  flex: 1;
+  margin: 0;
+  min-height: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.gp-race {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
+}
+
+.gp-racer {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.gp-racer span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gp-racer i {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #b07a6a calc(var(--v) * 100%), #0a141c calc(var(--v) * 100%));
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.gp-racer.you span {
+  color: var(--gold-hi);
+  font-weight: 700;
+}
+
+.gp-racer.you i {
+  background: linear-gradient(
+    90deg,
+    var(--gold) calc(var(--v) * 100%),
+    #0a141c calc(var(--v) * 100%)
+  );
+}
+
+.gp-racer b {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.gp-rate {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.gp-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.gp-actions button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.gp-done {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px !important;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.gp-done-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-2);
+}
+
+.screen .gp-mine {
+  padding: 0;
+}
+
+.gp-mine ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gp-mine li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.gp-mine li .icon {
+  flex: none;
+}
+
+.gp-mine li strong {
+  display: block;
+  color: var(--text);
+}
+
+/* --- City-states --------------------------------------------------------------------------- */
+
+.cs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.cs-card {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 14px 15px 14px;
+  border: 1px solid var(--line-2);
+  border-top: 3px solid var(--cs, var(--gold-lo));
+  border-radius: var(--radius);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--cs, #fff) 12%, transparent), transparent 90px),
+    var(--grain), linear-gradient(180deg, rgba(255, 246, 222, 0.05), rgba(255, 246, 222, 0.015));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 190, 0.06),
+    0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.cs-card.suzerain {
+  border-color: var(--gold-lo);
+  border-top-color: var(--cs, var(--gold));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 190, 0.1),
+    0 0 0 1px rgba(240, 212, 140, 0.2),
+    0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.cs-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.cs-head .icon {
+  flex: none;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
+}
+
+.cs-head > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.cs-card .cs-head h3 {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  color: var(--gold-hi);
+}
+
+.cs-kind {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cs, var(--gold)) 70%, #fff);
+}
+
+.cs-mine {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 46px;
+  padding: 3px 6px 4px;
+  border-radius: 7px;
+  border: 1px solid var(--line-2);
+  background: rgba(0, 0, 0, 0.3);
+  line-height: 1.05;
+}
+
+.cs-mine b {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--gold-hi);
+}
+
+.cs-mine small {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cs-suz {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.cs-suz > span:first-child {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cs-suz strong {
+  color: var(--text);
+}
+
+.cs-envoys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+}
+
+.cs-envoys span {
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.cs-envoys span.you {
+  border-color: var(--gold-lo);
+  color: var(--gold-hi);
+}
+
+.cs-card .cs-tiers,
+.cs-card .cs-quests {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.cs-card .cs-tiers li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.cs-tier-n {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.cs-card .cs-tiers li.on {
+  color: var(--text);
+}
+
+.cs-card .cs-tiers li.on .cs-tier-n {
+  border-color: var(--gold);
+  background: radial-gradient(circle at 40% 30%, #f2d48a, #a77b33);
+  color: var(--brass-ink);
+}
+
+.cs-card .cs-quests {
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+}
+
+.cs-card .cs-quests li.on {
+  color: #a9d79a;
+}
+
+.cs-card .cs-quests small {
+  color: var(--gold-3);
+  font-weight: 700;
+}
+
+.cs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.cs-actions button {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.screen .cs-unmet {
+  margin-top: 12px;
+  padding: 0;
+  text-align: center;
+}
+
+.screen .cs-camps {
+  padding: 0;
+}
+
+/* --- Screens whose bodies are grids of cards ---------------------------------------------- */
+
+/* Content sits in a centered column on wide screens, with the scrollbar at the window's edge. */
+.screen
+  :is(
+    .espionage-body,
+    .governor-grid,
+    .great-works-body,
+    .congress-body,
+    .climate-body,
+    .ages-body,
+    .religion-body,
+    .victory-body
+  ) {
+  padding-left: max(20px, calc((100% - 1320px) / 2));
+  padding-right: max(20px, calc((100% - 1320px) / 2));
+}
+
+/* Few cards are centered at a readable width instead of stuck in the top-left corner. */
+.screen :is(.espionage-body, .great-works-body, .congress-body, .climate-body) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+.screen :is(.espionage-body, .great-works-body, .congress-body, .climate-body) > * {
+  flex: 1 1 320px;
+  max-width: 440px;
+  margin: 0;
+}
+
+.screen .espionage-body > .screen-empty {
+  flex-basis: 100%;
+  max-width: 560px;
+  margin-top: 6vh;
+}
+
+/* Eras and ages: the age on the left, the dedication choice and timeline beside it. */
+.screen .ages-body {
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  align-items: start;
+}
+
+.screen .ages-body > .age-card {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+.screen .ages-body > .dedication-choice,
+.screen .ages-body > .timeline {
+  grid-column: 2;
+}
+
+@media (max-width: 760px) {
+  .screen .ages-body > .age-card,
+  .screen .ages-body > .dedication-choice,
+  .screen .ages-body > .timeline {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
+
+.screen .governor-head h3,
+.screen .spy-card h3 {
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--gold-hi);
+}
+
+.screen .governor-card.appointed {
+  border-color: var(--gold);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 190, 0.1),
+    0 0 0 1px rgba(240, 212, 140, 0.18),
+    0 8px 22px rgba(0, 0, 0, 0.45);
+}

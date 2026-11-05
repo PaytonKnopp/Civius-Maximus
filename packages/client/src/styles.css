@@ -2664,95 +2664,7 @@ kbd {
   letter-spacing: 0.08em;
 }
 
-/* Civilopedia */
-.pedia-screen .screen-head {
-  gap: 12px;
-}
-.pedia-search {
-  margin-left: auto;
-  width: min(280px, 40vw);
-}
-.pedia-body {
-  display: grid;
-  grid-template-columns: 220px 260px 1fr;
-  gap: 0;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-.pedia-cats,
-.pedia-list {
-  overflow-y: auto;
-  padding: 8px;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-}
-.pedia-cats button,
-.pedia-list button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  color: inherit;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font: inherit;
-  cursor: pointer;
-}
-.pedia-cats button:hover,
-.pedia-list button:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-.pedia-cats button.on,
-.pedia-list button.on {
-  background: rgba(212, 169, 78, 0.18);
-  color: #f0d890;
-}
-.pedia-list h4 {
-  margin: 10px 10px 4px;
-  font-size: 0.75em;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.6;
-}
-.pedia-article {
-  overflow-y: auto;
-  padding: 16px 24px 24px;
-  max-width: 760px;
-  line-height: 1.55;
-}
-.pedia-article h3 {
-  margin: 0;
-  font-size: 1.6em;
-}
-.pedia-article-head {
-  margin-bottom: 12px;
-}
-.pedia-back {
-  background: none;
-  border: none;
-  color: #d4a94e;
-  padding: 0;
-  margin-bottom: 6px;
-  cursor: pointer;
-  font: inherit;
-}
-.pedia-facts {
-  display: grid;
-  gap: 6px;
-  margin: 12px 0;
-}
-.pedia-facts > div {
-  display: grid;
-  grid-template-columns: 170px 1fr;
-  gap: 12px;
-}
-.pedia-facts dt {
-  opacity: 0.65;
-}
-.pedia-facts dd {
-  margin: 0;
-}
+/* Civilopedia links (the rest of the Civilopedia's look is in menu.css) */
 .pedia-link {
   background: none;
   border: none;
@@ -2761,24 +2673,6 @@ kbd {
   text-decoration: underline dotted;
   cursor: pointer;
   font: inherit;
-}
-@media (max-width: 760px) {
-  .pedia-body {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 160px 1fr;
-  }
-  .pedia-cats {
-    display: flex;
-    overflow-x: auto;
-    border-right: none;
-  }
-  .pedia-cats button {
-    white-space: nowrap;
-    width: auto;
-  }
-  .pedia-facts > div {
-    grid-template-columns: 120px 1fr;
-  }
 }
 
 /* Advisors */

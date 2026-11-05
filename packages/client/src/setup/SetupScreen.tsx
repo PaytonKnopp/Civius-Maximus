@@ -5,6 +5,7 @@ import { LeaderDetail, LeaderPicker } from '../ui/LeaderPicker';
 import { LeaderHead, leaderArt } from '../ui/LeaderCard';
 import { Choice, MenuScreen, Row, Section, Switch } from '../ui/Menu';
 import { MapPreview } from './MapPreview';
+import { MapTypeCards } from './MapTypes';
 import {
   loadPresets,
   type NewGameOptions,
@@ -291,20 +292,11 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
     <div className="mx-world">
       <div className="mx-world-main">
         <Section title="Map type" hint={t(e.mapScript[o.script]?.description ?? '')}>
-          <div className="mx-cards">
-            {content.ids.mapScript.map((id) => (
-              <button
-                key={id}
-                type="button"
-                className={`mx-card ${o.script === id ? 'on' : ''}`}
-                aria-pressed={o.script === id}
-                onClick={() => setO({ ...o, script: id })}
-                title={t(e.mapScript[id]!.description ?? '')}
-              >
-                <strong>{t(e.mapScript[id]!.name)}</strong>
-              </button>
-            ))}
-          </div>
+          <MapTypeCards
+            content={content}
+            value={o.script}
+            onChange={(script) => setO({ ...o, script })}
+          />
         </Section>
         <Section
           title="Map size"
@@ -698,7 +690,7 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
         <div className="mx-start-actions">
           {page !== 'rules' ? (
             <button type="button" onClick={() => setPage(page === 'players' ? 'world' : 'rules')}>
-              Next
+              Next: {page === 'players' ? 'World' : 'Rules'} <span aria-hidden="true">›</span>
             </button>
           ) : null}
           <button
@@ -896,7 +888,7 @@ function SeatDetail({
 
       {pick.leader ? (
         <div className="mx-seat-leader" style={{ ['--seat' as string]: seatColor ?? undefined }}>
-          <LeaderDetail content={content} leader={pick.leader} />
+          <LeaderDetail content={content} leader={pick.leader} portraitSize={150} />
         </div>
       ) : (
         <div className="mx-seat-random">

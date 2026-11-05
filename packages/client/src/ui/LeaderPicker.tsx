@@ -39,11 +39,13 @@ export function LeaderDetail({
   content,
   leader,
   compact = false,
+  portraitSize = 190,
 }: {
   content: CompiledContent;
   leader: string;
   /** Without the portrait (it's shown elsewhere). */
   compact?: boolean;
+  portraitSize?: number;
 }) {
   const ctx: EngineContext = useMemo(() => ({ content }), [content]);
   const t = (text: string) => resolveText(content, text);
@@ -88,7 +90,7 @@ export function LeaderDetail({
     <div className="mx-leader">
       {!compact && (
         <div className="mx-leader-hero">
-          <LeaderCard content={content} leader={leader} size={190} />
+          <LeaderCard content={content} leader={leader} size={portraitSize} />
           <div className="mx-leader-id">
             <div className="mx-leader-civ">
               <Emblem
