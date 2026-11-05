@@ -17,10 +17,11 @@ import {
   questsOf,
   validateAction,
 } from '@cx/engine';
-import { useEffect } from 'react';
+
 import { civName, whole } from './model';
 import { Icon } from '../ui/Icon';
 import { EMOJI_ICONS } from '../ui/icons';
+import { useEscape } from '../ui/Menu';
 
 interface Props {
   ctx: EngineContext;
@@ -32,11 +33,7 @@ interface Props {
 
 /** Every city-state you've met: what envoys there give you, who leads it, its quests. */
 export function CityStatesScreen({ ctx, state, viewer, act, onClose }: Props) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const me = state.players[viewer]!;
   const ids = cityStateIds(state);
   const met = ids.filter((id) => state.cityStates[id]!.met.includes(viewer));
@@ -162,7 +159,9 @@ export function CityStateCard({
               </li>
             ))}
             <li className={`suz ${cs.suzerain === viewer ? 'on' : ''}`}>
-              <span className="cs-tier-n">★</span>
+              <span className="cs-tier-n" title="Suzerain">
+                <Icon name="capital" size={18} />
+              </span>
               <span>
                 <strong>{t(def.suzerain.name)}</strong>: {t(def.suzerain.description)}
               </span>
@@ -171,8 +170,10 @@ export function CityStateCard({
           <ul className="cs-quests">
             {questsOf(ctx, state, id).map((q) => (
               <li key={q.id} className={done.includes(q.id) ? 'on' : ''}>
-                <span aria-hidden="true">{done.includes(q.id) ? '✓' : '◇'}</span> {q.text}{' '}
-                <small>+{ctx.content.rules.cityStates.questEnvoys} envoy</small>
+                <span className="cs-quest-mark" aria-label={done.includes(q.id) ? 'Done' : 'To do'}>
+                  {done.includes(q.id) && <Icon name="check" size={15} />}
+                </span>{' '}
+                {q.text} <small>+{ctx.content.rules.cityStates.questEnvoys} envoy</small>
               </li>
             ))}
           </ul>

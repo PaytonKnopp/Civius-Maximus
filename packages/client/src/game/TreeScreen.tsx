@@ -18,7 +18,8 @@ import {
 import { Icon } from '../ui/Icon';
 import { buildingIcon, ICONS } from '../ui/icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { showTurns, turnsFor, whole } from './model';
+import { turnsFor, turnsLabel, whole } from './model';
+import { useEscape } from '../ui/Menu';
 
 const NODE_W = 264;
 const NODE_H = 138;
@@ -153,11 +154,7 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
     return () => box.removeEventListener('wheel', onWheel);
   }, []);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
 
   const choose = (id: string) =>
     act(
@@ -185,13 +182,13 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
         </div>
         <p className="screen-sub">
           {track.current
-            ? `${name(track.current)} · ${showTurns(
+            ? `${name(track.current)} · ${turnsLabel(
                 turnsFor(
                   nodeCost(ctx, state, kind, track.current),
                   track.progress[track.current] ?? 0,
                   perTurn,
                 ),
-              )} turns`
+              )}`
             : 'Pick something to work toward. Clicking anything queues the path to it.'}
           <span className="muted">
             {' '}
@@ -343,16 +340,14 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
                     <span className="node-name">{name(id)}</span>
                     <span className="node-meta mono">
                       {isDone ? (
-                        '✓'
-                      ) : order >= 0 ? (
-                        `${order + 1} · ${showTurns(turns)}t`
-                      ) : steps > 1 ? (
+                        <Icon name="check" size={18} title="Done" />
+                      ) : order >= 0 || steps <= 1 ? (
+                        turnsLabel(turns)
+                      ) : (
                         <>
                           {whole(cost)}
                           {icon}
                         </>
-                      ) : (
-                        `${showTurns(turns)}t`
                       )}
                     </span>
                   </span>
@@ -374,7 +369,7 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
                   )}
                   {node.boost && !isDone && (
                     <span className={`node-boost ${boosted ? 'got' : ''}`}>
-                      ⚡ {resolveText(content, node.boost.text)}
+                      <Icon name="boost" size={15} /> {resolveText(content, node.boost.text)}
                       {!boosted && goal && goal.need > 1 && (
                         <span className="mono">
                           {' '}

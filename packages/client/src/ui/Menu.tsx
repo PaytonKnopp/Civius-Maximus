@@ -19,6 +19,9 @@ function onEscape(e: KeyboardEvent) {
   top();
 }
 
+/** Whether a screen or dialog that closes with Escape is open (the map's own keys wait). */
+export const escapeOpen = () => escapeStack.length > 0;
+
 /**
  * Escape closes the topmost thing that asked for it (a picker over a screen closes before the
  * screen does). `active` false leaves the key to whatever is underneath.

@@ -40,6 +40,7 @@ import {
 import { scaleCost } from '../speed';
 import { loyaltyPenalty } from '../loyalty/loyalty';
 import { greatWorkYields } from '../greatworks/greatworks';
+import { withArticle } from '../text';
 
 /**
  * Settlement rules as pure functions of the game state (docs/03-core-mechanics.md, section 3).
@@ -947,7 +948,7 @@ export function itemProblem(
     const needed = ctx.content.entities.district[b.district];
     return {
       code: 'needs_district',
-      message: `Needs a ${needed ? resolveText(ctx.content, needed.name) : b.district} first`,
+      message: `Needs ${withArticle(needed ? resolveText(ctx.content, needed.name) : b.district)} first`,
     };
   }
   if (
@@ -957,7 +958,7 @@ export function itemProblem(
     const needed = ctx.content.entities.building[b.requiresBuilding];
     return {
       code: 'needs_building',
-      message: `Needs a ${needed ? resolveText(ctx.content, needed.name) : b.requiresBuilding} first`,
+      message: `Needs ${withArticle(needed ? resolveText(ctx.content, needed.name) : b.requiresBuilding)} first`,
     };
   }
   return undefined;

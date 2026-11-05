@@ -2,6 +2,7 @@ import type { EngineContext, GameState, PlayerId, TurnStats } from '@cx/engine';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { civName } from './model';
 import { Icon } from '../ui/Icon';
+import { useEscape } from '../ui/Menu';
 
 /**
  * Series colors for the graphs: a categorical palette validated for colorblind separation on
@@ -38,11 +39,7 @@ interface Props {
 
 /** Everyone's numbers over the game, one measure at a time. */
 export function GraphsScreen({ ctx, state, viewer, onClose }: Props) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const [measure, setMeasure] = useState<keyof TurnStats>('score');
   return (
     <div className="screen" role="dialog" aria-label="Graphs">
@@ -167,10 +164,19 @@ export function HistoryChart({
               </text>
             </g>
           ))}
-          {[first, Math.round((first + last) / 2), last].map((t) => (
-            <text key={t} className="axis" x={x(t)} y={H - 8} textAnchor="middle">
-              {t}
-            </text>
+          {turnTicks(first, last).map((t) => (
+            <g key={`t${t}`}>
+              <line
+                className="grid turn"
+                x1={x(t)}
+                x2={x(t)}
+                y1={H - PAD.bottom}
+                y2={H - PAD.bottom + 4}
+              />
+              <text className="axis" x={x(t)} y={H - 8} textAnchor="middle">
+                {t}
+              </text>
+            </g>
           ))}
           {series.map((s) => (
             <polyline
@@ -250,4 +256,16 @@ function niceTicks(max: number): number[] {
   const out = [];
   for (let v = 0; v < max + step; v += step) out.push(Math.round(v));
   return out.length > 1 ? out : [0, step];
+}
+
+/** Turns to mark along the bottom: round numbers (every 10, 25, 50 or 100 turns), about six. */
+function turnTicks(first: number, last: number): number[] {
+  const span = Math.max(1, last - first);
+  const step = [5, 10, 25, 50, 100, 200].find((n) => span / n <= 7) ?? 500;
+  const out: number[] = [];
+  for (let t = Math.ceil(first / step) * step; t <= last; t += step) out.push(t);
+  // The first and last turns are worth showing too, unless a round tick is next to them.
+  if (out.length === 0 || out[0]! - first > step * 0.4) out.unshift(first);
+  if (last - out[out.length - 1]! > step * 0.4) out.push(last);
+  return out;
 }

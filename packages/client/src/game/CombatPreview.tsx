@@ -1,4 +1,5 @@
 import type { CombatPreview as Preview, StrengthLine } from '@cx/engine';
+import { Icon } from '../ui/Icon';
 
 export interface Side {
   name: string;
@@ -121,7 +122,7 @@ export function CombatPreview({ preview, attacker, defender, hint, warning }: Pr
           <HealthBar side={attacker} loss={preview.toAttacker} />
         </div>
         <div className="vs" aria-hidden="true">
-          ⚔
+          <Icon name="war" size={26} />
         </div>
         <div className="side">
           <p className="side-name">{defender.name}</p>

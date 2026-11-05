@@ -152,6 +152,130 @@ sizes, and fixed where it looked or worked worse than it should.
   banners are about 60% larger, with a larger status line. Research and civic names on phones
   wrap between words.
 
+**Final design pass (November 2026):** the last full pass over every screen, built on UI pass 2
+(nothing it added was undone). Its styles are in `packages/client/src/finish.css`, loaded last.
+- *Top bar:* every yield shows its change per turn at every width from 1180 px up (gold turns red
+  when it falls), and every number has a breakdown on hover: science, culture and faith by
+  settlement (the six biggest, then the rest), gold by settlements, towns selling production,
+  unit and building upkeep, influence by source, and the celebration's progress with the
+  happiness surplus and the turns to go (a thin bar under the number). Small laptops (1001 to
+  1180 px) use the tablets' two rows, so no number is clipped; on phones the yields have the whole
+  first row and the menu and 3D/2D switch move to the end of the second.
+- *Civs:* each chip is the leader's face in the civ's color with one badge (war, alliance,
+  friends, an offer waiting, away, turn ended) drawn from the icon set instead of emoji, and a
+  tooltip with the civ, leader, score and relation. With seven civs or more, on laptops and on
+  phones, rivals show their faces only (your chip keeps its name), in one row; turn-ended marks
+  only show for other people (AI seats always finish at once).
+- *Notices* are short toasts in the text face, not engraved capitals; on phones they span the
+  width under the chips and only the newest two show.
+- *Diplomacy* is a dialog face to face with the leader: their painted portrait and words on the
+  left; on the right the relation as a pill with its icon, tiles for score, army (beside
+  yours), settlements and opinion (with what it means: friendly, open to friendship, open to an
+  alliance... from the rules' own thresholds), the agenda, why they feel that way, their kit,
+  and the actions in a row (deal in gold, war in red). It no longer runs under the Next button.
+  On phones it is one column with a small portrait.
+- *City panel:* the six yields and happiness sit in one row of cells; strength, health, walls and
+  religion are chips with their icons; below the production queue, tabs: Build or buy (Town for
+  towns), Citizens, and Buildings (with a count). The tab is remembered for the next city;
+  placing a district shows the build list and buying tiles the citizens.
+- *Lenses:* the minimap's plain dropdown is now a picker with each lens's icon and what it shows,
+  and the lens in use gets a legend (best sites, resource kinds, each religion's color, loyalty
+  gaining or losing). Phones, which have no minimap, get it as a round button beside Next.
+- *Game menu (☰):* every entry has its icon and key, Return to game comes first, and a click
+  outside closes it.
+- *Map numbers:* damage, "Destroyed" and disaster names play one after another (160 ms apart)
+  instead of all at once, damage waiting for the same tile adds up into one number, a long
+  backlog keeps only the newest, and the 2D view stacks numbers on one tile like the 3D one.
+  Loading a save or a big AI turn no longer piles them up.
+- *Icons, not emoji:* new icons for alliance, friends, a letter (offers), away, a timer, a pin,
+  a lock, a boost, a globe, a cloud, a target, a relic, a nuclear strike and refresh; the
+  remaining emoji in the HUD, the city panel, the turn timer and the online code are icons, and
+  any emoji still written in text (content, labels on the map) is drawn as its icon.
+- *Wording:* "1 turn", never "1 turns"; "an Encampment", never "a Encampment" (`withArticle` in the
+  engine's messages and the client's notices).
+- *Full screens share a summary band:* big numbers with their icon at the top (`.screen-band`),
+  so each screen says where you stand before the details.
+- *Victories:* a card for each way to win in its color (how to win it, your progress and place,
+  the three civs furthest along, or "no one has made a start yet"), the score race with the turns
+  left, then the whole table with an icon on each column. Phones show the cards only.
+- *Religion:* faith (and per turn), your pantheon or religion, the Great Prophet race (points,
+  turns to go) and your followers on top; the way to a religion as four steps (pantheon, Great
+  Prophet, religion, spread it) with the one you are on lit; beliefs as cards with their kind;
+  the world's religions as cards in their map color with the founder's face, holy city,
+  followers, beliefs and the race to win. Religion and Great Prophets have their own icons now
+  (a radiant star; a figure with a halo), no longer the faith flame.
+- *Government:* Policies and Governments tabs. Policies: your government as a plate (its slots,
+  Change government…), the slots by kind beside the card catalog (filter by kind, with counts),
+  so a swap never needs a scroll. Cards drag into slots (onto a full slot to swap, back to the
+  catalog to take out) or go in with a click; empty slots are dashed and light up when a card
+  that fits is dragged; a bar at the bottom counts the changes and confirms them with the cost.
+  Governments: every government as a card with its slots, Adopt and its cost, or what it needs.
+- *Great works:* totals (works on display, empty slots, themed buildings, tourism and culture
+  from works), then each settlement as a gallery: every slot a gilt frame with the kind's icon,
+  the work and its maker, empty frames dashed with the kind they take; few galleries center.
+- *World Congress:* favor, the next session (or when it forms), your diplomatic points and the
+  resolutions in force on top; the session or what comes next beside the diplomatic race with
+  every leader's face.
+- *Climate:* the phases as a track (Stable, Warming... with their thresholds, the current one
+  lit), then emissions, the latest disasters and what can strike.
+- *Eras:* the era score bar names its thresholds (Dark, Golden). *Help* uses the menus' switches.
+  *Tech and civic trees:* "8 turns" instead of "8t", the boost and done marks are icons.
+- *City banners* keep one size on screen in 3D, wherever the city is in the view and at every
+  zoom (a little smaller right up close and far out); a banner with a status line is drawn
+  taller rather than squeezed, and a capital wears the icon set's star. The 2D banners match
+  them: the population in the owner's colors, the name, and what your own settlements are making.
+- *Tile card* leads with what the tile yields, large; the sources show only when there is more than
+  one (the raw coordinates are gone).
+- *Deal screen:* both leaders' faces, each side's treasury, gold fields with their icon, the pacts
+  as toggles with their icons, and the rival's answer in advance as a colored line (it opens above
+  the diplomacy dialog).
+- *End of the game* speaks to you ("your expedition reached another star" when you win, "their"
+  when you lose); when you are eliminated it says "Japan has fallen" over your own portrait in
+  grey. A captured city's choices keep their second line readable on the gold button.
+- *Leader picker:* the thirty rows keep their height and the list scrolls (they used to shrink,
+  squeezing each row under its portrait); the filter strip fades at its edge; on phones the list
+  gets half the screen and the portrait is smaller.
+- *New game World page:* a map type's picture shimmers in its place until it is drawn, instead of
+  leaving a bare title.
+- *Small marks from the icon set:* promotions on the unit card, the suzerain line and quests on
+  City-states. *Graphs* mark round turns (every 10, 25, 50... turns) along the bottom.
+- *Escape* closes the topmost layer everywhere in a game too: every full screen, diplomacy and the
+  deal screen share the menus' Escape stack (`useEscape`), and the map's shortcuts wait while one is
+  open (Esc on the deal screen used to close both it and the diplomacy dialog beneath).
+- *Busy late games:* twelve civs' faces fit one row on a laptop; a long city name ends in an
+  ellipsis with the full name in its tooltip; a long Next label ("Decide Konstantinopolis's fate")
+  takes two smaller lines, and the rivals' progress reads "Rivals moving · 3/7".
+- *Larger text* (Options › Interface) now also enlarges the game's full screens, dialogs and the
+  unit, city and tile cards (the map and the top bar keep their size).
+- *City build list:* each row is the item's icon, its name, and under it the cost and "6 turns"
+  (and how far along it is), with Build, queue and buy at the end, like the Civ games' production
+  list.
+- *Hotseat:* the pass-the-device screen shows the next player's leader portrait in their color,
+  with their name and civ, instead of a colored square.
+- *Online:* an away friend's line carries the away icon. On phones the screen buttons fade out
+  under the menu instead of being cut by it.
+- *Combat preview:* the crossed swords between the two sides are the icon set's; the first-game
+  hint steps aside while a preview shows (it used to show through beneath it).
+- *Map Lab:* the building showcase names its towns as a player would read them ("East Asian ·
+  Classical · burning"), not by internal ids.
+- *One close button:* the round brass ✕ of the full screens on every card and dialog too (the
+  city and unit cards, diplomacy, the tile card, the turn summary), a size smaller off the screen
+  headers.
+- *Tablets* keep the era beside the turn number (the second row has room); diplomacy's four tiles
+  sit in one row where they fit and two by two where they don't.
+- *Wide screens (2560 px):* Options keeps its tabs and panel together in a centered column, and
+  the Civilopedia centers its article beside the tree, instead of leaving a narrow panel at the
+  top left.
+- *The last emoji* in menus are icons: cloud saves, the title screen's full-screen switch (a new
+  icon) and New world on the World page (refresh).
+- *Section titles* placed straight in a screen's column center with it on wide screens.
+- *How it was checked:* every screen as it renders, from games saved at turns 5, 60, 150 and 300
+  (8 and 12 civs, standard and large maps) at 2560, 1920, 1440, 1280, 1280 x 640, a tablet and a
+  phone, in 2D and 3D, with larger text, at the end of the game by each victory, in a peace offer,
+  a deal, a captured city and an elimination. `scripts/screenshot-screens.mjs` repeats the in-game
+  part from any save; every bundled screenshot script passes with no console errors and nothing
+  wider than the screen.
+
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
 show each leader's face. A rival's diplomacy panel shows their portrait and a line in their

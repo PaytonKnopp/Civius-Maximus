@@ -97,6 +97,7 @@ if (want('setup')) {
     const page = await open(size);
     await page.click('.home-entry:has-text("New game")');
     await page.waitForSelector('.mx-setup');
+    await page.waitForTimeout(400);
     await shot(page, `setup-${size}-players-random`);
     await page.click('button:has-text("Choose leader")');
     await page.waitForSelector('.mx-picker');
@@ -158,6 +159,7 @@ if (want('fame')) {
     const page = await open(size, seeded);
     await page.click('.home-entry:has-text("Hall of Fame")');
     await page.waitForSelector('.mx-fame');
+    await page.waitForTimeout(400);
     await shot(page, `fame-${size}`);
     await overflow(page, `fame-${size}`);
     await page.close();
@@ -169,6 +171,7 @@ if (want('load')) {
     const page = await open(size);
     await page.click('.home-entry:has-text("Load game")');
     await page.waitForSelector('.mx-saves');
+    await page.waitForTimeout(400);
     await shot(page, `load-${size}`);
     await page.close();
   }
@@ -178,8 +181,10 @@ if (want('online')) {
   const page = await open('desktop');
   await page.click('.home-entry:has-text("Play online")');
   await page.waitForSelector('.mx-online');
+  await page.waitForTimeout(400);
   await shot(page, 'online-host');
   await page.click('.mx-online-mode button:has-text("Join with a code")');
+  await page.waitForTimeout(300);
   await shot(page, 'online-join');
   await page.close();
 }

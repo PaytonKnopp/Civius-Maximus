@@ -12,6 +12,7 @@ import {
   type SaveSummary,
   storeSave,
 } from '../game/storage';
+import { Icon } from '../ui/Icon';
 import { LeaderHead, leaderArt } from '../ui/LeaderCard';
 import { MenuScreen, Section } from '../ui/Menu';
 import { ago, describeSave } from './saveInfo';
@@ -288,7 +289,9 @@ export function SavesScreen({
               <ul className="mx-save-list">
                 {cloudSaves.map((s) => (
                   <li key={s.id}>
-                    <span className="mx-random-head small">☁</span>
+                    <span className="mx-random-head small">
+                      <Icon name="cloud" size={30} />
+                    </span>
                     <div className="mx-save-text">
                       <strong>{s.name}</strong>
                       <span>turn {s.turn}</span>

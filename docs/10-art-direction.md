@@ -249,3 +249,12 @@ the normal of the terrain itself (`matchEdgeNormals` in `World3D.ts`), so both s
 tablets (641 to 1000 px) the top bar is two rows (yields, then the screen buttons) instead of
 overlapping, and the hint card starts below the civ chips. Birds were tried and dropped: from this
 camera angle they read as dark shards, not birds.
+
+**Final design pass (map labels).** City banners in 3D are drawn at a constant size on screen
+(`sizeAttenuation: false`, about 4% of the view's height for a one-line banner), the way the Civ
+games' banners read, so a city at the near edge of the tilted view no longer has a banner twice the
+size of one at the far edge; they shrink a little right up close (the city shows) and far out (the
+strategic view is not crowded). The capital's star is the icon set's, drawn on the banner. The 2D
+banners now carry the same information as the 3D ones (population medallion in the owner's colors,
+name, production line), and numbers rising over the map are queued and merged per tile instead of
+piling up.

@@ -298,7 +298,7 @@ times depend on the machine, the shape of the curve doesn't):
   growing. Memory stays flat (no leak), and saves grow slowly.
 - **Still short of the 300 ms target** for an 8-player Standard game at turn 250 (about 1.1 s).
   The turn runs in a Web Worker, so the page never freezes; the End Turn button shows
-  "The world is turning…" and then "Rivals are moving… 3 of 7". Closing the rest of the gap
+  "The world is turning…" and then "Rivals moving · 3/7". Closing the rest of the gap
   needs a different shape of turn processing (reading unchanged parts of the state without
   Immer proxies), which is its own piece of work.
 - **Games are identical to before the pass:** the same seed plays out to the same state hash

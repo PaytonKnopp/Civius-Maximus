@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { advisorsOn, setAdvisors } from './advisors';
 import { hintsOn, setHints } from './hints';
 import { Icon } from '../ui/Icon';
+import { Switch, useEscape } from '../ui/Menu';
 
 export const KEYS: [string, string][] = [
   ['Enter', 'The next thing that needs you (then End turn)'],
@@ -51,11 +52,7 @@ export function HelpScreen({
   /** Opens the Civilopedia instead. */
   onPedia?: () => void;
 }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const [hints, setOn] = useState(hintsOn);
   const [advisors, setAdvisorsOn] = useState(advisorsOn);
   return (
@@ -80,7 +77,7 @@ export function HelpScreen({
       <div className="help-body">
         <section>
           <h3>Keyboard</h3>
-          <dl className="keys">
+          <dl className="keys mx-keys">
             {KEYS.map(([k, what]) => (
               <div key={k}>
                 <dt>
@@ -93,7 +90,7 @@ export function HelpScreen({
         </section>
         <section>
           <h3>Mouse and touch</h3>
-          <dl className="keys">
+          <dl className="keys mx-keys">
             {MOUSE.map(([k, what]) => (
               <div key={k}>
                 <dt>{k}</dt>
@@ -101,31 +98,27 @@ export function HelpScreen({
               </div>
             ))}
           </dl>
-          <h3>First-game hints</h3>
-          <label className="toggle">
-            <input
-              type="checkbox"
+          <h3>Hints and advisors</h3>
+          <div className="help-switches">
+            <Switch
+              label="First-game hints"
+              hint="A short note the first time something this game does its own way comes up. Turning them on starts them over."
               checked={hints}
-              onChange={(e) => {
-                setHints(e.target.checked);
-                setOn(e.target.checked);
+              onChange={(on) => {
+                setHints(on);
+                setOn(on);
               }}
-            />{' '}
-            Show a short note the first time something new comes up (turning this on starts them
-            over)
-          </label>
-          <h3>Advisors</h3>
-          <label className="toggle">
-            <input
-              type="checkbox"
+            />
+            <Switch
+              label="Advisors"
+              hint="Each turn, tips from your military, economic, culture and foreign advisors."
               checked={advisors}
-              onChange={(e) => {
-                setAdvisors(e.target.checked);
-                setAdvisorsOn(e.target.checked);
+              onChange={(on) => {
+                setAdvisors(on);
+                setAdvisorsOn(on);
               }}
-            />{' '}
-            Each turn, tips from your military, economic, culture and foreign advisors
-          </label>
+            />
+          </div>
         </section>
       </div>
     </div>

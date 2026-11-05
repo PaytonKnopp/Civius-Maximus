@@ -1,0 +1,2635 @@
+/* The final design pass (docs/06-ui-ux.md, "Final design pass"). Loaded last: the map HUD's
+   chips and notices, and the shared pieces the redone screens use (a summary band of big
+   numbers, cards with an icon and a color, steps). Tokens come from theme.css. */
+
+/* --- Civs: a leader's face with a badge for war, a pact, an offer, away or done ------------ */
+
+.player-chip {
+  gap: 8px;
+  padding: 3px 12px 3px 3px;
+}
+
+.player-chip .chip-head {
+  position: relative;
+  margin: 0;
+  border-width: 2px;
+}
+
+.player-chip .chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.chip-badge {
+  position: absolute;
+  right: -6px;
+  bottom: -5px;
+  display: inline-flex;
+  line-height: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+.player-chip.done::after {
+  content: none;
+}
+
+.player-chip.done .chip-name {
+  color: var(--muted);
+}
+
+.player-chip.me {
+  border-color: rgba(240, 212, 140, 0.7);
+}
+
+.player-chip.war {
+  border-color: #c0503c;
+}
+
+.player-chip.open {
+  border-color: var(--gold-hi);
+  box-shadow:
+    0 0 0 1px var(--gold-hi),
+    0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.player-chip.offer {
+  box-shadow:
+    0 0 0 2px rgba(240, 212, 140, 0.55),
+    0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.player-chip.offer .chip-badge {
+  animation: chip-call 1.6s ease-in-out infinite;
+}
+
+@keyframes chip-call {
+  50% {
+    transform: translateY(-2px) scale(1.12);
+  }
+}
+
+.player-chip.dead {
+  opacity: 0.6;
+  text-decoration: none;
+}
+
+.player-chip.dead .chip-head {
+  filter: grayscale(1) brightness(0.7);
+}
+
+.player-chip.dead .chip-name {
+  text-decoration: line-through;
+}
+
+/* Seven civs or more (and every laptop and phone): faces only, in one row; the name, score and
+   relation are in the tooltip. Your own chip keeps its name. */
+.players.many .player-chip:not(.me),
+.players .player-chip.dead {
+  padding: 3px;
+}
+
+.players.many .player-chip:not(.me) .chip-name,
+.players .player-chip.dead .chip-name {
+  display: none;
+}
+
+@media (max-width: 1440px) {
+  .players .player-chip:not(.me) {
+    padding: 3px;
+  }
+
+  .players .player-chip:not(.me) .chip-name {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .players {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-width: calc(100% - 16px);
+    padding: 4px 6px 6px 2px;
+    gap: 5px;
+    scrollbar-width: none;
+  }
+
+  .players::-webkit-scrollbar {
+    display: none;
+  }
+
+  .players .player-chip {
+    flex: none;
+    padding: 2px;
+  }
+
+  .players .player-chip .chip-name {
+    display: none;
+  }
+}
+
+/* --- Notices: short toasts under the top bar, in the text face ------------------------------ */
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 460px;
+  padding: 8px 16px 8px 14px;
+  border-left: 3px solid var(--gold);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  color: var(--text);
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .notices {
+    left: 8px;
+    right: 8px;
+    transform: none;
+    max-width: none;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .notice {
+    max-width: none;
+    padding: 6px 12px 6px 10px;
+    font-size: 12.5px;
+  }
+
+  /* Only the newest two fit above the map's middle. */
+  .notice:nth-last-child(n + 3) {
+    display: none;
+  }
+}
+
+/* --- Top bar: every yield with its change per turn, at every width ----------------------- */
+
+.empire-yields li {
+  gap: 5px;
+}
+
+.empire-yields .delta,
+.empire-yields .delta.mono {
+  display: inline;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  opacity: 0.85;
+}
+
+.empire-yields .delta.neg {
+  color: #ff9a85;
+  opacity: 1;
+}
+
+.empire-yields .val small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.empire-yields .celebrating-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Celebration progress: the number over a thin bar. */
+.yield-meter {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.05;
+}
+
+.yield-meter > i {
+  display: block;
+  width: 100%;
+  min-width: 36px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    #e0a63a calc(var(--v) * 100%),
+    rgba(255, 255, 255, 0.1) calc(var(--v) * 100%)
+  );
+}
+
+@media (min-width: 1001px) and (max-width: 1440px) {
+  .empire-yields li {
+    padding: 0 7px;
+    gap: 4px;
+  }
+
+  .empire-yields .icon {
+    width: 19px;
+    height: 19px;
+  }
+
+  .empire-yields li .val {
+    font-size: 13.5px;
+  }
+
+  .empire-yields .delta {
+    font-size: 11px;
+  }
+}
+
+/* Small laptops: like tablets, the yields and the screen buttons take a row each (theme.css has
+   the same layout up to 1000px), so no number is clipped. */
+@media (min-width: 1001px) and (max-width: 1180px) {
+  :root {
+    --topbar-h: 94px;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 0;
+  }
+
+  .empire-yields {
+    height: 52px;
+    max-width: calc(100% - 8px);
+  }
+
+  .topbar-right {
+    width: 100%;
+    height: 42px;
+    border-top: 1px solid rgba(201, 161, 79, 0.25);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .turn-pill .era,
+  .turn-pill .turn-label {
+    display: inline;
+  }
+
+  .hint-card {
+    top: calc(var(--topbar-h) + 64px);
+  }
+}
+
+/* --- The game menu (☰): an icon, the entry, its key ---------------------------------------- */
+
+.menu-pop {
+  min-width: 236px;
+  gap: 1px;
+  animation: notice-in 160ms var(--ease);
+}
+
+.menu-pop button[role='menuitem'] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  font-size: 14.5px;
+}
+
+.menu-pop button[role='menuitem'] .icon {
+  flex: none;
+  color: var(--gold);
+  opacity: 0.9;
+}
+
+.menu-pop button[role='menuitem']:hover .icon {
+  color: var(--gold-1);
+  opacity: 1;
+}
+
+.menu-pop button[role='menuitem'] kbd {
+  margin-left: auto;
+}
+
+.menu-pop button[role='menuitem']:first-child {
+  margin-bottom: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-2);
+  border-radius: 4px 4px 0 0;
+}
+
+.online-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- Research and civic trackers: long names take two lines instead of an ellipsis -------- */
+
+.tracker-name.long {
+  display: -webkit-box;
+  font-size: 13.5px;
+  line-height: 1.12;
+  white-space: normal;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* --- Diplomacy: face to face with a leader ------------------------------------------------ */
+
+.diplo-backdrop {
+  z-index: 30;
+}
+
+.player-panel.diplo {
+  position: relative;
+  inset: auto;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 0;
+  width: min(880px, calc(100% - 32px));
+  max-height: calc(100dvh - 40px);
+  padding: 0;
+  overflow: hidden;
+  animation: dialog-rise 240ms var(--ease);
+}
+
+@keyframes dialog-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+}
+
+.diplo-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 18px;
+  background:
+    radial-gradient(
+      circle at 50% 28%,
+      color-mix(in srgb, var(--civ) 32%, transparent),
+      transparent 68%
+    ),
+    rgba(0, 0, 0, 0.28);
+  border-right: 1px solid var(--line-2);
+  overflow-y: auto;
+}
+
+.diplo-portrait .panel-quote {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.diplo-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 18px 22px 20px;
+  overflow-y: auto;
+}
+
+.diplo .player-panel-head h3 {
+  font-size: 24px;
+  letter-spacing: 0.06em;
+  color: var(--gold-1);
+}
+
+.diplo .player-panel-head .panel-head-portrait,
+.diplo .diplo-quote-small {
+  display: none;
+}
+
+.relation-pill {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 4px 14px 4px 5px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.relation-pill.war {
+  color: #ffb3a6;
+  border-color: rgba(192, 80, 60, 0.6);
+  background: rgba(192, 80, 60, 0.13);
+}
+
+.relation-pill.peace {
+  color: #c4e6a0;
+  border-color: rgba(120, 170, 90, 0.45);
+  background: rgba(120, 170, 90, 0.1);
+}
+
+.relation-pill.pact {
+  color: #a9e3e8;
+  border-color: rgba(80, 160, 170, 0.5);
+  background: rgba(80, 160, 170, 0.12);
+}
+
+.diplo-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 8px;
+}
+
+.diplo-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 12px 9px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.diplo-stat > span {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.diplo-stat > b {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--gold-1);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.diplo-stat > b.good {
+  color: #b9e08c;
+}
+
+.diplo-stat > b.bad {
+  color: #ff9a85;
+}
+
+.diplo-stat > small {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.diplo-agenda {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.diplo-agenda-label {
+  margin-right: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.diplo .opinion summary,
+.diplo .kit summary {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.diplo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-2);
+}
+
+.diplo-actions > button.wide {
+  flex: 1 1 150px;
+  width: auto;
+  min-height: 40px;
+}
+
+.diplo-actions > :not(button) {
+  flex-basis: 100%;
+}
+
+@media (max-width: 720px) {
+  .player-panel.diplo {
+    grid-template-columns: minmax(0, 1fr);
+    width: calc(100% - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  .diplo-portrait {
+    display: none;
+  }
+
+  .diplo .player-panel-head .panel-head-portrait {
+    display: inline-flex;
+  }
+
+  .diplo .diplo-quote-small {
+    display: block;
+    margin: 0;
+  }
+
+  .diplo-main {
+    padding: 14px 14px 16px;
+  }
+}
+
+/* Phones: the yields have the whole first row (the menu and the 3D/2D switch move to the end of
+   the second, after the screen buttons); the changes per turn are left out so all six fit. */
+@media (max-width: 640px) {
+  .empire-yields {
+    max-width: 100%;
+  }
+
+  .empire-yields li {
+    padding: 0 6px;
+    gap: 4px;
+  }
+
+  .empire-yields .icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .empire-yields .delta.mono {
+    display: none;
+  }
+
+  .yield-meter > i {
+    min-width: 28px;
+  }
+
+  .game-bar {
+    top: var(--topbar-h);
+    height: 42px;
+    padding-left: 34px;
+    /* The screen buttons scroll under it: they fade out instead of being cut by the menu. */
+    background: linear-gradient(90deg, transparent, #0e1b26 30px);
+  }
+
+  .topbar-right {
+    padding-right: 128px;
+  }
+
+  .game-bar .segmented.compact button {
+    padding: 3px 8px;
+  }
+}
+
+/* --- City panel: the overview on top, then tabs ------------------------------------------- */
+
+.settlement-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.capital-star {
+  display: inline-flex;
+  line-height: 0;
+}
+
+/* The six yields and happiness in one row of equal cells. */
+.settlement-panel .yield-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.settlement-panel .yield-row li {
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 5px 2px 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: rgba(0, 0, 0, 0.28);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.settlement-panel .yield-row li .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.settlement-panel .yield-row li:hover {
+  border-color: rgba(210, 172, 92, 0.45);
+  background: rgba(255, 236, 190, 0.05);
+}
+
+.settlement-panel .mood-line {
+  margin: -4px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.settlement-panel .defense-line {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.settlement-panel .defense-line > span,
+.settlement-panel .religion-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 4px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.settlement-panel .defense-line > span.hurt {
+  color: #ffb3a6;
+  border-color: rgba(192, 80, 60, 0.5);
+}
+
+.settlement-panel .religion-line {
+  align-self: flex-start;
+  margin: -2px 0 0;
+}
+
+.settlement-panel .wide.strike {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.queue-pin {
+  display: inline-flex;
+  margin-left: 6px;
+  vertical-align: -2px;
+}
+
+/* The tabs below the overview: build or buy, citizens and tiles, what's built. */
+.city-tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  margin-top: 4px;
+  padding: 2px;
+  border: 1px solid var(--line-2);
+  border-radius: calc(var(--radius-s) + 2px);
+  background: var(--well);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.city-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 6px;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.city-tabs button.on {
+  background: linear-gradient(180deg, #f2d48a, #c99a44);
+  border-color: #f6dfa0;
+  color: var(--brass-ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.city-tabs .tab-count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.35);
+  color: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.city-tabs button.on .tab-count {
+  background: rgba(60, 40, 10, 0.2);
+}
+
+.settlement-panel .city-tabs + section {
+  border-top: none;
+  padding-top: 2px;
+}
+
+/* Build list rows: the name, then its cost and turns underneath, the buttons at the end. */
+.settlement-panel .items .item-name {
+  min-width: 0;
+}
+
+.settlement-panel .items .item-name .muted.mono {
+  font-size: 11.5px;
+}
+
+/* --- Lenses: a picker under the minimap, with a legend for the lens in use ---------------- */
+
+/* The lens list opens over the Next button, so the minimap sits above it. */
+.corner .minimap {
+  z-index: 3;
+}
+
+.lens-picker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.lens-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px 4px 5px;
+  font-size: 13px;
+}
+
+.lens-button span {
+  flex: 1;
+  text-align: left;
+}
+
+.lens-button.on {
+  border-color: rgba(240, 212, 140, 0.65);
+  color: var(--gold-1);
+}
+
+.lens-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 12;
+  width: min(300px, calc(100vw - 24px));
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid rgba(210, 172, 92, 0.5);
+  border-radius: var(--radius);
+  background: var(--grain), linear-gradient(180deg, var(--lacquer-1), var(--lacquer-2));
+  box-shadow: var(--shadow-panel);
+  animation: notice-in 160ms var(--ease);
+}
+
+.lens-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+}
+
+.lens-menu button span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.lens-menu button strong {
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.lens-menu button small {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text-2);
+}
+
+.lens-menu button:hover:not(:disabled) {
+  background: rgba(255, 236, 190, 0.06);
+  border-color: rgba(210, 172, 92, 0.35);
+}
+
+.lens-menu button.on {
+  background: linear-gradient(90deg, rgba(210, 172, 92, 0.2), rgba(210, 172, 92, 0.04));
+  border-color: var(--gold-lo);
+}
+
+.lens-menu button.on strong {
+  color: var(--gold-1);
+}
+
+.lens-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0;
+  padding: 0 2px;
+  list-style: none;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.lens-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lens-legend i {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+  color: #10161c;
+  font: normal 700 9px/1 var(--font-body);
+}
+
+/* Phones have no minimap, but keep the lenses: a round button beside the Next button. */
+@media (max-width: 640px) {
+  .corner .next-action {
+    margin-right: 60px;
+  }
+
+  .corner .minimap {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: block;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .corner .minimap canvas {
+    display: none;
+  }
+
+  .corner .lens-picker {
+    align-items: flex-end;
+    margin: 0;
+  }
+
+  .corner .lens-button {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 4px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+  }
+
+  .corner .lens-button span,
+  .corner .lens-button kbd {
+    display: none;
+  }
+
+  .corner .lens-legend {
+    justify-content: flex-end;
+    width: max-content;
+    max-width: calc(100vw - 24px);
+    padding: 5px 8px;
+    border-radius: var(--radius);
+    background: rgba(10, 17, 23, 0.88);
+  }
+}
+
+/* --- Full screens: shared ------------------------------------------------------------------- */
+
+/* A header button with an icon reads like the rest of the header. */
+.screen-head > button.ghost.small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* A band of big numbers at the top of a screen: the state of things at a glance. */
+.screen-band {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.band-stat {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background:
+    var(--grain), linear-gradient(180deg, rgba(255, 246, 222, 0.06), rgba(255, 246, 222, 0.02));
+  box-shadow: inset 0 1px 0 rgba(255, 236, 190, 0.06);
+}
+
+.band-stat > .icon {
+  grid-row: 1 / span 2;
+}
+
+.band-stat > b {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--gold-1);
+  font-variant-numeric: tabular-nums lining-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.band-stat > span {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.band-stat.wide {
+  grid-column: span 2;
+}
+
+/* A name rather than a number: smaller, and on two lines if it must. */
+.band-stat > b.long {
+  font-size: 16px;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+/* Cards' own titles are titles, not engraved section rules. */
+.screen :is(.vic-card, .rel-card) :is(h3, h4) {
+  display: block;
+  text-transform: none;
+}
+
+.screen :is(.vic-card, .rel-card) :is(h3, h4)::after {
+  content: none;
+}
+
+@media (max-width: 640px) {
+  .screen-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .band-stat.wide {
+    grid-column: span 2;
+  }
+
+  .band-stat > b {
+    font-size: 20px;
+  }
+}
+
+/* --- Victories: a card for each way to win, then the whole table ------------------------- */
+
+.vic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.vic-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 16px 14px;
+  border: 1px solid var(--line-2);
+  border-top: 3px solid var(--tone);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(
+      120% 70% at 0% 0%,
+      color-mix(in srgb, var(--tone) 16%, transparent),
+      transparent 60%
+    ),
+    var(--grain), linear-gradient(180deg, rgba(255, 246, 222, 0.06), rgba(255, 246, 222, 0.02));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 190, 0.06),
+    0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.vic-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.vic-head .icon {
+  flex: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+.screen .vic-head h3 {
+  margin: 2px 0 2px;
+  font-size: 19px;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--tone) 55%, var(--gold-1));
+}
+
+.vic-head p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.vic-you {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(240, 212, 140, 0.3);
+  border-radius: var(--radius-s);
+  background: rgba(240, 212, 140, 0.07);
+}
+
+.vic-you-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-hi);
+}
+
+.vic-card .meter {
+  min-width: 0;
+  width: 100%;
+}
+
+.vic-card .meter-bar {
+  max-width: none;
+}
+
+.vic-rank {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vic-rank li {
+  display: grid;
+  grid-template-columns: 24px minmax(70px, 0.9fr) minmax(0, 1.4fr);
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.vic-rank li.you .vic-rank-name {
+  color: var(--gold-hi);
+  font-weight: 700;
+}
+
+.vic-rank-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vic-rank .vic-nobody {
+  display: block;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.screen h3.vic-table-title {
+  margin-top: 28px;
+}
+
+.vic-table-wrap {
+  overflow-x: auto;
+}
+
+.vic-th {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .screen h3.vic-table-title,
+  .vic-table-wrap {
+    display: none;
+  }
+
+  .vic-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* --- Religion: the way to a religion, beliefs, the world's religions ---------------------- */
+
+.rel-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.rel-steps li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 10px;
+  text-align: center;
+}
+
+/* The line joining one step to the next, from circle to circle. */
+.rel-steps li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 21px;
+  left: calc(50% + 24px);
+  right: calc(-50% + 24px);
+  height: 2px;
+  background: var(--line-2);
+}
+
+.rel-steps li.done:not(:last-child)::after {
+  background: linear-gradient(90deg, rgba(95, 208, 192, 0.7), rgba(95, 208, 192, 0.25));
+}
+
+.rel-step-n {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  background: #0c141b;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.rel-steps li.now .rel-step-n {
+  border-color: var(--gold);
+  color: var(--gold-1);
+  box-shadow: 0 0 0 4px rgba(210, 172, 92, 0.16);
+}
+
+.rel-steps li.done .rel-step-n {
+  border-color: rgba(95, 208, 192, 0.5);
+}
+
+.rel-step-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rel-step-text strong {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.rel-steps li.now .rel-step-text strong {
+  color: var(--gold-1);
+}
+
+.rel-steps li:not(.now):not(.done) .rel-step-text strong {
+  color: var(--text-2);
+}
+
+.rel-step-text small {
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--text-2);
+}
+
+@media (max-width: 760px) {
+  .rel-steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rel-steps li {
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 6px 0;
+    text-align: left;
+  }
+
+  .rel-steps li:not(:last-child)::after {
+    top: 44px;
+    bottom: -4px;
+    left: 17px;
+    right: auto;
+    width: 2px;
+    height: auto;
+  }
+
+  .rel-step-text {
+    padding-top: 6px;
+  }
+}
+
+.belief-grid .belief-card {
+  gap: 7px;
+  padding: 13px 14px 14px;
+}
+
+.belief-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.belief-card > strong {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--gold-1);
+}
+
+.belief-text {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.belief-card button {
+  margin-top: 4px;
+}
+
+.rel-mine {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.rel-mine strong,
+.rel-card header strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  color: var(--gold-1);
+}
+
+.rel-mine small,
+.rel-card header small {
+  display: block;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.rel-dot {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--rel);
+  box-shadow:
+    0 0 0 2px #0b1218,
+    0 0 0 3px color-mix(in srgb, var(--rel) 60%, #fff),
+    0 0 12px color-mix(in srgb, var(--rel) 60%, transparent);
+}
+
+.rel-empty {
+  margin: 0 auto;
+}
+
+.rel-world {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.rel-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line-2);
+  border-left: 3px solid var(--rel);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(
+      120% 80% at 0% 0%,
+      color-mix(in srgb, var(--rel) 14%, transparent),
+      transparent 60%
+    ),
+    var(--grain), linear-gradient(180deg, rgba(255, 246, 222, 0.05), rgba(255, 246, 222, 0.02));
+}
+
+.rel-card.mine {
+  border-color: rgba(240, 212, 140, 0.45);
+  border-left-color: var(--rel);
+}
+
+.rel-card header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rel-card header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.rel-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.rel-card-stats b {
+  font-size: 15px;
+  color: var(--text);
+}
+
+.rel-beliefs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rel-beliefs li {
+  padding: 2px 9px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 12px;
+  color: var(--text-2);
+  cursor: help;
+}
+
+/* --- Government: your government and its slots, the cards, the other governments --------- */
+
+.gv-screen {
+  display: flex;
+  flex-direction: column;
+}
+
+.gv-tabs {
+  display: flex;
+  align-self: center;
+  margin: 12px 0 0;
+}
+
+.gv-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px max(20px, calc((100% - 1400px) / 2)) 28px;
+}
+
+.gv-body.tab-policies .gv-govs,
+.gv-body.tab-governments .gv-main {
+  display: none;
+}
+
+/* Slots on the left, the cards beside them, so a swap never needs a scroll. */
+.gv-work {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+
+.gv-left {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.gv-plate-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.gv-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.gv-plate {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid rgba(240, 212, 140, 0.45);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(240, 212, 140, 0.12), transparent 60%), var(--grain),
+    linear-gradient(180deg, rgba(255, 246, 222, 0.06), rgba(255, 246, 222, 0.02));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 190, 0.08),
+    0 8px 22px rgba(0, 0, 0, 0.35);
+}
+
+.gv-kicker {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.screen .gv-plate h3 {
+  display: block;
+  margin: 2px 0 4px;
+  font-size: 24px;
+  letter-spacing: 0.08em;
+  color: var(--gold-1);
+}
+
+.screen .gv-plate h3::after {
+  content: none;
+}
+
+.gv-plate p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.gv-slot-sum {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.gv-slot-sum li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.gv-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.gv-row {
+  padding: 10px 12px 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--slot);
+  border-radius: var(--radius);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--slot) 9%, transparent),
+    transparent 55%
+  );
+}
+
+.gv-row.military,
+.gv-slot-sum .military {
+  --slot: #c0503c;
+}
+
+.gv-row.economic,
+.gv-slot-sum .economic {
+  --slot: #d4a94e;
+}
+
+.gv-row.diplomatic,
+.gv-slot-sum .diplomatic {
+  --slot: #4a8fc0;
+}
+
+.gv-row.wildcard,
+.gv-slot-sum .wildcard {
+  --slot: #a070c8;
+}
+
+.screen .gv-row h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--slot) 55%, #fff6de);
+}
+
+.screen .gv-row h4::after {
+  content: none;
+}
+
+.gv-row h4 small {
+  margin-left: auto;
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+}
+
+.gv-row-cards,
+.gv-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 10px;
+}
+
+.gv-slot {
+  display: flex;
+  min-height: 124px;
+}
+
+.gv-slot.filled > .policy-card {
+  flex: 1;
+}
+
+.gv-slot.empty {
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border: 1.5px dashed color-mix(in srgb, var(--slot) 55%, transparent);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  transition:
+    border-color 140ms var(--ease),
+    background-color 140ms var(--ease);
+}
+
+.gv-slot.empty small {
+  display: block;
+  margin-top: 3px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.gv-slot.can-drop {
+  border-color: var(--gold-hi);
+  background: rgba(240, 212, 140, 0.08);
+}
+
+/* Policy cards: a colored top, the kind, the name, what it does. */
+.gv-screen .policy-card {
+  width: auto;
+  min-height: 124px;
+  gap: 5px;
+  padding: 10px 12px 12px;
+  cursor: grab;
+}
+
+.gv-screen .policy-card:active {
+  cursor: grabbing;
+}
+
+.gv-screen .policy-card .card-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.gv-screen .policy-card .card-name {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.gv-screen .policy-card .card-text {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.gv-screen .policy-card.slotted {
+  border-color: color-mix(in srgb, var(--slot) 55%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 190, 0.1),
+    0 0 0 1px color-mix(in srgb, var(--slot) 30%, transparent),
+    0 8px 18px rgba(0, 0, 0, 0.4);
+}
+
+.gv-screen .policy-card.no-room {
+  opacity: 0.7;
+}
+
+.gv-confirm {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background: var(--grain), linear-gradient(180deg, #16232e, #0d161d);
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.gv-confirm.changed {
+  border-color: rgba(240, 212, 140, 0.6);
+}
+
+.gv-confirm-text {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.gv-confirm.changed .gv-confirm-text {
+  color: var(--gold-1);
+  font-weight: 600;
+}
+
+.gv-pool {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gv-pool-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.screen .gv-pool-head h3 {
+  margin: 0;
+  flex: 1 1 200px;
+}
+
+.gv-pool-head .segmented button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 12.5px;
+}
+
+.gv-pool-head .segmented small {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.gv-govs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  align-items: start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.screen .gv-govs h3 {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+.gv-govs .gov {
+  background:
+    var(--grain), linear-gradient(180deg, rgba(255, 246, 222, 0.05), rgba(255, 246, 222, 0.02));
+  border-color: var(--line-2);
+}
+
+.gv-govs .gov.current {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(240, 212, 140, 0.18);
+}
+
+.gv-govs .gov .hint {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.gv-govs .small-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+@media (max-width: 1000px) {
+  .gv-work {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .gv-body {
+    padding: 12px 12px 20px;
+  }
+
+  .gv-plate {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .gv-plate-side {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .gv-slot-sum {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .gv-row-cards,
+  .gv-cards {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+/* --- Great works: each settlement a gallery, each slot a frame ---------------------------- */
+
+.works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 420px));
+  justify-content: center;
+  align-items: start;
+  gap: 14px;
+}
+
+.works-grid .works-settlement {
+  padding: 14px 16px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background:
+    var(--grain), linear-gradient(180deg, rgba(255, 246, 222, 0.06), rgba(255, 246, 222, 0.02));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.screen .works-settlement h3 {
+  display: block;
+  margin: 0 0 4px;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--gold-1);
+}
+
+.screen .works-settlement h3::after {
+  content: none;
+}
+
+.works-settlement.stored {
+  border-style: dashed;
+}
+
+.works-grid .works-holder {
+  margin-top: 12px;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.screen .works-holder h4 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--text-2);
+}
+
+.screen .works-holder h4::after {
+  content: none;
+}
+
+.works-holder h4 small {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--muted);
+}
+
+.works-holder h4 .badge {
+  margin-left: auto;
+}
+
+.works-grid .works {
+  gap: 8px;
+}
+
+/* A frame: a gilt edge around the work, the kind's icon, its name and maker. */
+.work-frame {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(210, 172, 92, 0.55);
+  border-radius: var(--radius-s);
+  background:
+    linear-gradient(180deg, rgba(240, 212, 140, 0.1), rgba(240, 212, 140, 0.02)),
+    rgba(0, 0, 0, 0.25);
+  box-shadow:
+    inset 0 0 0 3px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 4px rgba(210, 172, 92, 0.25),
+    0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.works-holder.themed .work-frame {
+  border-color: var(--gold-hi);
+}
+
+.work-frame .work-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.work-frame .work-text strong {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  color: var(--gold-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.work-frame .work-text small {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.work-frame.empty {
+  border: 1.5px dashed rgba(210, 172, 92, 0.3);
+  background: rgba(0, 0, 0, 0.15);
+  box-shadow: none;
+  color: var(--muted);
+}
+
+.work-frame.empty .work-text strong {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.work-move {
+  flex: none;
+  max-width: 120px;
+  padding: 4px 26px 4px 8px;
+  font-size: 12.5px;
+}
+
+.band-stat > b small {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+/* --- World Congress: the session (or what comes next) beside the diplomatic race --------- */
+
+.congress-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+  align-items: start;
+  gap: 16px;
+}
+
+.congress-main,
+.congress-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.congress-layout .congress-card {
+  padding: 16px 18px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background:
+    var(--grain), linear-gradient(180deg, rgba(255, 246, 222, 0.06), rgba(255, 246, 222, 0.02));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.congress-layout .congress-card.ballot {
+  border-color: rgba(240, 212, 140, 0.55);
+}
+
+.screen .congress-layout .congress-card h3 {
+  margin-top: 0;
+}
+
+.congress-empty {
+  margin: 0;
+  max-width: none !important;
+}
+
+.congress-layout .dvp-list li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) minmax(110px, 1.1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.congress-layout .dvp-list .meter {
+  min-width: 0;
+  width: 100%;
+}
+
+.congress-layout .dvp-list .meter-bar {
+  max-width: none;
+}
+
+.congress-layout .dvp-list li.mine > span:nth-child(2) {
+  color: var(--gold-hi);
+  font-weight: 700;
+}
+
+.congress-layout .resolution {
+  padding: 12px 0 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.congress-layout .resolution h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--gold-1);
+}
+
+.congress-layout .resolution h4::after {
+  content: none;
+}
+
+@media (max-width: 900px) {
+  .congress-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* --- Climate: the phases as a track, then emissions, disasters and what can strike -------- */
+
+.climate-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.climate-track li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-right: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--muted);
+}
+
+.climate-track li:last-child {
+  border-right: none;
+}
+
+.climate-track li strong {
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  letter-spacing: 0.05em;
+}
+
+.climate-track li small {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.climate-track li.past {
+  background: linear-gradient(180deg, rgba(208, 120, 60, 0.18), rgba(208, 120, 60, 0.06));
+  color: var(--text-2);
+}
+
+.climate-track li.now {
+  background: linear-gradient(180deg, rgba(240, 212, 140, 0.2), rgba(240, 212, 140, 0.06));
+  box-shadow: inset 0 3px 0 var(--gold);
+  color: var(--gold-1);
+}
+
+.climate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  align-items: start;
+  gap: 14px;
+}
+
+.climate-grid .congress-card {
+  padding: 16px 18px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background:
+    var(--grain), linear-gradient(180deg, rgba(255, 246, 222, 0.06), rgba(255, 246, 222, 0.02));
+}
+
+.screen .climate-grid .congress-card h3 {
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  .climate-track {
+    grid-auto-flow: row;
+  }
+
+  .climate-track li {
+    flex-direction: row;
+    justify-content: space-between;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+/* --- Help and Options › Controls: keys in a narrow column, the switches the menus use ------ */
+
+.mx-keys dt {
+  min-width: 64px;
+}
+
+.keys.mx-keys > div {
+  display: flex;
+  grid-template-columns: none;
+}
+
+.keys.mx-keys dt {
+  color: var(--text-2);
+}
+
+.help-switches {
+  display: flex;
+  flex-direction: column;
+}
+
+.help-body .mx-row {
+  padding: 10px 0;
+}
+
+/* --- Eras and ages: the thresholds named under the era score bar --------------------------- */
+
+.era-scale {
+  position: relative;
+  height: 16px;
+  margin: 2px 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.era-scale span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.era-scale span:last-child {
+  color: var(--gold-hi);
+}
+
+.congress-layout .passed-list li {
+  display: block;
+}
+
+.congress-layout .passed-list li span {
+  display: block;
+  margin-top: 2px;
+}
+
+/* --- Dialogs: a choice's second line stays readable on a gold button ---------------------- */
+
+.modal-choices button.primary span {
+  color: rgba(40, 28, 8, 0.82);
+}
+
+.modal-choices button.danger span {
+  color: rgba(255, 228, 218, 0.78);
+}
+
+.modal-choices button {
+  padding: 10px 14px;
+}
+
+.modal-choices button strong {
+  font-size: 14.5px;
+}
+
+/* A fallen civ's own portrait, grey. */
+.game-over-hero .fallen-portrait {
+  filter: grayscale(0.85) brightness(0.8);
+}
+
+/* The deal screen opens from the diplomacy dialog, so it sits above it. */
+.modal-backdrop:has(> .modal.deal) {
+  z-index: 40;
+}
+
+/* --- Deal screen: both faces, both sides, the pacts as toggles, their answer in advance ---- */
+
+.modal.deal {
+  width: min(620px, calc(100vw - 24px));
+  padding: 18px 20px 16px;
+}
+
+.deal-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.deal-head h3 {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  color: var(--gold-1);
+}
+
+.deal-side {
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-color: var(--line-2);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.deal-side legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: var(--gold-hi);
+}
+
+.deal-has {
+  margin: 0 0 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.deal-side label > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.deal-side label.check,
+.deal-shared label.check {
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-s);
+  background: rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+
+.deal-side label.check:has(input:checked),
+.deal-shared label.check:has(input:checked) {
+  border-color: rgba(240, 212, 140, 0.6);
+  background: rgba(240, 212, 140, 0.08);
+  color: var(--gold-1);
+}
+
+.deal-shared {
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.deal-verdict {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 9px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-s);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.deal-verdict.yes {
+  border-color: rgba(127, 207, 134, 0.45);
+  background: rgba(127, 207, 134, 0.08);
+}
+
+.deal-verdict.no {
+  border-color: rgba(224, 128, 114, 0.45);
+  background: rgba(224, 128, 114, 0.08);
+}
+
+/* --- Tile card: what the tile gives, first and large ------------------------------------- */
+
+.tile-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 2px 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-totals .total-yield {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tile-card .yields {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+/* --- Small marks drawn from the icon set ---------------------------------------------------- */
+
+.cs-quest-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  vertical-align: -3px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 50%;
+}
+
+.cs-quests li.on .cs-quest-mark {
+  border: none;
+}
+
+.promotions li,
+.promote h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.graph-frame .grid.turn {
+  stroke-opacity: 0.6;
+}
+
+/* --- Leader picker ------------------------------------------------------------------------- */
+
+/* Thirty leaders do not fit the column: the rows keep their height and the list scrolls (as
+   flex items they used to shrink, squeezing each row under its portrait). */
+.mx-tiles > * {
+  flex: none;
+}
+
+/* The filter strip scrolls sideways; its far edge fades so a cut-off chip reads as "more". */
+.mx-filters {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  padding-right: 24px;
+}
+
+/* Phones and narrow tablets: the list gets half the screen and the portrait is smaller, so you
+   can browse more than two leaders at a time. */
+@media (max-width: 860px) {
+  .mx-picker {
+    grid-template-rows: minmax(160px, 50%) minmax(0, 1fr);
+  }
+
+  .mx-picker .mx-leader-hero .leader-card {
+    zoom: 0.62;
+  }
+}
+
+/* --- New game: a map type's picture keeps its place (and shimmers) while it is being drawn -- */
+
+.mx-map-thumb {
+  align-self: stretch;
+  width: 100%;
+}
+
+/* --- Long names and labels ---------------------------------------------------------------- */
+
+/* A long city name ends in an ellipsis (the full name in its tooltip), never pushing the close
+   button off the panel. */
+.settlement-head > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.settlement-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settlement-head .close {
+  flex: none;
+}
+
+/* The Next button: a long label ("Decide Konstantinopolis's fate") takes two smaller lines. */
+.next-label.long {
+  display: -webkit-box;
+  font-size: 13px;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Many civs: the chips may use the whole width right of the trackers, so 12 faces sit in one
+   row on any laptop. */
+.players.many {
+  max-width: calc(100% - 340px);
+}
+
+/* --- Larger text (Options › Interface) reaches the game too: its full screens, dialogs and the
+   unit and city cards are a step larger, like the menus (menu.css). The map and the top bar keep
+   their size, so the world stays in view. */
+html[data-text='large']
+  :is(.screen, .modal, .player-panel.diplo, .unit-panel, .settlement-panel, .tile-card) {
+  zoom: 1.12;
+}
+
+/* --- City build list: the name, then cost and turns under it; the buttons at the end -------- */
+
+.settlement-panel .items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settlement-panel .items li {
+  gap: 5px;
+  padding: 5px 6px 5px 4px;
+  border-radius: var(--radius-s);
+  transition: background-color 120ms var(--ease);
+}
+
+.settlement-panel .items li:hover {
+  background: rgba(255, 236, 190, 0.05);
+}
+
+.settlement-panel .items .item-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.item-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.settlement-panel .items li.placing .item-title {
+  color: #7fc3e8;
+}
+
+.online-bar .away-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- Hotseat: the next player's leader, in their color, before the device changes hands ---- */
+
+.pass-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: dialog-rise 260ms var(--ease);
+}
+
+.pass-portrait {
+  padding: 18px 26px 6px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 40%,
+    color-mix(in srgb, var(--civ) 38%, transparent),
+    transparent 66%
+  );
+}
+
+.pass-card h2 {
+  margin: 4px 0 0;
+}
+
+/* --- Combat: the preview owns the bottom of the screen while it shows ---------------------- */
+
+.game:has(.combat-preview) .hint-card {
+  visibility: hidden;
+}
+
+.combat-sides .vs {
+  display: grid;
+  place-items: center;
+  opacity: 0.9;
+}
+
+.unit-panel .promotions li {
+  justify-content: flex-start;
+}
+
+/* Tablets: the turn has the second row to itself, so it keeps its era. */
+@media (min-width: 641px) and (max-width: 1000px) {
+  .turn-pill .era,
+  .turn-pill .turn-label {
+    display: inline;
+  }
+}
+
+/* Diplomacy's four tiles: one row where they fit, two by two where they don't. */
+.diplo-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .diplo-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- One close button: the round brass ✕ of the full screens, everywhere (cards, dialogs,
+   the turn summary), a size smaller off the screen headers. --------------------------------- */
+
+button.close {
+  align-self: flex-start;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(210, 172, 92, 0.6);
+  background: radial-gradient(circle at 40% 30%, #3a2a17, #170f07);
+  color: var(--gold-hi);
+  font-size: 12px;
+  line-height: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 170, 0.2),
+    0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+button.close:hover:not(:disabled) {
+  border-color: var(--gold-hi);
+  color: #fff;
+  filter: drop-shadow(0 0 6px rgba(240, 212, 140, 0.45));
+}
+
+.screen-head button.close {
+  align-self: center;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+
+/* --- Wide screens: menu screens with a side column keep their content together and centered,
+   instead of a narrow panel stranded at the top left of a 2560-pixel screen. ---------------- */
+
+@media (min-width: 1600px) {
+  .mx-options {
+    width: 100%;
+    max-width: 1240px;
+    margin: 0 auto;
+    border-left: 1px solid var(--line-2);
+    border-right: 1px solid var(--line-2);
+  }
+
+  .mx-options-main > .mx-panel,
+  .mx-options-main > div {
+    max-width: none;
+  }
+
+  /* The Civilopedia's article column centers in the space beside its tree. */
+  .pedia-main > * {
+    max-width: 1040px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.mx-preview-tools > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.home-chip.icon .icon-glyph {
+  color: var(--gold-hi);
+}
+
+/* A section title placed straight in a screen's scroll column centers with its content (the
+   screens' heading rule sets its margins, which would otherwise pin it to the left). */
+.screen-scroll > :is(h3, h4) {
+  margin-left: auto;
+  margin-right: auto;
+}
