@@ -778,6 +778,23 @@ export const ICONS: Record<string, IconDef> = {
   gp_general: { bg: C.military, glyph: SWORDS },
   gp_writer: { bg: C.culture, glyph: SCROLL },
   gp_admiral: { bg: C.naval, glyph: ANCHOR },
+  gp_artist: {
+    bg: C.tourism,
+    glyph: [
+      s(
+        'M12 4.4c4.6 0 8 3 8 6.8c0 2.4-1.8 3.6-3.6 3.6h-1.6c-.9 0-1.4.9-1 1.7c.5 1 .2 3.1-1.8 3.1c-4.4 0-8-3.4-8-7.6s3.6-7.6 8-7.6Z' +
+          circle(8.4, 11.6, 1.3) +
+          circle(10.6, 8.2, 1.3) +
+          circle(14.4, 8, 1.3) +
+          circle(16.8, 10.8, 1.2),
+        true,
+      ),
+    ],
+  },
+  gp_musician: {
+    bg: '#5a62b8',
+    glyph: [s('M9.4 6.4l9-2v10.2a2.6 2.2 0 1 1-1.8-2.1V8l-5.4 1.2v7.4a2.6 2.2 0 1 1-1.8-2.1Z')],
+  },
 
   // Buildings and wonders (generic until each gets its own)
   palace: {
@@ -1020,6 +1037,51 @@ export const ICONS: Record<string, IconDef> = {
       ),
     ],
   },
+  sound: {
+    bg: C.ui,
+    glyph: [
+      s('M4.6 9.6h2.8l4-3.4v11.6l-4-3.4H4.6Z'),
+      s('M14.6 9.2a4 4 0 0 1 0 5.6l-1.13-1.13a2.4 2.4 0 0 0 0-3.4Z'),
+      s('M16.75 7.05a7 7 0 0 1 0 9.9l-1.13-1.13a5.4 5.4 0 0 0 0-7.64Z'),
+    ],
+  },
+  display: {
+    bg: C.ui,
+    glyph: [
+      s(rect(4, 5.4, 16, 10.8, 1.3) + rect(5.7, 7.1, 12.6, 7.4, 0.4), true),
+      s(rect(10.7, 16, 2.6, 2.4, 0) + rect(7.8, 18, 8.4, 1.7, 0.85)),
+    ],
+  },
+  sliders: {
+    bg: C.ui,
+    glyph: [
+      s(rect(4.4, 7.1, 15.2, 1.6, 0.8) + circle(9, 7.9, 2.3)),
+      s(rect(4.4, 11.2, 15.2, 1.6, 0.8) + circle(15.4, 12, 2.3)),
+      s(rect(4.4, 15.3, 15.2, 1.6, 0.8) + circle(11, 16.1, 2.3)),
+    ],
+  },
+  save: {
+    bg: '#4f8f5a',
+    glyph: [
+      s(
+        rect(5, 5, 14, 14, 1.8) + rect(7.6, 12.2, 8.8, 5.2, 0.6) + rect(8.6, 5.9, 5.8, 3.6, 0.4),
+        true,
+      ),
+    ],
+  },
+  keyboard: {
+    bg: C.ui,
+    glyph: [
+      s(
+        rect(3.4, 6.8, 17.2, 10.4, 1.6) +
+          [5.3, 8.4, 11.5, 14.6, 17.7]
+            .flatMap((x) => [rect(x, 8.6, 1.9, 1.9, 0.3), rect(x, 11.3, 1.9, 1.9, 0.3)])
+            .join('') +
+          rect(7.4, 14.1, 9.2, 1.6, 0.3),
+        true,
+      ),
+    ],
+  },
   check: { bg: '#4f8f5a', glyph: CHECK },
   trophy: { bg: C.brass, glyph: [] },
   water_drop: { bg: '#3f88a8', glyph: DROP },
@@ -1043,6 +1105,8 @@ export const EMOJI_ICONS: Record<string, string> = {
   '⚔️': 'war',
   '📜': 'civic',
   '⚓': 'gp_admiral',
+  '🎨': 'gp_artist',
+  '🎵': 'gp_musician',
   '🏆': 'victory',
   '🏛': 'cityStates',
   '★': 'greatPeople',

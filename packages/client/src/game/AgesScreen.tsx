@@ -57,7 +57,7 @@ export function AgesScreen({
     <div className="screen ages-screen" role="dialog" aria-label="Eras and ages">
       <header className="screen-head">
         <h2>
-          <Icon name="victory" size={30} />
+          <Icon name="ages" size={30} />
           Eras and Ages
         </h2>
         <p className="screen-sub">

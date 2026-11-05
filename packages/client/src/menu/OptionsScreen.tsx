@@ -19,11 +19,11 @@ import { Choice, MenuScreen, Row, Section, Slider, Switch } from '../ui/Menu';
 type Tab = 'sound' | 'graphics' | 'interface' | 'game' | 'controls' | 'about';
 
 const TABS: { id: Tab; name: string; icon: string }[] = [
-  { id: 'sound', name: 'Sound', icon: 'culture' },
-  { id: 'graphics', name: 'Graphics', icon: 'lens' },
-  { id: 'interface', name: 'Interface', icon: 'settings' },
-  { id: 'game', name: 'Game and saves', icon: 'check' },
-  { id: 'controls', name: 'Controls', icon: 'movement' },
+  { id: 'sound', name: 'Sound', icon: 'sound' },
+  { id: 'graphics', name: 'Graphics', icon: 'display' },
+  { id: 'interface', name: 'Interface', icon: 'sliders' },
+  { id: 'game', name: 'Game and saves', icon: 'save' },
+  { id: 'controls', name: 'Controls', icon: 'keyboard' },
   { id: 'about', name: 'About', icon: 'help' },
 ];
 

@@ -427,7 +427,7 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   ctx.font = nameFont;
   const name = `${view.capital ? '★ ' : ''}${view.name}`;
   const nameW = ctx.measureText(name).width;
-  ctx.font = '500 26px "Source Sans 3 Variable", sans-serif';
+  ctx.font = '600 30px "Source Sans 3 Variable", sans-serif';
   const statusW = view.status ? ctx.measureText(view.status).width : 0;
   const bars = view.health < view.maxHealth || view.wallsMax > 0;
   const textH = view.status ? 118 : 84;
@@ -459,9 +459,9 @@ function bannerTexture(view: SettlementView): { texture: CanvasTexture; aspect: 
   ctx.font = nameFont;
   ctx.fillText(name, 94, view.status ? 42 : textH / 2 + 2);
   if (view.status) {
-    ctx.font = '500 26px "Source Sans 3 Variable", sans-serif';
-    ctx.fillStyle = '#c9b98a';
-    ctx.fillText(view.status, 96, 86);
+    ctx.font = '600 30px "Source Sans 3 Variable", sans-serif';
+    ctx.fillStyle = '#d8c896';
+    ctx.fillText(view.status, 96, 88);
   }
   if (bars) {
     // Walls (grey-blue) over health (green to red), along the bottom.
@@ -951,7 +951,7 @@ export class SettlementLayer {
           transparent: true,
         }),
       );
-      const h = 0.42;
+      const h = 0.68;
       sprite.scale.set(h * aspect * this.bannerScale, h * this.bannerScale, 1);
       sprite.userData.banner = [h * aspect, h];
       sprite.position.set(cx, Math.max(0, height(cx, cz)) + 0.95, cz + 0.2);
@@ -1017,7 +1017,7 @@ export class SettlementLayer {
    * a little larger when zoomed far out. Called every frame with the camera distance.
    */
   setCameraDistance(dist: number) {
-    const k = Math.min(1.25, Math.max(0.55, dist / 24));
+    const k = Math.min(1.4, Math.max(0.5, dist / 24));
     if (Math.abs(k - this.bannerScale) < 0.02) return;
     this.bannerScale = k;
     this.group.traverse((o) => {

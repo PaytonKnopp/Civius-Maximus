@@ -124,6 +124,34 @@ right), dialogs rise in over a blurred backdrop, screens fade in, the next-turn 
 when the turn is ready to end and presses in when clicked; every button has hover, press and
 focus states (P1). Motion is switched off for players who ask their system for reduced motion.
 
+**UI pass 2 (November 2026):** every screen was reviewed at desktop, wide, tablet and phone
+sizes, and fixed where it looked or worked worse than it should.
+- *Menus:* a menu screen's backdrop is opaque from the first frame (only its contents fade in),
+  so moving between screens no longer flashes the bare map; the leader picker is full screen.
+  The New game World page shows each map type as a card with a picture, a Duel-size map made by
+  the real generator from a fixed seed (mod map types get one too; `setup/MapTypes.tsx`, also
+  used when hosting online). The Players page aligns color and team, the name reads as an
+  editable title, and the portrait is smaller so the leader's abilities fit; "Next" says where
+  it goes. Options tabs and Load game have their own icons (sound, display, sliders, save,
+  keyboard). The Civilopedia's facts sit in a compact grid, breadcrumbs read as links, and stale
+  styles that pushed its search box aside are gone. Plain buttons on menus and screens get
+  comfortable padding.
+- *Full screens* (`screens.css`): Great people are cards with the class icon, the next person
+  and their era, a points race against the leading rival and the turns to go; classes with no one
+  left fold into one line. City-states are cards in their type's color with the type's icon,
+  your envoys, the suzerain and envoy counts, and tiers as badges that light up when reached.
+  Screens with a few cards (espionage, great works, congress, climate) center them; Eras and
+  ages puts the timeline beside the age; empty screens say what to do; every header icon matches
+  its top-bar button; card titles are titles, not section rules (which made long city-state names
+  overflow).
+- *End of the game:* the winner's portrait and the way they won (with its icon) at the top, the
+  ranking with every leader's face (yours in gold, fallen civs struck through) beside the score
+  graph. Old dialog styles that drew primary buttons as gold text on gold are gone.
+- *Map HUD:* on wide screens the first-game hints sit at the bottom center, between the unit or
+  city card and the minimap, so they never cover the civs' chips or the diplomacy panel. 3D city
+  banners are about 60% larger, with a larger status line. Research and civic names on phones
+  wrap between words.
+
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
 show each leader's face. A rival's diplomacy panel shows their portrait and a line in their

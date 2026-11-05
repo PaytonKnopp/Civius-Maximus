@@ -20,9 +20,10 @@ import {
   warKey,
   warWeariness,
 } from '@cx/engine';
-import { resolveText } from '@cx/content';
+import { type CompiledContent, resolveText } from '@cx/content';
 import { useEffect, useState } from 'react';
-import { LeaderHead } from '../ui/LeaderCard';
+import { Icon } from '../ui/Icon';
+import { LeaderCard, LeaderHead } from '../ui/LeaderCard';
 import { DealDialog, describeDeal } from './DealDialog';
 import { civName, type Colors, cssColor } from './model';
 
@@ -446,9 +447,22 @@ interface GameOverProps {
   won: boolean;
   title: string;
   text: string;
-  scores: { name: string; player: string; score: number; alive: boolean }[];
+  scores: {
+    name: string;
+    player: string;
+    score: number;
+    alive: boolean;
+    leader?: string;
+    civ?: string;
+    you?: boolean;
+  }[];
   /** The score over the game (the recap). */
   chart?: ReactNode;
+  /** The winner's leader and civ, for their portrait. */
+  winner?: { leader: string; civ: string } | undefined;
+  /** An icon for how the game ended (science, culture...). */
+  icon?: string | undefined;
+  content?: CompiledContent;
   onGraphs?: () => void;
   /** Opens the replay of the game. */
   onReplay?: () => void;
@@ -461,28 +475,59 @@ export function GameOver({
   text,
   scores,
   chart,
+  winner,
+  icon,
+  content,
   onGraphs,
   onReplay,
   onClose,
 }: GameOverProps) {
   return (
-    <div className="modal-backdrop">
+    <div className="modal-backdrop game-over-backdrop">
       <div className={`modal game-over ${won ? 'won' : 'lost'}`} role="alertdialog">
-        <p className="game-over-kicker">{won ? 'Victory' : 'Defeat'}</p>
-        <h2>{title}</h2>
-        <p>{text}</p>
-        <table className="scores">
-          <tbody>
-            {scores.map((s) => (
-              <tr key={s.name + s.player} className={s.alive ? '' : 'dead'}>
-                <td>{s.name}</td>
-                <td className="muted">{s.player}</td>
-                <td className="mono">{s.score}</td>
-              </tr>
+        <header className="game-over-hero">
+          {content && winner ? (
+            <LeaderCard content={content} leader={winner.leader} civ={winner.civ} size={150} />
+          ) : (
+            icon && <Icon name={icon} size={96} />
+          )}
+          <div className="game-over-title">
+            <p className="game-over-kicker">
+              {icon && <Icon name={icon} size={22} />}
+              {won ? 'Victory' : 'Defeat'}
+            </p>
+            <h2>{title}</h2>
+            <p>{text}</p>
+          </div>
+        </header>
+        <div className="game-over-body">
+          <ol className="game-over-scores">
+            {scores.map((s, i) => (
+              <li
+                key={s.name + s.player}
+                className={`${s.alive ? '' : 'dead'} ${s.you ? 'you' : ''}`}
+              >
+                <span className="rank">{i + 1}</span>
+                {content && s.leader ? (
+                  <LeaderHead
+                    content={content}
+                    leader={s.leader}
+                    {...(s.civ ? { civ: s.civ } : {})}
+                    size={30}
+                  />
+                ) : (
+                  <span className="head-gap" />
+                )}
+                <span className="who">
+                  <strong>{s.name}</strong>
+                  <small>{s.you ? 'You' : s.player}</small>
+                </span>
+                <b className="mono">{s.score}</b>
+              </li>
             ))}
-          </tbody>
-        </table>
-        {chart}
+          </ol>
+          {chart && <div className="game-over-chart">{chart}</div>}
+        </div>
         <div className="modal-actions">
           {onGraphs && (
             <button type="button" onClick={onGraphs}>

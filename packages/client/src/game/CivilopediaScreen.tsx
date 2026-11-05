@@ -459,7 +459,14 @@ export function CivilopediaScreen({
               return b.rows.length ? (
                 <dl key={i} className="pedia-facts">
                   {b.rows.map(([k, v]) => (
-                    <div key={k}>
+                    <div
+                      key={k}
+                      className={
+                        v.reduce((n, p) => n + (typeof p === 'string' ? p : p.text).length, 0) > 28
+                          ? 'wide'
+                          : undefined
+                      }
+                    >
                       <dt>{k}</dt>
                       <dd>{inline(v)}</dd>
                     </div>

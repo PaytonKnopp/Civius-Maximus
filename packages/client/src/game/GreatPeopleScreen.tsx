@@ -17,6 +17,12 @@ import {
 import { useEffect } from 'react';
 import { civName, whole } from './model';
 import { Icon } from '../ui/Icon';
+import { EMOJI_ICONS, ICONS } from '../ui/icons';
+
+/** A class's icon: its own if the set has one (gp_scientist...), else by its emoji. */
+export function classIcon(cls: string, emoji: string | undefined): string {
+  return ICONS[cls] ? cls : ((emoji && EMOJI_ICONS[emoji]) ?? 'greatPeople');
+}
 
 interface Props {
   ctx: EngineContext;
@@ -53,89 +59,126 @@ export function GreatPeopleScreen({ ctx, state, viewer, act, onClose }: Props) {
           ✕
         </button>
       </header>
-      <div className="gp-grid">
-        {content.ids.greatPersonClass.map((cls) => {
-          const def = content.entities.greatPersonClass[cls]!;
-          const next = nextGreatPerson(ctx, state, cls);
-          const cost = greatPersonCost(ctx, state, cls);
-          const points = pointsOf(state, viewer, cls);
-          const rivals = state.playerOrder
-            .filter((p) => p !== viewer && state.players[p]!.alive)
-            .map((p) => ({ p, points: pointsOf(state, p, cls) }))
-            .sort((a, b) => b.points - a.points);
-          const leader = rivals[0];
-          const recruit = (currency: Currency): Action => ({
-            type: 'recruit_great_person',
-            player: viewer,
-            class: cls,
-            currency,
-          });
-          const why = (currency: Currency) =>
-            validateAction(state, recruit(currency), ctx)?.message;
-          return (
-            <section className="gp-card" key={cls}>
-              <h3>
-                <span aria-hidden="true">{def.icon}</span> {t(def.name)}
-              </h3>
-              {next ? (
-                <>
-                  <p className="gp-name">
-                    {t(next.name)}{' '}
-                    <span className="muted">({t(content.entities.era[next.era]?.name ?? '')})</span>
-                  </p>
-                  <p className="gp-text">{t(next.description)}</p>
-                  <div className="gp-bar" aria-hidden="true">
-                    <span style={{ width: `${Math.min(100, (points * 100) / cost)}%` }} />
+      <div className="screen-scroll">
+        <div className="gp-grid">
+          {content.ids.greatPersonClass.map((cls) => {
+            const def = content.entities.greatPersonClass[cls]!;
+            const next = nextGreatPerson(ctx, state, cls);
+            if (!next) return null;
+            const cost = greatPersonCost(ctx, state, cls);
+            const points = pointsOf(state, viewer, cls);
+            const rivals = state.playerOrder
+              .filter((p) => p !== viewer && state.players[p]!.alive)
+              .map((p) => ({ p, points: pointsOf(state, p, cls) }))
+              .sort((a, b) => b.points - a.points);
+            const leader = rivals[0];
+            const recruit = (currency: Currency): Action => ({
+              type: 'recruit_great_person',
+              player: viewer,
+              class: cls,
+              currency,
+            });
+            const why = (currency: Currency) =>
+              validateAction(state, recruit(currency), ctx)?.message;
+            const rate = rates[cls] ?? 0;
+            const turns = rate > 0 ? Math.ceil(Math.max(0, cost - points) / rate) : null;
+            const out = !inRace(ctx, state, viewer, cls);
+            return (
+              <section className={`gp-card ${out ? 'out' : ''}`} key={cls}>
+                <header className="gp-head">
+                  <Icon name={classIcon(cls, def.icon)} size={46} />
+                  <div>
+                    <span className="gp-kind">{t(def.name)}</span>
+                    <h3 className="gp-name">{t(next.name)}</h3>
+                    <span className="gp-era">
+                      {t(content.entities.era[next.era]?.name ?? '')} era
+                    </span>
                   </div>
-                  <p className="hint mono">
-                    You {points}/{cost} (+{rates[cls] ?? 0} a turn)
-                    {leader && leader.points > 0
-                      ? ` · ${civName(content, state, leader.p)} ${leader.points}`
-                      : ''}
+                </header>
+                <p className="gp-text">{t(next.description)}</p>
+                <div className="gp-race">
+                  <div className="gp-racer you">
+                    <span>You</span>
+                    <i style={{ ['--v' as string]: Math.min(1, points / cost) }} />
+                    <b className="mono">
+                      {points}/{cost}
+                    </b>
+                  </div>
+                  {leader && leader.points > 0 && (
+                    <div className="gp-racer">
+                      <span>{civName(content, state, leader.p)}</span>
+                      <i style={{ ['--v' as string]: Math.min(1, leader.points / cost) }} />
+                      <b className="mono">{leader.points}</b>
+                    </div>
+                  )}
+                  <p className="gp-rate">
+                    {out
+                      ? 'You founded a religion: you\u2019re out of this race.'
+                      : rate > 0
+                        ? `+${rate} a turn${turns !== null ? ` · about ${turns} turns` : ''}`
+                        : 'No points yet: build the district that earns them.'}
                   </p>
-                  <div className="row-inline">
+                </div>
+                <div className="gp-actions">
+                  <button
+                    type="button"
+                    disabled={!!why('gold')}
+                    title={why('gold') ?? 'Buy now for the points you are missing'}
+                    onClick={() => act(recruit('gold'))}
+                  >
+                    Recruit <Icon name="gold" /> {whole(recruitCost(ctx, state, viewer, cls))}
+                  </button>
+                  {canRecruitWith(ctx, cls, 'faith') && (
                     <button
                       type="button"
-                      disabled={!!why('gold')}
-                      title={why('gold')}
-                      onClick={() => act(recruit('gold'))}
+                      disabled={!!why('faith')}
+                      title={why('faith') ?? 'Buy now with faith'}
+                      onClick={() => act(recruit('faith'))}
                     >
-                      Recruit for <Icon name="gold" /> {whole(recruitCost(ctx, state, viewer, cls))}
+                      <Icon name="faith" /> {whole(recruitCost(ctx, state, viewer, cls, 'faith'))}
                     </button>
-                    {canRecruitWith(ctx, cls, 'faith') && (
-                      <button
-                        type="button"
-                        disabled={!!why('faith')}
-                        title={why('faith')}
-                        onClick={() => act(recruit('faith'))}
-                      >
-                        <Icon name="faith" /> {whole(recruitCost(ctx, state, viewer, cls, 'faith'))}
-                      </button>
-                    )}
-                  </div>
-                  {!inRace(ctx, state, viewer, cls) && (
-                    <p className="hint">You founded a religion: you&apos;re out of this race.</p>
                   )}
-                </>
-              ) : (
-                <p className="hint">All of them have been earned.</p>
-              )}
-            </section>
-          );
-        })}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+        {(() => {
+          const done = content.ids.greatPersonClass.filter((c) => !nextGreatPerson(ctx, state, c));
+          return done.length > 0 ? (
+            <p className="gp-done">
+              <span>Every one earned:</span>
+              {done.map((c) => {
+                const def = content.entities.greatPersonClass[c]!;
+                return (
+                  <span key={c} className="gp-done-chip">
+                    <Icon name={classIcon(c, def.icon)} size={18} /> {t(def.name)}
+                  </span>
+                );
+              })}
+            </p>
+          ) : null;
+        })()}
+        {mine.length > 0 && (
+          <section className="gp-mine">
+            <h3>Yours</h3>
+            <ul>
+              {mine.map((p) => (
+                <li key={p.id}>
+                  <Icon
+                    name={classIcon(p.class, content.entities.greatPersonClass[p.class]?.icon)}
+                    size={22}
+                  />
+                  <div>
+                    <strong>{t(p.name)}</strong>
+                    <span>{t(p.description)}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
-      {mine.length > 0 && (
-        <section className="gp-mine">
-          <h3>Yours</h3>
-          <ul>
-            {mine.map((p) => (
-              <li key={p.id}>
-                <strong>{t(p.name)}</strong>: {t(p.description)}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </div>
   );
 }

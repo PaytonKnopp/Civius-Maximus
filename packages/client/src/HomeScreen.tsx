@@ -168,7 +168,7 @@ export function HomeScreen(props: Props) {
     {
       key: 'load',
       hot: 'l',
-      icon: 'check',
+      icon: 'save',
       label: 'Load game',
       sub: 'Saves, cloud saves and files',
       run: onLoadGame,

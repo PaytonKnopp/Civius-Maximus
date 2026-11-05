@@ -116,7 +116,7 @@ export function GreatWorksScreen({
     <div className="screen great-works-screen" role="dialog" aria-label="Great works">
       <header className="screen-head">
         <h2>
-          <Icon name="tourism" size={30} />
+          <Icon name="greatWorks" size={30} />
           Great Works
         </h2>
         <p className="screen-sub">

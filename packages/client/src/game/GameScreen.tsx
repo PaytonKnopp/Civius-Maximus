@@ -2382,8 +2382,32 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               player: state.players[p]!.name,
               score: scoreOf(ctx, state, p).total,
               alive: state.players[p]!.alive,
+              leader: state.players[p]!.leader,
+              civ: state.players[p]!.civ,
+              you: p === viewer,
             }))
             .sort((a, b) => b.score - a.score)}
+          content={content}
+          winner={
+            state.result?.winner && state.players[state.result.winner]
+              ? {
+                  leader: state.players[state.result.winner]!.leader,
+                  civ: state.players[state.result.winner]!.civ,
+                }
+              : undefined
+          }
+          icon={
+            (
+              {
+                domination: 'war',
+                conquest: 'war',
+                science: 'science',
+                culture: 'tourism',
+                religion: 'faith',
+                diplomatic: 'congress',
+              } as Record<string, string>
+            )[state.result?.reason ?? ''] ?? (state.result ? 'victory' : undefined)
+          }
           chart={<HistoryChart ctx={ctx} state={state} viewer={viewer} measure="score" />}
           onGraphs={() => {
             setGameOverSeen(true);
