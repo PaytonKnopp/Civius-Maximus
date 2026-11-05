@@ -1844,25 +1844,16 @@ kbd {
 .modal button,
 .player-panel button,
 .confirm-row button {
-  padding: 6px 12px;
-  border: 1px solid var(--panel-edge);
-  border-radius: 4px;
-  background: var(--ink);
-  color: var(--text);
+  padding: 6px 14px;
+  border-radius: 6px;
   font: inherit;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .modal button:disabled,
 .player-panel button:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
-}
-
-.modal button.primary,
-.player-panel button.primary {
-  border-color: var(--brass);
-  color: var(--brass);
 }
 
 .modal-choices {

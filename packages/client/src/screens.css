@@ -598,3 +598,233 @@
     0 0 0 1px rgba(240, 212, 140, 0.18),
     0 8px 22px rgba(0, 0, 0, 0.45);
 }
+
+/* --- Map HUD ------------------------------------------------------------------------------- */
+
+/* First-game hints sit at the bottom center on wide screens, between the unit or city card and
+   the minimap, clear of the civs' chips and the diplomacy panel on the right. */
+@media (min-width: 1180px) {
+  .hint-card {
+    --w: min(460px, calc(100% - 800px));
+    top: auto;
+    right: auto;
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    left: calc((100% - var(--w)) / 2);
+    width: var(--w);
+  }
+}
+
+/* --- End of the game ----------------------------------------------------------------------- */
+
+.game-over-backdrop {
+  z-index: 40;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(40, 30, 10, 0.35), transparent 60%), rgb(4 7 10 / 0.78);
+}
+
+.modal.game-over {
+  width: min(900px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 0 0 18px;
+  text-align: left;
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  background:
+    var(--grain), linear-gradient(180deg, var(--lacquer-1, #182a38), var(--lacquer-2, #0b151d));
+  box-shadow:
+    0 0 0 1px #000,
+    0 0 60px rgba(240, 212, 140, 0.12),
+    0 30px 80px rgba(0, 0, 0, 0.7);
+}
+
+.modal.game-over.lost {
+  border-color: #8a4a3e;
+}
+
+.game-over-hero {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: 24px 30px 20px;
+  background:
+    radial-gradient(ellipse 70% 120% at 20% 0%, rgba(240, 212, 140, 0.16), transparent 70%),
+    linear-gradient(180deg, rgba(255, 228, 160, 0.06), transparent);
+  border-bottom: 1px solid var(--line-2);
+}
+
+.game-over.lost .game-over-hero {
+  background:
+    radial-gradient(ellipse 70% 120% at 20% 0%, rgba(200, 90, 70, 0.16), transparent 70%),
+    linear-gradient(180deg, rgba(255, 200, 180, 0.04), transparent);
+}
+
+.game-over-hero .leader-card {
+  flex: none;
+  margin: 0;
+}
+
+.game-over-hero .leader-card figcaption {
+  display: none;
+}
+
+.game-over-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.game-over .game-over-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.game-over.won .game-over-kicker {
+  color: var(--gold);
+}
+
+.game-over.lost .game-over-kicker {
+  color: #e0907c;
+}
+
+.modal.game-over h2 {
+  margin: 6px 0 8px;
+  font-size: clamp(28px, 4.4vw, 44px);
+  line-height: 1.05;
+  color: var(--gold-hi);
+  text-shadow:
+    0 2px 0 #000,
+    0 0 26px rgba(240, 212, 140, 0.3);
+}
+
+.modal.game-over.lost h2 {
+  color: #f2b3a3;
+}
+
+.game-over-title > p:last-child {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.game-over-body {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: 20px;
+  padding: 18px 30px 6px;
+}
+
+.game-over-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.game-over-scores li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px 5px 6px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.game-over-scores li.you {
+  border-color: var(--gold);
+  background: linear-gradient(90deg, rgba(210, 172, 92, 0.2), rgba(210, 172, 92, 0.04));
+}
+
+.game-over-scores li.dead {
+  opacity: 0.5;
+}
+
+.game-over-scores li.dead strong {
+  text-decoration: line-through;
+}
+
+.game-over-scores .rank {
+  width: 18px;
+  text-align: center;
+  font-family: var(--font-display);
+  color: var(--gold-3);
+}
+
+.game-over-scores .head-gap {
+  width: 30px;
+}
+
+.game-over-scores .who {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.game-over-scores .who strong {
+  font-size: 13.5px;
+}
+
+.game-over-scores .who small {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.game-over-scores b {
+  font-size: 15px;
+  color: var(--gold-hi);
+}
+
+.game-over-chart {
+  min-width: 0;
+}
+
+.game-over-chart .history-chart {
+  margin: 0;
+}
+
+.modal.game-over .modal-actions {
+  justify-content: flex-end;
+  padding: 14px 30px 0;
+}
+
+@media (max-width: 700px) {
+  .game-over-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 18px 16px 14px;
+    gap: 12px;
+  }
+  .game-over .game-over-kicker {
+    justify-content: center;
+  }
+  .game-over-body {
+    grid-template-columns: 1fr;
+    padding: 14px 16px 4px;
+  }
+  .modal.game-over .modal-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 12px 16px 0;
+  }
+}
+
+/* Phones: research and civic names on two lines, broken between words (theme.css's size would
+   otherwise undo hud.css's). */
+@media (max-width: 640px) {
+  .tracker-name {
+    font-size: 12.5px;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: auto;
+  }
+}
