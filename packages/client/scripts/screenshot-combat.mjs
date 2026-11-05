@@ -19,6 +19,9 @@ await page.waitForSelector('canvas');
 await page.waitForFunction(
   () => !/^0 fps/.test(document.querySelector('.fps')?.textContent ?? '0 fps'),
 );
+// The leader's intro opens the game.
+await page.waitForSelector('.leader-intro .primary', { timeout: 15000 }).catch(() => {});
+if (await page.$('.leader-intro .primary')) await page.click('.leader-intro .primary');
 await page.keyboard.press('Enter');
 await page.waitForSelector('.unit-panel');
 await page.keyboard.press('b');

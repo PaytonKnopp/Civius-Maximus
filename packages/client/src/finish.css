@@ -2520,3 +2520,15 @@ html[data-text='large']
 .pass-card h2 {
   margin: 4px 0 0;
 }
+
+/* --- Combat: the preview owns the bottom of the screen while it shows ---------------------- */
+
+.game:has(.combat-preview) .hint-card {
+  visibility: hidden;
+}
+
+.combat-sides .vs {
+  display: grid;
+  place-items: center;
+  opacity: 0.9;
+}

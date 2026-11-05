@@ -2228,7 +2228,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             size={34}
           />
           <span
-            className={`next-label ${(busy ? waitLabel(progress) : next.label).length > 20 ? 'long' : ''}`}
+            className={`next-label ${(busy ? waitLabel(progress) : next.label).length > 16 ? 'long' : ''}`}
           >
             {busy ? waitLabel(progress) : next.label}
           </span>

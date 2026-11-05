@@ -254,6 +254,10 @@ sizes, and fixed where it looked or worked worse than it should.
   with their name and civ, instead of a colored square.
 - *Online:* an away friend's line carries the away icon. On phones the screen buttons fade out
   under the menu instead of being cut by it.
+- *Combat preview:* the crossed swords between the two sides are the icon set's; the first-game
+  hint steps aside while a preview shows (it used to show through beneath it).
+- *Map Lab:* the building showcase names its towns as a player would read them ("East Asian ·
+  Classical · burning"), not by internal ids.
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top

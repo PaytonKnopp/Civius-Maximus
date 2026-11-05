@@ -461,6 +461,25 @@ const STYLES = [
   'steppe',
 ];
 
+/** Architecture styles as a player reads them. */
+const STYLE_NAMES: Record<string, string> = {
+  mediterranean: 'Mediterranean',
+  european: 'European',
+  northern: 'Northern',
+  east_asian: 'East Asian',
+  south_asian: 'South Asian',
+  middle_eastern: 'Middle Eastern',
+  african: 'African',
+  american: 'American',
+  steppe: 'Steppe',
+};
+
+/** The name of the era with this order (1 = the first), from content. */
+function eraName(content: CompiledContent, order: number): string {
+  const era = content.ids.era.map((id) => content.entities.era[id]!).find((e) => e.order === order);
+  return era ? resolveText(content, era.name) : `Era ${order}`;
+}
+
 /** European cities through the ages, a burning city, then a capital in every architecture. */
 function townShowcase(
   content: CompiledContent,
@@ -510,7 +529,7 @@ function townShowcase(
         owner: `p${i}`,
         color: PLAYER_COLORS[i % PLAYER_COLORS.length]!,
         accent: 0xf2e6c8,
-        name: `${look.style} · era ${look.era}${look.razing ? ' · burning' : ''}`,
+        name: `${STYLE_NAMES[look.style] ?? look.style} · ${eraName(content, look.era)}${look.razing ? ' · burning' : ''}`,
         population: look.pop,
         tile,
         kind: 'city' as const,
