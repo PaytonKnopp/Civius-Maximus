@@ -85,6 +85,10 @@ export function AgesScreen({
               title={`Golden age at ${golden}`}
             />
           </div>
+          <div className="era-scale" aria-hidden="true">
+            <span style={{ left: pct(dark) }}>Dark {dark}</span>
+            <span style={{ left: pct(golden) }}>Golden {golden}</span>
+          </div>
           <p className="hint">
             <strong>{a.score}</strong> so far. Below {dark} the next era is a dark age; {golden} or
             more makes it golden (heroic, after a dark age). Right now that is a{' '}

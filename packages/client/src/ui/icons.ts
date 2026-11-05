@@ -774,7 +774,14 @@ export const ICONS: Record<string, IconDef> = {
   gp_scientist: { bg: C.science, glyph: FLASK },
   gp_engineer: { bg: C.production, glyph: GEAR },
   gp_merchant: { bg: C.gold, glyph: COIN },
-  gp_prophet: { bg: C.faith, glyph: FLAME },
+  gp_prophet: {
+    bg: C.faith,
+    glyph: [
+      s(ellipse(12, 4.9, 3.9, 1.5) + ellipse(12, 4.9, 2.6, 0.7), true),
+      s(circle(12, 9.4, 2.7)),
+      s('M6.2 19.8c0-3.9 2.6-7 5.8-7s5.8 3.1 5.8 7Z'),
+    ],
+  },
   gp_general: { bg: C.military, glyph: SWORDS },
   gp_writer: { bg: C.culture, glyph: SCROLL },
   gp_admiral: { bg: C.naval, glyph: ANCHOR },
@@ -835,7 +842,7 @@ export const ICONS: Record<string, IconDef> = {
   civic: { bg: C.culture, glyph: SCROLL },
   government: { bg: C.brass, glyph: COLUMNS },
   greatPeople: { bg: C.brass, glyph: [s(star(12, 12, 7.6, 3.4, 5))] },
-  religion: { bg: C.faith, glyph: FLAME },
+  religion: { bg: C.faith, glyph: [s(star(12, 12, 8.8, 4.6, 8) + circle(12, 12, 2.6), true)] },
   cityStates: {
     bg: '#4c6b8a',
     glyph: [s(rect(6.6, 4.2, 1.4, 15.6)), s('M8 5h10.4l-2.4 3.4 2.4 3.4H8Z')],

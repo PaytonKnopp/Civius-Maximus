@@ -191,7 +191,35 @@ sizes, and fixed where it looked or worked worse than it should.
   a lock, a boost, a globe, a cloud, a target, a relic, a nuclear strike and refresh; the
   remaining emoji in the HUD, the city panel, the turn timer and the online code are icons, and
   any emoji still written in text (content, labels on the map) is drawn as its icon.
-- *Wording:* "1 turn", never "1 turns".
+- *Wording:* "1 turn", never "1 turns"; "an Encampment", never "a Encampment" (`withArticle` in the
+  engine's messages and the client's notices).
+- *Full screens share a summary band:* big numbers with their icon at the top (`.screen-band`),
+  so each screen says where you stand before the details.
+- *Victories:* a card for each way to win in its color (how to win it, your progress and place,
+  the three civs furthest along, or "no one has made a start yet"), the score race with the turns
+  left, then the whole table with an icon on each column. Phones show the cards only.
+- *Religion:* faith (and per turn), your pantheon or religion, the Great Prophet race (points,
+  turns to go) and your followers on top; the way to a religion as four steps (pantheon, Great
+  Prophet, religion, spread it) with the one you are on lit; beliefs as cards with their kind;
+  the world's religions as cards in their map color with the founder's face, holy city,
+  followers, beliefs and the race to win. Religion and Great Prophets have their own icons now
+  (a radiant star; a figure with a halo), no longer the faith flame.
+- *Government:* Policies and Governments tabs. Policies: your government as a plate (its slots,
+  Change government…), the slots by kind beside the card catalog (filter by kind, with counts),
+  so a swap never needs a scroll. Cards drag into slots (onto a full slot to swap, back to the
+  catalog to take out) or go in with a click; empty slots are dashed and light up when a card
+  that fits is dragged; a bar at the bottom counts the changes and confirms them with the cost.
+  Governments: every government as a card with its slots, Adopt and its cost, or what it needs.
+- *Great works:* totals (works on display, empty slots, themed buildings, tourism and culture
+  from works), then each settlement as a gallery: every slot a gilt frame with the kind's icon,
+  the work and its maker, empty frames dashed with the kind they take; few galleries center.
+- *World Congress:* favor, the next session (or when it forms), your diplomatic points and the
+  resolutions in force on top; the session or what comes next beside the diplomatic race with
+  every leader's face.
+- *Climate:* the phases as a track (Stable, Warming... with their thresholds, the current one
+  lit), then emissions, the latest disasters and what can strike.
+- *Eras:* the era score bar names its thresholds (Dark, Golden). *Help* uses the menus' switches.
+  *Tech and civic trees:* "8 turns" instead of "8t", the boost and done marks are icons.
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top

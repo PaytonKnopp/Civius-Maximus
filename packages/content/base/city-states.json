@@ -366,7 +366,7 @@
       },
       {
         "envoys": 3,
-        "description": "+2 production in every settlement with a Industrial Zone.",
+        "description": "+2 production in every settlement with an Industrial Zone.",
         "effects": [
           {
             "effect": "modify_yield",
@@ -385,7 +385,7 @@
       },
       {
         "envoys": 6,
-        "description": "+2 more production in every settlement with a Industrial Zone.",
+        "description": "+2 more production in every settlement with an Industrial Zone.",
         "effects": [
           {
             "effect": "modify_yield",

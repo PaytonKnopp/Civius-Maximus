@@ -360,3 +360,4 @@ export {
 } from './citystates/befriend';
 export { hutsOn } from './huts/huts';
 export { routePath, seaTrade } from './trade/rules';
+export { withArticle } from './text';

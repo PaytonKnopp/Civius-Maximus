@@ -5,6 +5,7 @@ import {
   freeHolder,
   type GameState,
   type GreatWorkState,
+  greatWorkYields,
   holdersIn,
   holderWorks,
   type PlayerId,
@@ -13,18 +14,20 @@ import {
   WORK_KIND_NAMES,
 } from '@cx/engine';
 import { useEffect } from 'react';
+import { fmt } from './model';
 import { Icon } from '../ui/Icon';
 
 const KIND_ICON: Record<GreatWorkKind, string> = {
-  writing: '📜',
-  art: '🎨',
-  music: '🎵',
-  relic: '🏺',
+  writing: 'gp_writer',
+  art: 'gp_artist',
+  music: 'gp_musician',
+  relic: 'relic',
 };
 
 /**
- * Great works (docs/04-advanced-systems.md, "Great works"): every slot in your settlements,
- * what's in it, which buildings are themed, and where each work could move.
+ * Great works (docs/04-advanced-systems.md, "Great works"): every slot in your settlements as a
+ * frame on a gallery wall, what's in it, which buildings are themed, and where each work could
+ * move.
  */
 export function GreatWorksScreen({
   ctx,
@@ -52,6 +55,19 @@ export function GreatWorksScreen({
     (w) => state.settlements[w.settlement]?.owner === viewer,
   );
   const stored = storedWorks(ctx, state, viewer);
+  const galleries = mine
+    .map((s) => ({ s, holders: holdersIn(ctx, s) }))
+    .filter((g) => g.holders.length > 0);
+  const slots = galleries.reduce((n, g) => n + g.holders.reduce((m, h) => m + h.total, 0), 0);
+  const shown = all.length - stored.length;
+  const themed = galleries.reduce(
+    (n, g) => n + g.holders.filter((h) => holderWorks(state, g.s, h).themed).length,
+    0,
+  );
+  const totals: Record<string, number> = {};
+  for (const { s } of galleries)
+    for (const line of greatWorkYields(ctx, state, s))
+      for (const [y, v] of Object.entries(line.yields)) totals[y] = (totals[y] ?? 0) + v;
 
   const moveTo = (id: string, w: GreatWorkState) => {
     const places = mine.filter(
@@ -69,7 +85,9 @@ export function GreatWorksScreen({
     if (places.length === 0 && swaps.length === 0) return null;
     return (
       <select
+        className="work-move"
         aria-label={`Move ${t(w.name)}`}
+        title="Move it to another settlement, or swap it with another work of its kind"
         value=""
         onChange={(e) => {
           const [how, target] = e.target.value.split(':');
@@ -94,13 +112,20 @@ export function GreatWorksScreen({
     );
   };
 
+  const yieldLine = (kind: GreatWorkKind) =>
+    Object.entries(r.yields[kind])
+      .map(([y, v]) => `+${v} ${y}`)
+      .join(', ');
+
   const work = (id: string, w: GreatWorkState) => {
     const person = content.entities.greatPerson[w.creator];
     return (
-      <li key={id} className="great-work">
-        <span className="work-kind" aria-hidden="true">
-          {KIND_ICON[w.kind]}
-        </span>
+      <li
+        key={id}
+        className={`work-frame ${w.kind}`}
+        title={`${t(w.name)}\n${WORK_KIND_NAMES[w.kind]} by ${person ? t(person.name) : w.creator}, turn ${w.turn}\n${yieldLine(w.kind)}`}
+      >
+        <Icon name={KIND_ICON[w.kind]} size={34} />
         <span className="work-text">
           <strong>{t(w.name)}</strong>
           <small>
@@ -120,64 +145,114 @@ export function GreatWorksScreen({
           Great Works
         </h2>
         <p className="screen-sub">
-          {all.length} work{all.length === 1 ? '' : 's'}. Each yields culture and tourism where it
-          hangs; a building full of works by different people is themed (+{r.themingPercent}%).
+          Each work yields culture and tourism where it hangs; a building whose slots are all filled
+          by different people is themed (+{r.themingPercent}%).
         </p>
         <button type="button" className="close" onClick={onClose} aria-label="Close">
           ✕
         </button>
       </header>
-      <div className="great-works-body">
-        {stored.length > 0 && (
-          <section className="works-settlement">
-            <h3>In storage (not displayed)</h3>
-            <ul className="works">{stored.map(([id, w]) => work(id, w))}</ul>
-          </section>
-        )}
-        {mine.map((s) => {
-          const holders = holdersIn(ctx, s);
-          if (holders.length === 0) return null;
-          return (
-            <section key={s.id} className="works-settlement">
-              <h3>{s.name}</h3>
-              {holders.map((h) => {
-                const { works, themed } = holderWorks(state, s, h);
-                const empty = h.total - works.length;
-                const kinds = (Object.entries(h.slots) as [string, number][])
-                  .filter(([, n]) => n > 0)
-                  .map(
-                    ([k, n]) =>
-                      `${n} ${k === 'any' ? 'any kind' : WORK_KIND_NAMES[k as GreatWorkKind]}`,
-                  )
-                  .join(', ');
-                return (
-                  <div key={h.id} className={`works-holder ${themed ? 'themed' : ''}`}>
-                    <h4>
-                      {h.name}{' '}
-                      <small>
-                        {kinds}
-                        {themed ? ' · themed' : ''}
-                      </small>
-                    </h4>
-                    <ul className="works">
-                      {works.map(([id, w]) => work(id, w))}
-                      {Array.from({ length: Math.max(0, empty) }, (_, i) => (
-                        <li key={`empty-${i}`} className="great-work empty">
-                          Empty slot
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })}
-            </section>
-          );
-        })}
-        {mine.every((s) => holdersIn(ctx, s).length === 0) && (
-          <p className="hint">
-            No slots yet. Your Palace holds one work; Amphitheaters, Museums and Broadcast Centers
-            (and a few wonders) hold more. Great Writers, Artists and Musicians make the works.
-          </p>
+      <div className="screen-scroll">
+        <div className="screen-band">
+          <div className="band-stat">
+            <Icon name="greatWorks" size={34} />
+            <b>{shown}</b>
+            <span>Works on display</span>
+          </div>
+          <div className="band-stat">
+            <Icon name="building" size={34} />
+            <b>
+              {Math.max(0, slots - shown)}
+              <small>/{slots}</small>
+            </b>
+            <span>Empty slots</span>
+          </div>
+          <div className="band-stat" title="Buildings with every slot filled by different people">
+            <Icon name="trophy" size={34} />
+            <b>{themed}</b>
+            <span>Themed buildings</span>
+          </div>
+          <div className="band-stat">
+            <Icon name="tourism" size={34} />
+            <b>+{fmt(totals.tourism ?? 0)}</b>
+            <span>
+              Tourism · +{fmt(totals.culture ?? 0)} culture
+              {totals.faith ? ` · +${fmt(totals.faith)} faith` : ''}
+            </span>
+          </div>
+        </div>
+
+        {galleries.length === 0 ? (
+          <div className="screen-empty">
+            <Icon name="greatWorks" size={40} />
+            <strong>No slots yet</strong>
+            <p>
+              Your Palace holds one work; Amphitheaters, Museums and Broadcast Centers (and a few
+              wonders) hold more. Great Writers, Artists and Musicians make the works.
+            </p>
+          </div>
+        ) : (
+          <div className="works-grid">
+            {stored.length > 0 && (
+              <section className="works-settlement stored">
+                <h3>In storage</h3>
+                <p className="hint">Their building is gone: move them somewhere to show them.</p>
+                <ul className="works">{stored.map(([id, w]) => work(id, w))}</ul>
+              </section>
+            )}
+            {galleries.map(({ s, holders }) => (
+              <section key={s.id} className="works-settlement">
+                <h3>{s.name}</h3>
+                {holders.map((h) => {
+                  const { works, themed: isThemed } = holderWorks(state, s, h);
+                  const empty = Math.max(0, h.total - works.length);
+                  const open = (Object.entries(h.slots) as [string, number][]).filter(
+                    ([, n]) => n > 0,
+                  );
+                  return (
+                    <div key={h.id} className={`works-holder ${isThemed ? 'themed' : ''}`}>
+                      <h4>
+                        {h.name}
+                        <small>
+                          {open
+                            .map(
+                              ([k, n]) =>
+                                `${n} ${k === 'any' ? 'of any kind' : WORK_KIND_NAMES[k as GreatWorkKind].toLowerCase()}`,
+                            )
+                            .join(', ')}
+                        </small>
+                        {isThemed && <span className="badge">Themed</span>}
+                      </h4>
+                      <ul className="works">
+                        {works.map(([id, w]) => work(id, w))}
+                        {Array.from({ length: empty }, (_, i) => {
+                          const kind = open.find(([k]) => k !== 'any')?.[0] as
+                            GreatWorkKind | undefined;
+                          return (
+                            <li key={`empty-${i}`} className="work-frame empty">
+                              <Icon
+                                name={kind ? KIND_ICON[kind] : 'greatWorks'}
+                                size={30}
+                                variant="glyph"
+                              />
+                              <span className="work-text">
+                                <strong>Empty slot</strong>
+                                <small>
+                                  {kind
+                                    ? `For ${WORK_KIND_NAMES[kind].toLowerCase()}`
+                                    : 'For any work'}
+                                </small>
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </section>
+            ))}
+          </div>
         )}
       </div>
     </div>

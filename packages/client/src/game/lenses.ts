@@ -126,6 +126,11 @@ function loyaltyLens(
 const RELIGION_COLORS = [
   0x3987e5, 0xd95926, 0x199e70, 0xc98500, 0xd55181, 0x008300, 0x9085e9, 0xe66767,
 ];
+/** A religion's color on the map and in the Religion screen (founding order). */
+export function religionColor(state: GameState, id: string): string {
+  const i = Math.max(0, Object.keys(state.religions).indexOf(id));
+  return `#${RELIGION_COLORS[i % RELIGION_COLORS.length]!.toString(16).padStart(6, '0')}`;
+}
 const BEST_SITE = 0xf2c14e;
 /** The same resource colors as the 2D map's resource dots. */
 const RESOURCE_COLORS = { bonus: 0xe8dcb0, luxury: 0xd18cf0, strategic: 0xf07a5a } as const;

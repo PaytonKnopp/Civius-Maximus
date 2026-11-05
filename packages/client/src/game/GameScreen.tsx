@@ -50,6 +50,7 @@ import {
   disastersOn,
   blastTiles,
   nukeProblem,
+  withArticle,
 } from '@cx/engine';
 import { type GameHandle, LocalGame, makeSave, RemoteGame, type TurnProgress } from '@cx/host';
 import { Icon, Rich } from '../ui/Icon';
@@ -301,8 +302,8 @@ function noticeFor(
       const age = content.entities.age[e.age];
       const name = age ? resolveText(content, age.name) : e.age;
       return e.player === ME
-        ? `A ${name} begins! (${e.score} era score last era) Choose your dedication.`
-        : `${civName(content, state, e.player)} enters a ${name}`;
+        ? `${withArticle(name).replace(/^a/, 'A')} begins! (${e.score} era score last era) Choose your dedication.`
+        : `${civName(content, state, e.player)} enters ${withArticle(name)}`;
     }
     case 'disaster': {
       const def = content.entities.disaster[e.disaster];
@@ -317,7 +318,7 @@ function noticeFor(
       const hit = e.settlements.map((id) => name(id)).join(' and ');
       return e.player === ME
         ? `Your ${weapon} struck${hit ? ` ${hit}` : ''}: ${e.units} unit${e.units === 1 ? '' : 's'} lost`
-        : `${civName(content, state, e.player)} used a ${weapon}${hit ? ` on ${hit}` : ''}!`;
+        : `${civName(content, state, e.player)} used ${withArticle(weapon)}${hit ? ` on ${hit}` : ''}!`;
     }
     case 'theological_combat': {
       const mine = e.attackerOwner === ME;
@@ -529,7 +530,7 @@ function noticeFor(
       return e.owner === ME
         ? `Your ${unitName} was destroyed`
         : e.by === ME
-          ? `You destroyed a ${unitName}`
+          ? `You destroyed ${withArticle(unitName)}`
           : undefined;
     }
     case 'civilian_captured': {
@@ -537,7 +538,7 @@ function noticeFor(
       return e.from === ME
         ? `Your ${unitName} was captured!`
         : e.by === ME
-          ? `You captured a ${unitName}`
+          ? `You captured ${withArticle(unitName)}`
           : undefined;
     }
     case 'settlement_captured':
