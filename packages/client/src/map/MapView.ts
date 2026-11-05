@@ -505,6 +505,9 @@ export class MapView implements MapRenderer {
     });
   }
 
+  /** Numbers rising over each tile right now (so the next one starts above them). */
+  private flashing = new Map<number, number>();
+
   flash(tile: number, text: string, tone: FlashTone) {
     void this.ready.then(() => {
       if (!this.data) return;
@@ -521,7 +524,11 @@ export class MapView implements MapRenderer {
         },
       });
       t.anchor.set(0.5);
-      t.position.set(cx, cy - 20);
+      // Several numbers on one tile stack upward instead of overlapping.
+      const stacked = this.flashing.get(tile) ?? 0;
+      this.flashing.set(tile, stacked + 1);
+      const y0 = cy - 20 - stacked * 18;
+      t.position.set(cx, y0);
       this.overlay.addChild(t);
       const start = performance.now();
       const step = () => {
@@ -529,9 +536,12 @@ export class MapView implements MapRenderer {
         if (age >= 1 || t.destroyed) {
           if (!t.destroyed) t.destroy();
           this.app.ticker.remove(step);
+          const left = (this.flashing.get(tile) ?? 1) - 1;
+          if (left > 0) this.flashing.set(tile, left);
+          else this.flashing.delete(tile);
           return;
         }
-        t.y = cy - 20 - age * 22;
+        t.y = y0 - age * 22;
         t.alpha = age < 0.6 ? 1 : 1 - (age - 0.6) / 0.4;
       };
       this.app.ticker.add(step);

@@ -1,0 +1,921 @@
+/* The final design pass (docs/06-ui-ux.md, "Final design pass"). Loaded last: the map HUD's
+   chips and notices, and the shared pieces the redone screens use (a summary band of big
+   numbers, cards with an icon and a color, steps). Tokens come from theme.css. */
+
+/* --- Civs: a leader's face with a badge for war, a pact, an offer, away or done ------------ */
+
+.player-chip {
+  gap: 8px;
+  padding: 3px 12px 3px 3px;
+}
+
+.player-chip .chip-head {
+  position: relative;
+  margin: 0;
+  border-width: 2px;
+}
+
+.player-chip .chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.chip-badge {
+  position: absolute;
+  right: -6px;
+  bottom: -5px;
+  display: inline-flex;
+  line-height: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+.player-chip.done::after {
+  content: none;
+}
+
+.player-chip.done .chip-name {
+  color: var(--muted);
+}
+
+.player-chip.me {
+  border-color: rgba(240, 212, 140, 0.7);
+}
+
+.player-chip.war {
+  border-color: #c0503c;
+}
+
+.player-chip.open {
+  border-color: var(--gold-hi);
+  box-shadow:
+    0 0 0 1px var(--gold-hi),
+    0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.player-chip.offer {
+  box-shadow:
+    0 0 0 2px rgba(240, 212, 140, 0.55),
+    0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.player-chip.offer .chip-badge {
+  animation: chip-call 1.6s ease-in-out infinite;
+}
+
+@keyframes chip-call {
+  50% {
+    transform: translateY(-2px) scale(1.12);
+  }
+}
+
+.player-chip.dead {
+  opacity: 0.6;
+  text-decoration: none;
+}
+
+.player-chip.dead .chip-head {
+  filter: grayscale(1) brightness(0.7);
+}
+
+.player-chip.dead .chip-name {
+  text-decoration: line-through;
+}
+
+/* Seven civs or more (and every laptop and phone): faces only, in one row; the name, score and
+   relation are in the tooltip. Your own chip keeps its name. */
+.players.many .player-chip:not(.me),
+.players .player-chip.dead {
+  padding: 3px;
+}
+
+.players.many .player-chip:not(.me) .chip-name,
+.players .player-chip.dead .chip-name {
+  display: none;
+}
+
+@media (max-width: 1440px) {
+  .players .player-chip:not(.me) {
+    padding: 3px;
+  }
+
+  .players .player-chip:not(.me) .chip-name {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .players {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-width: calc(100% - 16px);
+    padding: 4px 6px 6px 2px;
+    gap: 5px;
+    scrollbar-width: none;
+  }
+
+  .players::-webkit-scrollbar {
+    display: none;
+  }
+
+  .players .player-chip {
+    flex: none;
+    padding: 2px;
+  }
+
+  .players .player-chip .chip-name {
+    display: none;
+  }
+}
+
+/* --- Notices: short toasts under the top bar, in the text face ------------------------------ */
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 460px;
+  padding: 8px 16px 8px 14px;
+  border-left: 3px solid var(--gold);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  color: var(--text);
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .notices {
+    left: 8px;
+    right: 8px;
+    transform: none;
+    max-width: none;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .notice {
+    max-width: none;
+    padding: 6px 12px 6px 10px;
+    font-size: 12.5px;
+  }
+
+  /* Only the newest two fit above the map's middle. */
+  .notice:nth-last-child(n + 3) {
+    display: none;
+  }
+}
+
+/* --- Top bar: every yield with its change per turn, at every width ----------------------- */
+
+.empire-yields li {
+  gap: 5px;
+}
+
+.empire-yields .delta,
+.empire-yields .delta.mono {
+  display: inline;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  opacity: 0.85;
+}
+
+.empire-yields .delta.neg {
+  color: #ff9a85;
+  opacity: 1;
+}
+
+.empire-yields .val small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.empire-yields .celebrating-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Celebration progress: the number over a thin bar. */
+.yield-meter {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.05;
+}
+
+.yield-meter > i {
+  display: block;
+  width: 100%;
+  min-width: 36px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    #e0a63a calc(var(--v) * 100%),
+    rgba(255, 255, 255, 0.1) calc(var(--v) * 100%)
+  );
+}
+
+@media (min-width: 1001px) and (max-width: 1440px) {
+  .empire-yields li {
+    padding: 0 7px;
+    gap: 4px;
+  }
+
+  .empire-yields .icon {
+    width: 19px;
+    height: 19px;
+  }
+
+  .empire-yields li .val {
+    font-size: 13.5px;
+  }
+
+  .empire-yields .delta {
+    font-size: 11px;
+  }
+}
+
+/* Small laptops: like tablets, the yields and the screen buttons take a row each (theme.css has
+   the same layout up to 1000px), so no number is clipped. */
+@media (min-width: 1001px) and (max-width: 1180px) {
+  :root {
+    --topbar-h: 94px;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 0;
+  }
+
+  .empire-yields {
+    height: 52px;
+    max-width: calc(100% - 8px);
+  }
+
+  .topbar-right {
+    width: 100%;
+    height: 42px;
+    border-top: 1px solid rgba(201, 161, 79, 0.25);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .turn-pill .era,
+  .turn-pill .turn-label {
+    display: inline;
+  }
+
+  .hint-card {
+    top: calc(var(--topbar-h) + 64px);
+  }
+}
+
+/* --- The game menu (☰): an icon, the entry, its key ---------------------------------------- */
+
+.menu-pop {
+  min-width: 236px;
+  gap: 1px;
+  animation: notice-in 160ms var(--ease);
+}
+
+.menu-pop button[role='menuitem'] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  font-size: 14.5px;
+}
+
+.menu-pop button[role='menuitem'] .icon {
+  flex: none;
+  color: var(--gold);
+  opacity: 0.9;
+}
+
+.menu-pop button[role='menuitem']:hover .icon {
+  color: var(--gold-1);
+  opacity: 1;
+}
+
+.menu-pop button[role='menuitem'] kbd {
+  margin-left: auto;
+}
+
+.menu-pop button[role='menuitem']:first-child {
+  margin-bottom: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-2);
+  border-radius: 4px 4px 0 0;
+}
+
+.online-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- Research and civic trackers: long names take two lines instead of an ellipsis -------- */
+
+.tracker-name.long {
+  display: -webkit-box;
+  font-size: 13.5px;
+  line-height: 1.12;
+  white-space: normal;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* --- Diplomacy: face to face with a leader ------------------------------------------------ */
+
+.diplo-backdrop {
+  z-index: 30;
+}
+
+.player-panel.diplo {
+  position: relative;
+  inset: auto;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 0;
+  width: min(880px, calc(100% - 32px));
+  max-height: calc(100dvh - 40px);
+  padding: 0;
+  overflow: hidden;
+  animation: dialog-rise 240ms var(--ease);
+}
+
+@keyframes dialog-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+}
+
+.diplo-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 18px;
+  background:
+    radial-gradient(
+      circle at 50% 28%,
+      color-mix(in srgb, var(--civ) 32%, transparent),
+      transparent 68%
+    ),
+    rgba(0, 0, 0, 0.28);
+  border-right: 1px solid var(--line-2);
+  overflow-y: auto;
+}
+
+.diplo-portrait .panel-quote {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.diplo-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 18px 22px 20px;
+  overflow-y: auto;
+}
+
+.diplo .player-panel-head h3 {
+  font-size: 24px;
+  letter-spacing: 0.06em;
+  color: var(--gold-1);
+}
+
+.diplo .player-panel-head .panel-head-portrait,
+.diplo .diplo-quote-small {
+  display: none;
+}
+
+.relation-pill {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 4px 14px 4px 5px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.relation-pill.war {
+  color: #ffb3a6;
+  border-color: rgba(192, 80, 60, 0.6);
+  background: rgba(192, 80, 60, 0.13);
+}
+
+.relation-pill.peace {
+  color: #c4e6a0;
+  border-color: rgba(120, 170, 90, 0.45);
+  background: rgba(120, 170, 90, 0.1);
+}
+
+.relation-pill.pact {
+  color: #a9e3e8;
+  border-color: rgba(80, 160, 170, 0.5);
+  background: rgba(80, 160, 170, 0.12);
+}
+
+.diplo-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 8px;
+}
+
+.diplo-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 12px 9px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.diplo-stat > span {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.diplo-stat > b {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--gold-1);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.diplo-stat > b.good {
+  color: #b9e08c;
+}
+
+.diplo-stat > b.bad {
+  color: #ff9a85;
+}
+
+.diplo-stat > small {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.diplo-agenda {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.diplo-agenda-label {
+  margin-right: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.diplo .opinion summary,
+.diplo .kit summary {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.diplo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-2);
+}
+
+.diplo-actions > button.wide {
+  flex: 1 1 150px;
+  width: auto;
+  min-height: 40px;
+}
+
+.diplo-actions > :not(button) {
+  flex-basis: 100%;
+}
+
+@media (max-width: 720px) {
+  .player-panel.diplo {
+    grid-template-columns: minmax(0, 1fr);
+    width: calc(100% - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  .diplo-portrait {
+    display: none;
+  }
+
+  .diplo .player-panel-head .panel-head-portrait {
+    display: inline-flex;
+  }
+
+  .diplo .diplo-quote-small {
+    display: block;
+    margin: 0;
+  }
+
+  .diplo-main {
+    padding: 14px 14px 16px;
+  }
+}
+
+/* Phones: the yields have the whole first row (the menu and the 3D/2D switch move to the end of
+   the second, after the screen buttons); the changes per turn are left out so all six fit. */
+@media (max-width: 640px) {
+  .empire-yields {
+    max-width: 100%;
+  }
+
+  .empire-yields li {
+    padding: 0 6px;
+    gap: 4px;
+  }
+
+  .empire-yields .icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .empire-yields .delta.mono {
+    display: none;
+  }
+
+  .yield-meter > i {
+    min-width: 28px;
+  }
+
+  .game-bar {
+    top: var(--topbar-h);
+    height: 42px;
+    padding-left: 10px;
+    background: linear-gradient(90deg, transparent, #0e1b26 14px);
+  }
+
+  .topbar-right {
+    padding-right: 128px;
+  }
+
+  .game-bar .segmented.compact button {
+    padding: 3px 8px;
+  }
+}
+
+/* --- City panel: the overview on top, then tabs ------------------------------------------- */
+
+.settlement-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.capital-star {
+  display: inline-flex;
+  line-height: 0;
+}
+
+/* The six yields and happiness in one row of equal cells. */
+.settlement-panel .yield-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.settlement-panel .yield-row li {
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 5px 2px 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: rgba(0, 0, 0, 0.28);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.settlement-panel .yield-row li .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.settlement-panel .yield-row li:hover {
+  border-color: rgba(210, 172, 92, 0.45);
+  background: rgba(255, 236, 190, 0.05);
+}
+
+.settlement-panel .mood-line {
+  margin: -4px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.settlement-panel .defense-line {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.settlement-panel .defense-line > span,
+.settlement-panel .religion-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 4px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.settlement-panel .defense-line > span.hurt {
+  color: #ffb3a6;
+  border-color: rgba(192, 80, 60, 0.5);
+}
+
+.settlement-panel .religion-line {
+  align-self: flex-start;
+  margin: -2px 0 0;
+}
+
+.settlement-panel .wide.strike {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.queue-pin {
+  display: inline-flex;
+  margin-left: 6px;
+  vertical-align: -2px;
+}
+
+/* The tabs below the overview: build or buy, citizens and tiles, what's built. */
+.city-tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  margin-top: 4px;
+  padding: 2px;
+  border: 1px solid var(--line-2);
+  border-radius: calc(var(--radius-s) + 2px);
+  background: var(--well);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.city-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 6px;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.city-tabs button.on {
+  background: linear-gradient(180deg, #f2d48a, #c99a44);
+  border-color: #f6dfa0;
+  color: var(--brass-ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.city-tabs .tab-count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.35);
+  color: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.city-tabs button.on .tab-count {
+  background: rgba(60, 40, 10, 0.2);
+}
+
+.settlement-panel .city-tabs + section {
+  border-top: none;
+  padding-top: 2px;
+}
+
+/* Build list rows: the name, then its cost and turns underneath, the buttons at the end. */
+.settlement-panel .items .item-name {
+  min-width: 0;
+}
+
+.settlement-panel .items .item-name .muted.mono {
+  font-size: 11.5px;
+}
+
+/* --- Lenses: a picker under the minimap, with a legend for the lens in use ---------------- */
+
+/* The lens list opens over the Next button, so the minimap sits above it. */
+.corner .minimap {
+  z-index: 3;
+}
+
+.lens-picker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.lens-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px 4px 5px;
+  font-size: 13px;
+}
+
+.lens-button span {
+  flex: 1;
+  text-align: left;
+}
+
+.lens-button.on {
+  border-color: rgba(240, 212, 140, 0.65);
+  color: var(--gold-1);
+}
+
+.lens-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 12;
+  width: min(300px, calc(100vw - 24px));
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid rgba(210, 172, 92, 0.5);
+  border-radius: var(--radius);
+  background: var(--grain), linear-gradient(180deg, var(--lacquer-1), var(--lacquer-2));
+  box-shadow: var(--shadow-panel);
+  animation: notice-in 160ms var(--ease);
+}
+
+.lens-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+}
+
+.lens-menu button span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.lens-menu button strong {
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.lens-menu button small {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text-2);
+}
+
+.lens-menu button:hover:not(:disabled) {
+  background: rgba(255, 236, 190, 0.06);
+  border-color: rgba(210, 172, 92, 0.35);
+}
+
+.lens-menu button.on {
+  background: linear-gradient(90deg, rgba(210, 172, 92, 0.2), rgba(210, 172, 92, 0.04));
+  border-color: var(--gold-lo);
+}
+
+.lens-menu button.on strong {
+  color: var(--gold-1);
+}
+
+.lens-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0;
+  padding: 0 2px;
+  list-style: none;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.lens-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lens-legend i {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+  color: #10161c;
+  font: normal 700 9px/1 var(--font-body);
+}
+
+/* Phones have no minimap, but keep the lenses: a round button beside the Next button. */
+@media (max-width: 640px) {
+  .corner .next-action {
+    margin-right: 60px;
+  }
+
+  .corner .minimap {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: block;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .corner .minimap canvas {
+    display: none;
+  }
+
+  .corner .lens-picker {
+    align-items: flex-end;
+    margin: 0;
+  }
+
+  .corner .lens-button {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 4px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+  }
+
+  .corner .lens-button span,
+  .corner .lens-button kbd {
+    display: none;
+  }
+
+  .corner .lens-legend {
+    justify-content: flex-end;
+    width: max-content;
+    max-width: calc(100vw - 24px);
+    padding: 5px 8px;
+    border-radius: var(--radius);
+    background: rgba(10, 17, 23, 0.88);
+  }
+}

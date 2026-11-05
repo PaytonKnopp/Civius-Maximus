@@ -59,7 +59,7 @@ import { createAiRunner } from './aiRunner';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TileCard } from '../components/TileCard';
 import { MapView } from '../map/MapView';
-import type { MapRenderer, PathView, Quality, TileHighlight } from '../map/renderer';
+import type { FlashTone, MapRenderer, PathView, Quality, TileHighlight } from '../map/renderer';
 import { World3D } from '../map3d/World3D';
 import { CombatPreview, type Side } from './CombatPreview';
 import { CaptureDialog, GameOver, PlayerPanel, WarPrompt } from './Diplomacy';
@@ -69,6 +69,7 @@ import { AUTOSAVE, ONLINE_AUTOSAVE, storeSave } from './storage';
 import {
   civName,
   cssColor,
+  empireBreakdown,
   empireSummary,
   itemName,
   nextAction,
@@ -80,6 +81,7 @@ import {
   showTurns,
   territoryView,
   turnsFor,
+  turnWord,
   unitViews,
   whole,
   fmt,
@@ -786,6 +788,42 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   const pendingMoves = useRef<{ unit: string; path: number[] }[]>([]);
   const noticeId = useRef(0);
 
+  // Numbers over the map (damage, "Destroyed", disasters) play one after another instead of all
+  // at once: a turn's worth of fighting (or the moves made while a save loads) would otherwise
+  // pile up into an unreadable heap. Damage waiting for the same tile adds up into one number.
+  const flashQueue = useRef<{ tile: number; text: string; tone: FlashTone }[]>([]);
+  const flashTimer = useRef<number | null>(null);
+  const flash = useCallback((tile: number, text: string, tone: FlashTone) => {
+    const queue = flashQueue.current;
+    const damage = /^−(\d+)$/.exec(text);
+    const same = damage
+      ? queue.find((f) => f.tile === tile && f.tone === tone && /^−\d+$/.test(f.text))
+      : undefined;
+    if (same) same.text = `−${Number(same.text.slice(1)) + Number(damage![1])}`;
+    else {
+      // A long backlog keeps only the newest: old news is not worth waiting for.
+      if (queue.length >= 16) queue.shift();
+      queue.push({ tile, text, tone });
+    }
+    if (flashTimer.current !== null) return;
+    const next = () => {
+      const f = flashQueue.current.shift();
+      if (!f) {
+        flashTimer.current = null;
+        return;
+      }
+      viewRef.current?.flash(f.tile, f.text, f.tone);
+      flashTimer.current = window.setTimeout(next, 160);
+    };
+    next();
+  }, []);
+  useEffect(
+    () => () => {
+      if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    },
+    [],
+  );
+
   const notify = useCallback((text: string) => {
     const id = ++noticeId.current;
     setNotices((n) => [...n.slice(-2), { id, text }]);
@@ -853,6 +891,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     [ctx, state, territory, colors, viewer],
   );
   const empire = useMemo(() => empireSummary(ctx, state, viewer), [ctx, state, viewer]);
+  const breakdown = useMemo(() => empireBreakdown(ctx, state, viewer), [ctx, state, viewer]);
   const unit = selection?.kind === 'unit' ? state.units[selection.id] : undefined;
   const settlement = selection?.kind === 'settlement' ? state.settlements[selection.id] : undefined;
   const next = nextAction(
@@ -1021,19 +1060,19 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             e.tile,
             e.mode,
           );
-          view.flash(e.tile, `−${e.dealt}`, 'damage');
-          if (e.taken > 0) view.flash(e.from, `−${e.taken}`, 'damage');
+          flash(e.tile, `−${e.dealt}`, 'damage');
+          if (e.taken > 0) flash(e.from, `−${e.taken}`, 'damage');
         } else if (e.type === 'unit_killed') {
-          view.flash(e.tile, 'Destroyed', e.owner === viewer ? 'damage' : 'good');
+          flash(e.tile, 'Destroyed', e.owner === viewer ? 'damage' : 'good');
         } else if (e.type === 'civilian_captured' || e.type === 'settlement_captured') {
-          view.flash(e.tile, 'Captured!', e.by === viewer ? 'good' : 'damage');
+          flash(e.tile, 'Captured!', e.by === viewer ? 'good' : 'damage');
         } else if (e.type === 'nuke_launched') {
           view.animateDisaster(e.tiles, 'fire');
-          view.flash(e.tile, '☢', 'damage');
+          flash(e.tile, 'Nuclear strike', 'damage');
         } else if (e.type === 'disaster') {
           const def = content.entities.disaster[e.disaster];
           view.animateDisaster(e.tiles, def?.visual ?? 'dust');
-          if (def) view.flash(e.tile, resolveText(content, def.name), 'damage');
+          if (def) flash(e.tile, resolveText(content, def.name), 'damage');
         }
       }
       setState(s);
@@ -1052,7 +1091,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     setProgress(game.progress ?? null);
     setState(game.state);
     return off;
-  }, [game, content, notify]);
+  }, [game, content, notify, flash]);
 
   useEffect(() => {
     viewRef.current?.setFog(fog);
@@ -1594,39 +1633,56 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
 
       <header className="topbar">
         <ul className="empire-yields" aria-label="Your empire">
-          <li title="Science per turn">
+          <li title={breakdown.science}>
             <Icon name="science" size={22} />
             <span className="mono val science">{perTurn(empire.science)}</span>
           </li>
-          <li title="Culture per turn">
+          <li title={breakdown.culture}>
             <Icon name="culture" size={22} />
             <span className="mono val culture">{perTurn(empire.culture)}</span>
           </li>
-          <li title="Gold (per turn)">
+          <li title={breakdown.gold}>
             <Icon name="gold" size={22} />
             <span className="mono val gold">{whole(empire.gold)}</span>
-            <span className="delta mono">({perTurn(empire.goldPerTurn)})</span>
+            <span className={`delta mono ${empire.goldPerTurn < 0 ? 'neg' : ''}`}>
+              {perTurn(empire.goldPerTurn)}
+            </span>
           </li>
-          <li title="Faith (per turn)">
+          <li title={breakdown.faith}>
             <Icon name="faith" size={22} />
             <span className="mono val faith">{whole(empire.faith)}</span>
-            <span className="delta mono">({perTurn(empire.faithPerTurn)})</span>
+            <span className="delta mono">{perTurn(empire.faithPerTurn)}</span>
           </li>
-          <li title="Influence (per turn): spent on friendships, alliances and denouncing">
+          <li title={breakdown.influence}>
             <Icon name="influence" size={22} />
             <span className="mono val">{whole(empire.influence)}</span>
-            <span className="delta mono">({perTurn(empire.influencePerTurn)})</span>
+            <span className="delta mono">{perTurn(empire.influencePerTurn)}</span>
           </li>
           <li
             className={me.celebration.turnsLeft > 0 ? 'celebrating' : ''}
-            title="Happiness surplus builds toward a celebration: a bonus wildcard policy slot and +10% production"
+            title={breakdown.happiness}
           >
             <Icon name="happiness" size={22} />
-            <span className="mono val">
-              {me.celebration.turnsLeft > 0
-                ? `Celebrating · ${me.celebration.turnsLeft}`
-                : `${me.celebration.store}/${celebrationThreshold(ctx, me)}`}
-            </span>
+            {me.celebration.turnsLeft > 0 ? (
+              <span className="mono val">
+                <span className="celebrating-label">Celebrating</span> {me.celebration.turnsLeft}
+              </span>
+            ) : (
+              <span
+                className="yield-meter"
+                style={
+                  {
+                    '--v': Math.min(1, me.celebration.store / celebrationThreshold(ctx, me)),
+                  } as React.CSSProperties
+                }
+              >
+                <span className="mono val">
+                  {me.celebration.store}
+                  <small>/{celebrationThreshold(ctx, me)}</small>
+                </span>
+                <i aria-hidden="true" />
+              </span>
+            )}
           </li>
         </ul>
         <div className="topbar-right">
@@ -1785,7 +1841,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         </div>
       )}
 
-      <div className="players">
+      <div className={`players ${state.playerOrder.length > 6 ? 'many' : ''}`}>
         {state.playerOrder.map((p) => {
           const pl = state.players[p]!;
           const war = atWar(state, viewer, p);
@@ -1793,42 +1849,68 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           const offer =
             state.peaceOffers.includes(`${p}>${viewer}`) ||
             state.diplomacy.proposals.some((x) => x.from === p && x.to === viewer);
+          const isAway = !!online && seats.some((x) => x.player === p && !x.online);
+          // Only other people's turns are worth watching: AI seats always finish at once.
+          const showDone = (hotseat || !!online) && pl.kind === 'human' && pl.turnEnded;
+          const label =
+            (hotseat || online) && pl.kind === 'human'
+              ? `${pl.name} · ${civName(content, state, p)}`
+              : p === viewer
+                ? `You · ${civName(content, state, p)}`
+                : civName(content, state, p);
+          const leaderName = resolveText(content, content.entities.leader[pl.leader]?.name ?? '');
+          const tip = [
+            `${civName(content, state, p)}${leaderName ? ` · ${leaderName}` : ''}${p === viewer ? ' (you)' : ''}`,
+            pl.alive ? `Score ${scoreOf(ctx, state, p).total}` : 'Defeated',
+            ...(p === viewer
+              ? []
+              : [
+                  war
+                    ? 'At war'
+                    : rel === 'allies'
+                      ? 'Allies'
+                      : rel === 'friends'
+                        ? 'Friends'
+                        : 'At peace',
+                ]),
+            ...(offer ? ['Has an offer for you'] : []),
+            ...(isAway ? ['Away'] : []),
+            ...(showDone ? ['Turn ended'] : []),
+            ...(p === viewer ? [] : ['Click for diplomacy']),
+          ].join('\n');
           return (
             <button
               type="button"
               key={p}
-              className={`player-chip ${pl.turnEnded ? 'done' : ''} ${war ? 'war' : ''} ${pl.alive ? '' : 'dead'} ${offer ? 'offer' : ''}`}
-              title={`${pl.name} · score ${scoreOf(ctx, state, p).total}${war ? ' · at war' : ''}${rel === 'allies' ? ' · allies' : rel === 'friends' ? ' · friends' : ''}${offer ? ' · has an offer for you' : ''}${pl.turnEnded ? ' (turn ended)' : ''}`}
+              className={`player-chip ${p === viewer ? 'me' : ''} ${showDone ? 'done' : ''} ${war ? 'war' : ''} ${pl.alive ? '' : 'dead'} ${offer ? 'offer' : ''} ${playerPanel === p ? 'open' : ''}`}
+              title={tip}
+              aria-label={`${label}${war ? ', at war' : ''}${offer ? ', has an offer for you' : ''}`}
               onClick={() => setPlayerPanel(playerPanel === p ? null : p)}
             >
               <span className="chip-head" style={{ borderColor: cssColor(colors[p]!.main) }}>
-                <LeaderHead content={content} leader={pl.leader} civ={pl.civ} size={24} />
+                <LeaderHead content={content} leader={pl.leader} civ={pl.civ} size={28} />
+                {(war || rel === 'allies' || rel === 'friends' || offer || isAway || showDone) && (
+                  <span className="chip-badge" aria-hidden="true">
+                    <Icon
+                      name={
+                        offer
+                          ? 'letter'
+                          : isAway
+                            ? 'away'
+                            : war
+                              ? 'war'
+                              : showDone
+                                ? 'check'
+                                : rel === 'allies'
+                                  ? 'alliance'
+                                  : 'friends'
+                      }
+                      size={15}
+                    />
+                  </span>
+                )}
               </span>
-              {(hotseat || online) && pl.kind === 'human'
-                ? `${p === viewer ? '▸ ' : ''}${pl.name} · ${civName(content, state, p)}`
-                : p === viewer
-                  ? `You · ${civName(content, state, p)}`
-                  : civName(content, state, p)}
-              {war && (
-                <span className="war-mark" aria-label="at war">
-                  ⚔
-                </span>
-              )}
-              {(rel === 'allies' || rel === 'friends') && (
-                <span className="pact-mark" aria-label={rel}>
-                  {rel === 'allies' ? '🤝' : '🙂'}
-                </span>
-              )}
-              {offer && (
-                <span className="offer-mark" aria-label="has an offer for you">
-                  ✉
-                </span>
-              )}
-              {online && seats.some((x) => x.player === p && !x.online) && (
-                <span className="away-mark" aria-label="away">
-                  ⏸
-                </span>
-              )}
+              <span className="chip-name">{label}</span>
             </button>
           );
         })}
@@ -1920,14 +2002,28 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
                 next.kind === (k === 'tech' ? 'research' : 'civic') ? 'call' : ''
               }`}
               onClick={() => setOverlay({ kind: 'tree', tree: k })}
-              title={k === 'tech' ? 'Technologies (T)' : 'Civics (C)'}
+              title={[
+                k === 'tech' ? 'Technologies (T)' : 'Civics (C)',
+                ...(def && id
+                  ? [
+                      `${resolveText(content, def.name)}: ${whole(progress)}/${whole(cost)} ${k === 'tech' ? '🔬' : '🎭'} (${perTurn(perTurnAmount)} a turn)`,
+                      ...(def.boost && !track.boosted.includes(id)
+                        ? [
+                            `Boost +${content.rules.progress.boostPercent}%: ${resolveText(content, def.boost.text)}`,
+                          ]
+                        : []),
+                    ]
+                  : [k === 'tech' ? 'Nothing being researched.' : 'No civic in progress.']),
+              ].join('\n')}
             >
               <span className="tracker-ring" style={{ '--pct': `${pct}%` } as React.CSSProperties}>
                 <Icon name={k === 'tech' ? 'research' : 'civic'} size={34} />
               </span>
               <span className="tracker-text">
                 <span className="tracker-kind">{k === 'tech' ? 'Research' : 'Civic'}</span>
-                <span className="tracker-name">
+                <span
+                  className={`tracker-name ${def && resolveText(content, def.name).length > 16 ? 'long' : ''}`}
+                >
                   {def
                     ? resolveText(content, def.name)
                     : k === 'tech'
@@ -1938,7 +2034,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               {def && (
                 <span className="tracker-turns mono">
                   {showTurns(turnsFor(cost, progress, perTurnAmount))}
-                  <small>turns</small>
+                  <small>{turnWord(turnsFor(cost, progress, perTurnAmount))}</small>
                 </span>
               )}
             </button>
@@ -2131,8 +2227,8 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         </button>
         {secondsLeft !== null && state.status === 'playing' && (
           <div className={`turn-timer ${secondsLeft <= 15 ? 'low' : ''}`} role="timer">
-            ⏱ {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')} left this
-            turn
+            <Icon name="timer" size={18} /> {Math.floor(secondsLeft / 60)}:
+            {String(secondsLeft % 60).padStart(2, '0')} left this turn
           </div>
         )}
         {online && next.kind === 'waiting' && !busy && (

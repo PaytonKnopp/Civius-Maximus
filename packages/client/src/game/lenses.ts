@@ -33,6 +33,65 @@ export const LENS_NAMES: Record<Lens, string> = {
   loyalty: 'Loyalty',
 };
 
+/** What each lens shows, in a line (the picker and its tooltip). */
+export const LENS_ABOUT: Record<Lens, string> = {
+  none: 'The map as it is.',
+  yields: 'What each of your tiles gives when worked.',
+  settler: 'The best places you know for a new settlement, ranked.',
+  resources: 'Every resource you know of, by kind.',
+  religion: 'Which religion each settlement follows.',
+  loyalty: 'Whose people pull hardest on each tile, and each settlement’s loyalty.',
+};
+
+export const LENS_ICONS: Record<Lens, string> = {
+  none: 'lens',
+  yields: 'food',
+  settler: 'settler',
+  resources: 'diamonds',
+  religion: 'religion',
+  loyalty: 'diplomacy',
+};
+
+const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
+
+/** The legend shown under the minimap while a lens is on. */
+export function lensLegend(
+  state: GameState,
+  lens: Lens,
+): { label: string; color: string; mark?: string }[] {
+  switch (lens) {
+    case 'settler':
+      return [
+        { label: 'Best three', color: hex(BEST_SITE), mark: '1' },
+        { label: 'Good sites', color: '#c9d0d4', mark: '4' },
+      ];
+    case 'resources':
+      return [
+        { label: 'Bonus', color: hex(RESOURCE_COLORS.bonus) },
+        { label: 'Luxury', color: hex(RESOURCE_COLORS.luxury) },
+        { label: 'Strategic', color: hex(RESOURCE_COLORS.strategic) },
+      ];
+    case 'religion': {
+      const order = Object.keys(state.religions);
+      const known = order.map((id, i) => ({
+        label: state.religions[id]!.name,
+        color: hex(RELIGION_COLORS[i % RELIGION_COLORS.length]!),
+      }));
+      return known.length > 0 ? known : [{ label: 'No religion founded yet', color: '#5b6b7a' }];
+    }
+    case 'loyalty':
+      return [
+        { label: 'Gaining', color: '#9fd36a' },
+        { label: 'Losing', color: '#e0503c' },
+        { label: 'Steadfast', color: '#c9d0d4', mark: '◆' },
+      ];
+    case 'yields':
+      return [{ label: 'Food, production, gold… per worked tile', color: '#5f9b33' }];
+    default:
+      return [];
+  }
+}
+
 /** Loyalty lens: which side's people pull hardest on each tile, and each settlement's loyalty. */
 function loyaltyLens(
   ctx: EngineContext,
@@ -103,7 +162,7 @@ export function lensFor(
       return settleSites(ctx, state, viewer).map((s, i) => ({
         tile: s.tile,
         tone: 'lens',
-        label: `★${i + 1}`,
+        label: `${i + 1}`,
         ...(i < 3 ? { color: BEST_SITE } : {}),
       }));
     case 'resources': {

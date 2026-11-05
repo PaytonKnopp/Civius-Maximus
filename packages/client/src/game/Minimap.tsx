@@ -1,7 +1,7 @@
 import type { EngineContext, GameState, PlayerId } from '@cx/engine';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../ui/Icon';
-import { type Lens, LENS_NAMES, LENSES } from './lenses';
+import { type Lens, LENS_ABOUT, LENS_ICONS, LENS_NAMES, LENSES, lensLegend } from './lenses';
 import { type Colors, cssColor } from './model';
 
 interface Props {
@@ -134,16 +134,92 @@ export function Minimap({ ctx, state, viewer, fog, colors, lens, onLens, onPick 
         onPointerDown={pick}
         aria-label="Minimap: click to move the camera"
       />
-      <label className="lens-picker" title="Map lens (L)">
-        <Icon name="lens" size={22} />
-        <select aria-label="Map lens" value={lens} onChange={(e) => onLens(e.target.value as Lens)}>
-          {LENSES.map((l) => (
-            <option key={l} value={l}>
-              {LENS_NAMES[l]}
-            </option>
+      <LensPicker state={state} lens={lens} onLens={onLens} />
+    </div>
+  );
+}
+
+/** The lens picker under the minimap: the lens in use with its legend, and a list to change it. */
+function LensPicker({
+  state,
+  lens,
+  onLens,
+}: {
+  state: GameState;
+  lens: Lens;
+  onLens: (lens: Lens) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const key = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setOpen(false);
+      }
+    };
+    const outside = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    window.addEventListener('keydown', key, true);
+    window.addEventListener('pointerdown', outside, true);
+    return () => {
+      window.removeEventListener('keydown', key, true);
+      window.removeEventListener('pointerdown', outside, true);
+    };
+  }, [open]);
+  const legend = lensLegend(state, lens);
+  return (
+    <div className="lens-picker" ref={root}>
+      {legend.length > 0 && (
+        <ul className="lens-legend" aria-label={`${LENS_NAMES[lens]} lens legend`}>
+          {legend.map((l) => (
+            <li key={l.label}>
+              <i style={{ background: l.color }} aria-hidden="true">
+                {l.mark}
+              </i>
+              {l.label}
+            </li>
           ))}
-        </select>
-      </label>
+        </ul>
+      )}
+      <button
+        type="button"
+        className={`lens-button ${lens !== 'none' ? 'on' : ''}`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        title={`Map lens (L)\n${LENS_ABOUT[lens]}`}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <Icon name={LENS_ICONS[lens]} size={20} />
+        <span>{lens === 'none' ? 'Lenses' : LENS_NAMES[lens]}</span>
+        <kbd>L</kbd>
+      </button>
+      {open && (
+        <ul className="lens-menu" role="listbox" aria-label="Map lens">
+          {LENSES.map((l) => (
+            <li key={l}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={l === lens}
+                className={l === lens ? 'on' : ''}
+                onClick={() => {
+                  onLens(l);
+                  setOpen(false);
+                }}
+              >
+                <Icon name={LENS_ICONS[l]} size={22} />
+                <span>
+                  <strong>{LENS_NAMES[l]}</strong>
+                  <small>{LENS_ABOUT[l]}</small>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -152,6 +152,47 @@ sizes, and fixed where it looked or worked worse than it should.
   banners are about 60% larger, with a larger status line. Research and civic names on phones
   wrap between words.
 
+**Final design pass (November 2026):** the last full pass over every screen, built on UI pass 2
+(nothing it added was undone). Its styles are in `packages/client/src/finish.css`, loaded last.
+- *Top bar:* every yield shows its change per turn at every width from 1180 px up (gold turns red
+  when it falls), and every number has a breakdown on hover: science, culture and faith by
+  settlement (the six biggest, then the rest), gold by settlements, towns selling production,
+  unit and building upkeep, influence by source, and the celebration's progress with the
+  happiness surplus and the turns to go (a thin bar under the number). Small laptops (1001 to
+  1180 px) use the tablets' two rows, so no number is clipped; on phones the yields have the whole
+  first row and the menu and 3D/2D switch move to the end of the second.
+- *Civs:* each chip is the leader's face in the civ's color with one badge (war, alliance,
+  friends, an offer waiting, away, turn ended) drawn from the icon set instead of emoji, and a
+  tooltip with the civ, leader, score and relation. With seven civs or more, on laptops and on
+  phones, rivals show their faces only (your chip keeps its name), in one row; turn-ended marks
+  only show for other people (AI seats always finish at once).
+- *Notices* are short toasts in the text face, not engraved capitals; on phones they span the
+  width under the chips and only the newest two show.
+- *Diplomacy* is a dialog face to face with the leader: their painted portrait and words on the
+  left; on the right the relation as a pill with its icon, tiles for score, army (beside
+  yours), settlements and opinion (with what it means: friendly, open to friendship, open to an
+  alliance... from the rules' own thresholds), the agenda, why they feel that way, their kit,
+  and the actions in a row (deal in gold, war in red). It no longer runs under the Next button.
+  On phones it is one column with a small portrait.
+- *City panel:* the six yields and happiness sit in one row of cells; strength, health, walls and
+  religion are chips with their icons; below the production queue, tabs: Build or buy (Town for
+  towns), Citizens, and Buildings (with a count). The tab is remembered for the next city;
+  placing a district shows the build list and buying tiles the citizens.
+- *Lenses:* the minimap's plain dropdown is now a picker with each lens's icon and what it shows,
+  and the lens in use gets a legend (best sites, resource kinds, each religion's color, loyalty
+  gaining or losing). Phones, which have no minimap, get it as a round button beside Next.
+- *Game menu (☰):* every entry has its icon and key, Return to game comes first, and a click
+  outside closes it.
+- *Map numbers:* damage, "Destroyed" and disaster names play one after another (160 ms apart)
+  instead of all at once, damage waiting for the same tile adds up into one number, a long
+  backlog keeps only the newest, and the 2D view stacks numbers on one tile like the 3D one.
+  Loading a save or a big AI turn no longer piles them up.
+- *Icons, not emoji:* new icons for alliance, friends, a letter (offers), away, a timer, a pin,
+  a lock, a boost, a globe, a cloud, a target, a relic, a nuclear strike and refresh; the
+  remaining emoji in the HUD, the city panel, the turn timer and the online code are icons, and
+  any emoji still written in text (content, labels on the map) is drawn as its icon.
+- *Wording:* "1 turn", never "1 turns".
+
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
 show each leader's face. A rival's diplomacy panel shows their portrait and a line in their

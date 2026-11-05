@@ -103,7 +103,7 @@ if (await page.$('.turn-summary')) {
 
 // Save, then load it back.
 await page.click('.menu-button');
-await page.click('.menu-pop button:has-text("Save / Load")');
+await page.click('.menu-pop button:has-text("Save and load")');
 await page.fill('input[aria-label="Save name"]', 'Hotseat test');
 await page.click('button:has-text("Save here")');
 await page.waitForSelector('.mx-save-list li:has-text("Hotseat test") .mx-save-text span');

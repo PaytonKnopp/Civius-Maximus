@@ -70,234 +70,316 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
     rel === 'team'
       ? 'Teammates'
       : rel === 'allies'
-        ? `🤝 Allies until turn ${d.alliances[key]}`
+        ? `Allies until turn ${d.alliances[key]}`
         : rel === 'friends'
-          ? `🙂 Friends until turn ${d.friends[key]}`
+          ? `Friends until turn ${d.friends[key]}`
           : rel === 'war'
-            ? `⚔ At war since turn ${since ?? '?'}`
+            ? `At war since turn ${since ?? '?'}`
             : (d.peaceUntil[key] ?? 0) > state.turn
-              ? `☮ Peace treaty until turn ${d.peaceUntil[key]}`
-              : '☮ At peace';
+              ? `Peace treaty until turn ${d.peaceUntil[key]}`
+              : 'At peace';
+  const relationIcon =
+    rel === 'team' || rel === 'allies'
+      ? 'alliance'
+      : rel === 'friends'
+        ? 'friends'
+        : rel === 'war'
+          ? 'war'
+          : 'peace';
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  const quote =
+    leader?.quotes && p.kind === 'ai' && other !== viewer && p.alive
+      ? resolveText(ctx.content, war ? leader.quotes.war : leader.quotes.greeting)
+      : null;
   return (
-    <aside className="player-panel" aria-label={name}>
-      <div className="player-panel-head">
-        <span className="panel-head-portrait" style={{ borderColor: cssColor(colors.main) }}>
-          <LeaderHead content={ctx.content} leader={p.leader} civ={p.civ} size={58} />
-        </span>
-        <div>
-          <h3>{name}</h3>
-          <p className="unit-sub">
-            {p.alive
-              ? `${leader ? resolveText(ctx.content, leader.name) : p.name} · ${settlements} settlement${settlements === 1 ? '' : 's'}`
-              : 'Defeated'}
-          </p>
+    <div
+      className="modal-backdrop diplo-backdrop"
+      role="presentation"
+      onPointerDown={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <section
+        className={`player-panel diplo ${war ? 'at-war' : ''}`}
+        role="dialog"
+        aria-label={`${name}: diplomacy`}
+        style={{ '--civ': cssColor(colors.main) } as React.CSSProperties}
+      >
+        <div className="diplo-portrait">
+          <LeaderCard content={ctx.content} leader={p.leader} civ={p.civ} size={200} />
+          {quote && <q className="leader-quote panel-quote">{quote}</q>}
         </div>
-        <button type="button" className="close" onClick={onClose} aria-label="Close">
-          ✕
-        </button>
-      </div>
-      {leader?.quotes && p.kind === 'ai' && other !== viewer && p.alive && (
-        <q className="leader-quote panel-quote">
-          {resolveText(ctx.content, war ? leader.quotes.war : leader.quotes.greeting)}
-        </q>
-      )}
-      <p className="hint" title={score.lines.map((l) => `${l.label}: ${l.amount}`).join('\n')}>
-        Score {score.total}
-        {domination.needed > 0 && ` · holds ${domination.held}/${domination.needed} rival capitals`}
-      </p>
-      <p className="hint" title="The total strength of their soldiers (yours in brackets)">
-        Army strength {army} (yours {ours})
-      </p>
-      {leader && p.kind === 'ai' && other !== viewer && (
-        <p className="hint" title={resolveText(ctx.content, leader.agenda.description)}>
-          Agenda: {resolveText(ctx.content, leader.agenda.name)}
-        </p>
-      )}
-      <Kit ctx={ctx} civ={p.civ} leader={p.leader} />
-      {opinion && (
-        <details className="opinion">
-          <summary>
-            Opinion of you:{' '}
-            <strong className={opinion.total > 0 ? 'good' : opinion.total < 0 ? 'bad' : ''}>
-              {opinion.total > 0 ? `+${opinion.total}` : opinion.total}
-            </strong>
-          </summary>
-          <ul>
-            {opinion.lines.map((l) => (
-              <li key={l.label}>
-                <span className={l.amount > 0 ? 'good' : 'bad'}>
-                  {l.amount > 0 ? `+${l.amount}` : l.amount}
-                </span>{' '}
-                {l.label}
-              </li>
-            ))}
-            {opinion.lines.length === 0 && <li className="muted">No strong feelings yet</li>}
-          </ul>
-        </details>
-      )}
-      {p.alive && other !== viewer && (
-        <>
-          <p className={`relation ${war ? 'war' : 'peace'}`}>{relationText}</p>
-          {theyDenounced !== undefined && (
-            <p className="hint bad">They denounced you on turn {theyDenounced}.</p>
-          )}
-          {incoming.map((x) => (
-            <div className="callout" key={x.id}>
-              <p>
-                <strong>{name} offers:</strong> {describeDeal(ctx, state, x, viewer)}
+        <div className="diplo-main">
+          <div className="player-panel-head">
+            <span className="panel-head-portrait" style={{ borderColor: cssColor(colors.main) }}>
+              <LeaderHead content={ctx.content} leader={p.leader} civ={p.civ} size={52} />
+            </span>
+            <div>
+              <h3>{name}</h3>
+              <p className="unit-sub">
+                {p.alive
+                  ? `${leader ? resolveText(ctx.content, leader.name) : p.name}${other === viewer ? ' (you)' : ''}`
+                  : 'Defeated'}
               </p>
-              <div className="row-inline">
-                <button
-                  type="button"
-                  className="primary"
-                  onClick={() =>
-                    act({ type: 'answer_deal', player: viewer, deal: x.id, accept: true })
-                  }
-                >
-                  Accept
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    act({ type: 'answer_deal', player: viewer, deal: x.id, accept: false })
-                  }
-                >
-                  Decline
-                </button>
-              </div>
             </div>
-          ))}
-          {outgoing.map((x) => (
-            <div className="callout" key={x.id}>
-              <p>
-                <strong>You offered:</strong> {describeDeal(ctx, state, x, viewer)}
-              </p>
-              <button
-                type="button"
-                onClick={() => act({ type: 'withdraw_deal', player: viewer, deal: x.id })}
-              >
-                Withdraw
-              </button>
-            </div>
-          ))}
-          {rel !== 'team' && (
-            <button type="button" className="wide" onClick={() => setDealOpen(true)}>
-              Propose a deal…
+            <button type="button" className="close" onClick={onClose} aria-label="Close">
+              ✕
             </button>
-          )}
-          {!war &&
-            rel !== 'team' &&
-            (denouncing ? (
-              <div className="confirm-row">
-                <span>Denounce {name}?</span>
-                <button
-                  type="button"
-                  className="danger"
-                  onClick={() => {
-                    act({ type: 'denounce', player: viewer, target: other });
-                    setDenouncing(false);
-                  }}
-                >
-                  Denounce
-                </button>
-                <button type="button" onClick={() => setDenouncing(false)}>
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="wide"
-                disabled={!!denounce}
-                title={
-                  denounce?.message ??
-                  `Costs ${ctx.content.rules.diplomacy.denounceCost} influence. Everyone hears it, and a war within ${ctx.content.rules.diplomacy.denounceWarning} turns isn't a surprise war.`
-                }
-                onClick={() => setDenouncing(true)}
-              >
-                Denounce…
-              </button>
-            ))}
-          {theyOffer && (
-            <div className="callout">
-              {name} offers peace.{' '}
-              <button
-                type="button"
-                className="primary"
-                onClick={() => act({ type: 'accept_peace', player: viewer, from: other })}
-              >
-                Accept peace
-              </button>
-            </div>
-          )}
-          {war ? (
-            <button
-              type="button"
-              className="wide"
-              disabled={!!peace || theyOffer}
-              title={peace?.message}
-              onClick={() => act({ type: 'offer_peace', player: viewer, target: other })}
+          </div>
+          {quote && <q className="leader-quote panel-quote diplo-quote-small">{quote}</q>}
+          {p.alive && other !== viewer && (
+            <p
+              className={`relation-pill ${rel === 'war' ? 'war' : rel === 'allies' || rel === 'friends' || rel === 'team' ? 'pact' : 'peace'}`}
             >
-              {weOffered ? 'Peace offered' : 'Offer peace'}
-            </button>
-          ) : confirm ? (
-            <div className="confirm-row">
-              <span>
-                Declare war on {name}?
-                {isSurpriseWar(ctx, state, viewer, other) &&
-                  ' It would be a surprise war: everyone will remember it.'}
-              </span>
-              <button
-                type="button"
-                className="danger"
-                onClick={() => {
-                  act({ type: 'declare_war', player: viewer, target: other });
-                  setConfirm(false);
-                }}
-              >
-                Declare war
-              </button>
-              <button type="button" onClick={() => setConfirm(false)}>
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="wide"
-              disabled={!!block || rel === 'team'}
-              title={block?.message}
-              onClick={() => setConfirm(true)}
-            >
-              Declare war…
-            </button>
-          )}
-          {war && (
-            <p className="hint" title="The side behind in war support loses happiness everywhere">
-              War support: you {support[viewer] ?? 0} · them {support[other] ?? 0}
-              {weariness > 0 ? ` (war weariness −${weariness} happiness)` : ''}
+              <Icon name={relationIcon} size={18} />
+              {relationText}
             </p>
           )}
-          {war && peace && !weOffered && <p className="hint">{peace.message}.</p>}
-        </>
-      )}
-      {dealOpen && (
-        <DealDialog
-          ctx={ctx}
-          state={state}
-          viewer={viewer}
-          other={other}
-          act={act}
-          onClose={() => setDealOpen(false)}
-        />
-      )}
-    </aside>
+          <div className="diplo-stats">
+            <div
+              className="diplo-stat"
+              title={['Score', ...score.lines.map((l) => `${l.label}: ${l.amount}`)].join('\n')}
+            >
+              <span>Score</span>
+              <b>{score.total}</b>
+              {domination.needed > 0 && (
+                <small>
+                  {domination.held}/{domination.needed} rival capitals
+                </small>
+              )}
+            </div>
+            <div
+              className="diplo-stat"
+              title={'Army strength\nThe total strength of their soldiers, beside yours.'}
+            >
+              <span>Army</span>
+              <b>{army}</b>
+              {other !== viewer && <small>yours {ours}</small>}
+            </div>
+            <div className="diplo-stat">
+              <span>Settlements</span>
+              <b>{settlements}</b>
+            </div>
+            {opinion && (
+              <div
+                className="diplo-stat"
+                title={[
+                  'Their opinion of you',
+                  ...opinion.lines.map((l) => `${l.amount > 0 ? '+' : ''}${l.amount} ${l.label}`),
+                ].join('\n')}
+              >
+                <span>Opinion</span>
+                <b className={opinion.total > 0 ? 'good' : opinion.total < 0 ? 'bad' : ''}>
+                  {opinion.total > 0 ? `+${opinion.total}` : opinion.total}
+                </b>
+                <small>
+                  {opinion.total >= ctx.content.rules.diplomacy.allianceOpinion
+                    ? 'open to an alliance'
+                    : opinion.total >= ctx.content.rules.diplomacy.friendshipOpinion
+                      ? 'open to friendship'
+                      : opinion.total > 0
+                        ? 'friendly'
+                        : opinion.total === 0
+                          ? 'neutral'
+                          : opinion.total > ctx.content.rules.diplomacy.opinion.atWar
+                            ? 'wary'
+                            : 'hostile'}
+                </small>
+              </div>
+            )}
+          </div>
+          {leader && p.kind === 'ai' && other !== viewer && (
+            <p className="diplo-agenda">
+              <span className="diplo-agenda-label">Agenda</span>{' '}
+              <strong>{resolveText(ctx.content, leader.agenda.name)}</strong>
+              <span className="muted">
+                {' '}
+                · {resolveText(ctx.content, leader.agenda.description)}
+              </span>
+            </p>
+          )}
+          {opinion && opinion.lines.length > 0 && (
+            <details className="opinion">
+              <summary>Why they feel this way</summary>
+              <ul>
+                {opinion.lines.map((l) => (
+                  <li key={l.label}>
+                    <span className={l.amount > 0 ? 'good' : 'bad'}>
+                      {l.amount > 0 ? `+${l.amount}` : l.amount}
+                    </span>{' '}
+                    {l.label}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+          <Kit ctx={ctx} civ={p.civ} leader={p.leader} />
+          {p.alive && other !== viewer && (
+            <>
+              {theyDenounced !== undefined && (
+                <p className="hint bad">They denounced you on turn {theyDenounced}.</p>
+              )}
+              {incoming.map((x) => (
+                <div className="callout" key={x.id}>
+                  <p>
+                    <strong>{name} offers:</strong> {describeDeal(ctx, state, x, viewer)}
+                  </p>
+                  <div className="row-inline">
+                    <button
+                      type="button"
+                      className="primary"
+                      onClick={() =>
+                        act({ type: 'answer_deal', player: viewer, deal: x.id, accept: true })
+                      }
+                    >
+                      Accept
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        act({ type: 'answer_deal', player: viewer, deal: x.id, accept: false })
+                      }
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {outgoing.map((x) => (
+                <div className="callout" key={x.id}>
+                  <p>
+                    <strong>You offered:</strong> {describeDeal(ctx, state, x, viewer)}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => act({ type: 'withdraw_deal', player: viewer, deal: x.id })}
+                  >
+                    Withdraw
+                  </button>
+                </div>
+              ))}
+              <div className="diplo-actions">
+                {rel !== 'team' && (
+                  <button type="button" className="wide primary" onClick={() => setDealOpen(true)}>
+                    Propose a deal…
+                  </button>
+                )}
+                {!war &&
+                  rel !== 'team' &&
+                  (denouncing ? (
+                    <div className="confirm-row">
+                      <span>Denounce {name}?</span>
+                      <button
+                        type="button"
+                        className="danger"
+                        onClick={() => {
+                          act({ type: 'denounce', player: viewer, target: other });
+                          setDenouncing(false);
+                        }}
+                      >
+                        Denounce
+                      </button>
+                      <button type="button" onClick={() => setDenouncing(false)}>
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="wide"
+                      disabled={!!denounce}
+                      title={
+                        denounce?.message ??
+                        `Costs ${ctx.content.rules.diplomacy.denounceCost} influence. Everyone hears it, and a war within ${ctx.content.rules.diplomacy.denounceWarning} turns isn't a surprise war.`
+                      }
+                      onClick={() => setDenouncing(true)}
+                    >
+                      Denounce…
+                    </button>
+                  ))}
+                {theyOffer && (
+                  <div className="callout">
+                    {name} offers peace.{' '}
+                    <button
+                      type="button"
+                      className="primary"
+                      onClick={() => act({ type: 'accept_peace', player: viewer, from: other })}
+                    >
+                      Accept peace
+                    </button>
+                  </div>
+                )}
+                {war ? (
+                  <button
+                    type="button"
+                    className="wide"
+                    disabled={!!peace || theyOffer}
+                    title={peace?.message}
+                    onClick={() => act({ type: 'offer_peace', player: viewer, target: other })}
+                  >
+                    {weOffered ? 'Peace offered' : 'Offer peace'}
+                  </button>
+                ) : confirm ? (
+                  <div className="confirm-row">
+                    <span>
+                      Declare war on {name}?
+                      {isSurpriseWar(ctx, state, viewer, other) &&
+                        ' It would be a surprise war: everyone will remember it.'}
+                    </span>
+                    <button
+                      type="button"
+                      className="danger"
+                      onClick={() => {
+                        act({ type: 'declare_war', player: viewer, target: other });
+                        setConfirm(false);
+                      }}
+                    >
+                      Declare war
+                    </button>
+                    <button type="button" onClick={() => setConfirm(false)}>
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="wide danger"
+                    disabled={!!block || rel === 'team'}
+                    title={block?.message}
+                    onClick={() => setConfirm(true)}
+                  >
+                    Declare war…
+                  </button>
+                )}
+              </div>
+              {war && (
+                <p
+                  className="hint"
+                  title="The side behind in war support loses happiness everywhere"
+                >
+                  War support: you {support[viewer] ?? 0} · them {support[other] ?? 0}
+                  {weariness > 0 ? ` (war weariness −${weariness} happiness)` : ''}
+                </p>
+              )}
+              {war && peace && !weOffered && <p className="hint">{peace.message}.</p>}
+            </>
+          )}
+          {dealOpen && (
+            <DealDialog
+              ctx={ctx}
+              state={state}
+              viewer={viewer}
+              other={other}
+              act={act}
+              onClose={() => setDealOpen(false)}
+            />
+          )}
+        </div>
+      </section>
+    </div>
   );
 }
 
