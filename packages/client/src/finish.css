@@ -2389,3 +2389,48 @@
   align-self: stretch;
   width: 100%;
 }
+
+/* --- Long names and labels ---------------------------------------------------------------- */
+
+/* A long city name ends in an ellipsis (the full name in its tooltip), never pushing the close
+   button off the panel. */
+.settlement-head > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.settlement-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settlement-head .close {
+  flex: none;
+}
+
+/* The Next button: a long label ("Decide Konstantinopolis's fate") takes two smaller lines. */
+.next-label.long {
+  display: -webkit-box;
+  font-size: 13px;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Many civs: the chips may use the whole width right of the trackers, so 12 faces sit in one
+   row on any laptop. */
+.players.many {
+  max-width: calc(100% - 340px);
+}
+
+/* --- Larger text (Options › Interface) reaches the game too: its full screens, dialogs and the
+   unit and city cards are a step larger, like the menus (menu.css). The map and the top bar keep
+   their size, so the world stays in view. */
+html[data-text='large']
+  :is(.screen, .modal, .player-panel.diplo, .unit-panel, .settlement-panel, .tile-card) {
+  zoom: 1.12;
+}

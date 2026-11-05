@@ -13,9 +13,10 @@ import {
   storedWorks,
   WORK_KIND_NAMES,
 } from '@cx/engine';
-import { useEffect } from 'react';
+
 import { fmt } from './model';
 import { Icon } from '../ui/Icon';
+import { useEscape } from '../ui/Menu';
 
 const KIND_ICON: Record<GreatWorkKind, string> = {
   writing: 'gp_writer',
@@ -44,11 +45,7 @@ export function GreatWorksScreen({
 }) {
   const { content } = ctx;
   const t = (text: string) => resolveText(content, text);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const mine = settlementsOf(state, viewer);
   const r = content.rules.greatWorks;
   const all = Object.values(state.greatWorks ?? {}).filter(

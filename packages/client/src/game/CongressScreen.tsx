@@ -17,6 +17,7 @@ import { Icon } from '../ui/Icon';
 import { LeaderHead } from '../ui/LeaderCard';
 import { Meter } from '../ui/Meter';
 import { civName } from './model';
+import { useEscape } from '../ui/Menu';
 
 /**
  * The World Congress (docs/04-advanced-systems.md, "World Congress"): favor, everyone's
@@ -37,11 +38,7 @@ export function CongressScreen({
 }) {
   const { content } = ctx;
   const t = (text: string) => resolveText(content, text);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const r = content.rules.congress;
   const c = state.congress;
   const p = state.players[viewer]!;

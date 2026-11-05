@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { advisorsOn, setAdvisors } from './advisors';
 import { hintsOn, setHints } from './hints';
 import { Icon } from '../ui/Icon';
-import { Switch } from '../ui/Menu';
+import { Switch, useEscape } from '../ui/Menu';
 
 export const KEYS: [string, string][] = [
   ['Enter', 'The next thing that needs you (then End turn)'],
@@ -52,11 +52,7 @@ export function HelpScreen({
   /** Opens the Civilopedia instead. */
   onPedia?: () => void;
 }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const [hints, setOn] = useState(hintsOn);
   const [advisors, setAdvisorsOn] = useState(advisorsOn);
   return (

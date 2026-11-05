@@ -16,12 +16,13 @@ import {
   religiousProgress,
   validateAction,
 } from '@cx/engine';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { civName, empireSummary, perTurn, whole } from './model';
 import { religionColor } from './lenses';
 import { Icon, Rich } from '../ui/Icon';
 import { LeaderHead } from '../ui/LeaderCard';
 import { Meter } from '../ui/Meter';
+import { useEscape } from '../ui/Menu';
 
 interface Props {
   ctx: EngineContext;
@@ -40,13 +41,12 @@ const following = (n: number) =>
 export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Props) {
   const { content } = ctx;
   const t = (text: string) => resolveText(content, text);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !(e.target instanceof HTMLInputElement)) onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  // Escape leaves the religion's name field first, then closes the screen.
+  useEscape(() => {
+    const field = document.activeElement;
+    if (field instanceof HTMLInputElement) field.blur();
+    else onClose();
+  });
   const me = state.players[viewer]!;
   const rules = content.rules.religion;
   const pantheon = pantheonOf(ctx, state, viewer);

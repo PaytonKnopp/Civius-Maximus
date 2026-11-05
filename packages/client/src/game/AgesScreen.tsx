@@ -6,8 +6,9 @@ import {
   type PlayerId,
   thresholds,
 } from '@cx/engine';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Icon } from '../ui/Icon';
+import { useEscape } from '../ui/Menu';
 
 /**
  * Eras and ages (docs/04-advanced-systems.md, "Eras and ages"): this era's age and what it
@@ -31,11 +32,7 @@ export function AgesScreen({
   const t = (text: string) => resolveText(content, text);
   const a = state.players[viewer]!.ages;
   const [picked, setPicked] = useState<string[]>([]);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   if (!a) return null;
   const age = content.entities.age[a.age];
   const era = content.entities.era[a.era];

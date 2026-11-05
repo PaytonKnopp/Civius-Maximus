@@ -17,10 +17,11 @@ import {
   questsOf,
   validateAction,
 } from '@cx/engine';
-import { useEffect } from 'react';
+
 import { civName, whole } from './model';
 import { Icon } from '../ui/Icon';
 import { EMOJI_ICONS } from '../ui/icons';
+import { useEscape } from '../ui/Menu';
 
 interface Props {
   ctx: EngineContext;
@@ -32,11 +33,7 @@ interface Props {
 
 /** Every city-state you've met: what envoys there give you, who leads it, its quests. */
 export function CityStatesScreen({ ctx, state, viewer, act, onClose }: Props) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const me = state.players[viewer]!;
   const ids = cityStateIds(state);
   const met = ids.filter((id) => state.cityStates[id]!.met.includes(viewer));

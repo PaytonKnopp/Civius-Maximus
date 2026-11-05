@@ -10,11 +10,12 @@ import {
   type PlayerId,
   type Proposal,
 } from '@cx/engine';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { civName } from './model';
 import { Icon } from '../ui/Icon';
 import { LeaderHead } from '../ui/LeaderCard';
+import { useEscape } from '../ui/Menu';
 
 type Deal = Omit<Proposal, 'id' | 'turn'>;
 
@@ -40,11 +41,7 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
   const [friendship, setFriendship] = useState(false);
   const [alliance, setAlliance] = useState(false);
   const [peace, setPeace] = useState(war);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
 
   const deal: Deal = { from: viewer, to: other, give, get, turns, friendship, alliance, peace };
   const problem = dealProblem(ctx, state, deal);

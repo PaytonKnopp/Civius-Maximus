@@ -11,11 +11,12 @@ import {
   scoreOf,
   spaceProgress,
 } from '@cx/engine';
-import { useEffect } from 'react';
+
 import { civName, perTurn } from './model';
 import { Icon } from '../ui/Icon';
 import { LeaderHead } from '../ui/LeaderCard';
 import { Meter } from '../ui/Meter';
+import { useEscape } from '../ui/Menu';
 
 interface Props {
   ctx: EngineContext;
@@ -48,11 +49,7 @@ interface Victory {
  * how far you are, who leads it), then every civ's progress side by side.
  */
 export function VictoriesScreen({ ctx, state, viewer, onGraphs, onClose }: Props) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const { content } = ctx;
   const s = state.settings;
   const players = state.playerOrder.filter((p) => state.players[p]!.alive);

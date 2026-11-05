@@ -21,11 +21,12 @@ import {
   warWeariness,
 } from '@cx/engine';
 import { type CompiledContent, resolveText } from '@cx/content';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { LeaderCard, LeaderHead } from '../ui/LeaderCard';
 import { DealDialog, describeDeal } from './DealDialog';
 import { civName, type Colors, cssColor } from './model';
+import { useEscape } from '../ui/Menu';
 
 interface PlayerProps {
   ctx: EngineContext;
@@ -86,11 +87,7 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
         : rel === 'war'
           ? 'war'
           : 'peace';
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
 
   const quote =
     leader?.quotes && p.kind === 'ai' && other !== viewer && p.alive
@@ -439,11 +436,7 @@ interface WarPromptProps {
 
 /** "You're at peace with them: declare war?" before an attack. */
 export function WarPrompt({ name, minTurns, onDeclare, onCancel }: WarPromptProps) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onCancel();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onCancel]);
+  useEscape(onCancel);
   return (
     <div className="modal-backdrop">
       <div className="modal" role="alertdialog" aria-label="Declare war">

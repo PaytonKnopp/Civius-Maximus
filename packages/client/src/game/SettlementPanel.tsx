@@ -200,7 +200,9 @@ export function SettlementPanel({
                 <Icon name="capital" size={20} title="Capital" />
               </span>
             )}
-            {s.name}
+            <span className="settlement-name" title={s.name}>
+              {s.name}
+            </span>
           </h3>
           <p className="unit-sub">
             {s.razing

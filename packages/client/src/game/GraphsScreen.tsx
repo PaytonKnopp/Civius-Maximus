@@ -2,6 +2,7 @@ import type { EngineContext, GameState, PlayerId, TurnStats } from '@cx/engine';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { civName } from './model';
 import { Icon } from '../ui/Icon';
+import { useEscape } from '../ui/Menu';
 
 /**
  * Series colors for the graphs: a categorical palette validated for colorblind separation on
@@ -38,11 +39,7 @@ interface Props {
 
 /** Everyone's numbers over the game, one measure at a time. */
 export function GraphsScreen({ ctx, state, viewer, onClose }: Props) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const [measure, setMeasure] = useState<keyof TurnStats>('score');
   return (
     <div className="screen" role="dialog" aria-label="Graphs">

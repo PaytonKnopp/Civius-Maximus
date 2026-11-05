@@ -19,6 +19,7 @@ import { Icon } from '../ui/Icon';
 import { buildingIcon, ICONS } from '../ui/icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { turnsFor, turnsLabel, whole } from './model';
+import { useEscape } from '../ui/Menu';
 
 const NODE_W = 264;
 const NODE_H = 138;
@@ -153,11 +154,7 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
     return () => box.removeEventListener('wheel', onWheel);
   }, []);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
 
   const choose = (id: string) =>
     act(

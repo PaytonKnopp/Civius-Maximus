@@ -7,9 +7,10 @@ import {
   type GameState,
   type PlayerId,
 } from '@cx/engine';
-import { useEffect } from 'react';
+
 import { Icon } from '../ui/Icon';
 import { civName } from './model';
+import { useEscape } from '../ui/Menu';
 
 /**
  * Climate and disasters (docs/04-advanced-systems.md, "Climate & disasters"): world emissions
@@ -28,11 +29,7 @@ export function ClimateScreen({
 }) {
   const { content } = ctx;
   const t = (text: string) => resolveText(content, text);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const c = climateOf(ctx, state);
   const per = emissionsPerTurn(ctx, state);
   const total = Object.values(per).reduce((a, b) => a + b, 0);

@@ -16,6 +16,7 @@ import {
 import { type DragEvent, useEffect, useState } from 'react';
 import { whole } from './model';
 import { Icon, Rich } from '../ui/Icon';
+import { useEscape } from '../ui/Menu';
 
 const SLOT_NAMES: Record<SlotKind, string> = {
   military: 'Military',
@@ -56,11 +57,7 @@ export function GovernmentScreen({ ctx, state, viewer, act, onClose }: Props) {
   const [dragging, setDragging] = useState<string | null>(null);
   // Start over from the real cards if they change underneath (e.g. a new government trims them).
   useEffect(() => setDraft(structuredClone(p.policies)), [p.policies]);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
 
   const slots = policySlots(ctx, state, viewer);
   const slotted = new Set(SLOT_KINDS.flatMap((k) => draft[k]));

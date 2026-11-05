@@ -111,6 +111,7 @@ import { ClimateScreen } from './ClimateScreen';
 import { Minimap } from './Minimap';
 import { music, play, type Sfx } from '../audio';
 import { LeaderHead } from '../ui/LeaderCard';
+import { escapeOpen } from '../ui/Menu';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -672,7 +673,7 @@ interface Props {
 function waitLabel(progress: TurnProgress | null): string {
   if (progress?.phase === 'world') return 'The world is turning…';
   if (progress?.phase === 'rivals' && progress.total > 1)
-    return `Rivals are moving… ${progress.done + 1} of ${progress.total}`;
+    return `Rivals moving · ${progress.done + 1}/${progress.total}`;
   return 'Rivals are moving…';
 }
 
@@ -1563,6 +1564,8 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement)?.closest?.('input, select, textarea')) return;
+      // A dialog or screen is open (diplomacy, a deal, a screen...): it has the keyboard.
+      if (e.defaultPrevented || escapeOpen()) return;
       if (passTo) {
         if (e.key === 'Enter') beginTurn(passTo);
         return;
@@ -2223,7 +2226,11 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             name={next.kind === 'end' ? 'next' : next.kind === 'unit' ? 'movement' : 'check'}
             size={34}
           />
-          <span className="next-label">{busy ? waitLabel(progress) : next.label}</span>
+          <span
+            className={`next-label ${(busy ? waitLabel(progress) : next.label).length > 20 ? 'long' : ''}`}
+          >
+            {busy ? waitLabel(progress) : next.label}
+          </span>
           <kbd>Enter</kbd>
         </button>
         {secondsLeft !== null && state.status === 'playing' && (

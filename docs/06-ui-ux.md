@@ -239,6 +239,14 @@ sizes, and fixed where it looked or worked worse than it should.
   leaving a bare title.
 - *Small marks from the icon set:* promotions on the unit card, the suzerain line and quests on
   City-states. *Graphs* mark round turns (every 10, 25, 50... turns) along the bottom.
+- *Escape* closes the topmost layer everywhere in a game too: every full screen, diplomacy and the
+  deal screen share the menus' Escape stack (`useEscape`), and the map's shortcuts wait while one is
+  open (Esc on the deal screen used to close both it and the diplomacy dialog beneath).
+- *Busy late games:* twelve civs' faces fit one row on a laptop; a long city name ends in an
+  ellipsis with the full name in its tooltip; a long Next label ("Decide Konstantinopolis's fate")
+  takes two smaller lines, and the rivals' progress reads "Rivals moving · 3/7".
+- *Larger text* (Options › Interface) now also enlarges the game's full screens, dialogs and the
+  unit, city and tile cards (the map and the top bar keep their size).
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
