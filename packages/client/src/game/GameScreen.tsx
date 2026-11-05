@@ -110,7 +110,7 @@ import { CongressScreen } from './CongressScreen';
 import { ClimateScreen } from './ClimateScreen';
 import { Minimap } from './Minimap';
 import { music, play, type Sfx } from '../audio';
-import { LeaderHead } from '../ui/LeaderCard';
+import { LeaderCard, LeaderHead } from '../ui/LeaderCard';
 import { escapeOpen } from '../ui/Menu';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
@@ -1947,7 +1947,8 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             </>
           ) : (
             away.map((x) => (
-              <span key={x.player}>
+              <span key={x.player} className="away-line">
+                <Icon name="away" size={16} />
                 {x.name} is away
                 {online.endTurnFor && !state.players[x.player!]!.turnEnded && (
                   <button
@@ -2026,7 +2027,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               <span className="tracker-text">
                 <span className="tracker-kind">{k === 'tech' ? 'Research' : 'Civic'}</span>
                 <span
-                  className={`tracker-name ${def && resolveText(content, def.name).length > 16 ? 'long' : ''}`}
+                  className={`tracker-name ${def && resolveText(content, def.name).length > 13 ? 'long' : ''}`}
                 >
                   {def
                     ? resolveText(content, def.name)
@@ -2554,13 +2555,18 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         <div className="pass-screen" role="dialog" aria-label="Pass the device">
           <div className="pass-card">
             <p className="pass-turn">Turn {state.turn}</p>
-            <h2>
-              <span
-                className="swatch big"
-                style={{ background: cssColor(colors[passTo]?.main ?? 0x8d9db6) }}
-              />{' '}
-              {state.players[passTo]!.name}
-            </h2>
+            <div
+              className="pass-portrait"
+              style={{ '--civ': cssColor(colors[passTo]?.main ?? 0x8d9db6) } as React.CSSProperties}
+            >
+              <LeaderCard
+                content={content}
+                leader={state.players[passTo]!.leader}
+                civ={state.players[passTo]!.civ}
+                size={170}
+              />
+            </div>
+            <h2>{state.players[passTo]!.name}</h2>
             <p className="muted">
               {civName(content, state, passTo)}. Pass the device to {state.players[passTo]!.name};
               everyone else, look away.

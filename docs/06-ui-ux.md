@@ -247,6 +247,13 @@ sizes, and fixed where it looked or worked worse than it should.
   takes two smaller lines, and the rivals' progress reads "Rivals moving · 3/7".
 - *Larger text* (Options › Interface) now also enlarges the game's full screens, dialogs and the
   unit, city and tile cards (the map and the top bar keep their size).
+- *City build list:* each row is the item's icon, its name, and under it the cost and "6 turns"
+  (and how far along it is), with Build, queue and buy at the end, like the Civ games' production
+  list.
+- *Hotseat:* the pass-the-device screen shows the next player's leader portrait in their color,
+  with their name and civ, instead of a colored square.
+- *Online:* an away friend's line carries the away icon. On phones the screen buttons fade out
+  under the menu instead of being cut by it.
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top

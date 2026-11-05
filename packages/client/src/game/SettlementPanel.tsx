@@ -41,7 +41,6 @@ import {
   itemIcon,
   itemName,
   settlementSummary,
-  showTurns,
   tileName,
   turnsFor,
   turnsLabel,
@@ -556,23 +555,24 @@ export function SettlementPanel({
                         title={def?.description ? resolveText(content, def.description) : undefined}
                       >
                         <span className="item-name">
-                          <Icon name={itemIcon(content, item)} size={20} />{' '}
-                          {itemName(content, item)}
-                          {s.kind === 'city' && (
-                            <span className="muted mono">
-                              {' '}
-                              {whole(cost)}
-                              <Icon name="production" size={14} /> ·{' '}
-                              {showTurns(
-                                turnsFor(
-                                  cost,
-                                  progress,
-                                  productionToward(ctx, state, s, item, production),
-                                ),
-                              )}
-                              t
-                            </span>
-                          )}
+                          <Icon name={itemIcon(content, item)} size={22} />
+                          <span className="item-text">
+                            <span className="item-title">{itemName(content, item)}</span>
+                            {s.kind === 'city' && (
+                              <span className="item-meta mono">
+                                {whole(cost)}
+                                <Icon name="production" size={13} /> ·{' '}
+                                {turnsLabel(
+                                  turnsFor(
+                                    cost,
+                                    progress,
+                                    productionToward(ctx, state, s, item, production),
+                                  ),
+                                )}
+                                {progress > 0 && ` · ${Math.floor((progress / cost) * 100)}% done`}
+                              </span>
+                            )}
+                          </span>
                         </span>
                         {s.kind === 'city' && (
                           <>
@@ -638,7 +638,10 @@ export function SettlementPanel({
                   return (
                     <li key={u.id}>
                       <span className="item-name">
-                        <Icon name={u.model} size={20} /> {resolveText(content, u.name)}
+                        <Icon name={u.model} size={22} />
+                        <span className="item-text">
+                          <span className="item-title">{resolveText(content, u.name)}</span>
+                        </span>
                       </span>
                       <button
                         type="button"
