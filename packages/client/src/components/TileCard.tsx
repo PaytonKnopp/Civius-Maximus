@@ -59,8 +59,8 @@ export function TileCard({
       <div className="tile-head">
         <h3>{title}</h3>
         {pinned && (
-          <button type="button" className="ghost small" onClick={onClose}>
-            Close
+          <button type="button" className="close" onClick={onClose} aria-label="Close">
+            ✕
           </button>
         )}
       </div>

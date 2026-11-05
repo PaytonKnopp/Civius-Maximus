@@ -258,6 +258,11 @@ sizes, and fixed where it looked or worked worse than it should.
   hint steps aside while a preview shows (it used to show through beneath it).
 - *Map Lab:* the building showcase names its towns as a player would read them ("East Asian ·
   Classical · burning"), not by internal ids.
+- *One close button:* the round brass ✕ of the full screens on every card and dialog too (the
+  city and unit cards, diplomacy, the tile card, the turn summary), a size smaller off the screen
+  headers.
+- *Tablets* keep the era beside the turn number (the second row has room); diplomacy's four tiles
+  sit in one row where they fit and two by two where they don't.
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top

@@ -2532,3 +2532,62 @@ html[data-text='large']
   place-items: center;
   opacity: 0.9;
 }
+
+.unit-panel .promotions li {
+  justify-content: flex-start;
+}
+
+/* Tablets: the turn has the second row to itself, so it keeps its era. */
+@media (min-width: 641px) and (max-width: 1000px) {
+  .turn-pill .era,
+  .turn-pill .turn-label {
+    display: inline;
+  }
+}
+
+/* Diplomacy's four tiles: one row where they fit, two by two where they don't. */
+.diplo-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .diplo-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- One close button: the round brass ✕ of the full screens, everywhere (cards, dialogs,
+   the turn summary), a size smaller off the screen headers. --------------------------------- */
+
+button.close {
+  align-self: flex-start;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(210, 172, 92, 0.6);
+  background: radial-gradient(circle at 40% 30%, #3a2a17, #170f07);
+  color: var(--gold-hi);
+  font-size: 12px;
+  line-height: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 170, 0.2),
+    0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+button.close:hover:not(:disabled) {
+  border-color: var(--gold-hi);
+  color: #fff;
+  filter: drop-shadow(0 0 6px rgba(240, 212, 140, 0.45));
+}
+
+.screen-head button.close {
+  align-self: center;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
