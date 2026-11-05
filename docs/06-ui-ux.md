@@ -268,6 +268,13 @@ sizes, and fixed where it looked or worked worse than it should.
   top left.
 - *The last emoji* in menus are icons: cloud saves, the title screen's full-screen switch (a new
   icon) and New world on the World page (refresh).
+- *Section titles* placed straight in a screen's column center with it on wide screens.
+- *How it was checked:* every screen as it renders, from games saved at turns 5, 60, 150 and 300
+  (8 and 12 civs, standard and large maps) at 2560, 1920, 1440, 1280, 1280 x 640, a tablet and a
+  phone, in 2D and 3D, with larger text, at the end of the game by each victory, in a peace offer,
+  a deal, a captured city and an elimination. `scripts/screenshot-screens.mjs` repeats the in-game
+  part from any save; every bundled screenshot script passes with no console errors and nothing
+  wider than the screen.
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top

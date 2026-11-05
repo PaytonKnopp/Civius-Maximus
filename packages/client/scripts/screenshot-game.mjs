@@ -105,14 +105,17 @@ for (let guard = 0; guard < TURNS * 15 && (await turn(page)) < TURNS; guard++) {
     await page.keyboard.press('Escape');
   } else if (next === 'Choose policies') {
     await page.keyboard.press('Enter');
-    await page.waitForSelector('.card-pool');
-    const cards = await page.$$('.card-pool .policy-card');
-    for (const c of cards.slice(0, 2)) await c.click();
+    await page.waitForSelector('.gv-cards');
+    // Each click slots the first card still in the catalog that has room.
+    for (let i = 0; i < 2; i++) {
+      const card = await page.$('.gv-cards .policy-card:not(.no-room)');
+      if (card) await card.click();
+    }
     if (!shots.has('gov')) {
       await page.screenshot({ path: `${out}/game-government.png` });
       shots.add('gov');
     }
-    const confirm = await page.$('.gov-confirm .primary:not([disabled])');
+    const confirm = await page.$('.gv-confirm .primary:not([disabled])');
     if (confirm) await confirm.click();
     console.log(
       'policies:',

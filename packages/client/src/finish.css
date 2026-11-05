@@ -2626,3 +2626,10 @@ button.close:hover:not(:disabled) {
 .home-chip.icon .icon-glyph {
   color: var(--gold-hi);
 }
+
+/* A section title placed straight in a screen's scroll column centers with its content (the
+   screens' heading rule sets its margins, which would otherwise pin it to the left). */
+.screen-scroll > :is(h3, h4) {
+  margin-left: auto;
+  margin-right: auto;
+}
