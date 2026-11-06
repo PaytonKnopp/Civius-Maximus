@@ -445,6 +445,7 @@ religion and domination never.
 
 ### Measured before and after the pass
 
+(These batches ran before D121's tuning; 2H has the Standard and map-script games after it.)
 Each batch varies one setting around the base setup (6 civs, Continents on a Small map,
 Prince, Ancient start); all but the speed batch play at Online speed (half costs) so they
 finish quickly. The baseline ran two to four seeds per setting, the final sweep seeds 1 and 2
@@ -570,7 +571,7 @@ science, 4 diplomatic and 2 culture. Korea's kit is the strongest science stack 
 great scientist points, a science-first personality); with more rivals on the same seed (the
 Standard and Huge maps) it didn't win. On Continents science has replaced diplomacy as the
 usual winner; across the other map scripts culture is close behind (above). Religion and
-domination still never win an AI game: that's D121.
+domination still never win an AI game: that's D121 (2H, after these tables were measured).
 
 ## 11. Turn flow and quality of life
 
@@ -774,7 +775,7 @@ Medieval 95, Renaissance 123, Industrial 162, Modern 200, Atomic 246, Informatio
 Future 326 (the first civ on turn 267), close to Civ VI's Standard pacing, and the first
 decisive win lands between turns 277 and 385. D117's pace target is met; its victory-mix target
 (every type, none over 40%) is not: science still wins four games in six, and religion and
-domination none at Standard (open decision D121).
+domination none at Standard (D121, see 2H).
 
 | Median civ (Standard) | Turn 50 | 100 | 150 | 200 | 250 | 300 |
 |---|---|---|---|---|---|---|
@@ -799,28 +800,65 @@ game). Raising late costs moves its finish less than one would expect, because i
 keeps growing; the other AIs barely invest in science or tourism. See "What's still weaker
 than Civ" below.
 
+### 2H: the victory mix (D121)
+
+Payton then approved the recommended default on every open decision. For D121 that meant:
+
+- The six adjacency cards add +50% instead of doubling.
+- Every AI keeps a Campus and a Library in its cities of 6+ citizens.
+- Victory plans (`ai/plan.ts`): leaders who lean hard toward culture (Pericles, Catherine,
+  Lincoln, Pedro) play for culture. Tourism weighs four times as much, and they want great work
+  buildings, Theater Squares and open borders. Leaders of faith with a religion of their own play
+  for religion: more preachers, sent to other civs first.
+- An AI eases off wonders once it holds more than two above the average civ it has met (it
+  goes by finished wonders, which are announced to everyone).
+- Measuring it turned up one more fix: a culture victory now needs the Atomic era (below).
+
+| Measured | Standard (6 games) | Map scripts (22 games, Online) | Top civ's share of the wonders |
+|---|---|---|---|
+| Before D121 | 277–385 (avg 316): 4 science, 1 culture, 1 diplomatic | 10 science, 7 culture, 4 diplomatic, 1 turn limit; avg 177 | median 58%, up to 90% |
+| After D121 | 302–372 (avg 333): 6 science | 11 science, 6 culture, 5 diplomatic; avg 171 | median 39%, up to 63% |
+| Experiment: a 30-turn journey (not kept) | 312–382: 6 science, the same winners 10 turns later | | |
+
+What it did:
+
+- **Wonder hoarding is gone.** The top builder's share fell from a median 58% (up to 90%) to 39%
+  (up to 63%), and culture-minded leaders now build for culture. In one game Pericles ended with
+  394 tourism a turn, against 93 before.
+- **The science leader's lead narrowed.** At the end the top civ made a median 1.65 times the
+  science of the next one (2.05 before, up to 5.2 in the game Korea dominated).
+- **The non-science wins at Standard came from runaway hoarders.** The two that flipped were
+  Cleopatra (27 wonders, culture) and Lincoln (36 wonders, diplomatic). With the hoarding gone,
+  games are closer and the first civ through the tree wins. A 30-turn journey (20 now) gave every
+  rival 10 more turns, and the same civ still won all six games, so nobody was close to another
+  victory.
+- **Varied maps keep their mix:** about half science, a quarter culture, a quarter diplomatic.
+  Small Continents no longer runs to the turn limit.
+- **Culture not before the Atomic era.** On Pangaea one civ won by culture on turn 84 at Online
+  speed while every rival's culture was still tiny. A culture victory now needs the Atomic era
+  (`rules.culture.victoryEra`, where the other culture wins already happen; Civ VII keeps its
+  victories for the last age too). That game now ends on turn 103, when its leader gets there.
+
+D117's pace target still holds (first win 302–372 at Standard). Its victory-mix target ("none
+over 40%") does not: science wins every Standard game and half of the varied ones, and religion
+and domination still never win an AI game. More tuning won't get there; it needs AIs that pursue
+those victories on purpose (below).
+
 ## What's still weaker than Civ, and what it would take
 
-- **Victory variety in AI games.** Science wins most simulated games: four of the six Standard
-  games, and 10 of 22 on the varied map scripts, where culture took 7. Religion and domination
-  never win. Culture, religion and domination are reachable (tourism converts three times faster,
-  containment slows a runaway, armies bring wall-breakers) but AIs rarely build toward them on
-  purpose. It would take victory-minded AI strategies: a culture AI that chases wonders, great
-  works, national parks and open borders; a religious AI that floods rivals with apostles; a
-  conqueror that plans sieges with navies.
-- **One AI out-researches everyone.** Science stacking (adjacency cards that double a Campus,
-  buildings sharing it, dedications, founder beliefs) is strong for whoever leans into it, and
-  most AI personalities invest little in science, so the gap reaches 3–5×. Options: soften the
-  doubling cards (+50%), or make every AI keep a Campus and a Library in its larger cities.
-- **One AI takes most of the wonders.** In a typical game one civ builds over half of them
-  (median 60% of the wonders built, up to 90%; 56% before the pass): an AI only starts a
-  wonder it can finish within 20–40 turns (by its personality), so the civ with the most
-  production qualifies for nearly all of them, and none weighs whether a rival is about to
-  finish one. With tourism converting three times faster, a wonder hoarder can now win by
-  culture very early on a shared continent (Pangaea, seed 1: Brazil built 26 of the 34
-  wonders and won on turn 92 at Online speed, about turn 185 at Standard). It would take an
-  AI that steers away from wonders a rival is ahead on, or wonders' tourism tuned down (part
-  of D121).
+- **Victory variety in AI games.** Science wins every Standard game and half the games on varied
+  map scripts (culture and diplomacy share the rest); religion and domination never win. After
+  D121, culture- and faith-minded leaders play for their victories, but in a balanced game the
+  space race still finishes first. It would take AIs that steer the whole game toward a
+  victory: conquerors that plan sieges with navies, religious civs that convert everyone before
+  the space race, diplomats that bank Congress points, and civs that gang up on whoever leads.
+- **One AI still out-researches the rest in some games.** After D121's softer adjacency cards
+  and every AI keeping a Campus and a Library, the leader's science at the end is a median 1.65
+  times the next civ's (2.05 before), but up to 3.8 times in one game. Korea's own kit (Campus
+  bonuses, Library science, great scientists) makes it the strongest science civ by design.
+- **Wonder races (fixed by D121).** One AI used to build over half the wonders in most games
+  (up to 90%). AIs now ease off past a fair share, and the top builder holds a median 39% (up to
+  63%). No player can see what a rival is building, so a race can still be lost late.
 - **Navies.** The AI builds ships but doesn't escort, blockade or siege from the sea; the
   Fleet Commander, support units' AI use beyond wall-breakers, anti-air and the new ships are
   mostly for human players for now.
