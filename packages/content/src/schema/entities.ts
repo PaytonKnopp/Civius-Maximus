@@ -597,6 +597,10 @@ export const RulesDef = z.strictObject({
     friendsPercent: z.int().min(0),
     /** More tourism toward a civ you have open borders with (D115). */
     openBordersPercent: z.int().min(0).default(25),
+    /** Great works and wonders draw more tourists as they age (D115): this much more tourism
+     * per era their owner is past their own, up to `agingMaxPercent`. */
+    agingPercent: z.int().min(0).default(25),
+    agingMaxPercent: z.int().min(0).default(100),
   }),
   /** Great people: buying the one you're racing for. */
   greatPeople: z.strictObject({
@@ -794,6 +798,19 @@ export const RulesDef = z.strictObject({
         perAlliance: z.int(),
         perFriendship: z.int(),
       }),
+      /**
+       * Emergency sessions (D120): when a civ is `atPercent` of the way to a victory, the
+       * congress meets the next turn to vote on containing it (an `emergency` resolution) for
+       * `turns` turns (scaled by speed); the same civ and victory can't be called again for
+       * `cooldown` turns after a vote.
+       */
+      containment: z
+        .strictObject({
+          atPercent: z.int().min(1).max(100),
+          turns: z.int().min(1),
+          cooldown: z.int().min(0),
+        })
+        .default({ atPercent: 75, turns: 20, cooldown: 30 }),
     })
     .default({
       foundingEra: 'era_medieval',
@@ -803,6 +820,7 @@ export const RulesDef = z.strictObject({
       victoryPoints: 20,
       agendaPoints: 1,
       favor: { base: 1, perSuzerain: 2, perAlliance: 1, perFriendship: 1 },
+      containment: { atPercent: 75, turns: 20, cooldown: 30 },
     }),
   mapgen: z.strictObject({
     coastTerrain: Id,
@@ -2006,6 +2024,11 @@ export const ResolutionDef = z.strictObject({
   target: z.enum(['player', 'none']),
   /** On every session's agenda (e.g. naming a world leader). */
   always: z.boolean().default(false),
+  /**
+   * Never on a regular agenda: an emergency session votes on it, against a civ close to this
+   * victory (D120). Its target is that civ; its `bane` option holds for `containment.turns`.
+   */
+  emergency: z.enum(['science', 'culture', 'religion', 'diplomatic', 'domination']).optional(),
   options: z
     .array(
       z.strictObject({

@@ -81754,6 +81754,16 @@
               "default": false,
               "type": "boolean"
             },
+            "emergency": {
+              "type": "string",
+              "enum": [
+                "science",
+                "culture",
+                "religion",
+                "diplomatic",
+                "domination"
+              ]
+            },
             "options": {
               "minItems": 1,
               "maxItems": 2,
@@ -89473,6 +89483,18 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
+                },
+                "agingPercent": {
+                  "default": 25,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "agingMaxPercent": {
+                  "default": 100,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
                 }
               },
               "required": [
@@ -90064,6 +90086,11 @@
                   "perSuzerain": 2,
                   "perAlliance": 1,
                   "perFriendship": 1
+                },
+                "containment": {
+                  "atPercent": 75,
+                  "turns": 20,
+                  "cooldown": 30
                 }
               },
               "type": "object",
@@ -90129,6 +90156,37 @@
                     "perSuzerain",
                     "perAlliance",
                     "perFriendship"
+                  ],
+                  "additionalProperties": false
+                },
+                "containment": {
+                  "default": {
+                    "atPercent": 75,
+                    "turns": 20,
+                    "cooldown": 30
+                  },
+                  "type": "object",
+                  "properties": {
+                    "atPercent": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
+                    "turns": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "cooldown": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "atPercent",
+                    "turns",
+                    "cooldown"
                   ],
                   "additionalProperties": false
                 }
@@ -172452,6 +172510,16 @@
                 "default": false,
                 "type": "boolean"
               },
+              "emergency": {
+                "type": "string",
+                "enum": [
+                  "science",
+                  "culture",
+                  "religion",
+                  "diplomatic",
+                  "domination"
+                ]
+              },
               "options": {
                 "minItems": 1,
                 "maxItems": 2,
@@ -180171,6 +180239,18 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "agingPercent": {
+                    "default": 25,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "agingMaxPercent": {
+                    "default": 100,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
                   }
                 },
                 "required": [
@@ -180762,6 +180842,11 @@
                     "perSuzerain": 2,
                     "perAlliance": 1,
                     "perFriendship": 1
+                  },
+                  "containment": {
+                    "atPercent": 75,
+                    "turns": 20,
+                    "cooldown": 30
                   }
                 },
                 "type": "object",
@@ -180827,6 +180912,37 @@
                       "perSuzerain",
                       "perAlliance",
                       "perFriendship"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "containment": {
+                    "default": {
+                      "atPercent": 75,
+                      "turns": 20,
+                      "cooldown": 30
+                    },
+                    "type": "object",
+                    "properties": {
+                      "atPercent": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      },
+                      "turns": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "cooldown": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "atPercent",
+                      "turns",
+                      "cooldown"
                     ],
                     "additionalProperties": false
                   }

@@ -108,3 +108,29 @@ describe('great works', () => {
     expect(Object.keys(gone.greatWorks ?? {})).toHaveLength(0);
   });
 });
+
+describe('tourism that ages (D115)', () => {
+  it('great works and wonders draw more tourism for each era their owner is past theirs', () => {
+    const start = capitalWith('gp_homer');
+    const { capital } = start;
+    let s = activate(start.s, start.unit);
+    const tourism = (st: GameState) =>
+      settlementYields(ctx, st, st.settlements[capital]!).lines.tourism ?? [];
+    const work = (st: GameState) => tourism(st).find((l) => l.label.startsWith('Great works'))!;
+    const before = work(s).amount;
+    // Homer is Ancient; two eras on (Medieval) the work draws 50% more.
+    s = produce(s, (d) => {
+      d.players.p1!.techs.done.push('tech_apprenticeship');
+      d.settlements[capital]!.wonders.push('wonder_parthenon');
+    });
+    expect(work(s).amount).toBe(Math.trunc((before * 150) / 100));
+    // The Parthenon is Classical: one era on, +25%.
+    expect(tourism(s)).toContainEqual({ label: 'Parthenon (+25% for its age)', amount: 125 });
+    // Up to double.
+    s = produce(s, (d) => {
+      d.players.p1!.techs.done.push('tech_composites');
+    });
+    expect(work(s).amount).toBe(before * 2);
+    expect(tourism(s)).toContainEqual({ label: 'Parthenon (+100% for its age)', amount: 200 });
+  });
+});

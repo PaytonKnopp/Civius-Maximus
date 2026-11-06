@@ -443,5 +443,201 @@
         "favoredBy": "wonders"
       }
     ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_contain_science",
+    "name": "Emergency: Space Race",
+    "description": "One civ is three quarters of the way to the stars. The world decides whether to slow it.",
+    "target": "player",
+    "emergency": "science",
+    "options": [
+      {
+        "id": "contain",
+        "name": "Contain",
+        "description": "−15% science in every settlement of that civ for 20 turns.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "science",
+              "percent": -15
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "bane"
+      },
+      {
+        "id": "decline",
+        "name": "Let It Be",
+        "description": "Nothing changes.",
+        "effects": [],
+        "tone": "boon"
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_contain_culture",
+    "name": "Emergency: Cultural Dominance",
+    "description": "One civ's culture is three quarters of the way to winning over the world. The world decides whether to resist it.",
+    "target": "player",
+    "emergency": "culture",
+    "options": [
+      {
+        "id": "contain",
+        "name": "Contain",
+        "description": "−15% culture and tourism in every settlement of that civ for 20 turns.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "culture",
+              "percent": -15
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          },
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "tourism",
+              "percent": -15
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "bane"
+      },
+      {
+        "id": "decline",
+        "name": "Let It Be",
+        "description": "Nothing changes.",
+        "effects": [],
+        "tone": "boon"
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_contain_religion",
+    "name": "Emergency: Religious Tide",
+    "description": "One faith is three quarters of the way to the world's majority. The world decides whether to stand against it.",
+    "target": "player",
+    "emergency": "religion",
+    "options": [
+      {
+        "id": "contain",
+        "name": "Contain",
+        "description": "−15% faith in every settlement of that civ for 20 turns.",
+        "effects": [
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "faith",
+              "percent": -15
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "bane"
+      },
+      {
+        "id": "decline",
+        "name": "Let It Be",
+        "description": "Nothing changes.",
+        "effects": [],
+        "tone": "boon"
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_contain_diplomatic",
+    "name": "Emergency: Diplomatic Hegemony",
+    "description": "One civ is three quarters of the way to leading the world. The world decides whether to check it.",
+    "target": "player",
+    "emergency": "diplomatic",
+    "options": [
+      {
+        "id": "contain",
+        "name": "Contain",
+        "description": "−2 favor a turn and −15% influence for that civ for 20 turns.",
+        "effects": [
+          {
+            "effect": "diplomatic_favor",
+            "params": {
+              "amount": -2
+            },
+            "target": {
+              "scope": "player"
+            }
+          },
+          {
+            "effect": "modify_yield",
+            "params": {
+              "yield": "influence",
+              "percent": -15
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "bane"
+      },
+      {
+        "id": "decline",
+        "name": "Let It Be",
+        "description": "Nothing changes.",
+        "effects": [],
+        "tone": "boon"
+      }
+    ]
+  },
+  {
+    "type": "resolution",
+    "id": "res_contain_domination",
+    "name": "Emergency: Conqueror",
+    "description": "One civ holds three quarters of the world's capitals. The world decides whether to arm against it.",
+    "target": "player",
+    "emergency": "domination",
+    "options": [
+      {
+        "id": "contain",
+        "name": "Contain",
+        "description": "−15% production toward soldiers for that civ for 20 turns.",
+        "effects": [
+          {
+            "effect": "modify_production",
+            "params": {
+              "percent": -15,
+              "toward": {
+                "military": true
+              }
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          }
+        ],
+        "tone": "bane"
+      },
+      {
+        "id": "decline",
+        "name": "Let It Be",
+        "description": "Nothing changes.",
+        "effects": [],
+        "tone": "boon"
+      }
+    ]
   }
 ]

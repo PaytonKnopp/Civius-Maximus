@@ -38,6 +38,13 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         kind: 'friendship' | 'alliance' | 'open_borders' | 'research';
         players: [PlayerId, PlayerId];
       }
+    | {
+        type: 'containment_called';
+        target: PlayerId;
+        victory: 'science' | 'culture' | 'religion' | 'diplomatic' | 'domination';
+        percent: number;
+      }
+    | { type: 'containment_ended'; player: PlayerId; resolution: string }
     | { type: 'denounced'; by: PlayerId; target: PlayerId }
     | {
         type: 'trade_route_started';

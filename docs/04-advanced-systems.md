@@ -535,6 +535,17 @@ forces new crisis policies. Off by default, for groups that like chaos.
 - **AI:** takes its writers, artists and musicians to its nearest settlement with room. In a
   250-turn, four-player test game the AIs made 12 works.
 
+### Tourism that can win (final gameplay pass, D115)
+
+- **Ageing:** a great work's and a wonder's tourism grows by 25% for each era its owner is past
+  the work's maker's era or the wonder's era, up to double (`culture.agingPercent`,
+  `agingMaxPercent`). The yields line says so: "Parthenon (+75% for its age)". Classical works
+  and wonders become a real tourism engine by the Industrial era, as in Civ V's later game.
+- **Open borders** with a civ: +25% tourism toward it (`culture.openBordersPercent`), with the
+  trade route, shared religion and friendship bonuses.
+- National parks and seaside resorts draw tourism from appeal (see
+  [03-core-mechanics.md](03-core-mechanics.md#appeal)).
+
 ---
 
 ## More modules (all in v1 as toggles)
@@ -789,6 +800,24 @@ off. Diplomatic victory has its own toggle.
   - It takes the boon on itself. If it's aggressive and trailing, it puts the bane on the
     leader instead.
   - On general resolutions it backs the option its personality likes.
+- **Emergency sessions** (final gameplay pass, D120): when a civ is three quarters of the way
+  to a victory (`containment.atPercent`), the congress meets the next turn to vote on
+  containing it.
+  - How far: science, space projects done of four; culture, each other civ's visitors against
+    its domestic tourists (averaged, each at most 100%); religion, each civ's settlements
+    following against the majority it needs; diplomatic, points of 20; domination, original
+    capitals held.
+  - One resolution per victory, never on a regular agenda: Space Race (−15% science), Cultural
+    Dominance (−15% culture and tourism), Religious Tide (−15% faith), Diplomatic Hegemony (−2
+    favor a turn, −15% influence) and Conqueror (−15% production toward soldiers). "Contain"
+    must beat "Let it be"; a tie leaves things as they are.
+  - It holds for 20 turns (scaled by speed) whatever later sessions decide; the same civ and
+    victory can't be called again for 30 turns after a vote. A regular session that falls due
+    meanwhile meets right after.
+  - The AI: the civ in question and its team vote against with all the favor they have, its
+    allies stay out of it, everyone else votes to contain with what they can spare.
+  - On screen: a notice ("Emergency: Rome is 75% of the way to a science victory"), the ballot
+    with its target fixed, and a Containments list on the World Congress screen.
 
 ---
 

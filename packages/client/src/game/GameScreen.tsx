@@ -170,6 +170,7 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
       return e.player === me ? 'notify' : null;
     case 'congress_session':
     case 'congress_founded':
+    case 'containment_called':
     case 'climate_phase':
     case 'sea_level_rose':
       return 'notify';
@@ -340,7 +341,21 @@ function noticeFor(
     case 'congress_founded':
       return `The World Congress has formed (${civName(content, state, e.by)} was first into the age). Diplomatic favor comes in every turn (U)`;
     case 'congress_session':
-      return 'The World Congress meets this turn: cast your votes (U)';
+      // An emergency session has its own notice.
+      return content.entities.resolution[e.agenda[0] ?? '']?.emergency
+        ? undefined
+        : 'The World Congress meets this turn: cast your votes (U)';
+    case 'containment_called': {
+      const kind =
+        { religion: 'religious', diplomatic: 'diplomatic' }[e.victory as string] ?? e.victory;
+      return e.target === ME
+        ? `Emergency: you are ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing you (U)`
+        : `Emergency: ${civName(content, state, e.target)} is ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing them (U)`;
+    }
+    case 'containment_ended':
+      return e.player === ME
+        ? 'The World Congress containment on you has ended'
+        : `The containment on ${civName(content, state, e.player)} has ended`;
     case 'resolution_passed': {
       const def = content.entities.resolution[e.resolution];
       const o = def?.options.find((x) => x.id === e.option);

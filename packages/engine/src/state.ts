@@ -365,15 +365,33 @@ export interface Ballot {
   votes: number;
 }
 
+export type VictoryKind = 'science' | 'culture' | 'religion' | 'diplomatic' | 'domination';
+
 export interface CongressState {
   /** The turn the next session meets. */
   nextSession: number;
-  /** The session meeting now (players vote this turn), or null between sessions. */
-  session: { turn: number; agenda: string[] } | null;
+  /**
+   * The session meeting now (players vote this turn), or null between sessions. An emergency
+   * session (D120) votes only on containing one civ close to a victory.
+   */
+  session: {
+    turn: number;
+    agenda: string[];
+    emergency?: { target: PlayerId; victory: VictoryKind };
+  } | null;
   /** This session's ballots, by player. */
   votes: Record<PlayerId, Ballot[]>;
   /** What the last session decided (in force until the next). */
   passed: { resolution: string; option: string; target: PlayerId | null }[];
+  /** The turn each civ was last called to an emergency session, by `player:victory`. */
+  called?: Record<string, number>;
+}
+
+/** An emergency resolution in force against a player (D120), until a turn. */
+export interface Containment {
+  resolution: string;
+  option: string;
+  until: number;
 }
 
 export interface SpyState {
@@ -496,6 +514,8 @@ export interface PlayerState {
   faith: number;
   /** Strategic resource stockpiles, whole units (see resources/strategic.ts). */
   resources?: Record<string, number>;
+  /** A World Congress containment against them (D120). */
+  contained?: Containment;
   /** Resources whose unit upkeep couldn't be covered last turn: those units fight weaker. */
   resourcesShort?: string[];
   capital: SettlementId | null;

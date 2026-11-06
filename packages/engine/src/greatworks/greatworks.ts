@@ -3,6 +3,7 @@ import { current, type Draft } from 'immer';
 import type { Action } from '../actions';
 import type { ActionHandler, Emit, EngineContext, RuleError } from '../context';
 import { type Fixed, toFixed } from '../fixed';
+import { agingPercent } from '../progress/era';
 import type { GameState, GreatWorkState, PlayerId, SettlementState, UnitState } from '../state';
 
 /**
@@ -115,8 +116,14 @@ export function greatWorkYields(
     if (works.length === 0) continue;
     const yields: Record<string, Fixed> = {};
     for (const [, w] of works) {
+      // A work's tourism grows as it ages (D115): from its maker's era.
+      const made = ctx.content.entities.greatPerson[w.creator]?.era;
+      const aged = made
+        ? agingPercent(ctx, state.players[s.owner], ctx.content.entities.era[made]?.order ?? 1)
+        : 0;
       for (const [y, v] of Object.entries(r.yields[w.kind])) {
-        const amount = Math.trunc((toFixed(v) * (100 + (themed ? r.themingPercent : 0))) / 100);
+        const percent = 100 + (themed ? r.themingPercent : 0) + (y === 'tourism' ? aged : 0);
+        const amount = Math.trunc((toFixed(v) * percent) / 100);
         yields[y] = (yields[y] ?? 0) + amount;
       }
     }

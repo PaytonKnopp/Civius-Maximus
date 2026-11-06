@@ -41,7 +41,7 @@ import { scaleCost } from '../speed';
 import { loyaltyPenalty } from '../loyalty/loyalty';
 import { greatWorkYields } from '../greatworks/greatworks';
 import { luxuryLines } from './luxuries';
-import { eraOrderOf, perEra } from '../progress/era';
+import { agingPercent, eraOrderOf, perEra } from '../progress/era';
 import { appealOf } from '../map/appeal';
 import { isRevealed, resourceProblem } from '../resources/strategic';
 
@@ -539,8 +539,22 @@ function computeSettlementYields(
   }
   for (const w of s.wonders) {
     const def = ctx.content.entities.wonder[w]!;
-    for (const y of Object.keys(def.yields).sort())
-      add(y, resolveText(ctx.content, def.name), toFixed(def.yields[y]!));
+    // Tourism grows as the wonder ages (D115).
+    const aged = agingPercent(
+      ctx,
+      state.players[s.owner],
+      ctx.content.entities.era[def.era]?.order ?? 1,
+    );
+    for (const y of Object.keys(def.yields).sort()) {
+      const base = toFixed(def.yields[y]!);
+      if (y === 'tourism' && aged > 0)
+        add(
+          y,
+          `${resolveText(ctx.content, def.name)} (+${aged}% for its age)`,
+          Math.trunc((base * (100 + aged)) / 100),
+        );
+      else add(y, resolveText(ctx.content, def.name), base);
+    }
   }
   for (const [id, n] of Object.entries(s.specialists).sort()) {
     const def = ctx.content.entities.district[id];

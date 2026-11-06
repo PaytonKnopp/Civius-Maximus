@@ -566,3 +566,6 @@ Payton approved every recommended default (D106–D120), the four groups of know
   the end), paid in influence (D114). War ends them; a sender that can't deliver breaks the deal.
   The AI swaps spare luxuries, offers open borders and research agreements, values a luxury by
   the happiness it brings, and no longer tries to buy a unit whose resources aren't stockpiled.
+- **D115** Great works and wonders draw +25% tourism per era past their own, up to double.
+- **D120** Emergency sessions: a civ three quarters of the way to any victory faces a
+  containment vote (−15% toward that victory for 20 turns if it passes).

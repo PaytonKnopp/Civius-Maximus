@@ -49,6 +49,7 @@ export function CongressScreen({
   const open = !!c?.session && c.session.turn === state.turn;
   const cast = c?.votes[viewer];
 
+  const emergency = open ? c!.session!.emergency : undefined;
   const initial = useMemo<Ballot[]>(
     () =>
       (open ? c!.session!.agenda : []).map((res) => {
@@ -58,7 +59,7 @@ export function CongressScreen({
         return {
           resolution: res,
           option: def.options[0]!.id,
-          target: def.target === 'player' ? viewer : null,
+          target: emergency ? emergency.target : def.target === 'player' ? viewer : null,
           votes: 1,
         };
       }),
@@ -131,6 +132,14 @@ export function CongressScreen({
         {open && (
           <section className="congress-card ballot">
             <h3>Your ballot{cast ? ' (cast; you can change it this turn)' : ''}</h3>
+            {emergency && (
+              <p className="hint">
+                Emergency session: {civName(content, state, emergency.target)}
+                {emergency.target === viewer ? ' (you)' : ''} is close to a{' '}
+                {emergency.victory === 'religion' ? 'religious' : emergency.victory} victory. A tie
+                leaves things as they are.
+              </p>
+            )}
             {ballots.map((b, i) => {
               const def = content.entities.resolution[b.resolution]!;
               const next = voteCost(ctx, b.votes + 1) - voteCost(ctx, b.votes);
@@ -148,8 +157,11 @@ export function CongressScreen({
                         onClick={() =>
                           set(i, {
                             option: o.id,
-                            // A bane is for someone else.
-                            ...(def.target === 'player' && o.tone === 'bane' && b.target === viewer
+                            // A bane is for someone else (an emergency's target is fixed).
+                            ...(def.target === 'player' &&
+                            !emergency &&
+                            o.tone === 'bane' &&
+                            b.target === viewer
                               ? { target: civs.find((x) => x !== viewer) ?? viewer }
                               : {}),
                           })
@@ -161,7 +173,7 @@ export function CongressScreen({
                     ))}
                   </div>
                   <div className="resolution-row">
-                    {def.target === 'player' && (
+                    {def.target === 'player' && !emergency && (
                       <label className="setup-field">
                         <span>Civ</span>
                         <select
@@ -234,6 +246,30 @@ export function CongressScreen({
                     </strong>
                     {x.target ? ` (${civName(content, state, x.target)})` : ''}
                     <span>{t(o.description)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+
+        {civs.some((id) => state.players[id]!.contained) && (
+          <section className="congress-card">
+            <h3>Containments</h3>
+            <ul className="passed-list">
+              {civs.map((id) => {
+                const x = state.players[id]!.contained;
+                const def = x ? content.entities.resolution[x.resolution] : undefined;
+                const o = def?.options.find((y) => y.id === x?.option);
+                if (!x || !def || !o) return null;
+                return (
+                  <li key={id}>
+                    <strong>
+                      {t(def.name)} ({civName(content, state, id)})
+                    </strong>
+                    <span>
+                      {t(o.description)} Until turn {x.until}.
+                    </span>
                   </li>
                 );
               })}

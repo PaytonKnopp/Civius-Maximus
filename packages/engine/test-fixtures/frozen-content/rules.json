@@ -503,7 +503,9 @@
     "tradeRoutePercent": 25,
     "religionPercent": 25,
     "friendsPercent": 25,
-    "openBordersPercent": 25
+    "openBordersPercent": 25,
+    "agingPercent": 25,
+    "agingMaxPercent": 100
   },
   "governors": {
     "establishTurns": 5,
@@ -622,6 +624,11 @@
       "perSuzerain": 2,
       "perAlliance": 1,
       "perFriendship": 1
+    },
+    "containment": {
+      "atPercent": 75,
+      "turns": 20,
+      "cooldown": 30
     }
   },
   "disasters": {

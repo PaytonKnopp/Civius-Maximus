@@ -22,3 +22,12 @@ export function eraOrderOf(ctx: EngineContext, p: PlayerState | undefined): numb
 export function perEra(amount: number, percent: number, era: number): number {
   return percent > 0 ? Math.floor((amount * (100 + percent * Math.max(0, era - 1))) / 100) : amount;
 }
+
+/**
+ * How much more tourism a great work or wonder from era `era` (an order) draws for its owner now
+ * (D115): `culture.agingPercent` per era they're past it, up to `culture.agingMaxPercent`.
+ */
+export function agingPercent(ctx: EngineContext, p: PlayerState | undefined, era: number): number {
+  const r = ctx.content.rules.culture;
+  return Math.min(r.agingMaxPercent, r.agingPercent * Math.max(0, eraOrderOf(ctx, p) - era));
+}
