@@ -293,6 +293,9 @@ export function settlementStrength(
     amount: s.kind === 'city' ? rules.cityStrengthBonus : rules.townStrengthBonus,
   });
   if (s.walls > 0) lines.push({ label: 'Walls', amount: rules.wallsStrength });
+  const spec = s.specialization ? ctx.content.entities.specialization[s.specialization] : undefined;
+  if (spec?.defense)
+    lines.push({ label: resolveText(ctx.content, spec.name), amount: spec.defense });
   lines.push(...terrainLines(ctx, state, s.tile));
   return strength(lines);
 }

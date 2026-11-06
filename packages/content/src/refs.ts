@@ -145,6 +145,9 @@ export function effectRefs(out: Refs, e: Effect, path: PathSegment[]) {
     case 'adjacency_percent':
       ids(out, 'district', e.params.district, [...at, 'district']);
       break;
+    case 'yield_per_appeal':
+      out.push({ path: [...at, 'yield'], kind: 'yield', id: e.params.yield });
+      break;
     case 'extra_adjacency':
       ids(out, 'district', e.params.district, [...at, 'district']);
       adjacencyRefs(out, [e.params.adjacency], [...at, 'adjacency']);
@@ -344,6 +347,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'era':
       ids(out, 'unit', entity.start?.units, ['start', 'units']);
+      ids(out, 'building', entity.start?.buildings, ['start', 'buildings']);
       break;
     case 'leader':
       out.push({ path: ['civ'], kind: 'civ', id: entity.civ });

@@ -54,7 +54,8 @@
       "science": 15,
       "culture": 15,
       "faith": 10,
-      "happiness": 10
+      "happiness": 10,
+      "tourism": 8
     },
     "citizenYields": {
       "science": 0.5
@@ -115,6 +116,13 @@
     "perDestinationDistrict": {
       "gold": 1
     },
+    "domesticPerDistrict": {
+      "food": 0.5,
+      "production": 0.5
+    },
+    "internationalPerEra": {
+      "gold": 1
+    },
     "destination": {
       "gold": 1
     },
@@ -124,6 +132,13 @@
     "seaRange": 20
   },
   "luxuryHappinessRadius": 3,
+  "appeal": {
+    "wonder": 1,
+    "breathtaking": 4,
+    "charming": 2,
+    "uninviting": -2,
+    "disgusting": -4
+  },
   "strategic": {
     "stockpileBase": 30,
     "stockpilePerEra": 15,
@@ -196,12 +211,17 @@
     "embarkedSight": 1,
     "freeUpkeep": 3,
     "upgradeGoldPerProduction": 2,
-    "upgradeMinGold": 20
+    "upgradeMinGold": 20,
+    "upkeepByEra": [1, 1, 2, 2, 3, 3, 4, 4, 4]
   },
   "progress": {
     "boostPercent": 40,
     "startingGovernment": "government_chiefdom",
     "policySwapCost": 25,
+    "catchUp": {
+      "perCiv": 5,
+      "max": 25
+    },
     "governmentChangeCost": 100,
     "celebration": {
       "base": 40,
@@ -454,7 +474,12 @@
     "perWonder": 10,
     "perDistrict": 2,
     "perEra": 10,
-    "perKill": 1
+    "perKill": 1,
+    "perGreatPerson": 5,
+    "perReligion": 10,
+    "perFollower": 1,
+    "perGreatWork": 2,
+    "perFuture": 5
   },
   "science": {
     "projects": [

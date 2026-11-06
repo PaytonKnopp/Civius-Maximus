@@ -795,7 +795,12 @@ export function healUnits(draft: Draft<GameState>, ctx: EngineContext) {
           : t.owner !== null && atWar(draft, u.owner, t.owner)
             ? heal.enemy
             : heal.neutral;
-    u.health = Math.min(maxHealth, u.health + amount + medic);
+    // A fort town tends to its own soldiers in its territory.
+    const spec =
+      home && home.owner === u.owner && home.specialization
+        ? ctx.content.entities.specialization[home.specialization]
+        : undefined;
+    u.health = Math.min(maxHealth, u.health + amount + medic + (spec?.heal ?? 0));
   }
 }
 

@@ -47,7 +47,8 @@
       }
     ],
     "color": "#8a8076",
-    "model": "mine"
+    "model": "mine",
+    "appeal": -1
   },
   {
     "type": "improvement",
@@ -60,7 +61,8 @@
     "order": 6,
     "resources": ["oil"],
     "model": "mine",
-    "requiresTech": "tech_steam_power"
+    "requiresTech": "tech_steam_power",
+    "appeal": -1
   },
   {
     "type": "improvement",
@@ -73,7 +75,8 @@
     "order": 6,
     "resources": ["oil"],
     "model": "boats",
-    "requiresTech": "tech_combustion"
+    "requiresTech": "tech_combustion",
+    "appeal": -1
   },
   {
     "type": "improvement",
@@ -87,7 +90,8 @@
     "resources": ["stone", "marble", "salt"],
     "color": "#b9b2a4",
     "model": "quarry",
-    "requiresTech": "tech_mining"
+    "requiresTech": "tech_mining",
+    "appeal": -1
   },
   {
     "type": "improvement",
@@ -297,5 +301,50 @@
       }
     ],
     "civ": "civ_inca"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_national_park",
+    "name": "National Park",
+    "icon": "NP",
+    "yields": {
+      "culture": 1
+    },
+    "yieldsPerAppeal": {
+      "tourism": 1
+    },
+    "appeal": 1,
+    "order": 90,
+    "requiresCivic": "civic_conservation",
+    "sites": [
+      {
+        "terrains": ["grassland", "plains", "desert", "tundra", "snow"],
+        "elevations": ["flat", "hills"],
+        "features": ["woods", "rainforest", "marsh"],
+        "minAppeal": 4
+      }
+    ]
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_seaside_resort",
+    "name": "Seaside Resort",
+    "icon": "SR",
+    "yields": {
+      "gold": 2
+    },
+    "yieldsPerAppeal": {
+      "tourism": 1
+    },
+    "order": 80,
+    "requiresTech": "tech_radio",
+    "sites": [
+      {
+        "terrains": ["grassland", "plains", "desert", "tundra", "snow"],
+        "elevations": ["flat"],
+        "coastal": true,
+        "minAppeal": 4
+      }
+    ]
   }
 ]

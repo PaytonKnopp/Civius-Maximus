@@ -5,7 +5,7 @@ import {
   type EngineContext,
   type GameState,
   goalProgress,
-  nodeCost,
+  nodeCostFor,
   pathTo,
   type PlayerId,
   trackOf,
@@ -187,7 +187,7 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
           {track.current
             ? `${name(track.current)} · ${showTurns(
                 turnsFor(
-                  nodeCost(ctx, state, kind, track.current),
+                  nodeCostFor(ctx, state, viewer, kind, track.current),
                   track.progress[track.current] ?? 0,
                   perTurn,
                 ),
@@ -287,7 +287,7 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
             {ids.map((id) => {
               const node = treeNode(ctx, kind, id)!;
               const { x, y } = pos(id);
-              const cost = nodeCost(ctx, state, kind, id);
+              const cost = nodeCostFor(ctx, state, viewer, kind, id);
               const progress = track.progress[id] ?? 0;
               const isDone = done.has(id);
               const order = queue.indexOf(id);

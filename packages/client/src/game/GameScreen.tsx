@@ -18,7 +18,7 @@ import {
   teamOf,
   improvementsFor,
   celebrationThreshold,
-  nodeCost,
+  nodeCostFor,
   playerEra,
   titlesAvailable,
   type PlayerId,
@@ -1912,7 +1912,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               ? content.entities.tech[id]
               : content.entities.civic[id]
             : undefined;
-          const cost = id ? nodeCost(ctx, state, k, id) : 0;
+          const cost = id ? nodeCostFor(ctx, state, viewer, k, id) : 0;
           const progress = id ? (track.progress[id] ?? 0) : 0;
           const perTurnAmount = k === 'tech' ? empire.science : empire.culture;
           const pct = def ? Math.min(100, (progress / cost) * 100) : 0;

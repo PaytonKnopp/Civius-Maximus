@@ -12,7 +12,9 @@
     "order": 2,
     "start": {
       "gold": 60,
-      "units": ["unit_settler", "unit_archer", "unit_warrior"]
+      "units": ["unit_settler", "unit_archer", "unit_warrior"],
+      "population": 1,
+      "buildings": ["building_monument"]
     }
   },
   {
@@ -22,7 +24,9 @@
     "order": 3,
     "start": {
       "gold": 150,
-      "units": ["unit_settler", "unit_settler", "unit_swordsman", "unit_crossbowman"]
+      "units": ["unit_settler", "unit_settler", "unit_swordsman", "unit_crossbowman"],
+      "population": 1,
+      "buildings": ["building_monument", "building_granary"]
     }
   },
   {
@@ -32,7 +36,9 @@
     "order": 4,
     "start": {
       "gold": 250,
-      "units": ["unit_settler", "unit_settler", "unit_pikeman", "unit_crossbowman", "unit_knight"]
+      "units": ["unit_settler", "unit_settler", "unit_pikeman", "unit_crossbowman", "unit_knight"],
+      "population": 2,
+      "buildings": ["building_monument", "building_granary", "building_walls"]
     }
   },
   {
@@ -49,7 +55,9 @@
         "unit_musketman",
         "unit_bombard",
         "unit_knight"
-      ]
+      ],
+      "population": 2,
+      "buildings": ["building_monument", "building_granary", "building_walls", "building_baths"]
     }
   },
   {
@@ -66,7 +74,9 @@
         "unit_line_infantry",
         "unit_field_cannon",
         "unit_cavalry"
-      ]
+      ],
+      "population": 3,
+      "buildings": ["building_monument", "building_granary", "building_walls", "building_baths"]
     }
   },
   {
@@ -83,7 +93,9 @@
         "unit_infantry",
         "unit_artillery",
         "unit_tank"
-      ]
+      ],
+      "population": 3,
+      "buildings": ["building_monument", "building_granary", "building_walls", "building_baths"]
     }
   },
   {
@@ -100,7 +112,9 @@
         "unit_infantry",
         "unit_artillery",
         "unit_tank"
-      ]
+      ],
+      "population": 4,
+      "buildings": ["building_monument", "building_granary", "building_walls", "building_baths"]
     }
   },
   {

@@ -1,15 +1,9 @@
 import type { Draft } from 'immer';
 import type { Action } from '../actions';
-import {
-  type ActionHandler,
-  type EngineContext,
-  type Emit,
-  type RuleError,
-  unitDef,
-} from '../context';
+import { type ActionHandler, type EngineContext, type Emit, type RuleError } from '../context';
 import { percentOf } from '../fixed';
 import { view } from '../draft';
-import { unitUpkeep } from '../settlements/rules';
+import { unitUpkeep, upkeepOf } from '../settlements/rules';
 import type { GameState, PlayerId, Track } from '../state';
 import {
   availableGovernments,
@@ -19,7 +13,7 @@ import {
   goalMet,
   governmentChangeCost,
   isPolicyAvailable,
-  nodeCost,
+  nodeCostFor,
   pathTo,
   policyChangeCost,
   policyProblem,
@@ -175,7 +169,10 @@ export function checkBoosts(
       if (!goalMet(ctx, facts, node.boost.goal)) continue;
       const track = trackOf(draft.players[player]!, kind);
       track.boosted.push(id);
-      const bonus = percentOf(nodeCost(ctx, snap, kind, id), boostPercent(ctx, snap, player));
+      const bonus = percentOf(
+        nodeCostFor(ctx, snap, player, kind, id),
+        boostPercent(ctx, snap, player),
+      );
       track.progress[id] = (track.progress[id] ?? 0) + bonus;
       emit({ type: 'boost_earned', player, kind, id, visibleTo: [player] });
     }
@@ -212,7 +209,7 @@ export function grantBoost(
     const track = trackOf(p, kind);
     for (const id of availableNodes(ctx, p, kind)) {
       if (track.boosted.includes(id)) continue;
-      const cost = nodeCost(ctx, snap, kind, id);
+      const cost = nodeCostFor(ctx, snap, player, kind, id);
       if (!best || cost < best.cost || (cost === best.cost && id < best.id))
         best = { kind, id, cost };
     }
@@ -255,7 +252,7 @@ export function advance(
   }
   const id = track.current;
   track.progress[id] = (track.progress[id] ?? 0) + amount;
-  const cost = nodeCost(ctx, draft, kind, id);
+  const cost = nodeCostFor(ctx, view(draft), player, kind, id);
   if (track.progress[id]! < cost) return undefined;
   const overflow = track.progress[id]! - cost;
   delete track.progress[id];
@@ -300,10 +297,10 @@ export function empireTurn(
   if (p.gold < 0) {
     p.gold = 0;
     const victim = Object.values(view(draft).units)
-      .filter((u) => u.owner === player && unitDef(ctx, u).upkeep > 0)
+      .filter((u) => u.owner === player && upkeepOf(ctx, u.type) > 0)
       .sort(
         (a, b) =>
-          unitDef(ctx, b).upkeep - unitDef(ctx, a).upkeep ||
+          upkeepOf(ctx, b.type) - upkeepOf(ctx, a.type) ||
           Number(b.id.slice(1)) - Number(a.id.slice(1)),
       )[0];
     if (victim) {

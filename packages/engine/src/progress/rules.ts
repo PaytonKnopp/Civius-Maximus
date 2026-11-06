@@ -8,7 +8,8 @@ import {
   type TechDef,
 } from '@cx/content';
 import { type EngineContext, type RuleError, unitDef } from '../context';
-import { type Fixed, toFixed } from '../fixed';
+import { decodeBits, getBit } from '../bitset';
+import { type Fixed, percentOf, toFixed } from '../fixed';
 import { tilesWithin } from '../map/hex';
 import { isCoastal, settlementsOf } from '../settlements/rules';
 import type { GameState, PlayerId, PlayerState, Track } from '../state';
@@ -46,6 +47,46 @@ export function nodeCost(
   id: string,
 ): Fixed {
   return scaleCost(ctx, state, toFixed(treeNode(ctx, kind, id)?.cost ?? 0));
+}
+
+/**
+ * What a node costs a player (catch-up research, D119): less for each civ they've met (seen a
+ * settlement of) that already has it, `rules.progress.catchUp.perCiv` percent each, up to `max`.
+ */
+export function nodeCostFor(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  kind: TreeKind,
+  id: string,
+): Fixed {
+  const base = nodeCost(ctx, state, kind, id);
+  const r = ctx.content.rules.progress.catchUp;
+  if (r.perCiv <= 0 || r.max <= 0) return base;
+  const n = civsWith(ctx, state, player, kind, id);
+  return base - percentOf(base, Math.min(r.max, n * r.perCiv));
+}
+
+/** Other civs this player knows (has seen a settlement of) that have finished a node. */
+export function civsWith(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  kind: TreeKind,
+  id: string,
+): number {
+  const explored = state.players[player]?.explored;
+  if (!explored) return 0;
+  const seen = decodeBits(explored, state.map.tiles.length);
+  const known = new Set<PlayerId>();
+  for (const s of Object.values(state.settlements))
+    if (s.owner !== player && getBit(seen, s.tile)) known.add(s.owner);
+  let n = 0;
+  for (const other of known) {
+    const p = state.players[other];
+    if (p && p.kind !== 'cityState' && p.alive && trackOf(p, kind).done.includes(id)) n++;
+  }
+  return n;
 }
 
 /** Nodes that can be worked on now: not finished, every prerequisite finished. */

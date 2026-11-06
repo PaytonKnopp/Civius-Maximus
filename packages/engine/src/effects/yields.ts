@@ -90,6 +90,15 @@ export function computeTileYields(
     if (!improvement) throw new Error(`Unknown improvement "${tile.improvement}"`);
     const name = resolveText(content, improvement.name);
     addMap(improvement.yields, improvement.id, name);
+    // A national park or seaside resort: yields for each point of the tile's appeal.
+    const appeal = Math.max(0, tile.appeal ?? 0);
+    for (const id of Object.keys(improvement.yieldsPerAppeal).sort())
+      if (appeal > 0)
+        add(id, {
+          source: improvement.id,
+          label: `${name}: appeal ${appeal}`,
+          amount: toFixed(improvement.yieldsPerAppeal[id]! * appeal),
+        });
     for (const a of improvement.adjacency) {
       add(a.yield, {
         source: improvement.id,

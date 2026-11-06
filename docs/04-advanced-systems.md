@@ -137,6 +137,13 @@ same actions shift **war support** toward your enemy (see
   desert tile of the origin; new Roman settlements get a road to the capital.
 - Not yet: plundering routes, sea routes, road building by other means.
 
+### Routes that grow (final gameplay pass)
+
+- A domestic route also gives +0.5 food and +0.5 production per district at its destination; an
+  international one +1 gold per district there (as before) and +1 gold per era past the first
+  (`rules.trade.domesticPerDistrict`, `internationalPerEra`). Before, a route's flat +4 gold or
+  +2/+2 was worth a lot at turn 40 and nothing at turn 300.
+
 ### Plunder and the sea (V1 final, F16)
 
 - **Sea routes:** a settlement with a **Harbor** sends routes over shallow water as well as land,

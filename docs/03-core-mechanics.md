@@ -142,6 +142,8 @@ Strategic resources are only revealed once you research the matching tech.
   (+2) to the settlement that owns it and to the 3 nearest other settlements of its owner. A
   settlement counts each kind once, however many reach it, so variety matters and spare copies
   are for trading. The settlement's happiness breakdown names each one and where it comes from.
+  Fifteen luxuries (D106): Silk, Spices, Wine, Incense, Diamonds, Pearls, Whales, Dyes, Furs,
+  Ivory, Marble, Salt, Sugar, Tea and Cotton.
 - **Strategic resources** (`rules.strategic`), after Civ VI:
   - Hidden until their tech: horses (Animal Husbandry), iron (Bronze Working), niter (Military
     Tactics), coal (Industrialization), oil (Steam Power), aluminum (Radio), uranium (Nuclear
@@ -167,6 +169,23 @@ Strategic resources are only revealed once you research the matching tech.
 Each tile has an **appeal** score from neighbors (mountains, coast, woods, natural wonders: +.
 Industrial zones, mines, marsh: −). Appeal affects neighborhoods' happiness, resort towns, national parks (culture),
 seaside resorts, and some beliefs.
+
+**Built (final gameplay pass):** a tile's appeal is the sum of its six neighbors' `appeal`:
+terrain (coast and lake +1, snow −1), features (woods +1, reef +2, oasis +1, rainforest, marsh
+and volcanoes −1, natural wonders +4 or +5), mountains +1, wonders +1 (`rules.appeal`),
+districts (Holy Site, Theater Square, Entertainment Complex +1; Industrial Zone, Encampment,
+Spaceport −1) and improvements (Mines, Quarries, Oil Wells, Offshore Platforms −1; National
+Parks +1). Words: Breathtaking at 4, Charming at 2, Uninviting at −2, Disgusting at −4.
+- **National Parks** (Conservation): an improvement for breathtaking land (woods, rainforest or
+  marsh may stay): +1 culture and +1 tourism per point of appeal.
+- **Seaside Resorts** (Radio): breathtaking flat land on the coast: +2 gold and +1 tourism per
+  point of appeal.
+- **Resort Towns** turn their charming and breathtaking tiles' appeal into tourism (1 per 2
+  points), gold (1 per 3) and happiness (1 per 6) (`yield_per_appeal`).
+
+**Continents (final pass):** every landmass is numbered (connected land, from the lowest tile
+index), for the continents lens and home-continent abilities (`settlement_on_home_continent`:
+the capital's landmass). Lincoln's +2 happiness on the home continent now works.
 
 ---
 
@@ -219,6 +238,13 @@ Every yield displayed anywhere can be clicked to see a **breakdown tree**, e.g.,
 radius), *Religious Site* (+faith, missionaries), *Resort Town* (+happiness and tourism by appeal).
 Mods can add more.
 
+- **Finished in the final pass:** Fort Towns get +6 strength defending themselves and heal your
+  units 10 more in their territory; Religious Sites sell religious units for 30% less faith;
+  Trade Outposts give one more trade route; Resort Towns earn by appeal (above).
+- **Later-era starts (final pass):** in a game started in a later era, every settlement founded
+  starts with that era's extra citizens (each with a tile to develop) and basic buildings
+  (Classical +1 and a Monument; Medieval +1, Monument and Granary; Renaissance +2 and Walls;
+  Industrial and Modern +2/+3 and Baths; Information +4), as in Civ VI (`era.start`).
 - **Built so far (M8):** all six, at 5 citizens; the first choice is free, a change costs 50 gold
   (D41). Farming and Mining towns send **half** their food or production to the owner's nearest
   city within 10 tiles (production goes toward that city's current build). Trade, Fort,
@@ -437,6 +463,9 @@ when there's room.
 
 - Gold upkeep per unit, scaling with era. Each player gets **3 gold of upkeep free** each turn
   (D37), so a starting army doesn't drain an empty treasury.
+- **Built (final pass):** a unit costs at least its era's upkeep (`rules.units.upkeepByEra`: 1
+  gold in the Ancient and Classical eras, 2 Medieval–Renaissance, 3 Industrial–Modern, 4 from
+  the Atomic era); its own `upkeep` counts if higher, and free units stay free.
 - Strategic units cost a stockpile amount to train (e.g., Swordsman: 10 Iron) and a small amount
   per turn to maintain. If the stockpile runs out, those units get −20 combat strength.
 
@@ -583,6 +612,9 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   - **Corporate Federation** (Social Networks): +20% toward buildings, +10% gold, two more
     trade routes.
 - **Final gameplay pass (November 2026):**
+  - **Catch-up research (D119):** a tech or civic costs 5% less for each civ you know (have seen
+    a settlement of) that has it, up to 25% (`rules.progress.catchUp`); the trees show the
+    lower cost.
   - **Every node does something.** Synthetic Materials, Nuclear Fusion and Artificial
     Intelligence now improve tiles and buildings; **Future Tech** and the new **Future Civic**
     can be finished again and again (each time counts toward the score), so science and culture
@@ -753,5 +785,8 @@ military unit onto a camp clears it for 50 gold. The new-game dialog can turn ca
 - Score from population, wonders, techs, civics, great people, eras and military. It's shown in
   reports and decides a **score victory** at the turn limit.
 - **Built so far (M10):** 1 per citizen, 5 per city, 2 per town, 2 per tech, 2 per civic, 10 per
-  wonder, 2 per district, 10 per era past the first, 1 per enemy unit destroyed (D50). Shown on
+  wonder, 2 per district, 10 per era past the first, 1 per enemy unit destroyed (D50).
+- **Final pass (D117):** also 5 per great person earned, 10 for founding a religion and 1 per
+  settlement following it, 2 per great work held, and 5 each time Future Tech or Future Civic
+  is finished again. Shown on
   each player's chip and panel and on the end-of-game screen.

@@ -103,7 +103,8 @@
           "scope": "player"
         }
       }
-    ]
+    ],
+    "appeal": 1
   },
   {
     "type": "district",
@@ -147,7 +148,8 @@
           "scope": "player"
         }
       }
-    ]
+    ],
+    "appeal": 1
   },
   {
     "type": "district",
@@ -312,7 +314,8 @@
           "scope": "player"
         }
       }
-    ]
+    ],
+    "appeal": -1
   },
   {
     "type": "district",
@@ -365,7 +368,8 @@
         },
         "label": "Strategic resources"
       }
-    ]
+    ],
+    "appeal": -1
   },
   {
     "type": "district",
@@ -377,7 +381,8 @@
     "requiresCivic": "civic_games_and_recreation",
     "happiness": 1,
     "model": "entertainment",
-    "color": "#9fd36a"
+    "color": "#9fd36a",
+    "appeal": 1
   },
   {
     "type": "district",
@@ -530,6 +535,7 @@
       "elevations": ["flat"]
     },
     "model": "generic",
-    "color": "#9ab0c8"
+    "color": "#9ab0c8",
+    "appeal": -1
   }
 ]

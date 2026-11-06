@@ -131,6 +131,8 @@ export function evaluateCondition(ctx: ConditionContext, c: Condition): boolean 
   }
   if ('settlement_on_river' in c)
     return !!settlement && (settlement.onRiver ?? false) === c.settlement_on_river;
+  if ('settlement_on_home_continent' in c)
+    return !!settlement && (settlement.homeContinent ?? false) === c.settlement_on_home_continent;
   if ('settlement_units_trained_below' in c)
     return !!settlement && (settlement.unitsTrained ?? 0) < c.settlement_units_trained_below;
   if ('tile_city_center' in c) return !!tile && (tile.center ?? false) === c.tile_city_center;

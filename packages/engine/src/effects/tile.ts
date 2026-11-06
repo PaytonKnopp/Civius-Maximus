@@ -21,6 +21,8 @@ export interface TileFacts {
   fertile?: Record<string, number> | undefined;
   /** Nuclear fallout until this turn: the tile yields nothing. */
   fallout?: number | undefined;
+  /** The tile's appeal, when a rule needs it (an improvement with yields per appeal). */
+  appeal?: number | undefined;
 }
 
 /** What settlement conditions look at. */
@@ -36,6 +38,8 @@ export interface SettlementFacts {
   unitsTrained?: number;
   /** Its established governor (a `governor` id). */
   governor?: string;
+  /** On the same landmass as its owner's capital. */
+  homeContinent?: boolean;
 }
 
 /** What player conditions look at (techs and civics finished, government...). */

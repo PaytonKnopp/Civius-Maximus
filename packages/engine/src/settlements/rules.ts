@@ -8,7 +8,7 @@ import {
   type UnitDef,
   type WonderDef,
 } from '@cx/content';
-import { type EngineContext, type RuleError, unitDef } from '../context';
+import { type EngineContext, type RuleError } from '../context';
 import { computeTileYields, type EffectSource, type YieldBreakdown } from '../effects/yields';
 import { type Fixed, percentOf, powFloor, toFixed } from '../fixed';
 import { distance, neighbors, tilesWithin, tileTouchesRiver } from '../map/hex';
@@ -42,6 +42,7 @@ import { loyaltyPenalty } from '../loyalty/loyalty';
 import { greatWorkYields } from '../greatworks/greatworks';
 import { luxuryLines } from './luxuries';
 import { eraOrderOf, perEra } from '../progress/era';
+import { appealOf } from '../map/appeal';
 import { isRevealed, resourceProblem } from '../resources/strategic';
 
 /**
@@ -98,6 +99,9 @@ export function tileYields(
   // A strategic resource gives nothing until its owner knows the tech that reveals it.
   if (facts.resource !== null && !isRevealed(ctx, state, pid, facts.resource))
     facts.resource = null;
+  // Appeal only where something on the tile is paid by it (it looks at the neighbors).
+  const imp = facts.improvement ? ctx.content.entities.improvement[facts.improvement] : undefined;
+  if (imp && Object.keys(imp.yieldsPerAppeal).length > 0) facts.appeal = appealOf(ctx, state, tile);
   return computeTileYields(
     {
       content: ctx.content,
@@ -283,7 +287,9 @@ export function improvementsFor(
         site.elevations.includes(t.elevation) &&
         (t.feature === null ? !site.needsFeature : site.features.includes(t.feature)) &&
         (!site.river || tileOnRiver(state.map, tile)) &&
-        (!site.edge || onEdge(state, tile, player)),
+        (!site.edge || onEdge(state, tile, player)) &&
+        (!site.coastal || nextToWater(ctx, state, tile)) &&
+        (site.minAppeal === undefined || appealOf(ctx, state, tile) >= site.minAppeal),
     );
     return ok ? 1 : 0;
   };
@@ -311,6 +317,28 @@ export function improvementsFor(
         (a.id < b.id ? -1 : 1),
     )
     .map((x) => x.id);
+}
+
+/** The appeal of a settlement's own tiles (not its center) at least `min` appealing, summed. */
+export function appealSum(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+  min: number,
+): number {
+  let sum = 0;
+  for (const t of tilesWithin(state.map, s.tile, ctx.content.rules.settlements.ownRadius)) {
+    if (t === s.tile || state.map.tiles[t]!.settlement !== s.id) continue;
+    const a = appealOf(ctx, state, t);
+    if (a >= min) sum += a;
+  }
+  return sum;
+}
+
+/** A land tile next to the sea or a lake. */
+function nextToWater(ctx: EngineContext, state: GameState, tile: number): boolean {
+  const water = (t: number) => ctx.content.entities.terrain[state.map.tiles[t]!.terrain]?.water;
+  return !water(tile) && neighbors(state.map, tile).some(water);
 }
 
 /** A tile on the edge of the player's land: next to a land tile that isn't theirs. */
@@ -413,6 +441,11 @@ export function happinessOf(ctx: EngineContext, state: GameState, s: SettlementS
   lines.push(...luxuryLines(ctx, state, s.id));
   for (const { source, effect } of playerEffects(ctx, state, s.owner, 'modify_happiness', s)) {
     lines.push({ label: source.label, amount: effect.params.amount });
+  }
+  for (const { source, effect } of playerEffects(ctx, state, s.owner, 'yield_per_appeal', s)) {
+    if (effect.params.yield !== 'happiness') continue;
+    const n = Math.floor(appealSum(ctx, state, s, effect.params.minAppeal) / effect.params.per);
+    if (n > 0) lines.push({ label: `${source.label} (appeal)`, amount: n });
   }
   const citizens = Math.floor(s.population / h.citizensPerUnhappy);
   if (citizens > 0) lines.push({ label: 'Citizens', amount: -citizens });
@@ -544,6 +577,14 @@ function computeSettlementYields(
     const params = effect.params;
     if ('amount' in params) add(params.yield, source.label, toFixed(params.amount));
     else percents.push({ y: params.yield, label: source.label, percent: params.percent });
+  }
+
+  // Yields from the appeal of the settlement's land (a resort town's tourism).
+  for (const { source, effect } of playerEffects(ctx, state, s.owner, 'yield_per_appeal', s)) {
+    const { yield: y, per, minAppeal } = effect.params;
+    if (y === 'happiness') continue;
+    const n = Math.floor(appealSum(ctx, state, s, minAppeal) / per);
+    add(y, `${source.label} (appeal)`, toFixed(n));
   }
 
   const happiness = happinessOf(ctx, state, s);
@@ -1027,13 +1068,31 @@ export function townUpgradeCost(ctx: EngineContext, state: GameState, player: Pl
 }
 
 /** Gold per turn to keep a player's units, after the free allowance (policies can lower it). */
+/**
+ * Gold a unit costs a turn: its own upkeep, but at least its era's (`rules.units.upkeepByEra`:
+ * a tank costs more to keep than a warrior). Units that cost nothing stay free.
+ */
+export function upkeepOf(ctx: EngineContext, type: string): number {
+  const def = ctx.content.entities.unit[type];
+  if (!def || def.upkeep <= 0) return 0;
+  const era = def.requiresTech
+    ? ctx.content.entities.tech[def.requiresTech]?.era
+    : def.requiresCivic
+      ? ctx.content.entities.civic[def.requiresCivic]?.era
+      : undefined;
+  const order = era ? (ctx.content.entities.era[era]?.order ?? 1) : 1;
+  const byEra = ctx.content.rules.units.upkeepByEra;
+  const min = byEra.length > 0 ? byEra[Math.min(order, byEra.length) - 1]! : 0;
+  return Math.max(def.upkeep, min);
+}
+
 export function unitUpkeep(ctx: EngineContext, state: GameState, player: PlayerId): Fixed {
   let total = 0;
   for (const u of Object.values(state.units)) {
     // Levied soldiers are kept by their city-state.
     if (u.owner !== player || u.levied) continue;
-    total += toFixed(unitDef(ctx, u).upkeep);
-    for (const packed of u.cargo ?? []) total += toFixed(unitDef(ctx, packed).upkeep);
+    total += toFixed(upkeepOf(ctx, u.type));
+    for (const packed of u.cargo ?? []) total += toFixed(upkeepOf(ctx, packed.type));
   }
   total = Math.max(0, total - toFixed(ctx.content.rules.units.freeUpkeep));
   const percent = playerPercent(ctx, state, player, 'modify_unit_upkeep');

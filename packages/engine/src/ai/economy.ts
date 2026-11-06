@@ -4,7 +4,7 @@ import {
   availableGovernments,
   availableNodes,
   availablePolicies,
-  nodeCost,
+  nodeCostFor,
   policyProblem,
   type TreeKind,
   trackOf,
@@ -240,7 +240,7 @@ function bestNode(t: Turn, kind: TreeKind): string | undefined {
   for (const id of availableNodes(t.ctx, t.p, kind)) {
     const left = Math.max(
       toFixed(1),
-      nodeCost(t.ctx, t.state, kind, id) - (track.progress[id] ?? 0),
+      nodeCostFor(t.ctx, t.state, t.player, kind, id) - (track.progress[id] ?? 0),
     );
     // What it unlocks, plus a little of what the nodes after it unlock (so paths get followed).
     const later = followers(t, kind, id).reduce((sum, next) => sum + nodeValue(t, kind, next), 0);

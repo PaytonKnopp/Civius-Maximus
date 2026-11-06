@@ -40,6 +40,29 @@ export function scoreOf(
     { label: 'Districts', amount: districts * r.perDistrict },
     { label: 'Eras', amount: era * r.perEra },
     { label: 'Victories in battle', amount: p.kills * r.perKill },
+    { label: 'Great people', amount: p.greatPeople.length * r.perGreatPerson },
+    { label: 'Religion founded', amount: p.religion ? r.perReligion : 0 },
+    {
+      label: 'Settlements following your religion',
+      amount: p.religion
+        ? Object.values(state.settlements).filter((s) => s.religion === p.religion).length *
+          r.perFollower
+        : 0,
+    },
+    {
+      label: 'Great works',
+      amount:
+        Object.values(state.greatWorks ?? {}).filter(
+          (w) => state.settlements[w.settlement]?.owner === player,
+        ).length * r.perGreatWork,
+    },
+    {
+      label: 'Future techs and civics',
+      amount:
+        (Object.values(p.techs.repeats ?? {}).reduce((a, b) => a + b, 0) +
+          Object.values(p.civics.repeats ?? {}).reduce((a, b) => a + b, 0)) *
+        r.perFuture,
+    },
   ].filter((l) => l.amount !== 0);
   return { total: lines.reduce((a, l) => a + l.amount, 0), lines };
 }

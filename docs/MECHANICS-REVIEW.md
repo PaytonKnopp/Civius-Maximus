@@ -538,3 +538,18 @@ Payton approved every recommended default (D106–D120), the four groups of know
   in all, each with its own map icon.
 - The flat pantheons became conditional (Hearth Goddess: Granaries; Harvest Rites: Wheat, Rice
   and Cattle; God of the Forge: Mines).
+
+### 2D, part 1
+
+- **Measured after 2C** (4 Standard games): the economy grows now (turn 250: science 97 vs 61,
+  production 198 vs 128, gold 180 vs 111, population 101 vs 66), the first culture victory
+  happened, and games end at turns 229–279: faster than D117's 300–400, to be tuned with the
+  trees' costs once the rest of 2D is in.
+- **1.6** Appeal; national parks, seaside resorts and resort towns built on it.
+- **1.7** Continents; Lincoln's home-continent happiness.
+- **5.2** Unit upkeep by era.
+- **10** Later-era starts: bigger settlements with the era's basic buildings.
+- **2.5** Fort towns, religious sites and trade outposts finished.
+- **7.1** Trade routes grow with the destination's districts and the era.
+- **9.1 (D117)** Score: great people, religion, great works, future techs and civics.
+- **D119** Catch-up research.

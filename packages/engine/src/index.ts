@@ -162,6 +162,7 @@ export {
   tileYields,
   townUpgradeCost,
   unitUpkeep,
+  upkeepOf,
   warWeariness,
   workableTiles,
 } from './settlements/rules';
@@ -199,6 +200,8 @@ export {
   governmentChangeCost,
   isPolicyAvailable,
   nodeCost,
+  nodeCostFor,
+  civsWith,
   pathTo,
   playerEra,
   policyChangeCost,

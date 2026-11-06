@@ -2474,6 +2474,62 @@
                     "properties": {
                       "effect": {
                         "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
                         "const": "purchase_with_faith"
                       },
                       "params": {
@@ -5522,6 +5578,62 @@
                     "properties": {
                       "effect": {
                         "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
                         "const": "purchase_with_faith"
                       },
                       "params": {
@@ -6890,6 +7002,15 @@
                   "edge": {
                     "default": false,
                     "type": "boolean"
+                  },
+                  "minAppeal": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "coastal": {
+                    "default": false,
+                    "type": "boolean"
                   }
                 },
                 "additionalProperties": false
@@ -7315,6 +7436,24 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 9007199254740991
+            },
+            "appeal": {
+              "default": 0,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "yieldsPerAppeal": {
+              "default": {},
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "additionalProperties": {
+                "type": "number",
+                "multipleOf": 0.5
+              }
             },
             "civ": {
               "type": "string",
@@ -9409,6 +9548,62 @@
                               "scope": {
                                 "type": "string",
                                 "const": "player"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "yield_per_appeal"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "yield": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "per": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                              },
+                              "minAppeal": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "yield",
+                              "per",
+                              "minAppeal"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "settlements"
                               }
                             },
                             "required": [
@@ -12265,6 +12460,62 @@
                     "properties": {
                       "effect": {
                         "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
                         "const": "purchase_with_faith"
                       },
                       "params": {
@@ -15068,6 +15319,62 @@
                           "scope": {
                             "type": "string",
                             "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
                           }
                         },
                         "required": [
@@ -18046,6 +18353,62 @@
                         "properties": {
                           "effect": {
                             "type": "string",
+                            "const": "yield_per_appeal"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "yield": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "per": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                              },
+                              "minAppeal": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "yield",
+                              "per",
+                              "minAppeal"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "settlements"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
                             "const": "purchase_with_faith"
                           },
                           "params": {
@@ -20920,6 +21283,62 @@
                         "properties": {
                           "effect": {
                             "type": "string",
+                            "const": "yield_per_appeal"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "yield": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "per": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                              },
+                              "minAppeal": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "yield",
+                              "per",
+                              "minAppeal"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "settlements"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
                             "const": "purchase_with_faith"
                           },
                           "params": {
@@ -22561,6 +22980,12 @@
             "rangedStrike": {
               "default": false,
               "type": "boolean"
+            },
+            "appeal": {
+              "default": 0,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
             },
             "happiness": {
               "default": 0,
@@ -25290,6 +25715,62 @@
                           "scope": {
                             "type": "string",
                             "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
                           }
                         },
                         "required": [
@@ -28116,6 +28597,62 @@
                           "scope": {
                             "type": "string",
                             "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
                           }
                         },
                         "required": [
@@ -31867,6 +32404,62 @@
                         "properties": {
                           "effect": {
                             "type": "string",
+                            "const": "yield_per_appeal"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "yield": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "per": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                              },
+                              "minAppeal": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "yield",
+                              "per",
+                              "minAppeal"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "settlements"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
                             "const": "purchase_with_faith"
                           },
                           "params": {
@@ -34700,6 +35293,62 @@
                     "properties": {
                       "effect": {
                         "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
                         "const": "purchase_with_faith"
                       },
                       "params": {
@@ -37503,6 +38152,62 @@
                           "scope": {
                             "type": "string",
                             "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
                           }
                         },
                         "required": [
@@ -40565,6 +41270,62 @@
                     "properties": {
                       "effect": {
                         "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
                         "const": "purchase_with_faith"
                       },
                       "params": {
@@ -43391,6 +44152,62 @@
                     "properties": {
                       "effect": {
                         "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
                         "const": "purchase_with_faith"
                       },
                       "params": {
@@ -44247,6 +45064,24 @@
                 ]
               }
             },
+            "defense": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "heal": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "faithDiscount": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 90
+            },
             "send": {
               "type": "object",
               "properties": {
@@ -44503,6 +45338,20 @@
                   "maximum": 9007199254740991
                 },
                 "units": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "population": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "buildings": {
                   "default": [],
                   "type": "array",
                   "items": {
@@ -46844,6 +47693,62 @@
                           "scope": {
                             "type": "string",
                             "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
                           }
                         },
                         "required": [
@@ -50082,6 +50987,62 @@
                     "properties": {
                       "effect": {
                         "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
                         "const": "purchase_with_faith"
                       },
                       "params": {
@@ -52973,6 +53934,62 @@
                     "properties": {
                       "effect": {
                         "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
                         "const": "purchase_with_faith"
                       },
                       "params": {
@@ -55823,6 +56840,62 @@
                           "scope": {
                             "type": "string",
                             "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
                           }
                         },
                         "required": [
@@ -58933,6 +60006,62 @@
                     "properties": {
                       "effect": {
                         "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
                         "const": "purchase_with_faith"
                       },
                       "params": {
@@ -61779,6 +62908,62 @@
                           "scope": {
                             "type": "string",
                             "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
                           }
                         },
                         "required": [
@@ -64681,6 +65866,62 @@
                           "properties": {
                             "effect": {
                               "type": "string",
+                              "const": "yield_per_appeal"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yield": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "per": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "minAppeal": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "yield",
+                                "per",
+                                "minAppeal"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
                               "const": "purchase_with_faith"
                             },
                             "params": {
@@ -67533,6 +68774,62 @@
                               "scope": {
                                 "type": "string",
                                 "const": "player"
+                              }
+                            },
+                            "required": [
+                              "scope"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "condition": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        },
+                        "required": [
+                          "effect",
+                          "params",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "const": "yield_per_appeal"
+                          },
+                          "params": {
+                            "type": "object",
+                            "properties": {
+                              "yield": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$"
+                              },
+                              "per": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                              },
+                              "minAppeal": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "yield",
+                              "per",
+                              "minAppeal"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "scope": {
+                                "type": "string",
+                                "const": "settlements"
                               }
                             },
                             "required": [
@@ -70427,6 +71724,62 @@
                     "properties": {
                       "effect": {
                         "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
                         "const": "purchase_with_faith"
                       },
                       "params": {
@@ -73270,6 +74623,62 @@
                           "scope": {
                             "type": "string",
                             "const": "player"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
                           }
                         },
                         "required": [
@@ -76232,6 +77641,62 @@
                     "properties": {
                       "effect": {
                         "type": "string",
+                        "const": "yield_per_appeal"
+                      },
+                      "params": {
+                        "type": "object",
+                        "properties": {
+                          "yield": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "per": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "minAppeal": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "yield",
+                          "per",
+                          "minAppeal"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "const": "settlements"
+                          }
+                        },
+                        "required": [
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "effect",
+                      "params",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "effect": {
+                        "type": "string",
                         "const": "purchase_with_faith"
                       },
                       "params": {
@@ -79053,6 +80518,62 @@
                                 "scope": {
                                   "type": "string",
                                   "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "yield_per_appeal"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yield": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "per": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "minAppeal": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "yield",
+                                "per",
+                                "minAppeal"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
                                 }
                               },
                               "required": [
@@ -82222,6 +83743,62 @@
                           "properties": {
                             "effect": {
                               "type": "string",
+                              "const": "yield_per_appeal"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yield": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "per": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "minAppeal": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "yield",
+                                "per",
+                                "minAppeal"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
                               "const": "purchase_with_faith"
                             },
                             "params": {
@@ -83813,6 +85390,30 @@
                     "multipleOf": 0.5
                   }
                 },
+                "domesticPerDistrict": {
+                  "default": {},
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "additionalProperties": {
+                    "type": "number",
+                    "multipleOf": 0.5
+                  }
+                },
+                "internationalPerEra": {
+                  "default": {},
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "additionalProperties": {
+                    "type": "number",
+                    "multipleOf": 0.5
+                  }
+                },
                 "plunderGold": {
                   "default": 50,
                   "type": "integer",
@@ -83850,6 +85451,51 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 9007199254740991
+            },
+            "appeal": {
+              "default": {
+                "wonder": 1,
+                "breathtaking": 4,
+                "charming": 2,
+                "uninviting": -2,
+                "disgusting": -4
+              },
+              "type": "object",
+              "properties": {
+                "wonder": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "breathtaking": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "charming": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "uninviting": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "disgusting": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "wonder",
+                "breathtaking",
+                "charming",
+                "uninviting",
+                "disgusting"
+              ],
+              "additionalProperties": false
             },
             "strategic": {
               "default": {
@@ -83898,6 +85544,30 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
+                },
+                "catchUp": {
+                  "default": {
+                    "perCiv": 0,
+                    "max": 0
+                  },
+                  "type": "object",
+                  "properties": {
+                    "perCiv": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "max": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 90
+                    }
+                  },
+                  "required": [
+                    "perCiv",
+                    "max"
+                  ],
+                  "additionalProperties": false
                 },
                 "governmentChangeCost": {
                   "type": "integer",
@@ -85892,6 +87562,62 @@
                             "properties": {
                               "effect": {
                                 "type": "string",
+                                "const": "yield_per_appeal"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "yield": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  "per": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "minAppeal": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "yield",
+                                  "per",
+                                  "minAppeal"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "settlements"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
                                 "const": "purchase_with_faith"
                               },
                               "params": {
@@ -86824,6 +88550,15 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
+                },
+                "upkeepByEra": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
                 }
               },
               "required": [
@@ -87182,6 +88917,36 @@
                   "maximum": 9007199254740991
                 },
                 "perKill": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perGreatPerson": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perReligion": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perFollower": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perGreatWork": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "perFuture": {
+                  "default": 0,
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
@@ -91359,6 +93124,62 @@
                       "properties": {
                         "effect": {
                           "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
                           "const": "purchase_with_faith"
                         },
                         "params": {
@@ -94407,6 +96228,62 @@
                       "properties": {
                         "effect": {
                           "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
                           "const": "purchase_with_faith"
                         },
                         "params": {
@@ -95775,6 +97652,15 @@
                     "edge": {
                       "default": false,
                       "type": "boolean"
+                    },
+                    "minAppeal": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "coastal": {
+                      "default": false,
+                      "type": "boolean"
                     }
                   },
                   "additionalProperties": false
@@ -96200,6 +98086,24 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              "appeal": {
+                "default": 0,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "yieldsPerAppeal": {
+                "default": {},
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "additionalProperties": {
+                  "type": "number",
+                  "multipleOf": 0.5
+                }
               },
               "civ": {
                 "type": "string",
@@ -98294,6 +100198,62 @@
                                 "scope": {
                                   "type": "string",
                                   "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "yield_per_appeal"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yield": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "per": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "minAppeal": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "yield",
+                                "per",
+                                "minAppeal"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
                                 }
                               },
                               "required": [
@@ -101150,6 +103110,62 @@
                       "properties": {
                         "effect": {
                           "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
                           "const": "purchase_with_faith"
                         },
                         "params": {
@@ -103953,6 +105969,62 @@
                             "scope": {
                               "type": "string",
                               "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
                             }
                           },
                           "required": [
@@ -106931,6 +109003,62 @@
                           "properties": {
                             "effect": {
                               "type": "string",
+                              "const": "yield_per_appeal"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yield": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "per": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "minAppeal": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "yield",
+                                "per",
+                                "minAppeal"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
                               "const": "purchase_with_faith"
                             },
                             "params": {
@@ -109805,6 +111933,62 @@
                           "properties": {
                             "effect": {
                               "type": "string",
+                              "const": "yield_per_appeal"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yield": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "per": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "minAppeal": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "yield",
+                                "per",
+                                "minAppeal"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
                               "const": "purchase_with_faith"
                             },
                             "params": {
@@ -111446,6 +113630,12 @@
               "rangedStrike": {
                 "default": false,
                 "type": "boolean"
+              },
+              "appeal": {
+                "default": 0,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
               },
               "happiness": {
                 "default": 0,
@@ -114175,6 +116365,62 @@
                             "scope": {
                               "type": "string",
                               "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
                             }
                           },
                           "required": [
@@ -117001,6 +119247,62 @@
                             "scope": {
                               "type": "string",
                               "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
                             }
                           },
                           "required": [
@@ -120752,6 +123054,62 @@
                           "properties": {
                             "effect": {
                               "type": "string",
+                              "const": "yield_per_appeal"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yield": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "per": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "minAppeal": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "yield",
+                                "per",
+                                "minAppeal"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
                               "const": "purchase_with_faith"
                             },
                             "params": {
@@ -123585,6 +125943,62 @@
                       "properties": {
                         "effect": {
                           "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
                           "const": "purchase_with_faith"
                         },
                         "params": {
@@ -126388,6 +128802,62 @@
                             "scope": {
                               "type": "string",
                               "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
                             }
                           },
                           "required": [
@@ -129450,6 +131920,62 @@
                       "properties": {
                         "effect": {
                           "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
                           "const": "purchase_with_faith"
                         },
                         "params": {
@@ -132276,6 +134802,62 @@
                       "properties": {
                         "effect": {
                           "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
                           "const": "purchase_with_faith"
                         },
                         "params": {
@@ -133132,6 +135714,24 @@
                   ]
                 }
               },
+              "defense": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "heal": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "faithDiscount": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 90
+              },
               "send": {
                 "type": "object",
                 "properties": {
@@ -133388,6 +135988,20 @@
                     "maximum": 9007199254740991
                   },
                   "units": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                  },
+                  "population": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "buildings": {
                     "default": [],
                     "type": "array",
                     "items": {
@@ -135729,6 +138343,62 @@
                             "scope": {
                               "type": "string",
                               "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
                             }
                           },
                           "required": [
@@ -138967,6 +141637,62 @@
                       "properties": {
                         "effect": {
                           "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
                           "const": "purchase_with_faith"
                         },
                         "params": {
@@ -141858,6 +144584,62 @@
                       "properties": {
                         "effect": {
                           "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
                           "const": "purchase_with_faith"
                         },
                         "params": {
@@ -144708,6 +147490,62 @@
                             "scope": {
                               "type": "string",
                               "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
                             }
                           },
                           "required": [
@@ -147818,6 +150656,62 @@
                       "properties": {
                         "effect": {
                           "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
                           "const": "purchase_with_faith"
                         },
                         "params": {
@@ -150664,6 +153558,62 @@
                             "scope": {
                               "type": "string",
                               "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
                             }
                           },
                           "required": [
@@ -153566,6 +156516,62 @@
                             "properties": {
                               "effect": {
                                 "type": "string",
+                                "const": "yield_per_appeal"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "yield": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  "per": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "minAppeal": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "yield",
+                                  "per",
+                                  "minAppeal"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "settlements"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
                                 "const": "purchase_with_faith"
                               },
                               "params": {
@@ -156418,6 +159424,62 @@
                                 "scope": {
                                   "type": "string",
                                   "const": "player"
+                                }
+                              },
+                              "required": [
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "condition": {
+                              "$ref": "#/$defs/__schema0"
+                            }
+                          },
+                          "required": [
+                            "effect",
+                            "params",
+                            "target"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "effect": {
+                              "type": "string",
+                              "const": "yield_per_appeal"
+                            },
+                            "params": {
+                              "type": "object",
+                              "properties": {
+                                "yield": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "per": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "minAppeal": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "yield",
+                                "per",
+                                "minAppeal"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "scope": {
+                                  "type": "string",
+                                  "const": "settlements"
                                 }
                               },
                               "required": [
@@ -159312,6 +162374,62 @@
                       "properties": {
                         "effect": {
                           "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
                           "const": "purchase_with_faith"
                         },
                         "params": {
@@ -162155,6 +165273,62 @@
                             "scope": {
                               "type": "string",
                               "const": "player"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
                             }
                           },
                           "required": [
@@ -165117,6 +168291,62 @@
                       "properties": {
                         "effect": {
                           "type": "string",
+                          "const": "yield_per_appeal"
+                        },
+                        "params": {
+                          "type": "object",
+                          "properties": {
+                            "yield": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "per": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "minAppeal": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "yield",
+                            "per",
+                            "minAppeal"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "const": "settlements"
+                            }
+                          },
+                          "required": [
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "condition": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "required": [
+                        "effect",
+                        "params",
+                        "target"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
                           "const": "purchase_with_faith"
                         },
                         "params": {
@@ -167938,6 +171168,62 @@
                                   "scope": {
                                     "type": "string",
                                     "const": "player"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
+                                "const": "yield_per_appeal"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "yield": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  "per": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "minAppeal": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "yield",
+                                  "per",
+                                  "minAppeal"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "settlements"
                                   }
                                 },
                                 "required": [
@@ -171107,6 +174393,62 @@
                             "properties": {
                               "effect": {
                                 "type": "string",
+                                "const": "yield_per_appeal"
+                              },
+                              "params": {
+                                "type": "object",
+                                "properties": {
+                                  "yield": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]*$"
+                                  },
+                                  "per": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "minAppeal": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "yield",
+                                  "per",
+                                  "minAppeal"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "const": "settlements"
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "condition": {
+                                "$ref": "#/$defs/__schema0"
+                              }
+                            },
+                            "required": [
+                              "effect",
+                              "params",
+                              "target"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "effect": {
+                                "type": "string",
                                 "const": "purchase_with_faith"
                               },
                               "params": {
@@ -172698,6 +176040,30 @@
                       "multipleOf": 0.5
                     }
                   },
+                  "domesticPerDistrict": {
+                    "default": {},
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "additionalProperties": {
+                      "type": "number",
+                      "multipleOf": 0.5
+                    }
+                  },
+                  "internationalPerEra": {
+                    "default": {},
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "additionalProperties": {
+                      "type": "number",
+                      "multipleOf": 0.5
+                    }
+                  },
                   "plunderGold": {
                     "default": 50,
                     "type": "integer",
@@ -172735,6 +176101,51 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              "appeal": {
+                "default": {
+                  "wonder": 1,
+                  "breathtaking": 4,
+                  "charming": 2,
+                  "uninviting": -2,
+                  "disgusting": -4
+                },
+                "type": "object",
+                "properties": {
+                  "wonder": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "breathtaking": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "charming": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "uninviting": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "disgusting": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "wonder",
+                  "breathtaking",
+                  "charming",
+                  "uninviting",
+                  "disgusting"
+                ],
+                "additionalProperties": false
               },
               "strategic": {
                 "default": {
@@ -172783,6 +176194,30 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "catchUp": {
+                    "default": {
+                      "perCiv": 0,
+                      "max": 0
+                    },
+                    "type": "object",
+                    "properties": {
+                      "perCiv": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "max": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 90
+                      }
+                    },
+                    "required": [
+                      "perCiv",
+                      "max"
+                    ],
+                    "additionalProperties": false
                   },
                   "governmentChangeCost": {
                     "type": "integer",
@@ -174777,6 +178212,62 @@
                               "properties": {
                                 "effect": {
                                   "type": "string",
+                                  "const": "yield_per_appeal"
+                                },
+                                "params": {
+                                  "type": "object",
+                                  "properties": {
+                                    "yield": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9_]*$"
+                                    },
+                                    "per": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "minAppeal": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "yield",
+                                    "per",
+                                    "minAppeal"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "target": {
+                                  "type": "object",
+                                  "properties": {
+                                    "scope": {
+                                      "type": "string",
+                                      "const": "settlements"
+                                    }
+                                  },
+                                  "required": [
+                                    "scope"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "condition": {
+                                  "$ref": "#/$defs/__schema0"
+                                }
+                              },
+                              "required": [
+                                "effect",
+                                "params",
+                                "target"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "effect": {
+                                  "type": "string",
                                   "const": "purchase_with_faith"
                                 },
                                 "params": {
@@ -175709,6 +179200,15 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "upkeepByEra": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
                   }
                 },
                 "required": [
@@ -176067,6 +179567,36 @@
                     "maximum": 9007199254740991
                   },
                   "perKill": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perGreatPerson": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perReligion": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perFollower": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perGreatWork": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "perFuture": {
+                    "default": 0,
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
@@ -178419,6 +181949,18 @@
           },
           "required": [
             "settlement_units_trained_below"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "settlement_on_home_continent": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "settlement_on_home_continent"
           ],
           "additionalProperties": false
         },

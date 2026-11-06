@@ -258,6 +258,10 @@ export const RulesDef = z.strictObject({
     /** ...and what the destination settlement gets. */
     destination: YieldMap,
     /** Gold for plundering an enemy's route (`+ goldPerEra ×` the plunderer's era number). */
+    /** Domestic routes: more at the origin for each district at the destination. */
+    domesticPerDistrict: YieldMap.default({}),
+    /** International routes: more at the origin for each era past the first. */
+    internationalPerEra: YieldMap.default({}),
     plunderGold: z.int().min(0).default(50),
     plunderGoldPerEra: z.int().min(0).default(15),
     /** Settlements with this district send routes over shallow water too, this far. */
@@ -269,6 +273,16 @@ export const RulesDef = z.strictObject({
    * besides its own (doc 03, "Resources"). A settlement counts each kind of luxury once.
    */
   luxuryHappinessRadius: z.int().min(0),
+  /** Appeal (docs/03, "Appeal"): a wonder next door, and the marks for its words. */
+  appeal: z
+    .strictObject({
+      wonder: z.int(),
+      breathtaking: z.int(),
+      charming: z.int(),
+      uninviting: z.int(),
+      disgusting: z.int(),
+    })
+    .default({ wonder: 1, breathtaking: 4, charming: 2, uninviting: -2, disgusting: -4 }),
   /**
    * Strategic resource stockpiles (docs/03, "Resources"): the most a player can hold of each
    * (base + per era past the first), and the strength units lose while their upkeep isn't met.
@@ -287,6 +301,10 @@ export const RulesDef = z.strictObject({
     startingGovernment: Id,
     /** Gold per policy card changed outside the free window after finishing a civic. */
     policySwapCost: z.int().min(0),
+    /** Catch-up research (D119): percent off per known civ that has a node, up to `max`. */
+    catchUp: z
+      .strictObject({ perCiv: z.int().min(0), max: z.int().min(0).max(90) })
+      .default({ perCiv: 0, max: 0 }),
     /** Gold to change government outside the free window. */
     governmentChangeCost: z.int().min(0),
     celebration: z.strictObject({
@@ -317,6 +335,11 @@ export const RulesDef = z.strictObject({
     upgradeGoldPerProduction: z.number().min(0),
     /** ...and at least this much. */
     upgradeMinGold: z.int().min(0),
+    /**
+     * The least gold a unit costs a turn by its era (index 0 = the first era); a unit's own
+     * `upkeep` counts if higher, and free units stay free.
+     */
+    upkeepByEra: z.array(z.int().min(0)).default([]),
   }),
   /** Combat (docs/03-core-mechanics.md, section 5). */
   combat: z.strictObject({
@@ -417,6 +440,13 @@ export const RulesDef = z.strictObject({
     perEra: z.int().min(0),
     /** Per enemy unit destroyed. */
     perKill: z.int().min(0),
+    /** D117: great people earned, a religion founded and each settlement following it, great
+     * works held, and each Future Tech or Future Civic finished again. */
+    perGreatPerson: z.int().min(0).default(0),
+    perReligion: z.int().min(0).default(0),
+    perFollower: z.int().min(0).default(0),
+    perGreatWork: z.int().min(0).default(0),
+    perFuture: z.int().min(0).default(0),
     /** Every this many turns the history keeps a map of who owns what, for the replay. */
     replayEvery: z.int().min(1).default(5),
   }),
@@ -1171,6 +1201,10 @@ const ImprovementSite = z.strictObject({
   river: z.boolean().default(false),
   /** The tile must be on the edge of the player's territory. */
   edge: z.boolean().default(false),
+  /** Only on tiles at least this appealing (national parks, seaside resorts). */
+  minAppeal: z.int().optional(),
+  /** Only on land next to the sea or a lake. */
+  coastal: z.boolean().default(false),
 });
 
 /** A tile improvement (farm, mine...). Settlements build them as they grow (docs/03, "Growth"). */
@@ -1211,6 +1245,10 @@ export const ImprovementDef = z.strictObject({
   adjacency: z.array(Adjacency).default([]),
   /** Combat strength for a unit defending on it. */
   defense: z.int().min(0).default(0),
+  /** What it does to its neighbors' appeal (mines and quarries are ugly). */
+  appeal: z.int().default(0),
+  /** Yields for each point of the tile's appeal (a national park's tourism). */
+  yieldsPerAppeal: YieldMap.default({}),
   ...unique,
 });
 
@@ -1320,6 +1358,8 @@ export const DistrictDef = z.strictObject({
   onePerEmpire: z.boolean().default(false),
   /** Its settlement can make its ranged strike from this district's tile too (Encampment). */
   rangedStrike: z.boolean().default(false),
+  /** What it does to its neighbors' appeal. */
+  appeal: z.int().default(0),
   happiness: z.int().default(0),
   placement: Placement.default(anyPlacement),
   /** Each building in the district adds one specialist slot; a specialist yields this. */
@@ -1469,6 +1509,12 @@ export const SpecializationDef = z.strictObject({
   /** Effects on the whole empire. */
   effects: z.array(Effect).default([]),
   /** Share of the town's food or production sent to its nearest city each turn. */
+  /** Fort towns: extra strength when the settlement defends itself. */
+  defense: z.int().min(0).default(0),
+  /** Fort towns: extra healing for your units in this settlement's territory. */
+  heal: z.int().min(0).default(0),
+  /** Religious sites: religious units bought here cost this percent less faith. */
+  faithDiscount: z.int().min(0).max(90).default(0),
   send: z
     .strictObject({ yield: z.enum(['food', 'production']), percent: z.int().min(1).max(100) })
     .optional(),
@@ -1576,12 +1622,16 @@ export const EraDef = z.strictObject({
   order: z.int(),
   /**
    * Starting a game in this era (setup "Start era"): every tech and civic of earlier eras is
-   * done, and each player gets this gold and these units on top of the usual ones.
+   * done, and each player gets this gold and these units on top of the usual ones. Every
+   * settlement founded in such a game starts with `population` more citizens (each with a tile
+   * to develop) and these buildings, where it can have them, as in Civ VI.
    */
   start: z
     .strictObject({
       gold: z.int().min(0).default(0),
       units: z.array(Id).default([]),
+      population: z.int().min(0).max(10).default(0),
+      buildings: z.array(Id).default([]),
     })
     .optional(),
 });

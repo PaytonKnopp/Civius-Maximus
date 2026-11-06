@@ -6,6 +6,7 @@ import type { PlayerFacts, SettlementFacts, TileFacts } from '../effects/tile';
 import type { EffectSource } from '../effects/yields';
 import { distance, tileTouchesRiver } from '../map/hex';
 import { baseOf } from '../uniques';
+import { continentOf } from '../map/appeal';
 import type { GameState, PlayerId, PlayerState, SettlementState, Track } from '../state';
 import { ageSources } from '../eras/ages';
 import { congressSources } from '../congress/congress';
@@ -73,8 +74,19 @@ function eraOrderOf(ctx: EngineContext, p: PlayerState): number {
   return best;
 }
 
-export function settlementFacts(state: GameState, s: SettlementState): SettlementFacts {
+export function settlementFacts(
+  state: GameState,
+  s: SettlementState,
+  ctx?: EngineContext,
+): SettlementFacts {
   const governor = governorOf(state, s.id);
+  // On the capital's landmass (needs the content to tell land from water).
+  const capital = state.players[s.owner]?.capital;
+  const home =
+    ctx && capital && state.settlements[capital]
+      ? continentOf(ctx, state.map, s.tile) ===
+        continentOf(ctx, state.map, state.settlements[capital]!.tile)
+      : undefined;
   return {
     kind: s.kind,
     capital: s.capital,
@@ -84,6 +96,7 @@ export function settlementFacts(state: GameState, s: SettlementState): Settlemen
     onRiver: tileTouchesRiver(state.map, state.map.tiles, s.tile),
     unitsTrained: s.unitsTrained,
     ...(governor ? { governor } : {}),
+    ...(home !== undefined ? { homeContinent: home } : {}),
   };
 }
 
@@ -384,7 +397,7 @@ export function conditionHolds(
       content: ctx.content,
       playerId: player,
       player: factsOf(ctx, state, player),
-      ...(settlement ? { settlement: settlementFacts(state, settlement) } : {}),
+      ...(settlement ? { settlement: settlementFacts(state, settlement, ctx) } : {}),
       ...(tile ? { tile, neighbors: neighbors ?? [] } : {}),
     },
     condition,
@@ -405,7 +418,8 @@ export function playerEffects<T extends Effect['effect']>(
   for (const source of sourcesFor(ctx, state, player, settlement)) {
     for (const effect of source.effects) {
       if (effect.effect !== type) continue;
-      if (settlement && effect.condition !== undefined) here ??= settlementFacts(state, settlement);
+      if (settlement && effect.condition !== undefined)
+        here ??= settlementFacts(state, settlement, ctx);
       const ok =
         effect.condition === undefined ||
         evaluateCondition(

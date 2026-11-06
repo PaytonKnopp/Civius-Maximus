@@ -544,6 +544,18 @@
           "target": {
             "scope": "player"
           }
+        },
+        {
+          "effect": "modify_happiness",
+          "params": {
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          },
+          "condition": {
+            "settlement_on_home_continent": true
+          }
         }
       ]
     },

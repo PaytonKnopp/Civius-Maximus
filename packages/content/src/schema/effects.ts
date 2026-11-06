@@ -61,6 +61,7 @@ export type Condition =
   | { settlement_on_river: boolean }
   /** Fewer than this many soldiers trained there so far. */
   | { settlement_units_trained_below: number }
+  | { settlement_on_home_continent: boolean }
   // The player
   | { has_tech: Id }
   | { has_civic: Id }
@@ -104,6 +105,7 @@ export const Condition: z.ZodType<Condition> = z.lazy(() =>
     z.strictObject({ celebrating: z.boolean() }),
     z.strictObject({ settlement_on_river: z.boolean() }),
     z.strictObject({ settlement_units_trained_below: z.int().min(1) }),
+    z.strictObject({ settlement_on_home_continent: z.boolean() }),
     z.strictObject({ era_at_least: Id }),
     z.strictObject({ tile_city_center: z.boolean() }),
   ]),
@@ -372,6 +374,17 @@ const AdjacencyPercent = z.strictObject({
   condition: Condition.optional(),
 });
 
+/**
+ * Yields for a settlement from the appeal of its own tiles: one `yield` for every `per` points of
+ * appeal summed over its tiles at least `minAppeal` appealing (a resort town's tourism).
+ */
+const YieldPerAppeal = z.strictObject({
+  effect: z.literal('yield_per_appeal'),
+  params: z.strictObject({ yield: Id, per: z.int().min(1), minAppeal: z.int() }),
+  target: SettlementTarget,
+  condition: Condition.optional(),
+});
+
 /** An extra adjacency rule for some districts. */
 const ExtraAdjacency = z.strictObject({
   effect: z.literal('extra_adjacency'),
@@ -548,6 +561,7 @@ export const Effect = z.discriminatedUnion('effect', [
   DistrictNeighborBonus,
   ExtraAdjacency,
   AdjacencyPercent,
+  YieldPerAppeal,
   PurchaseWithFaith,
   FreeUnitOnDistrict,
   ExtraTradeRoute,

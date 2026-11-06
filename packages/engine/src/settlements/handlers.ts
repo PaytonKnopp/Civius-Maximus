@@ -417,6 +417,21 @@ export function foundSettlement(
     if (def && !fresh.buildings.includes(b) && (!def.cityOnly || fresh.kind === 'city'))
       fresh.buildings.push(b);
   }
+  // A later-era game (setup "Start era"): settlements start bigger and with the era's basics.
+  const era = draft.settings.startEra
+    ? ctx.content.entities.era[draft.settings.startEra]
+    : undefined;
+  if (era?.start) {
+    for (const b of era.start.buildings) {
+      const def = ctx.content.entities.building[b];
+      if (!def || def.district || fresh.buildings.includes(b) || (def.cityOnly && !capital))
+        continue;
+      fresh.buildings.push(b);
+      fresh.walls += def.walls;
+    }
+    fresh.population += era.start.population;
+    fresh.pendingDevelop += era.start.population;
+  }
   if (capital) p.capital = id;
   p.settlementsFounded++;
   const s = { id, owner: player };
