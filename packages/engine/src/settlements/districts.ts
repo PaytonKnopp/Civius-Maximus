@@ -10,6 +10,7 @@ import type { Line } from './rules';
 import { tileFacts } from './rules';
 import { playerEffects } from '../progress/sources';
 import { baseOf, countsAs } from '../uniques';
+import { appealOf } from '../map/appeal';
 
 /**
  * Districts, wonders and tile projects (docs/03-core-mechanics.md, section 9): where they can go,
@@ -286,4 +287,20 @@ export function specialistSlots(ctx: EngineContext, s: SettlementState): Record<
       out[d.id] = n;
   }
   return out;
+}
+
+/**
+ * Happiness a district gives by the appeal of its tile (the Neighborhood, D111): the first of
+ * its `happinessByAppeal` bands the tile reaches, or 0.
+ */
+export function appealHappiness(
+  ctx: EngineContext,
+  state: GameState,
+  district: string,
+  tile: number,
+): number {
+  const bands = ctx.content.entities.district[district]?.happinessByAppeal ?? [];
+  if (bands.length === 0) return 0;
+  const appeal = appealOf(ctx, state, tile);
+  return bands.find((b) => appeal >= b.minAppeal)?.happiness ?? 0;
 }

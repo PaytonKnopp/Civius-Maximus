@@ -30,6 +30,7 @@ import { routeLines } from '../trade/rules';
 import { baseOf, countsAs, uniqueProblem } from '../uniques';
 import { isWater } from '../units/movement';
 import {
+  appealHappiness,
   districtCost,
   districtYields,
   needsTile,
@@ -43,7 +44,7 @@ import { greatWorkYields } from '../greatworks/greatworks';
 import { luxuryLines } from './luxuries';
 import { ideologyLine } from '../culture/ideology';
 import { agingPercent, eraOrderOf, perEra } from '../progress/era';
-import { appealOf } from '../map/appeal';
+import { appealOf, appealWord } from '../map/appeal';
 import { isRevealed, resourceProblem } from '../resources/strategic';
 
 /**
@@ -433,6 +434,12 @@ export function happinessOf(ctx: EngineContext, state: GameState, s: SettlementS
     const def = ctx.content.entities.district[d.id];
     if (def?.happiness)
       lines.push({ label: resolveText(ctx.content, def.name), amount: def.happiness });
+    const byAppeal = def ? appealHappiness(ctx, state, d.id, d.tile) : 0;
+    if (byAppeal !== 0)
+      lines.push({
+        label: `${resolveText(ctx.content, def!.name)} (${appealWord(ctx, appealOf(ctx, state, d.tile))})`,
+        amount: byAppeal,
+      });
   }
   for (const w of s.wonders) {
     const def = ctx.content.entities.wonder[w];

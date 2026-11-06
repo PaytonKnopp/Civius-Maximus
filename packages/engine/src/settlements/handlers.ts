@@ -215,11 +215,24 @@ export function completionProblem(
   return room ? undefined : { code: 'no_room', message: `No room for the unit near ${s.name}` };
 }
 
-/** Clears a tile for a district or wonder: no improvement, and woods, rainforest, marsh go. */
-function clearForBuilding(draft: Draft<GameState>, ctx: EngineContext, tile: number) {
+/**
+ * Clears a tile for a district or wonder: no improvement, and woods, rainforest, marsh go,
+ * unless its placement keeps them (`placement.features`: a Preserve stays in its woods).
+ */
+function clearForBuilding(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  tile: number,
+  keep: readonly string[] = [],
+) {
   const t = draft.map.tiles[tile]!;
   t.improvement = null;
-  if (t.feature !== null && ctx.content.entities.feature[t.feature]?.removable) t.feature = null;
+  if (
+    t.feature !== null &&
+    !keep.includes(t.feature) &&
+    ctx.content.entities.feature[t.feature]?.removable
+  )
+    t.feature = null;
 }
 
 /**
@@ -328,14 +341,24 @@ function complete(
       delete s.progress[itemKey(item)];
       break;
     case 'district':
-      clearForBuilding(draft, ctx, item.tile!);
+      clearForBuilding(
+        draft,
+        ctx,
+        item.tile!,
+        ctx.content.entities.district[item.id]?.placement.features,
+      );
       draft.map.tiles[item.tile!]!.district = item.id;
       s.districts.push({ id: item.id, tile: item.tile! });
       s.locked = s.locked.filter((t) => t !== item.tile);
       districtRewards(draft, ctx, id, item.id);
       break;
     case 'wonder':
-      clearForBuilding(draft, ctx, item.tile!);
+      clearForBuilding(
+        draft,
+        ctx,
+        item.tile!,
+        ctx.content.entities.wonder[item.id]?.placement.features,
+      );
       draft.map.tiles[item.tile!]!.wonder = item.id;
       s.wonders.push(item.id);
       s.locked = s.locked.filter((t) => t !== item.tile);

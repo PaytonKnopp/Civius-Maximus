@@ -256,6 +256,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ids(out, 'feature', entity.origin.feature, ['origin', 'feature']);
       ids(out, 'terrain', entity.origin.terrain, ['origin', 'terrain']);
       ids(out, 'feature', entity.spreadFeature, ['spreadFeature']);
+      ids(out, 'district', entity.preventedBy, ['preventedBy']);
       yieldKeys(out, entity.fertility, ['fertility']);
       break;
     case 'resolution':

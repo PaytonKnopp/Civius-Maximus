@@ -25883,6 +25883,30 @@
               "minimum": -9007199254740991,
               "maximum": 9007199254740991
             },
+            "happinessByAppeal": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "minAppeal": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "happiness": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "minAppeal",
+                  "happiness"
+                ],
+                "additionalProperties": false
+              }
+            },
             "placement": {
               "default": {
                 "elevations": [
@@ -90563,6 +90587,22 @@
                 }
               ]
             },
+            "preventedBy": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                }
+              ]
+            },
             "pillage": {
               "default": 0,
               "type": "integer",
@@ -122533,6 +122573,30 @@
                 "type": "integer",
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
+              },
+              "happinessByAppeal": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "minAppeal": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "happiness": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "minAppeal",
+                    "happiness"
+                  ],
+                  "additionalProperties": false
+                }
               },
               "placement": {
                 "default": {
@@ -187199,6 +187263,22 @@
                 "maximum": 4
               },
               "spreadFeature": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                  }
+                ]
+              },
+              "preventedBy": {
                 "anyOf": [
                   {
                     "type": "string",

@@ -10,7 +10,12 @@ import { previewStrike, strikeTargets } from '../combat/strength';
 import { unitDef } from '../context';
 import { toFixed } from '../fixed';
 import { distance } from '../map/hex';
-import { districtLimit, districtYields, placementTiles } from '../settlements/districts';
+import {
+  appealHappiness,
+  districtLimit,
+  districtYields,
+  placementTiles,
+} from '../settlements/districts';
 import {
   annexCost,
   availableItems,
@@ -398,6 +403,8 @@ function improvementValue(t: Turn, s: SettlementState, item: BuildItem): number 
     v = Math.floor((v * (5 + me.districts)) / 10);
     // Buildings and specialists to come.
     v += 6 + Math.floor(yieldsValue(me, def.specialistYields) / 2) + def.happiness * happy;
+    // A Neighborhood's happiness depends on where it goes (D111).
+    v += appealHappiness(t.ctx, t.state, item.id, item.tile!) * happy;
     for (const effect of [...def.localEffects, ...def.effects]) v += effectValue(t, effect);
     return v;
   }
@@ -463,7 +470,8 @@ function withTile(t: Turn, s: SettlementState, item: BuildItem): BuildItem | und
   for (const tile of tiles) {
     const score =
       item.kind === 'district'
-        ? fixedYieldsValue(t.me, districtYields(t.ctx, t.state, tile, item.id).total) * 10 -
+        ? fixedYieldsValue(t.me, districtYields(t.ctx, t.state, tile, item.id).total) * 10 +
+          appealHappiness(t.ctx, t.state, item.id, tile) * 40 -
           fixedYieldsValue(t.me, tileYields(t.ctx, t.state, tile, t.player, scope).total)
         : -fixedYieldsValue(t.me, tileYields(t.ctx, t.state, tile, t.player, scope).total);
     if (!best || score > best.score) best = { tile, score };

@@ -972,6 +972,8 @@ export const DisasterDef = z.strictObject({
   radius: z.int().min(0).max(4),
   /** Only tiles with one of these features are hit (a flood stays on its floodplains). */
   spreadFeature: IdOrIds.optional(),
+  /** Districts that keep it off their settlement's land (a Dam stops floods, D111). */
+  preventedBy: IdOrIds.optional(),
   /** Percent of the improvements it hits that are damaged until repaired. */
   pillage: z.int().min(0).max(100).default(0),
   /** Damage to every unit it hits. */
@@ -1433,6 +1435,13 @@ export const DistrictDef = z.strictObject({
   /** What it does to its neighbors' appeal. */
   appeal: z.int().default(0),
   happiness: z.int().default(0),
+  /**
+   * Happiness by the appeal of its own tile (the Neighborhood, D111): the first band whose
+   * `minAppeal` the tile reaches, so list them from the highest down.
+   */
+  happinessByAppeal: z
+    .array(z.strictObject({ minAppeal: z.int(), happiness: z.int() }))
+    .default([]),
   placement: Placement.default(anyPlacement),
   /** Each building in the district adds one specialist slot; a specialist yields this. */
   specialistYields: YieldMap.default({}),

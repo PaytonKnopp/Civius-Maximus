@@ -720,7 +720,9 @@ Districts are Civ 6's signature system and the main source of city planning.
 | Encampment | military | Defensive district with a ranged strike |
 | Entertainment Complex | 😊 happiness | — |
 | Aqueduct | +growth, +😊 | Must be next to a city center and fresh water or a mountain |
-| Neighborhood | 😊 by appeal, +growth | — |
+| Neighborhood | 😊 by appeal, +growth | Outside the limit (D111) |
+| Dam | ⚙️, no floods | On river floodplains, outside the limit (D111) |
+| Preserve | appeal, 🎭 🙏 to neighbors | On woods or rainforest, outside the limit (D111) |
 | Government Plaza | unique | One per empire. Extra policy slot; three tiers of buildings, one of two each (D110) |
 | Spaceport | science victory | — |
 
@@ -739,6 +741,16 @@ Districts are Civ 6's signature system and the main source of city planning.
     each kind counts once (`regional` on buildings and wonders). The Colosseum, Taj Mahal and
     Maracanã reach the same way with happiness.
   - The Nuclear Plant needs a Power Plant.
+  - **New districts (D111),** none counting toward the district limit:
+    - **Neighborhood** (Urbanization): +10% growth, and happiness by its own tile's appeal
+      (`happinessByAppeal`: +3 breathtaking, +2 charming, +1 average, nothing below).
+    - **Dam** (Engineering): on a floodplains tile by a river; floods no longer touch its
+      settlement's land (`preventedBy` on the flood), +2 production, and +2 for a neighboring
+      Industrial Zone.
+    - **Preserve** (Mysticism): on woods or rainforest, which it keeps (`placement.features`
+      now also means "kept when built"); +2 appeal to its neighbors and +1 culture and +1
+      faith on each of your tiles next to it.
+    - The AI places a Neighborhood where the land is loveliest and values each by its yields.
   - **Government Plaza buildings (D110):** three tiers, each a choice of two; building one
     closes the other for good (`excludes`):
     - Political Philosophy: **Envoys' Hall** (+3 influence, +1 favor a turn) or **Builders'

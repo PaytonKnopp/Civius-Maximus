@@ -746,6 +746,30 @@ export const ICONS: Record<string, IconDef> = {
   district_government_plaza: { bg: '#6b7280', glyph: COLUMNS },
   district_suguba: { bg: C.gold, glyph: COIN },
   district_spaceport: { bg: '#4b5563', glyph: ROCKET },
+  district_neighborhood: {
+    bg: '#9a6b45',
+    glyph: [
+      s(poly(4.6, 11.8, 12, 5, 19.4, 11.8) + rect(6.6, 11.8, 10.8, 7.4)),
+      dark(rect(10.8, 14.6, 2.4, 4.6)),
+    ],
+  },
+  district_dam: {
+    bg: '#3f6f98',
+    glyph: [
+      s(rect(4.6, 5.6, 14.8, 3, 0.6) + rect(9.4, 8.6, 5.2, 7.2)),
+      ...WAVES.map((w) => ({ ...w, d: w.d.replace('M4.6 14.4', 'M4.6 17.4') })),
+    ],
+  },
+  district_preserve: {
+    bg: '#4d7f3f',
+    glyph: [
+      s(
+        poly(12, 4, 17.4, 12.4, 6.6, 12.4) +
+          poly(12, 7.6, 18.8, 16.8, 5.2, 16.8) +
+          rect(11, 16.8, 2, 2.8),
+      ),
+    ],
+  },
 
   // Improvements
   improvement_farm: {
