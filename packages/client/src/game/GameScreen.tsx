@@ -1516,9 +1516,13 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     }
   }, [ctx, game, selection, select, act, policiesSeen, openGovernment, viewer, hotseat]);
 
-  /** After a unit is done for the turn: on to the next unit, like Civ's auto-cycling (D32). */
+  /**
+   * After a unit is done for the turn: on to the next unit, like Civ's auto-cycling (D32), unless
+   * that's switched off in Options (then the unit stays selected).
+   */
   const selectNextUnit = useCallback(
     (after: string) => {
+      if (!getSettings().autoCycle) return;
       const n = nextAction(ctx, game.state, viewer, after);
       if (n.kind === 'unit') select({ kind: 'unit', id: n.id }, true);
       else select(null);

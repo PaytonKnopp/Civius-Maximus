@@ -101,7 +101,8 @@ Supabase project), beside what an account adds.
 
 **Options:** Sound (master, music, effects and ambience volumes, mute, mute in a background tab,
 test sounds), Graphics (3D or 2D map, 3D quality, frame rate counter, full screen, reduce
-motion), Interface (larger menu text, tooltips, first-game hints, advisor tips), Game and saves
+motion), Interface (larger menu text, tooltips, first-game hints, advisor tips, and "select the
+next unit": D32's auto-cycling, on by default), Game and saves
 (autosave every turn, clear the Hall of Fame, reset options), Controls (every key and mouse
 action) and About. Everything applies at once and is kept in the browser (`settings.ts`); the
 game menu's quality switch and the game bar's 3D/2D switch change the same settings.
@@ -130,7 +131,9 @@ sizes, and fixed where it looked or worked worse than it should.
   so moving between screens no longer flashes the bare map; the leader picker is full screen.
   The New game World page shows each map type as a card with a picture, a Duel-size map made by
   the real generator from a fixed seed (mod map types get one too; `setup/MapTypes.tsx`, also
-  used when hosting online). The Players page aligns color and team, the name reads as an
+  used when hosting online). A setup likely to feel slow (12 or more civs, or 8 or more on the
+  biggest map) gets a gentle note under the map size, suggesting a smaller map, fewer civs or
+  Quick speed; it never blocks the choice (D98). The Players page aligns color and team, the name reads as an
   editable title, and the portrait is smaller so the leader's abilities fit; "Next" says where
   it goes. Options tabs and Load game have their own icons (sound, display, sliders, save,
   keyboard). The Civilopedia's facts sit in a compact grid, breadcrumbs read as links, and stale
@@ -243,6 +246,9 @@ the next blocker ("Choose production in Rome", "Units need orders", "Choose a re
 an empty policy slot", "Pick a pantheon") and takes you there on click. Once nothing's left it
 becomes **End Turn**. Units can sleep, fortify or skip so they stop asking. Optional setting:
 also stop for "a city finished a building" style notices.
+
+When a unit is done for the turn, the next one that needs orders is selected and the map moves
+to it (D32); a switch in Options turns that off, and the moved unit stays selected.
 
 **Built (final gameplay pass, 2E):**
 - Units can **Explore** (they head for the nearest edge of the known map every turn and say so

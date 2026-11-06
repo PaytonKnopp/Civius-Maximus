@@ -246,6 +246,12 @@ function InterfaceTab() {
             setAdvisorsOn(on);
           }}
         />
+        <Switch
+          label="Select the next unit"
+          hint="When a unit is done for the turn, the next one that needs orders is selected and the map moves to it."
+          checked={settings.autoCycle}
+          onChange={(autoCycle) => setSettings({ autoCycle })}
+        />
       </Section>
     </div>
   );

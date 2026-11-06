@@ -90,15 +90,15 @@ describe('districts and city planning', () => {
     place(s, city, 'district_campus', tile);
     const base = districtYields(ctx, s, tile, 'district_campus').total.science ?? 0;
     expect(base).toBeGreaterThanOrEqual(100);
-    // A policy that doubles Campus adjacency.
+    // A policy that adds half again to Campus adjacency (D121: +50%, not double).
     s.players.p1!.civics.done.push(
       'civic_code_of_laws',
       'civic_political_philosophy',
       'civic_recorded_history',
     );
     s.players.p1!.policies.economic = ['policy_scribes_stipend'];
-    const doubled = districtYields(ctx, s, tile, 'district_campus').total.science ?? 0;
-    expect(doubled).toBe(base * 2);
+    const boosted = districtYields(ctx, s, tile, 'district_campus').total.science ?? 0;
+    expect(boosted).toBe(Math.floor((base * 150) / 100));
     // Buildings inside add a third of the (whole-point) adjacency each.
     s.players.p1!.policies.economic = [];
     city.buildings.push('building_library');

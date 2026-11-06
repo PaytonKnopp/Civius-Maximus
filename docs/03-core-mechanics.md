@@ -664,10 +664,11 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
     Intelligence now improve tiles and buildings; **Future Tech** and the new **Future Civic**
     can be finished again and again (each time counts toward the score), so science and culture
     never stop mattering. Every Atomic, Information and Future node has a boost.
-  - **46 policy cards.** The flat "+1 everywhere" cards became decisions: five **adjacency
-    cards** double one district's adjacency (Scribes' Stipend: Campus; Temple Tithes: Holy Site;
-    Patrons of Poetry: Theater Square; Royal Mint: Commercial Hub; Guild Charters: Industrial
-    Zone; plus Charted Coasts: Harbor), and others need a building (Festival Calendar: Arenas).
+  - **46 policy cards.** The flat "+1 everywhere" cards became decisions: six **adjacency
+    cards** add half again to one district's adjacency (Scribes' Stipend: Campus; Temple Tithes:
+    Holy Site; Patrons of Poetry: Theater Square; Royal Mint: Commercial Hub; Guild Charters:
+    Industrial Zone; Charted Coasts: Harbor; +50%, D121: doubling let one civ run away with
+    science), and others need a building (Festival Calendar: Arenas).
     Early cards go **obsolete** when their later version arrives (Militia Drills, Bowyers'
     Workshops, Remount Herds and Siege Engineers at Nationalism...) and leave their slots.
     Three **dark-age cards** (Martial Law, Monastic Retreat, Rally the Levies) are strong with
@@ -761,7 +762,7 @@ Districts are Civ 6's signature system and the main source of city planning.
     district adds a third of the district's adjacency bonus, rounded down to whole points
     (`rules.settlements.districts.buildingAdjacencyPercent`). A +6 Campus with a Library,
     University and Research Lab makes +12 from adjacency; a +1 Campus stays poor.
-  - **Adjacency cards** (`adjacency_percent`) double one district's adjacency (section 6).
+  - **Adjacency cards** (`adjacency_percent`) add 50% to one district's adjacency (section 6).
   - **Regional effects (D109):** a Factory (+3 production), Power Plant (+4) or Stadium (+2
     happiness) also reaches your other settlements within 6 tiles that don't have their own;
     each kind counts once (`regional` on buildings and wonders). The Colosseum, Taj Mahal and

@@ -17,7 +17,8 @@ import { stockpileIncome, stockpileUpkeep } from '../resources/strategic';
 import { luxuriesOf, luxuryCopies, spareLuxury } from '../settlements/luxuries';
 import { goldPerTurn } from '../settlements/rules';
 import type { DealTerms, GameState, PlayerId, Proposal, ResourceTrade } from '../state';
-import { type Act, jitter, Turn } from './turn';
+import { victoryPlan } from './plan';
+import { type Act, jitter, personalityOf, Turn } from './turn';
 import { wantsPeace } from './war';
 
 type Deal = Omit<Proposal, 'id' | 'turn'>;
@@ -130,7 +131,9 @@ export function dealVerdict(
     }
   }
   if (deal.openBorders) {
-    if (opinion >= 0) value += 5;
+    // Visitors are what a leader playing for culture wants most (D121).
+    if (opinion >= 0)
+      value += victoryPlan(ctx, state, ai, personalityOf(ctx, state, ai)) === 'culture' ? 15 : 5;
     else {
       refuse = true;
       reasons.push("Doesn't want your visitors");
@@ -244,12 +247,9 @@ export function manageDiplomacy(t: Turn) {
         t.act({ type: 'propose_deal', ...pact });
       continue;
     }
-    if (
-      opinion >= 4 &&
-      !haveOpenBorders(s, t.player, other) &&
-      affordable(rules.openBordersCost) &&
-      roll >= 70
-    ) {
+    // Open borders now and then; often, for a leader playing for culture (D121).
+    const welcome = t.plan === 'culture' ? opinion >= 0 && roll >= 40 : opinion >= 4 && roll >= 70;
+    if (welcome && !haveOpenBorders(s, t.player, other) && affordable(rules.openBordersCost)) {
       const pact = { ...base, openBorders: true, friendship: false, alliance: false, peace: false };
       if (!dealProblem(t.ctx, s, { ...pact, from: t.player }))
         t.act({ type: 'propose_deal', ...pact });

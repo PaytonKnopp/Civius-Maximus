@@ -275,7 +275,7 @@
     "type": "policy",
     "id": "policy_patrons_of_poetry",
     "name": "Patrons of Poetry",
-    "description": "Theater Squares' adjacency bonuses are doubled (+100%).",
+    "description": "Theater Squares' adjacency bonuses +50%.",
     "slot": "economic",
     "requiresCivic": "civic_drama_and_poetry",
     "effects": [
@@ -283,7 +283,7 @@
         "effect": "adjacency_percent",
         "params": {
           "district": "district_theater",
-          "percent": 100
+          "percent": 50
         },
         "target": {
           "scope": "player"
@@ -317,7 +317,7 @@
     "type": "policy",
     "id": "policy_scribes_stipend",
     "name": "Scribes' Stipend",
-    "description": "Campuses' adjacency bonuses are doubled (+100%).",
+    "description": "Campuses' adjacency bonuses +50%.",
     "slot": "economic",
     "requiresCivic": "civic_recorded_history",
     "effects": [
@@ -325,7 +325,7 @@
         "effect": "adjacency_percent",
         "params": {
           "district": "district_campus",
-          "percent": 100
+          "percent": 50
         },
         "target": {
           "scope": "player"
@@ -337,7 +337,7 @@
     "type": "policy",
     "id": "policy_temple_tithes",
     "name": "Temple Tithes",
-    "description": "Holy Sites' adjacency bonuses are doubled (+100%).",
+    "description": "Holy Sites' adjacency bonuses +50%.",
     "slot": "economic",
     "requiresCivic": "civic_theology",
     "effects": [
@@ -345,7 +345,7 @@
         "effect": "adjacency_percent",
         "params": {
           "district": "district_holy_site",
-          "percent": 100
+          "percent": 50
         },
         "target": {
           "scope": "player"
@@ -384,7 +384,7 @@
     "type": "policy",
     "id": "policy_royal_mint",
     "name": "Royal Mint",
-    "description": "Commercial Hubs' adjacency bonuses are doubled (+100%).",
+    "description": "Commercial Hubs' adjacency bonuses +50%.",
     "slot": "economic",
     "requiresCivic": "civic_civil_service",
     "effects": [
@@ -392,7 +392,7 @@
         "effect": "adjacency_percent",
         "params": {
           "district": "district_commercial_hub",
-          "percent": 100
+          "percent": 50
         },
         "target": {
           "scope": "player"
@@ -404,7 +404,7 @@
     "type": "policy",
     "id": "policy_guild_charters",
     "name": "Guild Charters",
-    "description": "Industrial Zones' adjacency bonuses are doubled (+100%).",
+    "description": "Industrial Zones' adjacency bonuses +50%.",
     "slot": "economic",
     "requiresCivic": "civic_guilds",
     "effects": [
@@ -412,7 +412,7 @@
         "effect": "adjacency_percent",
         "params": {
           "district": "district_industrial_zone",
-          "percent": 100
+          "percent": 50
         },
         "target": {
           "scope": "player"
@@ -818,14 +818,14 @@
     "type": "policy",
     "id": "policy_charted_coasts",
     "name": "Charted Coasts",
-    "description": "Harbors' adjacency bonuses are doubled (+100%).",
+    "description": "Harbors' adjacency bonuses +50%.",
     "slot": "economic",
     "effects": [
       {
         "effect": "adjacency_percent",
         "params": {
           "district": "district_harbor",
-          "percent": 100
+          "percent": 50
         },
         "target": {
           "scope": "player"

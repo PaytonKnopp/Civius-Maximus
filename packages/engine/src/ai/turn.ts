@@ -8,6 +8,7 @@ import type { GameState, PlayerId, SettlementState, UnitState } from '../state';
 import { canTraverse } from '../units/movement';
 import { exploredBits, visibleTiles } from '../units/vision';
 import { militaryStrength, unitPower } from '../combat/strength';
+import { type PlannedPersonality, type VictoryPlan, victoryPlan, withPlan } from './plan';
 
 export { militaryStrength, unitPower };
 
@@ -37,7 +38,10 @@ export const NEUTRAL: Personality = {
 
 export class Turn {
   state: GameState;
-  readonly me: Personality;
+  /** The leader's personality, as its victory plan bends it (ai/plan.ts). */
+  readonly me: PlannedPersonality;
+  /** The victory this AI plays for, if any (D121). */
+  readonly plan: VictoryPlan;
   /** Facts that change whenever the state does (visible tiles...). */
   private now = new Map<string, unknown>();
   /** Facts worked out once a turn (who is strong...). */
@@ -52,7 +56,9 @@ export class Turn {
     private readonly apply: Act,
   ) {
     this.state = state;
-    this.me = personalityOf(ctx, state, player);
+    const leader = personalityOf(ctx, state, player);
+    this.plan = victoryPlan(ctx, state, player, leader);
+    this.me = withPlan(leader, this.plan);
   }
 
   act(action: Action): boolean {

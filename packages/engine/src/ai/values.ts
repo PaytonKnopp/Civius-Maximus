@@ -5,6 +5,7 @@ import { conditionHolds } from '../progress/sources';
 import { happinessOf, tileFacts } from '../settlements/rules';
 import type { SettlementState } from '../state';
 import { maxReligions } from '../religion/rules';
+import type { PlannedPersonality } from './plan';
 import type { Turn } from './turn';
 
 const religionRoom = (t: Turn) =>
@@ -27,23 +28,28 @@ const BASE: Record<string, { base: number; trait?: keyof Personality }> = {
   happiness: { base: 8 },
 };
 
-export function yieldWeight(me: Personality, y: string): number {
+export function yieldWeight(me: PlannedPersonality, y: string): number {
   const b = BASE[y] ?? { base: 3 };
   if (!b.trait) return b.base;
   // Food matters to everyone, so expansion only nudges it.
   const trait = b.trait === 'expansion' ? 5 + Math.floor((me.expansion - 5) / 2) : me[b.trait];
-  return Math.max(1, Math.floor((b.base * (5 + trait)) / 10));
+  const weight = Math.max(1, Math.floor((b.base * (5 + trait)) / 10));
+  // A leader playing for culture (ai/plan.ts) wants tourism above all.
+  return y === 'tourism' ? weight * (me.tourismFocus ?? 1) : weight;
 }
 
 /** Points for a set of whole-number yields. */
-export function yieldsValue(me: Personality, yields: Record<string, number | undefined>): number {
+export function yieldsValue(
+  me: PlannedPersonality,
+  yields: Record<string, number | undefined>,
+): number {
   let total = 0;
   for (const [y, v] of Object.entries(yields)) total += (v ?? 0) * yieldWeight(me, y);
   return total;
 }
 
 /** The same for fixed-point (hundredths) yields. */
-export function fixedYieldsValue(me: Personality, yields: Record<string, Fixed>): number {
+export function fixedYieldsValue(me: PlannedPersonality, yields: Record<string, Fixed>): number {
   let total = 0;
   for (const [y, v] of Object.entries(yields)) total += v * yieldWeight(me, y);
   return Math.floor(total / 100);

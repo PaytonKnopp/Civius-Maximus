@@ -28,6 +28,8 @@ export interface Settings {
   autosave: boolean;
   /** Online games: a browser notification when your turn comes while the tab is hidden. */
   turnNotices: boolean;
+  /** After a unit is done for the turn, the next one that needs orders is selected (D32). */
+  autoCycle: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -40,6 +42,7 @@ export const DEFAULT_SETTINGS: Settings = {
   muteInBackground: true,
   autosave: true,
   turnNotices: true,
+  autoCycle: true,
 };
 
 const KEY = 'cx.settings';
@@ -61,6 +64,7 @@ function sanitize(raw: unknown): Settings {
     muteInBackground: bool('muteInBackground'),
     autosave: bool('autosave'),
     turnNotices: bool('turnNotices'),
+    autoCycle: bool('autoCycle'),
   };
 }
 
