@@ -1801,25 +1801,48 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           >
             <Icon name="happiness" size={22} />
             <span className="mono val">
-              {me.celebration.turnsLeft > 0
-                ? `Celebrating · ${me.celebration.turnsLeft}`
-                : `${me.celebration.store}/${celebrationThreshold(ctx, me)}`}
+              {me.celebration.turnsLeft > 0 ? (
+                <>
+                  <span className="long">Celebrating </span>· {me.celebration.turnsLeft}
+                </>
+              ) : (
+                `${me.celebration.store}/${celebrationThreshold(ctx, me)}`
+              )}
             </span>
           </li>
-          {strategic.map((r) => (
+          {strategic.length > 0 && (
             <li
-              key={r.id}
-              className={`stockpile ${r.short ? 'short' : ''}`}
-              title={`${r.name}: ${r.have} of ${r.cap} stockpiled, ${r.net >= 0 ? '+' : ''}${r.net} a turn (sources and trades ${r.income >= 0 ? '+' : ''}${r.income}, units −${r.upkeep})${r.short ? '. Short: those units fight weaker' : ''}`}
+              className="stockpiles"
+              title={strategic
+                .map(
+                  (r) =>
+                    `${r.name}: ${r.have} of ${r.cap} stockpiled, ${r.net >= 0 ? '+' : ''}${r.net} a turn (sources and trades ${r.income >= 0 ? '+' : ''}${r.income}, units −${r.upkeep})${r.short ? '. Short: those units fight weaker' : ''}`,
+                )
+                .join('\n')}
             >
-              <Icon name={r.id} size={20} />
-              <span className="mono val">{r.have}</span>
-              <span className="delta mono">
-                ({r.net >= 0 ? '+' : ''}
-                {r.net})
-              </span>
+              {/* The three that matter most (short, then used up, then the most held). */}
+              {[...strategic]
+                .sort(
+                  (a, b) =>
+                    Number(b.short) - Number(a.short) ||
+                    b.upkeep - a.upkeep ||
+                    b.have - a.have ||
+                    (a.id < b.id ? -1 : 1),
+                )
+                .slice(0, 3)
+                .map((r) => (
+                  <span key={r.id} className={`stockpile ${r.short ? 'short' : ''}`}>
+                    <Icon name={r.id} size={18} />
+                    <span className="mono val">{r.have}</span>
+                    <span className="delta mono">
+                      ({r.net >= 0 ? '+' : ''}
+                      {r.net})
+                    </span>
+                  </span>
+                ))}
+              {strategic.length > 3 && <span className="muted">+{strategic.length - 3}</span>}
             </li>
-          ))}
+          )}
         </ul>
         <div className="topbar-right">
           <nav className="screen-buttons" aria-label="Screens">
