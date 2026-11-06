@@ -194,6 +194,8 @@ export function runStats(
   content: CompiledContent,
   o: StatsOptions,
   clock: () => number = () => performance.now(),
+  /** Hears the final state (for digging into one game). */
+  onEnd?: (state: GameState) => void,
 ): GameStats {
   const ctx: EngineContext = { content };
   const setup = setupFor(content, o);
@@ -412,6 +414,7 @@ export function runStats(
     if (state.turn % every === 0 || state.status !== 'playing') sample();
   }
 
+  onEnd?.(state);
   stats.endTurn = state.turn;
   stats.result = state.result;
   const winner = state.result?.winner ? state.players[state.result.winner] : undefined;

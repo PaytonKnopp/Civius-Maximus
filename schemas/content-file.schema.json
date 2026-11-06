@@ -69712,6 +69712,14 @@
               "type": "string",
               "pattern": "^[a-z][a-z0-9_]*$"
             },
+            "unitClass": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "greatPersonClass": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
             "tiers": {
               "minItems": 1,
               "type": "array",
@@ -91413,6 +91421,19 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
+                },
+                "eraCostPercent": {
+                  "default": {},
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000
+                  }
                 },
                 "catchUp": {
                   "default": {
@@ -166438,6 +166459,14 @@
                 "type": "string",
                 "pattern": "^[a-z][a-z0-9_]*$"
               },
+              "unitClass": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "greatPersonClass": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
               "tiers": {
                 "minItems": 1,
                 "type": "array",
@@ -188139,6 +188168,19 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "eraCostPercent": {
+                    "default": {},
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 1000
+                    }
                   },
                   "catchUp": {
                     "default": {

@@ -46,7 +46,10 @@ export function nodeCost(
   kind: TreeKind,
   id: string,
 ): Fixed {
-  return scaleCost(ctx, state, toFixed(treeNode(ctx, kind, id)?.cost ?? 0));
+  const node = treeNode(ctx, kind, id);
+  // The late eras cost more than their listed costs (D117).
+  const percent = node ? (ctx.content.rules.progress.eraCostPercent[node.era] ?? 100) : 100;
+  return scaleCost(ctx, state, percentOf(toFixed(node?.cost ?? 0), percent));
 }
 
 /**
@@ -156,36 +159,46 @@ export function playerEra(ctx: EngineContext, p: PlayerState): EraDef | undefine
 }
 
 /** What a tech or civic unlocks, found by looking for content that requires it. */
+export type UnlockKind =
+  | 'unit'
+  | 'building'
+  | 'district'
+  | 'wonder'
+  | 'project'
+  | 'improvement'
+  | 'government'
+  | 'policy'
+  | 'resource';
+
+/** Everything a tech or civic opens up (and, for techs, the resources it reveals). */
 export function unlocksOf(
   ctx: EngineContext,
   kind: TreeKind,
   id: string,
-): {
-  kind: 'unit' | 'building' | 'improvement' | 'government' | 'policy';
-  id: string;
-  name: string;
-}[] {
+): { kind: UnlockKind; id: string; name: string }[] {
   const { content } = ctx;
   const key = kind === 'tech' ? 'requiresTech' : 'requiresCivic';
   const out: ReturnType<typeof unlocksOf> = [];
   const scan = (
-    type: 'unit' | 'building' | 'improvement' | 'government' | 'policy',
-    entities: Record<
-      string,
-      { name: string; requiresTech?: string | undefined; requiresCivic?: string | undefined }
-    >,
+    type: UnlockKind,
+    entities: Record<string, { name: string }>,
+    field: string = key,
   ) => {
     for (const eid of Object.keys(entities).sort()) {
       const e = entities[eid]!;
-      if ((e as Record<string, unknown>)[key] === id)
+      if ((e as Record<string, unknown>)[field] === id)
         out.push({ kind: type, id: eid, name: resolveText(content, e.name) });
     }
   };
   scan('unit', content.entities.unit);
   scan('building', content.entities.building);
+  scan('district', content.entities.district);
+  scan('wonder', content.entities.wonder);
+  scan('project', content.entities.project);
   scan('improvement', content.entities.improvement);
   scan('government', content.entities.government);
   scan('policy', content.entities.policy);
+  if (kind === 'tech') scan('resource', content.entities.resource, 'revealedBy');
   return out;
 }
 

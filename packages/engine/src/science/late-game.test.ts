@@ -109,7 +109,14 @@ describe('the space race', () => {
   /** p1 knows everything for space and has a Spaceport next to its city. */
   function spacefaring() {
     const w = world();
-    let s = learn(w.s, 'p1', 'tech_rocketry', 'tech_satellites', 'tech_space_flight');
+    let s = learn(
+      w.s,
+      'p1',
+      'tech_rocketry',
+      'tech_computers',
+      'tech_robotics',
+      'tech_nanotechnology',
+    );
     const tile = at(s, 3, 3);
     s = produce(s, (d) => {
       d.map.tiles[tile]!.district = 'district_spaceport';

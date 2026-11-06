@@ -48,6 +48,8 @@ export const Action = z.discriminatedUnion('type', [
   /** Clears sleep, fortify or a queued move. */
   z.strictObject({ type: z.literal('wake_unit'), player: PlayerRef, unit: UnitRef }),
   z.strictObject({ type: z.literal('disband_unit'), player: PlayerRef, unit: UnitRef }),
+  /** After a game is won: keep playing ("one more turn"), the result kept for the record. */
+  z.strictObject({ type: z.literal('keep_playing'), player: PlayerRef }),
   /** A settler founds a settlement where it stands (and is used up). */
   z.strictObject({ type: z.literal('found_settlement'), player: PlayerRef, unit: UnitRef }),
   /** Replaces a city's production queue (the first item is built first). */

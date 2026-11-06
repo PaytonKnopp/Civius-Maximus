@@ -104,6 +104,12 @@ function SoundTab() {
           checked={settings.muteInBackground}
           onChange={(muteInBackground) => setSettings({ muteInBackground })}
         />
+        <Switch
+          label="Tell me when it's my turn online"
+          hint="A browser notification, and a mark on the tab, when your turn comes while you're in another tab."
+          checked={settings.turnNotices}
+          onChange={(turnNotices) => setSettings({ turnNotices })}
+        />
       </Section>
       <Section title="Try it" hint="A few of the game’s sounds, at your current volumes.">
         <div className="mx-options-foot">

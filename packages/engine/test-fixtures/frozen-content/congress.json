@@ -455,13 +455,25 @@
       {
         "id": "contain",
         "name": "Contain",
-        "description": "−15% science in every settlement of that civ for 20 turns.",
+        "description": "−15% science, and −25% production toward projects (the space race), in every settlement of that civ for 20 turns.",
         "effects": [
           {
             "effect": "modify_yield",
             "params": {
               "yield": "science",
               "percent": -15
+            },
+            "target": {
+              "scope": "settlements"
+            }
+          },
+          {
+            "effect": "modify_production",
+            "params": {
+              "percent": -25,
+              "toward": {
+                "kind": "project"
+              }
             },
             "target": {
               "scope": "settlements"

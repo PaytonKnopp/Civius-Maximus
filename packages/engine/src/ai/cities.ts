@@ -357,14 +357,37 @@ function nextRoles(t: Turn): Role[] {
   return ['melee', 'ranged'];
 }
 
-/** The strongest unit of the first role that has one (ties: cheaper). */
+/**
+ * Unit classes our enemies field in numbers (two or more seen), for counters: anti-cavalry
+ * against horsemen, anti-air against aircraft.
+ */
+function enemyClasses(t: Turn): Set<string> {
+  return t.turnMemo('enemyClasses', () => {
+    const wars = new Set(t.civWars());
+    const seen = t.seen();
+    const counts = new Map<string, number>();
+    for (const u of Object.values(t.state.units)) {
+      if (!wars.has(u.owner) || !seen[u.tile]) continue;
+      const cls = unitDef(t.ctx, u).class;
+      counts.set(cls, (counts.get(cls) ?? 0) + 1);
+    }
+    return new Set([...counts].filter(([, n]) => n >= 2).map(([c]) => c));
+  });
+}
+
+/** The strongest unit of the first role that has one, counters first (ties: cheaper). */
 function bestUnit(t: Turn, units: BuildItem[], roles: Role[]): BuildItem | undefined {
+  const threats = enemyClasses(t);
   for (const r of roles) {
     let best: { item: BuildItem; power: number; cost: number } | undefined;
     for (const item of units) {
       if (unitRole(t.ctx, { type: item.id }) !== r) continue;
       const def = unitDef(t.ctx, { type: item.id });
-      const power = Math.max(def.strength, def.rangedStrength);
+      // A class bonus against what the enemy fields counts as strength.
+      const counter = (t.ctx.content.entities.unitClass[def.class]?.bonuses ?? [])
+        .filter((b) => b.vs.some((c) => threats.has(c)))
+        .reduce((n, b) => n + b.amount, 0);
+      const power = Math.max(def.strength, def.rangedStrength) + counter;
       if (!best || power > best.power || (power === best.power && def.cost < best.cost))
         best = { item, power, cost: def.cost };
     }

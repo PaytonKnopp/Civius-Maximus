@@ -142,6 +142,10 @@ button:disabled {
   color: var(--muted);
 }
 
+.empire-yields li.stockpile.short .val {
+  color: #e08072;
+}
+
 .empire-yields li.celebrating .val {
   color: #b9e08c;
 }
@@ -1896,4 +1900,11 @@ button.turn-pill:hover {
 
 .climate-bar {
   margin: 4px 0 8px;
+}
+
+/* Phones: the stockpiles live in each unit's cost and the Civilopedia, not the crowded top bar. */
+@media (max-width: 640px) {
+  .empire-yields li.stockpile {
+    display: none;
+  }
 }

@@ -1,3 +1,4 @@
+import { faithUnitCost } from '../religion/rules';
 import { type BeliefDef, type Effect, resolveText } from '@cx/content';
 import { atWar } from '../context';
 import { evaluateCondition } from '../effects/conditions';
@@ -138,12 +139,18 @@ function buyReligiousUnits(t: Turn) {
   const home = nearestFollower(t);
   if (!home) return;
   const mine = t.myUnits().filter((u) => u.religion !== undefined);
-  if (mine.length >= 1 + Math.floor(t.me.faith / 4)) return;
   const units = t.ctx.content.ids.unit.filter(
     (id) =>
       t.ctx.content.entities.unit[id]!.faithCost > 0 &&
       !faithUnitProblem(t.ctx, t.state, t.player, home.id, id),
   );
+  // A few preachers at a time by temperament, more while faith piles up unspent.
+  const dearest = Math.max(
+    1,
+    ...units.map((id) => faithUnitCost(t.ctx, t.state, t.ctx.content.entities.unit[id]!.faithCost)),
+  );
+  const spare = Math.floor(t.p.faith / (dearest * 3));
+  if (mine.length >= 1 + Math.floor(t.me.faith / 4) + Math.min(4, spare)) return;
   const buy = (unit: string) =>
     t.act({ type: 'buy_faith_unit', player: t.player, settlement: home.id, unit });
   if (heresyAtHome(t, religion) && !mine.some((u) => religiousDef(t, u.type)?.removesHeresy)) {

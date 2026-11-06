@@ -386,6 +386,8 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'cityStateType':
       ids(out, 'district', entity.district, ['district']);
+      ids(out, 'unitClass', entity.unitClass, ['unitClass']);
+      ids(out, 'greatPersonClass', entity.greatPersonClass, ['greatPersonClass']);
       entity.tiers.forEach((t, i) => effectList(out, t.effects, ['tiers', i, 'effects']));
       break;
     case 'cityState':
@@ -442,6 +444,10 @@ export function collectRefs(entity: AnyEntity): Ref[] {
         ids(out, 'unit', u.units, ['camps', 'units', i, 'units']);
       });
       ids(out, 'district', entity.trade.seaDistrict, ['trade', 'seaDistrict']);
+      ids(out, 'era', Object.keys(entity.progress.eraCostPercent).sort(), [
+        'progress',
+        'eraCostPercent',
+      ]);
       entity.ideology.camps.forEach((c, i) =>
         ids(out, 'government', c.governments, ['ideology', 'camps', i, 'governments']),
       );

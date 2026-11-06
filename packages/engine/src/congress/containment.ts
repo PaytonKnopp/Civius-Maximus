@@ -40,8 +40,21 @@ export function victoryProgress(
     switch (victory) {
       case 'science': {
         if (st.science === false) continue;
+        // The tree is most of the way to the stars: its share of the techs, or the space
+        // projects done, whichever is further along.
         const sp = spaceProgress(ctx, state, player);
-        percent = sp.arrives !== null ? 100 : Math.floor((sp.done * 100) / Math.max(1, sp.total));
+        const techs = ctx.content.ids.tech.filter(
+          (id) => !ctx.content.entities.tech[id]!.repeatable,
+        );
+        const known =
+          state.players[player]?.techs.done.filter((id) => techs.includes(id)).length ?? 0;
+        percent =
+          sp.arrives !== null
+            ? 100
+            : Math.max(
+                Math.floor((sp.done * 100) / Math.max(1, sp.total)),
+                Math.min(99, Math.floor((known * 100) / Math.max(1, techs.length))),
+              );
         break;
       }
       case 'culture':

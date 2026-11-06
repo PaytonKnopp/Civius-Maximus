@@ -230,6 +230,22 @@ const handlers: Handlers = {
   ...religionHandlers,
   ...cityStateHandlers,
   ...upgradeHandlers,
+  keep_playing: {
+    validate(state, action) {
+      if (state.status !== 'ended') return { code: 'playing', message: 'The game is still on' };
+      const p = state.players[action.player];
+      if (!p?.alive || p.kind !== 'human')
+        return { code: 'not_playing', message: 'Only a player still in the game can go on' };
+      return undefined;
+    },
+    apply(draft, _action, ctx, emit) {
+      draft.status = 'playing';
+      draft.afterVictory = true;
+      // A game that ended at the turn limit stopped before the next turn began.
+      const alive = draft.playerOrder.filter((id) => draft.players[id]!.alive);
+      if (alive.every((id) => draft.players[id]!.turnEnded)) startNextTurn(draft, ctx, emit);
+    },
+  },
   end_turn: {
     validate(state, action) {
       const p = state.players[action.player];
@@ -291,16 +307,22 @@ function processTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
     step.run(draft, ctx, emit);
   }
   const limit = draft.settings.turnLimit;
-  if (limit !== null && draft.turn >= limit) {
+  // Playing on after a win ("one more turn") goes past the turn limit too.
+  if (limit !== null && draft.turn >= limit && !draft.afterVictory) {
     scoreVictory(draft, ctx, emit);
     return;
   }
+  startNextTurn(draft, ctx, emit);
+  // Raiders move next, in a step of their own (see `applyAction`).
+}
+
+/** The next turn begins: everyone plays again, units heal and continue their journeys. */
+function startNextTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   draft.turn += 1;
   for (const id of draft.playerOrder) draft.players[id]!.turnEnded = false;
   emit({ type: 'turn_started', turn: draft.turn, visibleTo: 'all' });
   healUnits(draft, ctx);
   startTurnForUnits(draft, ctx, emit);
-  // Raiders move next, in a step of their own (see `applyAction`).
 }
 
 /** Actions that can complete a boost goal on the spot. */
@@ -320,7 +342,8 @@ export function validateAction(
   action: Action,
   ctx: EngineContext,
 ): RuleError | undefined {
-  if (state.status !== 'playing') return { code: 'game_over', message: 'The game is over' };
+  if (state.status !== 'playing' && action.type !== 'keep_playing')
+    return { code: 'game_over', message: 'The game is over' };
   if (state.contentHash !== ctx.content.hash) {
     return { code: 'content_mismatch', message: 'This game was started with different content' };
   }

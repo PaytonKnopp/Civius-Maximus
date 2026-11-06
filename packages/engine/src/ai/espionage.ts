@@ -2,9 +2,23 @@ import { espionageOn, missionChance, missionProblem, spiesOf } from '../espionag
 import type { SettlementState } from '../state';
 import type { Turn } from './turn';
 
-/** Missions worth running against a rival, best first: harm in war, gain in peace. */
-const AT_WAR = ['mission_sabotage', 'mission_arm_rebels', 'mission_steal_plans'];
+/**
+ * Missions worth running against a rival, best first: harm in war (unrest where loyalty can
+ * break), gain in peace (a great work for a culture-minded leader, see `missionsFor`).
+ */
+const AT_WAR = [
+  'mission_sabotage',
+  'mission_stir_discontent',
+  'mission_arm_rebels',
+  'mission_steal_plans',
+];
 const AT_PEACE = ['mission_steal_plans', 'mission_skim_treasury', 'mission_make_contacts'];
+
+/** A leader who loves culture tries for a masterpiece first in peace. */
+function missionsFor(t: Turn, war: boolean): string[] {
+  if (war) return AT_WAR;
+  return Number(t.me.culture ?? 5) >= 7 ? ['mission_lift_masterpiece', ...AT_PEACE] : AT_PEACE;
+}
 
 /**
  * Spies (docs/04-advanced-systems.md, "Espionage"): the first guards the capital; the others go
@@ -42,7 +56,7 @@ export function manageSpies(t: Turn) {
       });
       continue;
     }
-    const options = wars.has(s.owner) ? AT_WAR : AT_PEACE;
+    const options = missionsFor(t, wars.has(s.owner));
     const pick = options.find((m) => {
       const def = t.ctx.content.entities.spyMission[m];
       return (

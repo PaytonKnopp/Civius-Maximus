@@ -224,6 +224,14 @@
       "perCiv": 5,
       "max": 25
     },
+    "eraCostPercent": {
+      "era_renaissance": 110,
+      "era_industrial": 130,
+      "era_modern": 150,
+      "era_atomic": 185,
+      "era_information": 215,
+      "era_future": 250
+    },
     "governmentChangeCost": 100,
     "legacy": {
       "everyTurns": 25,
@@ -527,11 +535,11 @@
       "project_mars_colony",
       "project_exoplanet_expedition"
     ],
-    "travelTurns": 10
+    "travelTurns": 15
   },
   "culture": {
     "culturePerTourist": 100,
-    "tourismPerTourist": 150,
+    "tourismPerTourist": 50,
     "tradeRoutePercent": 25,
     "religionPercent": 25,
     "friendsPercent": 25,
@@ -649,7 +657,7 @@
     "sessionEvery": 20,
     "resolutionsPerSession": 2,
     "voteCosts": [10, 30, 60, 100, 150],
-    "victoryPoints": 20,
+    "victoryPoints": 24,
     "agendaPoints": 1,
     "favor": {
       "base": 1,

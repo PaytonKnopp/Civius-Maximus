@@ -189,6 +189,15 @@ the AI uses, the top three in gold), Resources (by name, colored bonus / luxury 
 Religion (each known settlement's territory in its religion's color, named on the center). The
 rest of the table comes later. District adjacency already shows while placing a district.
 
+**Built (final gameplay pass, 2E):** thirteen lenses, each with a legend under the picker (L
+cycles them): Yields (every explored tile), Settling, District adjacency (the specialty
+district with the best adjacency on each free tile of yours, "Cp+3"), Appeal (the number and
+its word, green to red), Resources, Empires (each civ's land in its color), Continents,
+Military (enemy zones of control in red, neutral units amber, your soldiers blue), Trade routes
+(paths in their owner's color, labeled with where they lead), Religion, Loyalty and Natural
+wonders. Still to come: one-yield heatmaps, resource filters, tourism, climate, great works and
+governors lenses, map filters, pins and planning ghosts.
+
 **First-game hints (D81):** players know Civ, so there's no tutorial, but the first time
 something this game does its own way comes up (growth develops a tile, towns, free policy swaps
 after a civic, commanders, envoys...) a short note says so, once. One click turns them off; the
@@ -234,6 +243,22 @@ the next blocker ("Choose production in Rome", "Units need orders", "Choose a re
 an empty policy slot", "Pick a pantheon") and takes you there on click. Once nothing's left it
 becomes **End Turn**. Units can sleep, fortify or skip so they stop asking. Optional setting:
 also stop for "a city finished a building" style notices.
+
+**Built (final gameplay pass, 2E):**
+- Units can **Explore** (they head for the nearest edge of the known map every turn and say so
+  when nothing reachable is left) or stand on **Alert** (asleep until an enemy soldier comes into
+  sight, with a notice).
+- **Repeat** on the current build of a city keeps training the same unit (or doing the same
+  repeatable project) until changed; it survives the unit's upgrade.
+- **Quick save (F5) and quick load (F9)** in games this tab holds; **Ctrl+Z** takes back a
+  move in single player (see [02-multiplayer.md](02-multiplayer.md)).
+- **Welcome back:** a saved game picked up again opens with where things stand: era, score and
+  place, research and civic, wars, deals waiting, settlements with nothing to build, a Congress
+  vote.
+- The tech and civic trees list every district, wonder and project a node opens, and the
+  resources a tech reveals ("Reveals Iron").
+- The top bar shows each strategic stockpile you know about, with its change per turn (red when
+  short; the tooltip splits sources, trades and upkeep); phones leave it out.
 
 ## Graphs and statistics (a favourite, so more than Civ VI)
 

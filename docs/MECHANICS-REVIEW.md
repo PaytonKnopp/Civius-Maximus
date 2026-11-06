@@ -582,4 +582,22 @@ Payton approved every recommended default (D106–D120), the four groups of know
   closed. The AI builds the recon and naval ones through its usual choices but not support
   units, anti-air or the Fleet Commander (a known gap).
 - **D118** Undo for moves that revealed nothing (single player, Ctrl+Z) and "your turn"
-  browser notices in online games.
+  browser notices in online games (with a switch in Options).
+
+### 2E: the client
+
+- **Section 4:** thirteen lenses with legends (adjacency, appeal, empires, continents,
+  military, trade and natural wonders are new; yields covers every explored tile).
+- **Section 11:** Explore and Alert orders, repeat production, quick save and load (F5/F9), a
+  "welcome back" summary when a save is resumed, unlock lists with districts, wonders, projects
+  and revealed resources, and strategic stockpiles in the top bar.
+- **8.3** Three more city-state quests (bring your religion, earn a great person of its kind,
+  field a siege unit). **7.2** The AI spends banked faith on more preachers, keeping a reserve.
+- **5.1 (part)** The AI counts a class's bonus against what its enemies field (two or more seen)
+  as strength when it picks a soldier, so it answers cavalry with anti-cavalry and aircraft with
+  anti-air. Navies (escorts, coastal sieges) are still missing. **8.5** AI spies also stir
+  discontent in wartime, and culture-minded leaders try to lift masterpieces in peace.
+- **9.3** "One more turn" after a win (it wasn't possible: every action was refused once a game
+  ended).
+- Not done: one-yield heatmaps, resource filters, tourism/climate/great works/governors lenses,
+  map filters, pins and planning ghosts, and settings for which notices stop the turn.

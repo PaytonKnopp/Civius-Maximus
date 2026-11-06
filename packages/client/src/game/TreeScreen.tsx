@@ -117,13 +117,21 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
       ? (content.entities.unit[u.id]?.model ?? 'generic')
       : u.kind === 'building'
         ? buildingIcon(u.id, content.entities.building[u.id]?.district)
-        : u.kind === 'improvement'
+        : u.kind === 'improvement' || u.kind === 'district' || u.kind === 'resource'
           ? ICONS[u.id]
             ? u.id
-            : 'improvement_farm'
-          : u.kind === 'government'
-            ? 'government'
-            : 'civic';
+            : u.kind === 'resource'
+              ? 'strategic'
+              : 'improvement_farm'
+          : u.kind === 'wonder'
+            ? 'wonder'
+            : u.kind === 'project'
+              ? content.entities.project[u.id]?.onDistrict
+                ? 'rocket'
+                : 'production'
+              : u.kind === 'government'
+                ? 'government'
+                : 'civic';
 
   // Scroll so the current choice (or the last thing finished) is in view.
   const showCurrent = () => {
@@ -385,13 +393,13 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
                   )}
                   {unlocks.length > 0 && (
                     <span className="node-unlocks">
-                      {unlocks.slice(0, 4).map((u) => (
+                      {unlocks.slice(0, unlocks.length > 4 ? 3 : 4).map((u) => (
                         <span key={u.id} className={`unlock ${u.kind}`}>
                           <Icon name={unlockIcon(u)} size={14} />
-                          {u.name}
+                          {u.kind === 'resource' ? `Reveals ${u.name}` : u.name}
                         </span>
                       ))}
-                      {unlocks.length > 3 && (
+                      {unlocks.length > 4 && (
                         <span className="unlock more">+{unlocks.length - 3}</span>
                       )}
                     </span>

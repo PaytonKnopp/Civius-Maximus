@@ -485,6 +485,8 @@ interface GameOverProps {
   onGraphs?: () => void;
   /** Opens the replay of the game. */
   onReplay?: () => void;
+  /** Keeps playing after the win ("one more turn"). */
+  onContinue?: () => void;
   onClose: () => void;
 }
 
@@ -499,6 +501,7 @@ export function GameOver({
   content,
   onGraphs,
   onReplay,
+  onContinue,
   onClose,
 }: GameOverProps) {
   return (
@@ -556,6 +559,15 @@ export function GameOver({
           {onReplay && (
             <button type="button" onClick={onReplay}>
               Watch the replay
+            </button>
+          )}
+          {onContinue && (
+            <button
+              type="button"
+              onClick={onContinue}
+              title="Keep playing this game: the result stands"
+            >
+              One more turn
             </button>
           )}
           <button type="button" className="primary" onClick={onClose}>

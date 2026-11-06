@@ -13,6 +13,8 @@ export interface GameState {
   contentHash: string;
   settings: GameSettings;
   status: 'playing' | 'ended';
+  /** Play went on after the game was won ("one more turn"): no further victory ends it. */
+  afterVictory?: boolean;
   /** How the game ended, once it has. */
   result: {
     reason: 'score' | 'conquest' | 'domination' | 'religion' | 'science' | 'culture' | 'diplomatic';

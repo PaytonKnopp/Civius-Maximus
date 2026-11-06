@@ -344,7 +344,13 @@ feel populated and give players something to compete over even when there's no w
   or take (or keep) a suzerainty.
 - The City-states screen (I, or the 🏛 chip) and a card in a city-state's settlement panel;
   a new-game option turns them off. Not yet: levies, luxuries for the suzerain, war support
-  for envoy holders, quests beyond the two.
+  for envoy holders.
+- **More quests** (final gameplay pass, review 8.3): besides its district and a trade route,
+  each city-state asks you to bring your religion there (once any religion exists), to earn a
+  great person of its kind (Scientific: a Great Scientist; Cultural: a Writer; Trade: a
+  Merchant; Religious: a Prophet; Militaristic: a General; Industrial: an Engineer) and, if
+  Militaristic, to field a siege unit (`unitClass`, `greatPersonClass` on its type). Each pays
+  its envoys once.
 
 ### Befriending camps and levies (V1 final, F16)
 
@@ -493,8 +499,9 @@ forces new crisis policies. Off by default, for groups that like chaos.
 - **Tourism** is a yield: from wonders (each later wonder has some), Museums, Broadcast
   Centers, Stadiums, a few policies, and Radio (+25%). There are no great works yet.
 - **Domestic tourists:** every 100 culture a civ ever earns. **Visiting tourists:** every 150
-  tourism a civ has sent toward another; tourism goes each turn to every civ whose settlement
-  you've seen, +25% each with a trade route between you, a shared religion (both capitals
+  tourism a civ has sent toward another (50 since the final gameplay pass: with 150, late-game
+  tourism never caught up with a rival's lifetime culture, so no AI could win by culture);
+  tourism goes each turn to every civ whose settlement you've seen, +25% each with a trade route between you, a shared religion (both capitals
   follow it) or a friendship or alliance.
 - **Culture victory:** your visitors from each other civ outnumber its domestic tourists.
 - Ideologies, great works, national parks and seaside resorts came later (below).
@@ -794,7 +801,8 @@ off. Diplomatic victory has its own toggle.
   - Being the **single** civ that put the most votes behind what passed: +1. Nobody scores on
     a tie.
   - The Statue of Liberty: +4 (the effect `diplomatic_points`).
-  - **20 points win.**
+  - **20 points win** (24 since the final gameplay pass, D117: with 20 a diplomatic win came
+    around turn 230 at Standard, before the other victories could).
   - Why "single": when every backer scored, AIs that agreed all piled up points, and test
     games ended around turn 205. Now they end around turn 285, a late-game win.
 - **On screen:**
@@ -814,7 +822,8 @@ off. Diplomatic victory has its own toggle.
 - **Emergency sessions** (final gameplay pass, D120): when a civ is three quarters of the way
   to a victory (`containment.atPercent`), the congress meets the next turn to vote on
   containing it.
-  - How far: science, space projects done of four; culture, each other civ's visitors against
+  - How far: science, the share of all techs known or the space projects done of four,
+    whichever is further (so a runaway researcher is called before its launch); culture, each other civ's visitors against
     its domestic tourists (averaged, each at most 100%); religion, each civ's settlements
     following against the majority it needs; diplomatic, points of 20; domination, original
     capitals held.
@@ -857,8 +866,13 @@ The end screen names the winner and how, with everyone's score.
 new-game toggle (on by default), and a Victories screen (V) with everyone's progress.
 - **Science:** a Spaceport (after Rocketry, flat land, outside the district limit) and four
   projects done on it in order: Launch a Satellite, Moon Landing, Mars Colony, then the
-  Exoplanet Expedition, which arrives 10 turns later and wins.
+  Exoplanet Expedition, which arrives 15 turns later (10 before the final gameplay pass) and
+  wins. Since the final gameplay pass they need Rocketry, Computers, Robotics and
+  Nanotechnology (see docs/03, "Tech tree").
 - **Culture:** see "Tourism & great works".
+- **One more turn** (final gameplay pass): after a win, the end screen offers to keep playing
+  (games this tab holds, not online). The result stands and nothing else ends the game, the
+  turn limit included.
 
 ### AI and balance (V1 final F18)
 

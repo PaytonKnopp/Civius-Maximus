@@ -99,6 +99,8 @@ export function endGame(
   winner: PlayerId | null,
   emit: Emit,
 ) {
+  // Playing on after a win: the first result stands.
+  if (draft.afterVictory) return;
   draft.status = 'ended';
   draft.result = { reason, winner };
   emit({ type: 'game_ended', reason, winner, visibleTo: 'all' });

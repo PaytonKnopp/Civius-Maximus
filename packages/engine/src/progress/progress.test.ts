@@ -58,7 +58,18 @@ describe('the trees', () => {
     expect(cols.tech_pottery).toBe(0);
     expect(cols.tech_writing).toBe(1);
     expect(cols.tech_currency).toBe(2);
-    expect(unlocksOf(ctx, 'tech', 'tech_writing').map((u) => u.id)).toContain('building_library');
+    expect(unlocksOf(ctx, 'tech', 'tech_writing').map((u) => u.id)).toEqual(
+      expect.arrayContaining(['building_library', 'district_campus']),
+    );
+    // Wonders, projects and the resources a tech reveals are listed too.
+    expect(unlocksOf(ctx, 'tech', 'tech_bronze_working')).toContainEqual({
+      kind: 'resource',
+      id: 'iron',
+      name: 'Iron',
+    });
+    expect(unlocksOf(ctx, 'tech', 'tech_rocketry').map((u) => u.kind)).toEqual(
+      expect.arrayContaining(['district', 'project']),
+    );
     expect(unlocksOf(ctx, 'civic', 'civic_political_philosophy').map((u) => u.id)).toEqual(
       expect.arrayContaining(['government_autocracy', 'policy_court_emissaries']),
     );

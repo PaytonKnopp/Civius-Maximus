@@ -200,7 +200,7 @@
     "name": "Launch a Satellite",
     "description": "The first step of a science victory (on a Spaceport): +150 science.",
     "icon": "S1",
-    "cost": 600,
+    "cost": 1000,
     "onDistrict": "district_spaceport",
     "reward": {
       "science": 150
@@ -213,12 +213,12 @@
     "name": "Moon Landing",
     "description": "The second step of a science victory: +300 culture.",
     "icon": "S2",
-    "cost": 840,
+    "cost": 1400,
     "onDistrict": "district_spaceport",
     "reward": {
       "culture": 300
     },
-    "requiresTech": "tech_satellites"
+    "requiresTech": "tech_computers"
   },
   {
     "type": "project",
@@ -226,12 +226,12 @@
     "name": "Mars Colony",
     "description": "The third step of a science victory: +400 science.",
     "icon": "S3",
-    "cost": 1080,
+    "cost": 1800,
     "onDistrict": "district_spaceport",
     "reward": {
       "science": 400
     },
-    "requiresTech": "tech_space_flight"
+    "requiresTech": "tech_robotics"
   },
   {
     "type": "project",
@@ -239,9 +239,9 @@
     "name": "Exoplanet Expedition",
     "description": "The last step: a ship to another star. When it arrives, its builder wins.",
     "icon": "S4",
-    "cost": 1320,
+    "cost": 2200,
     "onDistrict": "district_spaceport",
-    "requiresTech": "tech_space_flight"
+    "requiresTech": "tech_nanotechnology"
   },
   {
     "type": "project",

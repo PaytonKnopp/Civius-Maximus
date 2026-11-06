@@ -311,6 +311,11 @@ export const RulesDef = z.strictObject({
     startingGovernment: Id,
     /** Gold per policy card changed outside the free window after finishing a civic. */
     policySwapCost: z.int().min(0),
+    /**
+     * Each era's techs and civics cost this percent of their listed cost (D117: the late game's
+     * pace). Eras not listed cost 100%.
+     */
+    eraCostPercent: z.record(Id, z.int().min(1).max(1000)).default({}),
     /** Catch-up research (D119): percent off per known civ that has a node, up to `max`. */
     catchUp: z
       .strictObject({ perCiv: z.int().min(0), max: z.int().min(0).max(90) })
@@ -2176,6 +2181,10 @@ export const CityStateTypeDef = z.strictObject({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #8e1b1b'),
   /** Its quest: have a settlement with this district. */
   district: Id.optional(),
+  /** Another quest: have a unit of this class (Militaristic: heavy cavalry). */
+  unitClass: Id.optional(),
+  /** Another quest: have earned a great person of this class. */
+  greatPersonClass: Id.optional(),
   /** For each player with at least `envoys` envoys in a city-state of this kind (they add up). */
   tiers: z
     .array(

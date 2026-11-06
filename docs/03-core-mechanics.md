@@ -617,6 +617,16 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
     **Orbital Laser Relay** (Lasers, on a Spaceport) brings a launched expedition 2 turns
     sooner each time it's built.
   - Games can start in the Atomic or Information era.
+- **Final gameplay pass (D117, the late game's pace):** once the economy grew (2A–2C) the space
+  race finished around turn 230–280 at Standard, mostly because every space project unlocked in
+  the Modern era. Now:
+  - The projects follow the tree: Launch a Satellite at Rocketry (Modern), Moon Landing at
+    Computers (Atomic), Mars Colony at Robotics (Information), the Exoplanet Expedition at
+    Nanotechnology (Future); they cost 1000, 1400, 1800 and 2200, and the expedition travels
+    15 turns.
+  - Techs and civics of later eras cost more than listed (`rules.progress.eraCostPercent`):
+    Renaissance 110%, Industrial 130%, Modern 150%, Atomic 185%, Information 215%, Future 250%.
+    The trees show the real cost.
 
 ### Civics tree
 
