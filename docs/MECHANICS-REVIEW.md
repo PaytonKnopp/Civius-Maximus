@@ -73,8 +73,8 @@ or never switched on. Each section below has the causes. The biggest are four bu
 almost never improved, strategic resources do nothing, idle production is thrown away, and the
 AI's valuation ignores conditions on effects.
 
-⏳ The speed, size, difficulty, start-era and map-script batches are still running; their tables
-go in section 10 when they finish.
+The speed, size, difficulty, start-era, map-script and options-off batches are in section 10,
+next to the same games after the pass.
 
 ---
 
@@ -438,12 +438,110 @@ religion and domination never.
 
 ## 10. Difficulty, speed, map size and start era
 
-⏳ Tables from the speed, size, difficulty, start-era and map-script batches go here.
-
 - **Start eras** give the techs, gold and units of the era, but settlements still start at 1
   citizen with nothing built, so a Medieval start is an Ancient start with more techs. Civ VI
   gives later-era cities population, buildings and districts. **Fix:** era starts give founded
-  settlements population and the era's basic buildings (content: `era.start`).
+  settlements population and the era's basic buildings (content: `era.start`). Built in 2D.
+
+### Measured before and after the pass
+
+Each batch varies one setting around the base setup (6 civs, Small Continents, Prince, Ancient
+start); all but the speed batch play at Online speed (half costs) so they finish quickly. The
+baseline ran two to four seeds per setting, the final sweep seeds 1 and 2 (only seed 1 for the
+start eras and the two biggest maps), so each table puts the final games next to the baseline
+games on the same seeds, then the whole baseline row. A row is a handful of games: read them as
+a direction, not a measurement to the turn. Each cell is the turn of the first decisive win and
+its kind.
+
+**Speed** (6 civs, Small Continents, Prince):
+
+| Speed (costs, turn limit) | Final | Baseline, same seeds | Baseline, all seeds |
+|---|---|---|---|
+| Online (50%, 250) | 163 science, 174 science | 225 science, 180 diplomatic | 180–246 (average 218): 3 diplomatic, 1 science |
+| Quick (67%, 330) | 214 science, 170 culture | 276 diplomatic, 228 culture | 228–295 (average 268): 2 diplomatic, 1 culture, 1 science |
+| Standard (100%, 500) | 277–385 (average 316, seeds 1–6): 4 science, 1 culture, 1 diplomatic | | 363–485 (average 413): 4 science, 2 diplomatic |
+| Epic (150%, 750) | 469 science | 559 science | 559 and 693: 2 science |
+| Marathon (300%, 1,500) | (being measured) | 1,500: the turn limit, won on score | |
+
+Game length follows each speed's costs, before and after: an Online game lasts about 0.53 of a
+Standard one, Quick about 0.6 and Epic 1.5. The whole curve moved about a quarter earlier and
+mostly sits on D117's target scaled by cost (Standard 300–400, so Online 150–200, Quick 200–270,
+Epic 450–600, Marathon 900–1,200).
+
+**Map size** (Online speed; Duel 2 civs, Tiny 4, Small 6, Standard 8, Large 10, Huge 12):
+
+| Size | Final | Baseline, same seeds | Baseline, all seeds |
+|---|---|---|---|
+| Duel | 129 culture, 133 diplomatic | 148 diplomatic, 134 diplomatic | 134–157: 3 diplomatic |
+| Tiny | 160 diplomatic, 173 diplomatic | 150 diplomatic, 212 science | 150–212: 2 diplomatic, 1 science |
+| Small | 163 science, 174 science | 225 science, 180 diplomatic | 180–225: 2 diplomatic, 1 science |
+| Standard | 178 science, 194 science | 230 diplomatic, 247 diplomatic | 146–247: 3 diplomatic |
+| Large | 196 science | 186 science | 186 science, 201 diplomatic |
+| Huge | 164 science | 233 diplomatic | 233 diplomatic; 250, the turn limit, won on score |
+
+- The diplomatic victory won 12 of the 16 baseline size games, at every size. With 24 points
+  instead of 20 it wins 3 of the 4 Duel and Tiny games and none from Small up, where science
+  wins all six.
+- Length barely depends on the size (131 turns on Duel, 164–196 from Small to Huge), as before
+  (146, then 194–242): a leader's pace comes from its own empire, not from the number of rivals.
+- Turn time grows with the map and the number of civs, more than before the pass. Measured
+  alone at turn 120 (Standard speed, one process): 8 civs on a Standard map take 1.27 s of
+  turn processing (1.22 s before the pass), 12 civs on a Huge map 2.05 s (1.53 s before), and
+  all 12 AIs 1.04 s (0.73 s). See section 12.
+
+**Difficulty** (Online speed). The first seat plays at Prince and the other five AIs at the
+level, so its final place by score shows what the level's bonuses are worth:
+
+| AI level | Final (Prince civ's place) | Baseline, same seeds | Baseline, all seeds: Prince civ's places |
+|---|---|---|---|
+| Settler | 224 science (1st), 185 diplomatic (1st) | 185 diplomatic (1st), 197 diplomatic (1st) | 1st, 1st, 1st |
+| Warlord | 189 diplomatic (1st) | 193 diplomatic (2nd) | 2nd, 1st, 1st |
+| Prince | 163 science (3rd), 174 science (2nd) | 225 science (2nd), 180 diplomatic (1st) | 2nd, 1st, 1st |
+| King | 146 diplomatic (3rd) | 165 diplomatic (4th) | 4th, 1st, 1st |
+| Emperor | 146 science (6th) | 123 diplomatic (6th) | 6th, 1st, 4th |
+| Deity | 133 science (6th), 143 science (6th) | 159 science (6th), 175 science (4th) | 6th, 4th, 5th |
+
+The ladder is cleaner: the Prince civ comes first against Settler and Warlord AIs, mid-table
+among equals and against King, and last against Emperor and Deity. In the baseline it won two
+of three games against King AIs and one against Emperor, partly because the first seat was
+always processed first (now the order rotates, 2D). Games end sooner as the AIs get stronger
+(Settler 204 turns on average, Deity 138), as before (182 and 161) but more steadily.
+
+**Start era** (Online speed; the final sweep ran seed 1 only):
+
+| Start | Final | Baseline, seed 1 | Baseline, seed 2 |
+|---|---|---|---|
+| Ancient | 163 science | 225 science | 180 diplomatic |
+| Classical | 161 science | 152 diplomatic | 199 science |
+| Medieval | 151 science | 189 diplomatic | 144 diplomatic |
+| Renaissance | 142 science | 157 diplomatic | 158 culture |
+| Industrial | 135 science | 177 diplomatic | 137 diplomatic |
+| Modern | 135 science | 127 diplomatic | 137 diplomatic |
+| Atomic | 134 science | 168 science | 116 religion |
+| Information | 140 science | 156 science | 127 diplomatic |
+
+A later start now shortens the game a little and steadily (163 turns from the Ancient era,
+134–140 from the Industrial era on) where before it was noisy (116–199). Settlements founded in
+a later era start bigger and with the era's buildings, but most of a game's turns are now spent
+in the last two eras (240% and 300% costs, 2G), which every start goes through: an
+Information-era start still lasts 140 Online turns, so a late start skips the opening rather
+than making a short game.
+
+**Map scripts and optional systems off** are being re-measured (20 map-script games and the
+three games with every optional system off). The first two are in: Pangaea now ends in culture
+victories on turns 92 and 192 (the baseline: science on turns 235 and 195); see "One AI takes
+most of the wonders" below.
+
+**The victory mix across the sweep.** The 27 distinct games of the final speed, size,
+difficulty and start-era batches: science 19, diplomatic 6, culture 2 (the baseline's 53 games
+on the same settings: diplomatic 33, science 15, culture 2, score 2, religion 1). The batches reuse seeds, so the same map and civs come
+back: seed 1's Small map made 15 of the 27 games and Korea won 14 of them (13 by science), at
+every speed, difficulty and start era; the other 12 games went 6 science, 4 diplomatic and 2
+culture. Korea's kit is the strongest science stack in the game (Campuses +1 science per
+neighboring hills and built 25% faster, Libraries +1 science, +50% great scientist points, a
+science-first personality); with more rivals on the same seed (the Standard and Huge maps) it
+didn't win. Science has replaced diplomacy as the usual winner, and religion and domination
+still never win an AI game: that's D121.
 
 ## 11. Turn flow and quality of life
 
@@ -465,6 +563,17 @@ save 1.03 MB (45 KB gzipped). The check passes. On the way, two new systems made
 slow by re-reading the whole map through the Immer draft for every settlement (monopolies,
 then luxuries); both now read the state as the action began, once per action. Hundreds of
 simulated games (over 50,000 turns) ran without an engine error.
+
+**On the biggest map** (`pnpm cx profile 12 120 1 huge`, 12 civs) the pass costs more: 1.53 s
+→ 2.05 s of turn processing at turn 120, the AIs 0.73 s → 1.04 s. A CPU profile of both
+versions spreads the difference over many places (effects from the new sources about a
+third, copying a bigger state a quarter, then barbarians, city-states and the AI's deals).
+Three things were cheap to fix without changing a single game (the same state hashes on the
+Standard and Huge checks): regional buildings are found once per player instead of by every
+settlement scanning every other one, loyalty works out the turn's effects once for all
+settlements, and research agreements are skipped when none are running. Those took about 3%
+off; the rest is the price of a richer game, and the next step there is the one doc 01
+already names (reading the unchanged parts of the state without Immer proxies).
 
 ## 13. Known gaps: what the final game should have
 
@@ -673,11 +782,24 @@ than Civ" below.
   buildings sharing it, dedications, founder beliefs) is strong for whoever leans into it, and
   most AI personalities invest little in science, so the gap reaches 3–5×. Options: soften the
   doubling cards (+50%), or make every AI keep a Campus and a Library in its larger cities.
+- **One AI takes most of the wonders.** In a typical game one civ builds over half of them
+  (median 60% of the wonders built, up to 90%; 56% before the pass): an AI only starts a
+  wonder it can finish within 20–40 turns (by its personality), so the civ with the most
+  production qualifies for nearly all of them, and none weighs whether a rival is about to
+  finish one. With tourism converting three times faster, a wonder hoarder can now win by
+  culture very early on a shared continent (Pangaea, seed 1: Brazil built 26 of the 34
+  wonders and won on turn 92 at Online speed, about turn 185 at Standard). It would take an
+  AI that steers away from wonders a rival is ahead on, or wonders' tourism tuned down (part
+  of D121).
 - **Navies.** The AI builds ships but doesn't escort, blockade or siege from the sea; the
   Fleet Commander, support units' AI use beyond wall-breakers, anti-air and the new ships are
   mostly for human players for now.
 - **Lenses and planning:** one-yield heatmaps, resource filters, tourism and climate lenses,
   map pins and planning ghosts are not built.
+- **Turn time on big maps.** A 12-civ Huge game spends about 2 s on each turn by turn 120, a
+  third more than before the pass (section 12); late in such a game it's longer. It runs in a
+  background worker, so the page stays responsive, but the wait is felt. The fix is the
+  structural one doc 01 describes, not more caching.
 - **Deferred by D118:** endeavors and sanctions, crises, Ages mode, an Earth map, spectators;
   undo only covers moves in single player.
 
