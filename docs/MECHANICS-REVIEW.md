@@ -629,7 +629,30 @@ Each round below is the same six Standard games (6 civs, Small Continents, Princ
 | Projects follow the tree, late eras 110–185% (3 games) | 266–283 | 3 science |
 | Late eras up to 210%, projects +40%, 50 tourism a visitor (3 games) | 275–303 | 3 science |
 | Up to 250%, projects 1000–2200, 15-turn journey, tech-based containment (2 games) | 284–288 | 2 science |
-| **Final:** Information 240%, Future 300%, 20-turn journey (6 games) | (being measured) | (being measured) |
+| **Final:** Information 240%, Future 300%, 20-turn journey (6 games) | **277–385 (average 316)** | **4 science, 1 culture, 1 diplomatic** |
+
+**Where it ends up (final six games):** half the civs reach the Classical era on turn 48,
+Medieval 95, Renaissance 123, Industrial 162, Modern 200, Atomic 246, Information 277 and the
+Future 326 (the first civ on turn 267), close to Civ VI's Standard pacing, and the first
+decisive win lands between turns 277 and 385. D117's pace target is met; its victory-mix target
+(every type, none over 40%) is not: science still wins four games in six, and religion and
+domination none at Standard (open decision D121).
+
+| Median civ (Standard) | Turn 50 | 100 | 150 | 200 | 250 | 300 |
+|---|---|---|---|---|---|---|
+| Settlements | 3 (3) | 6 (6) | 6 (6) | 7 (6) | 7 (6) | 7 (6) |
+| Population | 12 (13) | 40 (34) | 70 (52) | 87 (64) | 92 (67) | 100 (66) |
+| Science / turn | 9 (9) | 29 (22) | 56 (37) | 100 (54) | 128 (61) | 158 (65) |
+| Culture / turn | 5 (5) | 9 (10) | 25 (13) | 74 (19) | 127 (24) | 189 (27) |
+| Production / turn | 22 (26) | 69 (51) | 147 (86) | 233 (113) | 294 (130) | 374 (145) |
+| Gold / turn | 12 (9) | 32 (19) | 58 (44) | 179 (79) | 284 (106) | 375 (127) |
+| Faith / turn | 3 (2) | 14 (15) | 52 (39) | 115 (56) | 117 (70) | 161 (83) |
+| Tourism / turn | 0 (0) | 1 (0) | 3 (1) | 7 (2) | 18 (3) | 51 (5) |
+| Unhappy settlements | 0 (1) | 0 (3) | 1 (4) | 2 (5) | 3 (6) | 4 (6) |
+
+(Baseline in brackets.) The economy keeps growing to the end instead of flattening at turn
+250, tourism finally becomes a force in the late game, and unhappiness stays a pressure rather
+than a permanent state (D107's target, under a third of settlements unhappy at turn 150, is met).
 
 Why science kept winning: one AI with a science personality and a good start stacks campus
 adjacency (doubled by a policy card, shared by its buildings), a +15% dedication and a founder
