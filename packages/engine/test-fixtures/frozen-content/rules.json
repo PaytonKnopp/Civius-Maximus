@@ -229,8 +229,8 @@
       "era_industrial": 130,
       "era_modern": 150,
       "era_atomic": 185,
-      "era_information": 215,
-      "era_future": 250
+      "era_information": 240,
+      "era_future": 300
     },
     "governmentChangeCost": 100,
     "legacy": {
@@ -535,7 +535,7 @@
       "project_mars_colony",
       "project_exoplanet_expedition"
     ],
-    "travelTurns": 15
+    "travelTurns": 20
   },
   "culture": {
     "culturePerTourist": 100,

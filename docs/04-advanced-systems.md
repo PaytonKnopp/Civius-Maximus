@@ -866,7 +866,7 @@ The end screen names the winner and how, with everyone's score.
 new-game toggle (on by default), and a Victories screen (V) with everyone's progress.
 - **Science:** a Spaceport (after Rocketry, flat land, outside the district limit) and four
   projects done on it in order: Launch a Satellite, Moon Landing, Mars Colony, then the
-  Exoplanet Expedition, which arrives 15 turns later (10 before the final gameplay pass) and
+  Exoplanet Expedition, which arrives 20 turns later (10 before the final gameplay pass) and
   wins. Since the final gameplay pass they need Rocketry, Computers, Robotics and
   Nanotechnology (see docs/03, "Tech tree").
 - **Culture:** see "Tourism & great works".
