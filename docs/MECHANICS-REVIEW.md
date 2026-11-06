@@ -581,3 +581,5 @@ Payton approved every recommended default (D106–D120), the four groups of know
   Anti-Air Gun, Mobile SAM, with support-unit rules (walls, healing) and the upgrade dead ends
   closed. The AI builds the recon and naval ones through its usual choices but not support
   units, anti-air or the Fleet Commander (a known gap).
+- **D118** Undo for moves that revealed nothing (single player, Ctrl+Z) and "your turn"
+  browser notices in online games.

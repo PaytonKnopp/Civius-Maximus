@@ -22,6 +22,9 @@ export interface GameHandle {
   nextHuman(): PlayerId | undefined;
   /** Replaces the whole game (debugging, tests). */
   load(state: GameState): void;
+  /** Single player: whether the last move can be taken back, and taking it back (D118). */
+  canUndo?(): boolean;
+  undo?(): boolean;
   /** Whether this tab holds the real game, so it can be saved (an online client can't). */
   readonly saves: boolean;
   /** Online games: who's in and who's connected. */

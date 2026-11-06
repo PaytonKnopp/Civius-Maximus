@@ -12,6 +12,7 @@ import {
   type PlayerId,
   turnOrder,
   validateAction,
+  visibleTiles,
 } from '@cx/engine';
 import type { GameHandle } from './handle';
 
@@ -112,6 +113,11 @@ export class LocalGame implements GameHandle {
   /** While `busy`: how far along the turn's work is (null until the runner says). */
   progress: TurnProgress | null = null;
   private listeners = new Set<GameListener>();
+  /**
+   * Undo for moves (D118): the states before the last few moves that taught the player nothing
+   * new, in a game with one human. Any other action clears it.
+   */
+  private undoStack: GameState[] = [];
 
   /** A new game from a setup, or a saved game from its state. */
   constructor(
@@ -146,7 +152,22 @@ export class LocalGame implements GameHandle {
   /** Replaces the whole game (loading a save, or a test setting up a scene) and tells listeners. */
   load(state: GameState) {
     this.state = state;
+    this.undoStack = [];
     this.tell([]);
+  }
+
+  /** Whether the last move can be taken back. */
+  canUndo(): boolean {
+    return !this.busy && this.undoStack.length > 0;
+  }
+
+  /** Takes back the last move (only moves that revealed nothing; one human only). */
+  undo(): boolean {
+    const before = this.canUndo() ? this.undoStack.pop() : undefined;
+    if (!before) return false;
+    this.state = before;
+    this.tell([]);
+    return true;
   }
 
   /** Applies a player's action; on success, AI seats respond and listeners are told. */
@@ -164,17 +185,26 @@ export class LocalGame implements GameHandle {
       this.work(action);
       return { ok: true, state: this.state, events: [] };
     }
+    const before = this.state;
     const result = applyAction(this.state, action, this.ctx);
     if (!result.ok) return result;
     const work = runTurn(this.ctx, result.state, null);
     this.state = work.state;
     const events = [...result.events, ...work.events];
+    if (
+      action.type === 'move_unit' &&
+      this.humans().length === 1 &&
+      undoableMove(this.ctx, before, this.state, action.player, events)
+    )
+      this.undoStack = [...this.undoStack.slice(-(UNDO_DEPTH - 1)), before];
+    else this.undoStack = [];
     this.tell(events);
     return { ok: true, state: this.state, events };
   }
 
   /** Hands the turn's work to the runner (falling back to this page if it fails). */
   private work(action: Action | null) {
+    this.undoStack = [];
     this.busy = true;
     this.progress = null;
     this.tell([]);
@@ -196,6 +226,33 @@ export class LocalGame implements GameHandle {
   private tell(events: GameEvent[]) {
     for (const fn of this.listeners) fn(this.state, events);
   }
+}
+
+/** How many moves can be taken back in a row. */
+const UNDO_DEPTH = 10;
+
+/**
+ * Whether a move can be taken back without leaking hidden information: it only moved (no
+ * village, capture or anything else happened), explored no new tiles and brought no other
+ * player's unit or settlement into view.
+ */
+export function undoableMove(
+  ctx: EngineContext,
+  before: GameState,
+  after: GameState,
+  player: PlayerId,
+  events: readonly GameEvent[],
+): boolean {
+  if (events.some((e) => e.type !== 'unit_moved')) return false;
+  if (before.turn !== after.turn) return false;
+  if (before.players[player]?.explored !== after.players[player]?.explored) return false;
+  const was = visibleTiles(ctx, before, player);
+  const now = visibleTiles(ctx, after, player);
+  const foreign = new Set<number>();
+  for (const u of Object.values(after.units)) if (u.owner !== player) foreign.add(u.tile);
+  for (const x of Object.values(after.settlements)) if (x.owner !== player) foreign.add(x.tile);
+  for (const t of foreign) if (now[t] && !was[t]) return false;
+  return true;
 }
 
 /** Freezes a state (from a save or a worker) like every engine state. */

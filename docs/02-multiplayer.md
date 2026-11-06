@@ -223,6 +223,10 @@ Simultaneous turns are played live, so notifications are mostly about getting ev
   a small Supabase edge function, so webhook URLs never reach other players.
 - **Browser / desktop notifications:** "Turn 87 started", "Alex proposed a deal", "Everyone's
   waiting on you".
+- **Built (final gameplay pass, D118):** in an online game the browser asks once (on your
+  first click) whether it may notify you. When a new turn is yours while the tab is in the
+  background, it shows "Your turn" (turn N) and marks the tab title with ● until you come back.
+  Deal and waiting reminders aren't built yet.
 
 ## Communication
 
@@ -240,6 +244,11 @@ Simultaneous turns are played live, so notifications are mostly about getting ev
   fog, an attack, or anything random cannot.
 - **Host rewind:** the host can propose rolling back to the start of the turn (all human players
   must accept). This is useful for bugs or genuine misclicks.
+- **Built (final gameplay pass, D118): undo for moves,** in a game with one human: **Ctrl+Z**
+  (⌘Z) or the "↶ Undo move" button takes back the last moves (up to 10 in a row) that only
+  moved: nothing new explored, no other player's unit or settlement came into view, no village,
+  capture or discovery. Any other action, and the end of the turn, clears it. Hotseat and
+  online games have no undo (another player could have seen the move).
 
 ## Hotseat (same machine)
 
@@ -253,7 +262,7 @@ Simultaneous turns are played live, so notifications are mostly about getting ev
   space arrivals, AI rivals), so no seat always goes first; in 72 baseline games the first seat
   had won 21 against about 12 expected. Each player starts their turn with a
   summary of what they could see happen since their last one (wars, captures, kills, growth,
-  wonders...). Undo isn't there yet.
+  wonders...). Undo for moves is single-player only (below).
 
 ## Spectators and eliminated players
 

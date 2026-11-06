@@ -86,6 +86,7 @@ import {
 } from './model';
 import { GovernmentScreen } from './GovernmentScreen';
 import { effectLines } from './effectText';
+import { askTurnNotices, turnNotice } from './turnNotice';
 import { GreatPeopleScreen } from './GreatPeopleScreen';
 import { ReligionScreen } from './ReligionScreen';
 import { CityStatesScreen } from './CityStatesScreen';
@@ -900,6 +901,21 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   );
   const me = state.players[viewer]!;
   const era = playerEra(ctx, me);
+  // Online: ask once (on a click) whether to notify, then tell the player when their turn comes
+  // while they're in another tab (D118).
+  useEffect(() => {
+    if (!online) return;
+    const ask = () => askTurnNotices();
+    window.addEventListener('pointerdown', ask, { once: true });
+    return () => window.removeEventListener('pointerdown', ask);
+  }, [online]);
+  const noticed = useRef(0);
+  useEffect(() => {
+    if (!online || busy || state.status !== 'playing' || me.turnEnded || !me.alive) return;
+    if (noticed.current === state.turn) return;
+    noticed.current = state.turn;
+    turnNotice('Your turn', `Civius Maximus: turn ${state.turn} is yours to play`);
+  }, [online, busy, state.turn, state.status, me.turnEnded, me.alive]);
   // The music follows your era and your civ's culture.
   const architecture = ctx.content.entities.civ[me.civ]?.architecture ?? 'mediterranean';
   useEffect(() => {
@@ -1564,6 +1580,11 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         return;
       }
       if (overlay) return; // the open screen handles its own keys
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (game.canUndo?.()) game.undo?.();
+        return;
+      }
       if (e.key === 'Enter') doNext();
       else if (e.key === 't') setOverlay({ kind: 'tree', tree: 'tech' });
       else if (e.key === 'c') setOverlay({ kind: 'tree', tree: 'civic' });
@@ -2178,6 +2199,16 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             onClick={() => act({ type: 'unend_turn', player: viewer })}
           >
             Not done yet
+          </button>
+        )}
+        {game.canUndo?.() && !busy && (
+          <button
+            type="button"
+            className="ghost small unend"
+            title="Take back the last move (only moves that revealed nothing new)"
+            onClick={() => game.undo?.()}
+          >
+            ↶ Undo move <kbd>Ctrl Z</kbd>
           </button>
         )}
         <Minimap
