@@ -250,6 +250,17 @@ export {
   warBlock,
 } from './diplomacy/rules';
 export { researchPartners, tradedBy, tradesOf } from './diplomacy/pacts';
+export { monopolies, monopolyShare, monopolySources } from './resources/monopoly';
+export {
+  campOf,
+  campOfGovernment,
+  culturalWeight,
+  type IdeologyCamp,
+  ideologyHappinessUnder,
+  ideologyPressure,
+  type IdeologyPressure,
+} from './culture/ideology';
+export { containmentResolution, victoryProgress } from './congress/containment';
 export {
   allUnitsOf,
   type Command,

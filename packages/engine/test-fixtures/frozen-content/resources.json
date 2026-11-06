@@ -118,7 +118,19 @@
     },
     "happiness": 2,
     "validFeatures": ["woods"],
-    "frequency": 6
+    "frequency": 6,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -130,7 +142,19 @@
     },
     "happiness": 2,
     "validFeatures": ["rainforest"],
-    "frequency": 6
+    "frequency": 6,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -143,7 +167,19 @@
     },
     "happiness": 2,
     "validTerrains": ["grassland", "plains"],
-    "frequency": 6
+    "frequency": 6,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -156,7 +192,19 @@
     "happiness": 2,
     "validTerrains": ["plains", "desert"],
     "validElevations": ["flat"],
-    "frequency": 6
+    "frequency": 6,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -170,7 +218,19 @@
     "validTerrains": ["tundra"],
     "validFeatures": ["rainforest"],
     "validElevations": ["hills"],
-    "frequency": 4
+    "frequency": 4,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -183,7 +243,29 @@
     "happiness": 2,
     "validTerrains": ["coast"],
     "validElevations": ["flat"],
-    "frequency": 5
+    "frequency": 5,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 5
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -197,7 +279,22 @@
     "happiness": 2,
     "validTerrains": ["coast"],
     "validElevations": ["flat"],
-    "frequency": 5
+    "frequency": 5,
+    "monopoly": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 15,
+          "toward": {
+            "kind": "unit",
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -209,7 +306,19 @@
     },
     "happiness": 2,
     "frequency": 5,
-    "validFeatures": ["rainforest", "woods"]
+    "validFeatures": ["rainforest", "woods"],
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "tourism",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -223,7 +332,19 @@
     "happiness": 2,
     "frequency": 5,
     "validTerrains": ["tundra"],
-    "validFeatures": ["woods"]
+    "validFeatures": ["woods"],
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -237,7 +358,19 @@
     "happiness": 2,
     "frequency": 5,
     "validTerrains": ["plains", "grassland", "desert"],
-    "validElevations": ["flat"]
+    "validElevations": ["flat"],
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -251,7 +384,21 @@
     "happiness": 2,
     "frequency": 5,
     "validTerrains": ["grassland", "plains"],
-    "validElevations": ["hills"]
+    "validElevations": ["hills"],
+    "monopoly": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 15,
+          "toward": {
+            "kind": "wonder"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -265,7 +412,19 @@
     "happiness": 2,
     "frequency": 5,
     "validTerrains": ["desert", "plains", "tundra"],
-    "validElevations": ["flat"]
+    "validElevations": ["flat"],
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -277,7 +436,18 @@
     },
     "happiness": 2,
     "frequency": 5,
-    "validFeatures": ["marsh", "floodplains", "floodplains_grassland", "floodplains_plains"]
+    "validFeatures": ["marsh", "floodplains", "floodplains_grassland", "floodplains_plains"],
+    "monopoly": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -290,7 +460,19 @@
     "happiness": 2,
     "frequency": 5,
     "validTerrains": ["grassland", "plains"],
-    "validElevations": ["hills"]
+    "validElevations": ["hills"],
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
@@ -303,7 +485,21 @@
     "happiness": 2,
     "frequency": 5,
     "validTerrains": ["grassland", "plains"],
-    "validElevations": ["flat"]
+    "validElevations": ["flat"],
+    "monopoly": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 10,
+          "toward": {
+            "kind": "building"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",

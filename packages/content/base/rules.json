@@ -381,6 +381,32 @@
     "faithPerPoint": 3,
     "unit": "unit_great_person"
   },
+  "ideology": {
+    "camps": [
+      {
+        "id": "ideology_liberty",
+        "name": "Liberty",
+        "governments": ["government_democracy", "government_digital_republic"]
+      },
+      {
+        "id": "ideology_commonwealth",
+        "name": "Commonwealth",
+        "governments": ["government_collectivism", "government_technocracy"]
+      },
+      {
+        "id": "ideology_dominion",
+        "name": "Dominion",
+        "governments": ["government_militarism", "government_corporate_federation"]
+      }
+    ],
+    "stepPercent": 25,
+    "maxUnhappiness": 5,
+    "sharedHappiness": 1
+  },
+  "monopoly": {
+    "sharePercent": 50,
+    "minCopies": 3
+  },
   "camps": {
     "landTilesPerCamp": 120,
     "minDistance": 6,

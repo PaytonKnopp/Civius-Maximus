@@ -12,6 +12,7 @@ import { ageSources } from '../eras/ages';
 import { congressSources } from '../congress/congress';
 import { governorOf, governorSources } from '../governors/governors';
 import { pactSources } from '../diplomacy/pacts';
+import { monopolySources } from '../resources/monopoly';
 
 /**
  * Where a player's effects come from (docs/05-modding.md, "The effects system"): their
@@ -354,6 +355,7 @@ export function sourcesFor(
       ...builtSources(ctx, state, player),
       ...cityStateSources(ctx, state, player),
       ...pactSources(ctx, state, player),
+      ...monopolySources(ctx, state, player),
     ];
     memo?.base.set(player, base);
   }

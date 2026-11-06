@@ -150,6 +150,14 @@ Strategic resources are only revealed once you research the matching tech.
   cheers the receiver's capital and its 3 nearest settlements ("Wine (from Rome)"). Strategic
   resources trade per turn out of the sender's own income: their stockpile gains that much less
   and the other's that much more.
+- **Monopolies** (D118, light; `rules.monopoly`): hold more than half of the map's tiles of a
+  luxury, improved and in your land, at least 3 of them, and its `monopoly` effects reach your
+  whole empire ("Silk monopoly (+10%)" in the yields): Silk and Ivory +10% culture, Spices and
+  Salt +10% food, Wine and Furs +10% gold, Diamonds +15% gold, Incense +15% faith, Pearls +10%
+  faith and +5% gold, Whales +15% production toward soldiers, Dyes +10% tourism, Marble +15%
+  production toward wonders, Sugar +1 happiness everywhere, Tea +10% science, Cotton +10%
+  production toward buildings. The Civilopedia's luxury articles say so. Luxuries come in
+  clusters, so a monopoly usually means settling or taking a second cluster.
 - **Strategic resources** (`rules.strategic`), after Civ VI:
   - Hidden until their tech: horses (Animal Husbandry), iron (Bronze Working), niter (Military
     Tactics), coal (Industrialization), oil (Steam Power), aluminum (Radio), uranium (Nuclear

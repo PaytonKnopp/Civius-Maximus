@@ -497,7 +497,7 @@ forces new crisis policies. Off by default, for groups that like chaos.
   you've seen, +25% each with a trade route between you, a shared religion (both capitals
   follow it) or a friendship or alliance.
 - **Culture victory:** your visitors from each other civ outnumber its domestic tourists.
-- Not yet: ideologies and their pressure, great works, national parks and seaside resorts.
+- Ideologies, great works, national parks and seaside resorts came later (below).
 
 ### Great works (V1 final, F11)
 
@@ -545,6 +545,17 @@ forces new crisis policies. Off by default, for groups that like chaos.
   trade route, shared religion and friendship bonuses.
 - National parks and seaside resorts draw tourism from appeal (see
   [03-core-mechanics.md](03-core-mechanics.md#appeal)).
+- **Ideologies** (D118, light; `rules.ideology`): the six late governments fall into three
+  camps: **Liberty** (Democracy, Digital Republic), **Commonwealth** (Collectivism,
+  Technocracy) and **Dominion** (Militarism, Corporate Federation).
+  - Visitors from civs of other camps unsettle yours: −1 happiness in every settlement for each
+    25% of your domestic tourists they make up together, up to −5 ("Ideological pressure
+    (Rome)").
+  - While a civ of your own camp has at least 25% on you, +1 instead ("Shared ideology").
+  - Civs outside every camp feel nothing, so a culture leader pulls its rivals toward its camp
+    or into unrest: late-game tension between friends, as in Civ V, without its tenets.
+  - The government screen shows each late government's camp and what it would do to your
+    happiness now; the AI weighs the same number when it picks a government.
 
 ---
 

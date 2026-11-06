@@ -569,3 +569,6 @@ Payton approved every recommended default (D106–D120), the four groups of know
 - **D115** Great works and wonders draw +25% tourism per era past their own, up to double.
 - **D120** Emergency sessions: a civ three quarters of the way to any victory faces a
   containment vote (−15% toward that victory for 20 turns if it passes).
+- **D118** Light monopolies (more than half of a luxury's tiles: an empire bonus per luxury)
+  and light ideologies (three camps of late governments; rival camps' tourism costs happiness,
+  the AI picks its camp with that in mind).

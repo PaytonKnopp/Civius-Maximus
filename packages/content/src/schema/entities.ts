@@ -129,6 +129,11 @@ export const ResourceDef = z.strictObject({
   validElevations: z.array(Elevation).min(1).default(['flat', 'hills']),
   /** Relative placement frequency for map generation. */
   frequency: z.int().min(0).default(10),
+  /**
+   * Luxury: what holding a monopoly gives the whole empire (D118): most of the map's tiles of it,
+   * improved and in your land (`rules.monopoly`).
+   */
+  monopoly: z.array(Effect).default([]),
 });
 
 /** Global rule constants. Exactly one `rules` entity exists; mods change it with patches. */
@@ -611,6 +616,27 @@ export const RulesDef = z.strictObject({
     /** The unit a great person walks the map as. */
     unit: Id,
   }),
+  /**
+   * Ideologies (D118, light): the late governments fall into camps. Visitors from civs in another
+   * camp unsettle your citizens: −1 happiness in every settlement for each `stepPercent` of your
+   * domestic tourists they make up (all such civs together), up to `maxUnhappiness`; while a civ
+   * of your own camp has at least one step on you, +`sharedHappiness` instead.
+   */
+  ideology: z
+    .strictObject({
+      camps: z.array(z.strictObject({ id: Id, name: Text, governments: z.array(Id).min(1) })),
+      stepPercent: z.int().min(1),
+      maxUnhappiness: z.int().min(0),
+      sharedHappiness: z.int().min(0),
+    })
+    .default({ camps: [], stepPercent: 25, maxUnhappiness: 5, sharedHappiness: 1 }),
+  /**
+   * Monopolies (D118, light): a player whose land holds more than `sharePercent` of the map's
+   * tiles of a luxury, at least `minCopies` of them improved, gets its `monopoly` effects.
+   */
+  monopoly: z
+    .strictObject({ sharePercent: z.int().min(1).max(100), minCopies: z.int().min(1) })
+    .default({ sharePercent: 50, minCopies: 3 }),
   /** Hostile camps: raiders that belong to no one and attack everyone. */
   camps: z.strictObject({
     /** One camp per this many land tiles, at the start and at most (0 = no camps). */

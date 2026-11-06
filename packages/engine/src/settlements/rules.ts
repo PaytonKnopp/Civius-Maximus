@@ -41,6 +41,7 @@ import { scaleCost } from '../speed';
 import { loyaltyPenalty } from '../loyalty/loyalty';
 import { greatWorkYields } from '../greatworks/greatworks';
 import { luxuryLines } from './luxuries';
+import { ideologyLine } from '../culture/ideology';
 import { agingPercent, eraOrderOf, perEra } from '../progress/era';
 import { appealOf } from '../map/appeal';
 import { isRevealed, resourceProblem } from '../resources/strategic';
@@ -451,6 +452,8 @@ export function happinessOf(ctx: EngineContext, state: GameState, s: SettlementS
   if (citizens > 0) lines.push({ label: 'Citizens', amount: -citizens });
   const weariness = warWeariness(ctx, state, s.owner);
   if (weariness > 0) lines.push({ label: 'War weariness', amount: -weariness });
+  const ideology = ideologyLine(ctx, state, s.owner);
+  if (ideology) lines.push(ideology);
   const maintained = s.buildings.filter(
     (b) => ctx.content.entities.building[b]!.maintenance > 0,
   ).length;

@@ -905,6 +905,12 @@ export function buildArticles(content: CompiledContent): Article[] {
             'Stockpile',
             x.stockpilePerTurn ? `+${x.stockpilePerTurn} per turn when improved` : undefined,
           ],
+          [
+            'Monopoly',
+            x.monopoly.length > 0
+              ? `More than ${content.rules.monopoly.sharePercent}% of the map's ${t(x.name)}, improved in your land (at least ${content.rules.monopoly.minCopies}): ${effectLines(content, x.monopoly).join('; ')}`
+              : undefined,
+          ],
         ]),
       ],
     });

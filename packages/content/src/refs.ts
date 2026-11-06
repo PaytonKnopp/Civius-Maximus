@@ -227,6 +227,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ids(out, 'terrain', entity.validTerrains, ['validTerrains']);
       ids(out, 'feature', entity.validFeatures, ['validFeatures']);
       ids(out, 'tech', entity.revealedBy, ['revealedBy']);
+      effectList(out, entity.monopoly, ['monopoly']);
       break;
     case 'ability':
       effectList(out, entity.effects, ['effects']);
@@ -437,6 +438,9 @@ export function collectRefs(entity: AnyEntity): Ref[] {
         ids(out, 'unit', u.units, ['camps', 'units', i, 'units']);
       });
       ids(out, 'district', entity.trade.seaDistrict, ['trade', 'seaDistrict']);
+      entity.ideology.camps.forEach((c, i) =>
+        ids(out, 'government', c.governments, ['ideology', 'camps', i, 'governments']),
+      );
       entity.huts?.rewards.forEach((r, i) =>
         ids(out, 'unit', r.unit, ['huts', 'rewards', i, 'unit']),
       );
