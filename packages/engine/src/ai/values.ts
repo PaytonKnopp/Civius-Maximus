@@ -133,6 +133,21 @@ export function effectValue(t: Turn, effect: Effect): number {
         return effect.params.amount * (20 + me.faith * 6);
       return effect.params.amount * 10;
     }
+    case 'adjacency_percent': {
+      // Worth the adjacency of the districts it covers (about 3 each), in their main yield.
+      const wanted = effect.params.district;
+      const ids = Array.isArray(wanted) ? wanted : [wanted];
+      let v = 0;
+      for (const s of t.mySettlements())
+        for (const d of s.districts) {
+          const def = t.ctx.content.entities.district[d.id];
+          const base = def?.replaces ?? d.id;
+          if (!def || !(ids.includes(d.id) || ids.includes(base))) continue;
+          const y = def.adjacency[0]?.yield;
+          if (y) v += Math.floor((3 * effect.params.percent * yieldWeight(me, y)) / 100);
+        }
+      return v;
+    }
     case 'yield_per_follower':
       return Math.floor(
         (effect.params.amount * yieldWeight(me, effect.params.yield) * settlements * 2) /

@@ -24,11 +24,13 @@ const tileMatchShape = {
   /** A settlement's center tile. */
   cityCenter: z.boolean().optional(),
   river: z.boolean().optional(),
+  /** Any natural wonder (a feature with `naturalWonder`), so modded ones count too. */
+  naturalWonder: z.boolean().optional(),
 };
 const matchesSomething = (m: object) =>
   Object.keys(m).some((k) => k !== 'min' && k in tileMatchShape);
 const NEEDS_FIELD =
-  'must match on at least one of: terrain, feature, elevation, resource, resourceClass, improvement, district, wonder, cityCenter, river';
+  'must match on at least one of: terrain, feature, elevation, resource, resourceClass, improvement, district, wonder, cityCenter, river, naturalWonder';
 
 export const TileMatch = z.strictObject(tileMatchShape).refine(matchesSomething, NEEDS_FIELD);
 export type TileMatch = z.infer<typeof TileMatch>;
@@ -362,6 +364,14 @@ const DistrictNeighborBonus = z.strictObject({
   condition: Condition.optional(),
 });
 
+/** These districts' adjacency bonuses are worth this much more (Civ VI's "+100% Campus adjacency"). */
+const AdjacencyPercent = z.strictObject({
+  effect: z.literal('adjacency_percent'),
+  params: z.strictObject({ district: IdOrIds, percent: Percent }),
+  target: PlayerTarget,
+  condition: Condition.optional(),
+});
+
 /** An extra adjacency rule for some districts. */
 const ExtraAdjacency = z.strictObject({
   effect: z.literal('extra_adjacency'),
@@ -537,6 +547,7 @@ export const Effect = z.discriminatedUnion('effect', [
   ModifyBoost,
   DistrictNeighborBonus,
   ExtraAdjacency,
+  AdjacencyPercent,
   PurchaseWithFaith,
   FreeUnitOnDistrict,
   ExtraTradeRoute,

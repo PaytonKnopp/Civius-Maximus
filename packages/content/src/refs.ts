@@ -142,6 +142,9 @@ export function effectRefs(out: Refs, e: Effect, path: PathSegment[]) {
     case 'free_building':
       ids(out, 'building', e.params.building, [...at, 'building']);
       break;
+    case 'adjacency_percent':
+      ids(out, 'district', e.params.district, [...at, 'district']);
+      break;
     case 'extra_adjacency':
       ids(out, 'district', e.params.district, [...at, 'district']);
       adjacencyRefs(out, [e.params.adjacency], [...at, 'adjacency']);
@@ -288,6 +291,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ids(out, 'district', entity.district, ['district']);
       effectList(out, entity.localEffects, ['localEffects']);
       effectList(out, entity.effects, ['effects']);
+      if (entity.regional) effectList(out, entity.regional.effects, ['regional', 'effects']);
       uniqueRefs(out, 'building', entity);
       break;
     case 'district':
@@ -306,6 +310,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       placementRefs(out, entity.placement, ['placement']);
       effectList(out, entity.localEffects, ['localEffects']);
       effectList(out, entity.effects, ['effects']);
+      if (entity.regional) effectList(out, entity.regional.effects, ['regional', 'effects']);
       requirements(out, entity);
       break;
     case 'project':
@@ -361,6 +366,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
     case 'policy':
       ids(out, 'civic', entity.requiresCivic, ['requiresCivic']);
       ids(out, 'civic', entity.obsoletedBy, ['obsoletedBy']);
+      ids(out, 'age', entity.requiresAge, ['requiresAge']);
       effectList(out, entity.effects, ['effects']);
       break;
     case 'greatPersonClass':

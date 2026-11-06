@@ -579,7 +579,7 @@
     "id": "promo_admiral_led",
     "name": "Admiral-led",
     "description": "+1 movement and +3 strength (a great admiral's crews).",
-    "classes": ["class_naval_melee"],
+    "classes": ["class_naval_melee", "class_naval_ranged"],
     "tier": 1,
     "movement": 1,
     "strength": [

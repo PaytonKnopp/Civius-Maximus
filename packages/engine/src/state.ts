@@ -563,4 +563,6 @@ export interface Track {
   boosted: string[];
   /** Earned while nothing was chosen; goes to the next choice. */
   stored: number;
+  /** Repeatable nodes (Future Tech): times finished after the first, by id. */
+  repeats?: Record<string, number>;
 }

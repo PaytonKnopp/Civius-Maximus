@@ -582,6 +582,21 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   - **Digital Republic** (Globalization): +15% gold, +1 happiness, +3 favor.
   - **Corporate Federation** (Social Networks): +20% toward buildings, +10% gold, two more
     trade routes.
+- **Final gameplay pass (November 2026):**
+  - **Every node does something.** Synthetic Materials, Nuclear Fusion and Artificial
+    Intelligence now improve tiles and buildings; **Future Tech** and the new **Future Civic**
+    can be finished again and again (each time counts toward the score), so science and culture
+    never stop mattering. Every Atomic, Information and Future node has a boost.
+  - **46 policy cards.** The flat "+1 everywhere" cards became decisions: five **adjacency
+    cards** double one district's adjacency (Scribes' Stipend: Campus; Temple Tithes: Holy Site;
+    Patrons of Poetry: Theater Square; Royal Mint: Commercial Hub; Guild Charters: Industrial
+    Zone; plus Charted Coasts: Harbor), and others need a building (Festival Calendar: Arenas).
+    Early cards go **obsolete** when their later version arrives (Militia Drills, Bowyers'
+    Workshops, Remount Herds and Siege Engineers at Nationalism...) and leave their slots.
+    Three **dark-age cards** (Martial Law, Monastic Retreat, Rally the Levies) are strong with
+    a price and only open during a dark age. New cards for the civics that had none (Border
+    Forts, Air Doctrine, Self-Determination, Space Program, Green Energy, World Forum) and a
+    fourth diplomatic one (Trade Delegations).
 - This is one of Civ 6's best systems. It's very moddable, and it creates lots of strategic
   choices, so we keep it as-is.
 
@@ -603,6 +618,12 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
 - Improvements: Farm, Mine, Quarry, Pasture, Plantation, Camp, Fishing Boats, Lumber Mill, Oil
   Well, Offshore Platform, Fort, Airstrip, Beach Resort, Ski Resort, Seaside Resort, plus unique
   ones from civs.
+- **Improvements grow through the tree (final pass):** Farms +1 food at Replaceable Parts and
+  Synthetic Materials; Mines +1 production at Apprenticeship, Industrialization and Robotics;
+  Quarries +1 at Metal Casting; Pastures +1 food at Stirrups and +1 production at Robotics;
+  Plantations and Camps +1 gold at Mercantilism; Camps +1 production at Synthetic Materials;
+  Fishing Boats +1 gold at Cartography and +1 food at Synthetic Materials; Woodcutters +1 at
+  Machinery and Steel; Oil Wells and Offshore Platforms +1 at Nuclear Fusion.
 - **Adjacency for improvements:** farms gain +1🍞 for every two adjacent farms (Feudalism makes it
   every one), mines gain from adjacent mines later, and so on.
 - **Built so far (M8):** farms get +1🍞 per two neighboring farms; the Open Fields policy
@@ -643,6 +664,26 @@ Districts are Civ 6's signature system and the main source of city planning.
 | Government Plaza | unique | One per empire. Extra policy slot |
 | Spaceport | science victory | — |
 
+- **Final gameplay pass (November 2026):**
+  - The **Holy Site** gets +2 faith per neighboring natural wonder (any feature marked as one,
+    so modded wonders count: the `naturalWonder` tile match).
+  - The **Encampment** gets +1 production per neighboring Pasture and strategic resource, and
+    its settlement can make its ranged strike from the Encampment's tile too (`rangedStrike`).
+  - **Buildings share their district's adjacency (D108):** each building inside a specialty
+    district adds a third of the district's adjacency bonus, rounded down to whole points
+    (`rules.settlements.districts.buildingAdjacencyPercent`). A +6 Campus with a Library,
+    University and Research Lab makes +12 from adjacency; a +1 Campus stays poor.
+  - **Adjacency cards** (`adjacency_percent`) double one district's adjacency (section 6).
+  - **Regional effects (D109):** a Factory (+3 production), Power Plant (+4) or Stadium (+2
+    happiness) also reaches your other settlements within 6 tiles that don't have their own;
+    each kind counts once (`regional` on buildings and wonders). The Colosseum, Taj Mahal and
+    Maracanã reach the same way with happiness.
+  - The Nuclear Plant needs a Power Plant.
+  - **Wonders:** every wonder now has a placement rule (St. Basil's next to the city center,
+    Big Ben next to a Commercial Hub, Broadway next to a Theater Square, the Statue of Liberty
+    on the coast...), and the empire-wide trickles became signature effects (Stonehenge +3
+    great prophet points a turn; the Oracle makes boosts 10% bigger; Big Ben an economic slot;
+    the Eiffel Tower +15% tourism; the CN Tower +25% tourism where there's a Broadcast Center).
 - Every specialty district also gets **+0.5 for each adjacent district** of any kind
   (so clustering districts pays off).
 - **World wonders:** only one can exist per world, each with placement rules (e.g., the Pyramids

@@ -300,6 +300,21 @@ function soldier(t: Turn, u: UnitState, plan: Plan) {
 /** Great people: activate in the settlement they stand in, or walk to the nearest one. */
 function useGreatPerson(t: Turn, u: UnitState) {
   if (prophet(t, u)) return;
+  // Builders (a share of a wonder...) go where that kind of thing is being built, if anywhere.
+  const builder = u.person
+    ? t.ctx.content.entities.greatPerson[u.person]?.activate.find((a) => a.kind === 'finish')
+    : undefined;
+  if (builder?.kind === 'finish') {
+    const site = t
+      .mySettlements()
+      .filter((s) => s.queue[0] && builder.toward.includes(s.queue[0].kind))
+      .sort(
+        (a, b) =>
+          distance(t.state.map, u.tile, a.tile) - distance(t.state.map, u.tile, b.tile) ||
+          (a.id < b.id ? -1 : 1),
+      )[0];
+    if (site && site.tile !== u.tile && goNear(t, u, site.tile, 0)) return;
+  }
   if (!activateProblem(t.state, u.id, t.player, t.ctx)) {
     t.act({ type: 'activate_great_person', player: t.player, unit: u.id });
     return;

@@ -420,7 +420,24 @@
         "count": 2,
         "unit": "unit_horseman"
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_pasture"
+        }
+      }
+    ],
+    "description": "Pastures give +1 food."
   },
   {
     "type": "tech",
@@ -518,7 +535,24 @@
         "count": 2,
         "unitClass": "class_siege"
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_quarry"
+        }
+      }
+    ],
+    "description": "Quarries give +1 production."
   },
   {
     "type": "tech",
@@ -535,7 +569,24 @@
         "count": 2,
         "unitClass": "class_naval_melee"
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_fishing_boats"
+        }
+      }
+    ],
+    "description": "Fishing Boats give +1 gold."
   },
   {
     "type": "tech",
@@ -569,7 +620,24 @@
         "count": 3,
         "building": "building_workshop"
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_mine"
+        }
+      }
+    ],
+    "description": "Mines give +1 more production."
   },
   {
     "type": "tech",
@@ -750,7 +818,24 @@
         "count": 3,
         "unit": "unit_line_infantry"
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_farm"
+        }
+      }
+    ],
+    "description": "Farms give +1 food."
   },
   {
     "type": "tech",
@@ -767,7 +852,24 @@
         "count": 2,
         "unit": "unit_field_cannon"
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_woodcutter"
+        }
+      }
+    ],
+    "description": "Woodcutters give +1 production."
   },
   {
     "type": "tech",
@@ -861,7 +963,15 @@
     "era": "era_atomic",
     "cost": 1320,
     "requires": ["tech_flight", "tech_radio"],
-    "row": 1
+    "row": 1,
+    "boost": {
+      "text": "Have 2 Fighters",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_fighter"
+      }
+    }
   },
   {
     "type": "tech",
@@ -887,7 +997,15 @@
     "era": "era_atomic",
     "cost": 1380,
     "requires": ["tech_electricity", "tech_radio"],
-    "row": 3
+    "row": 3,
+    "boost": {
+      "text": "Build 3 Research Labs",
+      "goal": {
+        "kind": "buildings",
+        "count": 3,
+        "building": "building_research_lab"
+      }
+    }
   },
   {
     "type": "tech",
@@ -896,7 +1014,60 @@
     "era": "era_atomic",
     "cost": 1320,
     "requires": ["tech_chemistry", "tech_steel"],
-    "row": 5
+    "row": 5,
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_farm"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_fishing_boats"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_camp"
+        }
+      }
+    ],
+    "description": "Fertilizers and plastics: Farms and Fishing Boats give +1 food, Camps +1 production.",
+    "boost": {
+      "text": "Develop 2 Oil Wells or Offshore Platforms",
+      "goal": {
+        "kind": "improvements",
+        "count": 2,
+        "improvement": ["improvement_oil_well", "improvement_offshore_platform"]
+      }
+    }
   },
   {
     "type": "tech",
@@ -905,7 +1076,15 @@
     "era": "era_atomic",
     "cost": 1420,
     "requires": ["tech_advanced_flight", "tech_steel"],
-    "row": 6
+    "row": 6,
+    "boost": {
+      "text": "Have 3 Tanks",
+      "goal": {
+        "kind": "units",
+        "count": 3,
+        "unit": "unit_tank"
+      }
+    }
   },
   {
     "type": "tech",
@@ -914,7 +1093,15 @@
     "era": "era_information",
     "cost": 1650,
     "requires": ["tech_synthetic_materials", "tech_combined_arms"],
-    "row": 5
+    "row": 5,
+    "boost": {
+      "text": "Have 4 heavy cavalry units",
+      "goal": {
+        "kind": "units",
+        "count": 4,
+        "unitClass": "class_heavy_cavalry"
+      }
+    }
   },
   {
     "type": "tech",
@@ -923,7 +1110,46 @@
     "era": "era_information",
     "cost": 1720,
     "requires": ["tech_computers", "tech_composites"],
-    "row": 4
+    "row": 4,
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_mine"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_pasture"
+        }
+      }
+    ],
+    "description": "Mines and Pastures give +1 production.",
+    "boost": {
+      "text": "Build 2 Data Centers",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_data_center"
+      }
+    }
   },
   {
     "type": "tech",
@@ -949,7 +1175,15 @@
     "era": "era_information",
     "cost": 1680,
     "requires": ["tech_computers", "tech_satellites"],
-    "row": 3
+    "row": 3,
+    "boost": {
+      "text": "Build 3 Broadcast Centers",
+      "goal": {
+        "kind": "buildings",
+        "count": 3,
+        "building": "building_broadcast_center"
+      }
+    }
   },
   {
     "type": "tech",
@@ -958,7 +1192,15 @@
     "era": "era_information",
     "cost": 1760,
     "requires": ["tech_advanced_flight", "tech_composites"],
-    "row": 6
+    "row": 6,
+    "boost": {
+      "text": "Have 4 aircraft",
+      "goal": {
+        "kind": "units",
+        "count": 4,
+        "unitClass": "class_air"
+      }
+    }
   },
   {
     "type": "tech",
@@ -967,7 +1209,15 @@
     "era": "era_information",
     "cost": 1740,
     "requires": ["tech_rocketry", "tech_computers"],
-    "row": 1
+    "row": 1,
+    "boost": {
+      "text": "Have 2 Bombers",
+      "goal": {
+        "kind": "units",
+        "count": 2,
+        "unit": "unit_bomber"
+      }
+    }
   },
   {
     "type": "tech",
@@ -976,7 +1226,59 @@
     "era": "era_information",
     "cost": 1880,
     "requires": ["tech_lasers"],
-    "row": 0
+    "row": 0,
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 4
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_nuclear_plant"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_oil_well"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_offshore_platform"
+        }
+      }
+    ],
+    "description": "Every Nuclear Plant gives +4 production; Oil Wells and Offshore Platforms +1.",
+    "boost": {
+      "text": "Build 2 Nuclear Plants",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_nuclear_plant"
+      }
+    }
   },
   {
     "type": "tech",
@@ -993,7 +1295,23 @@
         "count": 2,
         "building": "building_data_center"
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "amount": 3
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_data_center"
+        }
+      }
+    ],
+    "description": "Every Data Center gives +3 science."
   },
   {
     "type": "tech",
@@ -1002,7 +1320,14 @@
     "era": "era_future",
     "cost": 2300,
     "requires": ["tech_robotics", "tech_nuclear_fusion"],
-    "row": 1
+    "row": 1,
+    "boost": {
+      "text": "Research 55 techs",
+      "goal": {
+        "kind": "techs",
+        "count": 55
+      }
+    }
   },
   {
     "type": "tech",
@@ -1011,6 +1336,15 @@
     "era": "era_future",
     "cost": 2600,
     "requires": ["tech_artificial_intelligence", "tech_nanotechnology"],
-    "row": 2
+    "row": 2,
+    "repeatable": true,
+    "description": "Can be researched again and again: each time adds to your score.",
+    "boost": {
+      "text": "Research 60 techs",
+      "goal": {
+        "kind": "techs",
+        "count": 60
+      }
+    }
   }
 ]

@@ -9,13 +9,13 @@ import {
   unitClassOf,
 } from '../context';
 import { view } from '../draft';
-import { type Fixed, toFixed } from '../fixed';
+import { type Fixed, percentOf, toFixed } from '../fixed';
 import { distance } from '../map/hex';
 import { advance, grantBoost } from '../progress/handlers';
 import { playerEffects } from '../progress/sources';
 import { maxReligions } from '../religion/rules';
 import { settlementAt } from '../combat/strength';
-import { itemKey } from '../settlements/rules';
+import { itemCost, itemKey } from '../settlements/rules';
 import { spawnUnit } from '../settlements/handlers';
 import type { GameState, PlayerId } from '../state';
 import { ownedUnit } from '../units/handlers';
@@ -205,7 +205,19 @@ export const greatPeopleHandlers = {
       delete draft.units[action.unit];
       for (const a of person.activate) {
         if (a.kind === 'create_works') continue;
-        if (a.kind === 'boosts') {
+        if (a.kind === 'envoys') {
+          p.envoys += a.count;
+        } else if (a.kind === 'finish') {
+          // A share of the current build's cost: in full for the kinds named, half for others.
+          const here = draft.settlements[s.id]!;
+          const head = here.queue[0];
+          if (head) {
+            const cost = itemCost(ctx, view(draft), action.player, head, here);
+            const share = a.toward.includes(head.kind) ? a.percent : Math.floor(a.percent / 2);
+            const key = itemKey(head);
+            here.progress[key] = (here.progress[key] ?? 0) + percentOf(cost, share);
+          }
+        } else if (a.kind === 'boosts') {
           for (let i = 0; i < a.count; i++) grantBoost(draft, ctx, action.player, emit);
         } else if (a.kind === 'promote') {
           for (const unit of Object.values(draft.units)) {
@@ -217,7 +229,8 @@ export const greatPeopleHandlers = {
           }
         } else {
           for (const [y, v] of Object.entries(a.yields)) {
-            const amount = toFixed(v);
+            // Lumps of yield keep pace with the game's speed, like every cost.
+            const amount = scaleCost(ctx, draft, toFixed(v));
             if (y === 'science') advance(draft, ctx, action.player, 'tech', amount, emit);
             else if (y === 'culture') advance(draft, ctx, action.player, 'civic', amount, emit);
             else if (y === 'gold') p.gold += amount;

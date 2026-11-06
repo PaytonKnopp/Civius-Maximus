@@ -667,7 +667,7 @@ export function buildArticles(content: CompiledContent): Article[] {
         ...text(p.description),
         facts([
           ['Requires', requires(p)],
-          ['Replaced by', link('policy', p.obsoletedBy)],
+          ['Obsolete with', link('civic', p.obsoletedBy)],
         ]),
         ...effects('Effects', p.effects),
       ],

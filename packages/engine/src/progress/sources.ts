@@ -4,7 +4,8 @@ import type { EngineContext } from '../context';
 import { evaluateCondition } from '../effects/conditions';
 import type { PlayerFacts, SettlementFacts, TileFacts } from '../effects/tile';
 import type { EffectSource } from '../effects/yields';
-import { tileTouchesRiver } from '../map/hex';
+import { distance, tileTouchesRiver } from '../map/hex';
+import { baseOf } from '../uniques';
 import type { GameState, PlayerId, PlayerState, SettlementState, Track } from '../state';
 import { ageSources } from '../eras/ages';
 import { congressSources } from '../congress/congress';
@@ -189,6 +190,41 @@ export function localSources(ctx: EngineContext, s: SettlementState): EffectSour
     }));
 }
 
+/**
+ * Regional effects reaching a settlement from its owner's other settlements nearby (a Factory's
+ * production, a Stadium's happiness): each kind once, and none of a kind it has itself.
+ */
+export function regionalSources(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+): EffectSource[] {
+  const e = ctx.content.entities;
+  const own = new Set([...s.buildings.map((b) => baseOf(ctx, 'building', b)), ...s.wonders]);
+  const out = new Map<string, EffectSource>();
+  const ids = Object.keys(state.settlements).sort(
+    (a, b) => Number(a.slice(1)) - Number(b.slice(1)),
+  );
+  for (const id of ids) {
+    const other = state.settlements[id]!;
+    if (other.owner !== s.owner || other.id === s.id) continue;
+    const things = [
+      ...other.buildings.map((b) => ({ id: baseOf(ctx, 'building', b), def: e.building[b] })),
+      ...other.wonders.map((w) => ({ id: w, def: e.wonder[w] })),
+    ];
+    for (const { id: kind, def } of things) {
+      if (!def?.regional || own.has(kind) || out.has(kind)) continue;
+      if (distance(state.map, other.tile, s.tile) > def.regional.radius) continue;
+      out.set(kind, {
+        id: `regional:${kind}`,
+        label: `${resolveText(ctx.content, def.name)} in ${other.name}`,
+        effects: def.regional.effects,
+      });
+    }
+  }
+  return [...out.values()];
+}
+
 const builtCache = new WeakMap<object, Map<PlayerId, EffectSource[]>>();
 
 /** Empire-wide effects from everything a player has built (wonders, the government plaza...). */
@@ -310,6 +346,7 @@ export function sourcesFor(
   const full = [
     ...base,
     ...localSources(ctx, settlement),
+    ...regionalSources(ctx, state, settlement),
     ...religionSources(ctx, state, settlement),
   ];
   memo?.full.set(settlement, full);

@@ -56,7 +56,7 @@
     "type": "district",
     "id": "district_holy_site",
     "name": "Holy Site",
-    "description": "Faith. Loves mountains and woods.",
+    "description": "Faith. Loves mountains, natural wonders and woods.",
     "icon": "HS",
     "cost": 54,
     "requiresTech": "tech_astrology",
@@ -68,6 +68,14 @@
           "elevation": "mountain"
         },
         "label": "Mountains"
+      },
+      {
+        "yield": "faith",
+        "amount": 2,
+        "per": {
+          "naturalWonder": true
+        },
+        "label": "Natural wonders"
       },
       {
         "yield": "faith",
@@ -310,7 +318,7 @@
     "type": "district",
     "id": "district_encampment",
     "name": "Encampment",
-    "description": "Trains soldiers. Can't be next to the city center.",
+    "description": "Military. Trains soldiers faster with its buildings, strikes at enemies near it like the settlement does, and loves pastures and strategic resources.",
     "icon": "En",
     "cost": 54,
     "requiresTech": "tech_bronze_working",
@@ -337,6 +345,25 @@
         "target": {
           "scope": "player"
         }
+      }
+    ],
+    "rangedStrike": true,
+    "adjacency": [
+      {
+        "yield": "production",
+        "amount": 1,
+        "per": {
+          "improvement": "improvement_pasture"
+        },
+        "label": "Pastures"
+      },
+      {
+        "yield": "production",
+        "amount": 1,
+        "per": {
+          "resourceClass": "strategic"
+        },
+        "label": "Strategic resources"
       }
     ]
   },

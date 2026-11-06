@@ -190,6 +190,11 @@ export const RulesDef = z.strictObject({
       populationPer: z.int().min(1),
       /** Each specialty district gets this much of its main yield per neighboring district. */
       neighborBonus: z.number().multipleOf(0.5),
+      /**
+       * Each building in a specialty district adds this percent of the district's adjacency
+       * bonus, rounded down to whole points (D108): a well-placed district keeps paying.
+       */
+      buildingAdjacencyPercent: z.int().min(0).max(100).default(0),
       /** District cost rises this many percent for each tech and civic finished. */
       costPerProgressPercent: z.int().min(0),
     }),
@@ -1256,6 +1261,14 @@ export const BuildingDef = z.strictObject({
   /** A worship building: only where the religion followed has the worship belief naming it. */
   worship: z.boolean().default(false),
   /** Effects on the settlement it's in. */
+  /**
+   * Regional effects (Civ VI's factories and power plants): settlement effects that also reach
+   * the owner's other settlements within `radius` tiles of this one. A settlement gets each
+   * kind once, and not when it has one of its own.
+   */
+  regional: z
+    .strictObject({ radius: z.int().min(1).max(12), effects: z.array(Effect).min(1) })
+    .optional(),
   localEffects: z.array(Effect).default([]),
   /** Effects on the whole empire. */
   effects: z.array(Effect).default([]),
@@ -1305,6 +1318,8 @@ export const DistrictDef = z.strictObject({
   specialty: z.boolean().default(true),
   /** Only one in the whole empire (e.g. a government plaza). */
   onePerEmpire: z.boolean().default(false),
+  /** Its settlement can make its ranged strike from this district's tile too (Encampment). */
+  rangedStrike: z.boolean().default(false),
   happiness: z.int().default(0),
   placement: Placement.default(anyPlacement),
   /** Each building in the district adds one specialist slot; a specialist yields this. */
@@ -1347,6 +1362,14 @@ export const WonderDef = z.strictObject({
   /** Slots for great works. */
   slots: GreatWorkSlots,
   placement: Placement.default(anyPlacement),
+  /**
+   * Regional effects (Civ VI's factories and power plants): settlement effects that also reach
+   * the owner's other settlements within `radius` tiles of this one. A settlement gets each
+   * kind once, and not when it has one of its own.
+   */
+  regional: z
+    .strictObject({ radius: z.int().min(1).max(12), effects: z.array(Effect).min(1) })
+    .optional(),
   localEffects: z.array(Effect).default([]),
   effects: z.array(Effect).default([]),
   ...requires,
@@ -1577,6 +1600,11 @@ const progressShape = {
   boost: z.strictObject({ text: Text, goal: Goal }).optional(),
   /** Permanent effects once finished (e.g. a higher settlement limit). */
   effects: z.array(Effect).default([]),
+  /**
+   * Can be finished again and again (Future Tech, Future Civic): each time adds to the score,
+   * so science and culture never stop mattering.
+   */
+  repeatable: z.boolean().default(false),
 };
 
 /** A tech (science tree). Things it unlocks name it in their own `requiresTech`. */
@@ -1613,6 +1641,8 @@ export const PolicyDef = z.strictObject({
   requiresCivic: Id.optional(),
   /** No longer available once this civic is finished. */
   obsoletedBy: Id.optional(),
+  /** Only while the player is in this age (dark-age cards: strong, with a price). */
+  requiresAge: Id.optional(),
 });
 
 /** A civilization: its names, colors and ability (its unique items name it with `civ`). */
@@ -1864,6 +1894,17 @@ export const GreatAction = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('boosts'), count: z.int().min(1).max(10) }),
   /** A promotion for your soldiers within `radius` of the settlement. */
   z.strictObject({ kind: z.literal('promote'), promotion: Id, radius: z.int().min(0).max(10) }),
+  /**
+   * A share of the cost of the settlement's current build when it's one of these kinds (a great
+   * engineer's dome on a wonder), half that share for anything else.
+   */
+  z.strictObject({
+    kind: z.literal('finish'),
+    percent: z.int().min(1).max(100),
+    toward: z.array(z.enum(['unit', 'building', 'district', 'wonder', 'project'])).min(1),
+  }),
+  /** Envoys to send to city-states. */
+  z.strictObject({ kind: z.literal('envoys'), count: z.int().min(1).max(10) }),
   /**
    * Great works, one per activation (the great person stays until all are made), each into an
    * empty slot of its kind in the settlement where it's made.

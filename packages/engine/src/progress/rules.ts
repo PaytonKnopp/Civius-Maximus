@@ -51,9 +51,11 @@ export function nodeCost(
 /** Nodes that can be worked on now: not finished, every prerequisite finished. */
 export function availableNodes(ctx: EngineContext, p: PlayerState, kind: TreeKind): string[] {
   const done = new Set(trackOf(p, kind).done);
-  return treeIds(ctx, kind).filter(
-    (id) => !done.has(id) && treeNode(ctx, kind, id)!.requires.every((r) => done.has(r)),
-  );
+  return treeIds(ctx, kind).filter((id) => {
+    const node = treeNode(ctx, kind, id)!;
+    // A repeatable node (Future Tech) stays open once finished.
+    return (!done.has(id) || node.repeatable) && node.requires.every((r) => done.has(r));
+  });
 }
 
 /**
@@ -65,7 +67,9 @@ export function pathTo(ctx: EngineContext, p: PlayerState, kind: TreeKind, id: s
   const out: string[] = [];
   const seen = new Set<string>();
   const visit = (node: string) => {
-    if (done.has(node) || seen.has(node)) return;
+    // A repeatable node (Future Tech) can be chosen again once its prerequisites are done.
+    const again = node === id && treeNode(ctx, kind, node)?.repeatable;
+    if ((done.has(node) && !again) || seen.has(node)) return;
     seen.add(node);
     const def = treeNode(ctx, kind, node);
     if (!def) return;
@@ -274,6 +278,7 @@ export function isPolicyAvailable(ctx: EngineContext, p: PlayerState, id: string
   if (!pol) return false;
   if (pol.requiresCivic && !p.civics.done.includes(pol.requiresCivic)) return false;
   if (pol.obsoletedBy && p.civics.done.includes(pol.obsoletedBy)) return false;
+  if (pol.requiresAge && p.ages?.age !== pol.requiresAge) return false;
   return true;
 }
 

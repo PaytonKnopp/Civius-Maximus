@@ -65,7 +65,7 @@
     "type": "wonder",
     "id": "wonder_stonehenge",
     "name": "Stonehenge",
-    "description": "+2 faith here. +1 faith in every settlement. Built on flat grassland or plains.",
+    "description": "A ring of standing stones that draws pilgrims from far away. +2 faith here, and +3 great prophet points every turn: a sure road to founding a religion.",
     "icon": "St",
     "cost": 180,
     "era": "era_ancient",
@@ -74,13 +74,13 @@
     },
     "effects": [
       {
-        "effect": "modify_yield",
+        "effect": "great_person_points",
         "params": {
-          "yield": "faith",
-          "amount": 1
+          "class": "gp_prophet",
+          "amount": 3
         },
         "target": {
-          "scope": "settlements"
+          "scope": "player"
         }
       }
     ],
@@ -135,7 +135,7 @@
     "type": "wonder",
     "id": "wonder_oracle",
     "name": "Oracle",
-    "description": "+2 culture and +2 faith here. +10% culture in every settlement. Built on hills.",
+    "description": "Seekers climb to ask the oracle. +2 culture and +2 faith here, and every tech and civic boost gives 10% more of its cost.",
     "icon": "Or",
     "cost": 200,
     "era": "era_ancient",
@@ -145,13 +145,12 @@
     },
     "effects": [
       {
-        "effect": "modify_yield",
+        "effect": "modify_boost",
         "params": {
-          "yield": "culture",
           "percent": 10
         },
         "target": {
-          "scope": "settlements"
+          "scope": "player"
         }
       }
     ],
@@ -244,29 +243,34 @@
     "type": "wonder",
     "id": "wonder_colosseum",
     "name": "Colosseum",
-    "description": "+2 culture here. +1 happiness in every settlement. Built on flat land.",
+    "description": "Games for the people. +2 culture and +2 happiness here, and +2 happiness in every other settlement of yours within 6 tiles.",
     "icon": "Co",
     "cost": 220,
     "era": "era_classical",
     "yields": {
       "culture": 2
     },
-    "effects": [
-      {
-        "effect": "modify_happiness",
-        "params": {
-          "amount": 1
-        },
-        "target": {
-          "scope": "settlements"
-        }
-      }
-    ],
+    "effects": [],
     "placement": {
       "elevations": ["flat"]
     },
     "model": "arena",
-    "requiresCivic": "civic_games_and_recreation"
+    "requiresCivic": "civic_games_and_recreation",
+    "happiness": 2,
+    "regional": {
+      "radius": 6,
+      "effects": [
+        {
+          "effect": "modify_happiness",
+          "params": {
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "wonder",
@@ -319,7 +323,7 @@
     "type": "wonder",
     "id": "wonder_st_basils",
     "name": "St. Basil's Cathedral",
-    "description": "+4 faith and +2 tourism here. +2 faith in every settlement with a Temple.",
+    "description": "+4 faith and +2 tourism here. +2 faith in every settlement with a Temple. Built next to the city center.",
     "icon": "SB",
     "cost": 500,
     "era": "era_renaissance",
@@ -343,13 +347,20 @@
       }
     ],
     "model": "onion",
-    "requiresCivic": "civic_reformed_church"
+    "requiresCivic": "civic_reformed_church",
+    "placement": {
+      "nextTo": [
+        {
+          "cityCenter": true
+        }
+      ]
+    }
   },
   {
     "type": "wonder",
     "id": "wonder_taj_mahal",
     "name": "Taj Mahal",
-    "description": "+4 culture and +3 tourism here. +1 happiness in every settlement. Holds 2 great works of art.",
+    "description": "A marble tomb raised for love. +4 culture, +3 tourism and 2 art slots here, and +2 happiness in every other settlement of yours within 6 tiles. Built next to a river.",
     "icon": "TM",
     "cost": 520,
     "era": "era_renaissance",
@@ -357,28 +368,37 @@
       "culture": 4,
       "tourism": 3
     },
-    "effects": [
-      {
-        "effect": "modify_happiness",
-        "params": {
-          "amount": 1
-        },
-        "target": {
-          "scope": "settlements"
-        }
-      }
-    ],
+    "effects": [],
     "model": "taj",
     "requiresCivic": "civic_humanism",
     "slots": {
       "art": 2
+    },
+    "placement": {
+      "self": {
+        "river": true
+      }
+    },
+    "regional": {
+      "radius": 6,
+      "effects": [
+        {
+          "effect": "modify_happiness",
+          "params": {
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
     }
   },
   {
     "type": "wonder",
     "id": "wonder_big_ben",
     "name": "Big Ben",
-    "description": "+6 gold and +2 tourism here. +10% gold in every settlement.",
+    "description": "The clock over the counting houses. +6 gold and +2 tourism here, and one more economic policy slot. Built next to a Commercial Hub.",
     "icon": "BB",
     "cost": 700,
     "era": "era_industrial",
@@ -388,24 +408,31 @@
     },
     "effects": [
       {
-        "effect": "modify_yield",
+        "effect": "extra_policy_slot",
         "params": {
-          "yield": "gold",
-          "percent": 10
+          "slot": "economic",
+          "amount": 1
         },
         "target": {
-          "scope": "settlements"
+          "scope": "player"
         }
       }
     ],
     "model": "clock_tower",
-    "requiresTech": "tech_economics"
+    "requiresTech": "tech_economics",
+    "placement": {
+      "nextTo": [
+        {
+          "district": "district_commercial_hub"
+        }
+      ]
+    }
   },
   {
     "type": "wonder",
     "id": "wonder_eiffel_tower",
     "name": "Eiffel Tower",
-    "description": "+2 culture and +4 tourism here. +1 tourism in every settlement.",
+    "description": "Iron lace over the city: +2 culture and +4 tourism here, and +15% tourism in every settlement. Built on flat land.",
     "icon": "ET",
     "cost": 800,
     "era": "era_industrial",
@@ -418,7 +445,7 @@
         "effect": "modify_yield",
         "params": {
           "yield": "tourism",
-          "amount": 1
+          "percent": 15
         },
         "target": {
           "scope": "settlements"
@@ -426,13 +453,16 @@
       }
     ],
     "model": "lattice_tower",
-    "requiresTech": "tech_steel"
+    "requiresTech": "tech_steel",
+    "placement": {
+      "elevations": ["flat"]
+    }
   },
   {
     "type": "wonder",
     "id": "wonder_statue_of_liberty",
     "name": "Statue of Liberty",
-    "description": "+4 influence and +3 tourism here. +1 wildcard policy slot. +4 diplomatic victory points.",
+    "description": "+4 influence and +3 tourism here. +1 wildcard policy slot. +4 diplomatic victory points. Built on the coast next to land.",
     "icon": "SL",
     "cost": 900,
     "era": "era_modern",
@@ -462,13 +492,23 @@
       }
     ],
     "model": "statue",
-    "requiresCivic": "civic_suffrage"
+    "requiresCivic": "civic_suffrage",
+    "placement": {
+      "water": true,
+      "terrains": ["coast"],
+      "elevations": ["flat"],
+      "nextToAny": [
+        {
+          "terrain": ["grassland", "plains", "desert", "tundra", "snow"]
+        }
+      ]
+    }
   },
   {
     "type": "wonder",
     "id": "wonder_broadway",
     "name": "Broadway",
-    "description": "+6 culture and +5 tourism here. Holds a great work of writing and one of music.",
+    "description": "+6 culture and +5 tourism here. Holds a great work of writing and one of music. +2 great musician points a turn. Built next to a Theater Square.",
     "icon": "Br",
     "cost": 950,
     "era": "era_modern",
@@ -476,12 +516,30 @@
       "culture": 6,
       "tourism": 5
     },
-    "effects": [],
+    "effects": [
+      {
+        "effect": "great_person_points",
+        "params": {
+          "class": "gp_musician",
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
     "model": "arena",
     "requiresCivic": "civic_mass_media",
     "slots": {
       "writing": 1,
       "music": 1
+    },
+    "placement": {
+      "nextTo": [
+        {
+          "district": "district_theater"
+        }
+      ]
     }
   },
   {
@@ -720,7 +778,7 @@
     "type": "wonder",
     "id": "wonder_statue_of_zeus",
     "name": "Statue of Zeus",
-    "description": "+2 faith and +1 gold here. Anti-cavalry units +5 strength against cavalry, and +25% production toward them.",
+    "description": "+2 faith and +1 gold here. Anti-cavalry units +5 strength against cavalry, and +25% production toward them. Built on flat land next to an Encampment.",
     "icon": "SZ",
     "cost": 220,
     "era": "era_classical",
@@ -756,7 +814,15 @@
       }
     ],
     "model": "zeus",
-    "requiresCivic": "civic_military_training"
+    "requiresCivic": "civic_military_training",
+    "placement": {
+      "elevations": ["flat"],
+      "nextTo": [
+        {
+          "district": "district_encampment"
+        }
+      ]
+    }
   },
   {
     "type": "wonder",
@@ -982,7 +1048,7 @@
     "type": "wonder",
     "id": "wonder_great_zimbabwe",
     "name": "Great Zimbabwe",
-    "description": "+4 gold here. +1 trade route. Trade routes give +2 gold to the settlement they start from.",
+    "description": "+4 gold here. +1 trade route. Trade routes give +2 gold to the settlement they start from. Built next to a Commercial Hub.",
     "icon": "GZ",
     "cost": 330,
     "era": "era_medieval",
@@ -1012,7 +1078,14 @@
       }
     ],
     "model": "stone_walls",
-    "requiresCivic": "civic_guilds"
+    "requiresCivic": "civic_guilds",
+    "placement": {
+      "nextTo": [
+        {
+          "district": "district_commercial_hub"
+        }
+      ]
+    }
   },
   {
     "type": "wonder",
@@ -1222,7 +1295,7 @@
     "type": "wonder",
     "id": "wonder_porcelain_tower",
     "name": "Porcelain Tower",
-    "description": "+3 science and +1 tourism here. +25% great scientist points. +1 science in every settlement with a University.",
+    "description": "+3 science and +1 tourism here. +25% great scientist points. +1 science in every settlement with a University. Built next to a Campus.",
     "icon": "PT",
     "cost": 470,
     "era": "era_renaissance",
@@ -1256,7 +1329,14 @@
       }
     ],
     "model": "pagoda",
-    "requiresTech": "tech_printing"
+    "requiresTech": "tech_printing",
+    "placement": {
+      "nextTo": [
+        {
+          "district": "district_campus"
+        }
+      ]
+    }
   },
   {
     "type": "wonder",
@@ -1473,7 +1553,7 @@
     "type": "wonder",
     "id": "wonder_maracana",
     "name": "Estádio do Maracanã",
-    "description": "+4 culture and +4 tourism here. +2 happiness in every settlement. Built on flat land.",
+    "description": "The great stadium. +4 culture, +4 tourism and +3 happiness here, and +3 happiness in every other settlement of yours within 6 tiles. Built on flat land next to an Entertainment Complex.",
     "icon": "EM",
     "cost": 950,
     "era": "era_modern",
@@ -1481,22 +1561,32 @@
       "culture": 4,
       "tourism": 4
     },
-    "effects": [
-      {
-        "effect": "modify_happiness",
-        "params": {
-          "amount": 2
-        },
-        "target": {
-          "scope": "settlements"
-        }
-      }
-    ],
+    "effects": [],
     "placement": {
-      "elevations": ["flat"]
+      "elevations": ["flat"],
+      "nextTo": [
+        {
+          "district": "district_entertainment"
+        }
+      ]
     },
     "model": "stadium",
-    "requiresCivic": "civic_urbanization"
+    "requiresCivic": "civic_urbanization",
+    "happiness": 3,
+    "regional": {
+      "radius": 6,
+      "effects": [
+        {
+          "effect": "modify_happiness",
+          "params": {
+            "amount": 3
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "wonder",
@@ -1573,7 +1663,7 @@
     "type": "wonder",
     "id": "wonder_cn_tower",
     "name": "CN Tower",
-    "description": "+4 influence and +3 tourism here. +1 tourism and +1 happiness in every settlement.",
+    "description": "A needle of concrete carrying the world's signals: +4 influence and +3 tourism here, and +25% tourism in every settlement with a Broadcast Center. Built on flat land next to the city center.",
     "icon": "CN",
     "cost": 1400,
     "era": "era_information",
@@ -1586,23 +1676,25 @@
         "effect": "modify_yield",
         "params": {
           "yield": "tourism",
-          "amount": 1
+          "percent": 25
         },
         "target": {
           "scope": "settlements"
-        }
-      },
-      {
-        "effect": "modify_happiness",
-        "params": {
-          "amount": 1
         },
-        "target": {
-          "scope": "settlements"
+        "condition": {
+          "settlement_has_building": "building_broadcast_center"
         }
       }
     ],
     "model": "spire",
-    "requiresTech": "tech_telecommunications"
+    "requiresTech": "tech_telecommunications",
+    "placement": {
+      "elevations": ["flat"],
+      "nextTo": [
+        {
+          "cityCenter": true
+        }
+      ]
+    }
   }
 ]

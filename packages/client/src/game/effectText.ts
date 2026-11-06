@@ -116,6 +116,8 @@ export function effectLines(
       }
       case 'modify_production':
         return `${signed(percent ?? 0)}% production toward ${lower(p.toward)}${where}`;
+      case 'adjacency_percent':
+        return `${signed(percent ?? 0)}% adjacency bonus for ${lower(p.district)}`;
       case 'modify_item_cost':
         return `${signed(percent ?? 0)}% cost of ${lower(p.toward)}`;
       case 'modify_purchase_cost':

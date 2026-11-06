@@ -518,3 +518,23 @@ Payton approved every recommended default (D106–D120), the four groups of know
   and the old −1 per building put its cities back into unrest.
 - **6.3** The AI values an effect only where its condition holds (it no longer thinks "+1 in
   the capital" is "+1 everywhere"), and picks a district project rather than idling.
+
+### 2C: content depth
+
+- **8.1** 28 more great people (69 in all), every class through the Information era, with
+  `finish` and `envoys` activations; yields scale with speed.
+- **6.1, 6.2** Every empty tech and civic does something; boosts on every late node; repeatable
+  Future Tech and Future Civic.
+- **1.8** Improvements improve through the tree (13 upgrades on 11 nodes).
+- **3.1, 3.2, 3.4** Holy Site natural-wonder adjacency; Encampment adjacency and ranged strike;
+  the Nuclear Plant needs a Power Plant.
+- **3.3** Placement rules for every wonder; signature effects for the eight that were
+  empire-wide trickles.
+- **3.5 (D108), 3.6 (D109)** Buildings add a third of their district's adjacency; regional
+  Factory, Power Plant and Stadium (and three wonders).
+- **6.4** Policy rework: adjacency cards, obsolescence, three dark-age cards, eight new cards on
+  civics that had none; slotted cards that go obsolete leave their slots.
+- **1.9 (D106)** Eight more luxuries (Dyes, Furs, Ivory, Marble, Salt, Sugar, Tea, Cotton), 15
+  in all, each with its own map icon.
+- The flat pantheons became conditional (Hearth Goddess: Granaries; Harvest Rites: Wheat, Rice
+  and Cattle; God of the Forge: Mines).

@@ -84,7 +84,7 @@
       "production": 1
     },
     "order": 5,
-    "resources": ["stone"],
+    "resources": ["stone", "marble", "salt"],
     "color": "#b9b2a4",
     "model": "quarry",
     "requiresTech": "tech_mining"
@@ -112,7 +112,7 @@
       "gold": 2
     },
     "order": 5,
-    "resources": ["bananas", "silk", "spices", "wine", "incense"],
+    "resources": ["bananas", "silk", "spices", "wine", "incense", "dyes", "sugar", "tea", "cotton"],
     "color": "#6f9a3c",
     "model": "plantation",
     "requiresTech": "tech_irrigation"
@@ -126,7 +126,7 @@
       "gold": 2
     },
     "order": 5,
-    "resources": ["deer"],
+    "resources": ["deer", "furs", "ivory"],
     "color": "#7a5a3a",
     "model": "camp",
     "requiresTech": "tech_animal_husbandry"

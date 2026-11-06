@@ -460,7 +460,38 @@
         "kind": "gold",
         "amount": 800
       }
-    }
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_plantation"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_camp"
+        }
+      }
+    ],
+    "description": "Plantations and Camps give +1 gold."
   },
   {
     "type": "civic",
@@ -769,7 +800,14 @@
     "era": "era_atomic",
     "cost": 1200,
     "requires": ["civic_ideology"],
-    "row": 3
+    "row": 3,
+    "boost": {
+      "text": "Slot 10 policy cards",
+      "goal": {
+        "kind": "policies",
+        "count": 10
+      }
+    }
   },
   {
     "type": "civic",
@@ -778,7 +816,14 @@
     "era": "era_atomic",
     "cost": 1180,
     "requires": ["civic_suffrage"],
-    "row": 4
+    "row": 4,
+    "boost": {
+      "text": "Have 12 cities",
+      "goal": {
+        "kind": "cities",
+        "count": 12
+      }
+    }
   },
   {
     "type": "civic",
@@ -787,7 +832,15 @@
     "era": "era_atomic",
     "cost": 1220,
     "requires": ["civic_urbanization"],
-    "row": 5
+    "row": 5,
+    "boost": {
+      "text": "Build 2 Stadiums",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_stadium"
+      }
+    }
   },
   {
     "type": "civic",
@@ -796,7 +849,14 @@
     "era": "era_atomic",
     "cost": 1260,
     "requires": ["civic_mass_media", "civic_cold_war"],
-    "row": 6
+    "row": 6,
+    "boost": {
+      "text": "Research 50 techs",
+      "goal": {
+        "kind": "techs",
+        "count": 50
+      }
+    }
   },
   {
     "type": "civic",
@@ -805,7 +865,14 @@
     "era": "era_information",
     "cost": 1600,
     "requires": ["civic_consumerism", "civic_decolonization"],
-    "row": 4
+    "row": 4,
+    "boost": {
+      "text": "Hold 2000 gold",
+      "goal": {
+        "kind": "gold",
+        "amount": 2000
+      }
+    }
   },
   {
     "type": "civic",
@@ -814,7 +881,14 @@
     "era": "era_information",
     "cost": 1560,
     "requires": ["civic_conservation"],
-    "row": 7
+    "row": 7,
+    "boost": {
+      "text": "Have 200 citizens",
+      "goal": {
+        "kind": "population",
+        "count": 200
+      }
+    }
   },
   {
     "type": "civic",
@@ -823,7 +897,15 @@
     "era": "era_information",
     "cost": 1620,
     "requires": ["civic_space_age"],
-    "row": 6
+    "row": 6,
+    "boost": {
+      "text": "Build 2 Data Centers",
+      "goal": {
+        "kind": "buildings",
+        "count": 2,
+        "building": "building_data_center"
+      }
+    }
   },
   {
     "type": "civic",
@@ -832,7 +914,15 @@
     "era": "era_information",
     "cost": 1680,
     "requires": ["civic_globalization"],
-    "row": 5
+    "row": 5,
+    "boost": {
+      "text": "Build 4 Broadcast Centers",
+      "goal": {
+        "kind": "buildings",
+        "count": 4,
+        "building": "building_broadcast_center"
+      }
+    }
   },
   {
     "type": "civic",
@@ -841,6 +931,43 @@
     "era": "era_future",
     "cost": 2200,
     "requires": ["civic_social_networks", "civic_digital_rights", "civic_environmentalism"],
-    "row": 5
+    "row": 5,
+    "effects": [
+      {
+        "effect": "diplomatic_favor",
+        "params": {
+          "amount": 3
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "description": "+3 diplomatic favor a turn.",
+    "boost": {
+      "text": "Finish 44 civics",
+      "goal": {
+        "kind": "civics",
+        "count": 44
+      }
+    }
+  },
+  {
+    "type": "civic",
+    "id": "civic_future_civic",
+    "name": "Future Civic",
+    "era": "era_future",
+    "cost": 2400,
+    "requires": ["civic_world_federation"],
+    "row": 5,
+    "repeatable": true,
+    "description": "Can be adopted again and again: each time adds to your score.",
+    "boost": {
+      "text": "Finish 46 civics",
+      "goal": {
+        "kind": "civics",
+        "count": 46
+      }
+    }
   }
 ]

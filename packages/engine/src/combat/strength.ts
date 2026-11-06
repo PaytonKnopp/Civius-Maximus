@@ -538,6 +538,17 @@ export function previewAttack(
   };
 }
 
+/**
+ * Where a settlement strikes from: its center, and any district with its own ranged strike
+ * (the Encampment), so a well-placed Encampment covers a flank.
+ */
+export function strikeOrigins(ctx: EngineContext, s: SettlementState): number[] {
+  const out = [s.tile];
+  for (const d of s.districts)
+    if (ctx.content.entities.district[d.id]?.rangedStrike) out.push(d.tile);
+  return out;
+}
+
 /** Why a settlement can't strike `tile` now, or undefined. */
 export function strikeProblem(
   ctx: EngineContext,
@@ -557,7 +568,7 @@ export function strikeProblem(
   if (target?.kind !== 'unit') return { code: 'no_target', message: 'No enemy unit there' };
   if (!atWar(state, s.owner, target.unit.owner))
     return { code: 'not_at_war', message: "You're not at war with them" };
-  if (distance(state.map, s.tile, tile) > range)
+  if (strikeOrigins(ctx, s).every((o) => distance(state.map, o, tile) > range))
     return { code: 'too_far', message: `Out of range (range ${range})` };
   if (!visible[tile]) return { code: 'not_visible', message: "You can't see that tile" };
   return undefined;
@@ -568,9 +579,8 @@ export function strikeTargets(ctx: EngineContext, state: GameState, s: Settlemen
   if (s.struckTurn === state.turn) return [];
   const range = ctx.content.rules.combat.settlement.strikeRange;
   const visible = visibleTiles(ctx, state, s.owner);
-  return tilesWithin(state.map, s.tile, range)
-    .filter((t) => !strikeProblem(ctx, state, s, t, visible))
-    .sort((a, b) => a - b);
+  const tiles = new Set(strikeOrigins(ctx, s).flatMap((o) => tilesWithin(state.map, o, range)));
+  return [...tiles].filter((t) => !strikeProblem(ctx, state, s, t, visible)).sort((a, b) => a - b);
 }
 
 export function previewStrike(

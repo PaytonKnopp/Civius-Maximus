@@ -46,6 +46,10 @@ export function tileMatches(ctx: ConditionContext, tile: TileFacts, match: TileM
   if (!anyOrOneOf(tile.wonder ?? null, match.wonder)) return false;
   if (match.cityCenter !== undefined && (tile.center ?? false) !== match.cityCenter) return false;
   if (match.river !== undefined && tile.river !== match.river) return false;
+  if (match.naturalWonder !== undefined) {
+    const nw = tile.feature !== null && !!ctx.content.entities.feature[tile.feature]?.naturalWonder;
+    if (nw !== match.naturalWonder) return false;
+  }
   return true;
 }
 

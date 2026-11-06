@@ -18,6 +18,7 @@ import {
   empireFacts,
   goalMet,
   governmentChangeCost,
+  isPolicyAvailable,
   nodeCost,
   pathTo,
   policyChangeCost,
@@ -46,7 +47,11 @@ const noGold = (cost: number): RuleError => ({
 function refreshPlayer(draft: Draft<GameState>, ctx: EngineContext, player: PlayerId) {
   const p = draft.players[player]!;
   const slots = policySlots(ctx, view(draft), player);
+  const snap = view(draft).players[player]!;
   for (const kind of SLOT_KINDS) {
+    // Cards that went obsolete (or whose age ended) come out of their slots.
+    const still = p.policies[kind].filter((id) => isPolicyAvailable(ctx, snap, id));
+    if (still.length !== p.policies[kind].length) p.policies[kind] = still;
     if (p.policies[kind].length > slots[kind])
       p.policies[kind] = p.policies[kind].slice(0, slots[kind]);
   }
@@ -82,7 +87,8 @@ function chooseHandler(
       const problem = playing(state, action.player);
       if (problem) return problem;
       if (!treeNode(ctx, kind, id)) return { code: 'unknown', message: `Unknown ${kind} "${id}"` };
-      if (trackOf(state.players[action.player]!, kind).done.includes(id))
+      const repeatable = treeNode(ctx, kind, id)!.repeatable;
+      if (trackOf(state.players[action.player]!, kind).done.includes(id) && !repeatable)
         return { code: 'already_done', message: 'Already finished' };
       return undefined;
     },
@@ -232,8 +238,15 @@ export function advance(
   emit: Emit,
 ): string | undefined {
   const track: Track = trackOf(draft.players[player]!, kind);
-  // Drop anything already finished from the front (e.g. a boost finished it earlier).
-  while (track.current && track.done.includes(track.current)) {
+  // Drop anything already finished from the front (e.g. a boost finished it earlier); a
+  // repeatable node can be worked on again.
+  const nodeOf = (id: string) =>
+    kind === 'tech' ? ctx.content.entities.tech[id] : ctx.content.entities.civic[id];
+  while (
+    track.current &&
+    track.done.includes(track.current) &&
+    !nodeOf(track.current)?.repeatable
+  ) {
     track.current = track.queue.shift() ?? null;
   }
   if (!track.current) {
@@ -246,7 +259,8 @@ export function advance(
   if (track.progress[id]! < cost) return undefined;
   const overflow = track.progress[id]! - cost;
   delete track.progress[id];
-  track.done.push(id);
+  if (!track.done.includes(id)) track.done.push(id);
+  else track.repeats = { ...track.repeats, [id]: (track.repeats?.[id] ?? 0) + 1 };
   // One-off rewards for finishing it: envoys.
   const node = kind === 'tech' ? ctx.content.entities.tech[id] : ctx.content.entities.civic[id];
   for (const e of node?.effects ?? [])

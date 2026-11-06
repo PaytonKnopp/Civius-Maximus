@@ -707,7 +707,7 @@
     "type": "building",
     "id": "building_factory",
     "name": "Factory",
-    "description": "+4 production. Emissions 2 a turn.",
+    "description": "+4 production. Emissions 2 a turn. +3 production in your other settlements within 6 tiles that have no Factory.",
     "icon": "Fa",
     "cost": 390,
     "maintenance": 3,
@@ -729,7 +729,22 @@
       }
     ],
     "requiresTech": "tech_industrialization",
-    "emissions": 2
+    "emissions": 2,
+    "regional": {
+      "radius": 6,
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "amount": 3
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "building",
@@ -774,7 +789,22 @@
       }
     ],
     "requiresTech": "tech_industrialization",
-    "emissions": 2
+    "emissions": 2,
+    "regional": {
+      "radius": 6,
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "amount": 3
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "building",
@@ -810,7 +840,7 @@
     "type": "building",
     "id": "building_power_plant",
     "name": "Power Plant",
-    "description": "+5 production. Emissions 3 a turn.",
+    "description": "+5 production. Emissions 3 a turn. +4 production in your other settlements within 6 tiles that have no Power Plant.",
     "icon": "PP",
     "cost": 450,
     "maintenance": 4,
@@ -820,7 +850,22 @@
     "requiresBuilding": "building_factory",
     "district": "district_industrial_zone",
     "requiresTech": "tech_electricity",
-    "emissions": 3
+    "emissions": 3,
+    "regional": {
+      "radius": 6,
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "amount": 4
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "building",
@@ -917,7 +962,7 @@
     "type": "building",
     "id": "building_stadium",
     "name": "Stadium",
-    "description": "+2 happiness and +2 tourism.",
+    "description": "+2 happiness and +2 tourism. +2 happiness in your other settlements within 6 tiles that have no Stadium.",
     "icon": "St",
     "cost": 450,
     "maintenance": 3,
@@ -927,7 +972,21 @@
     "requiresBuilding": "building_arena",
     "district": "district_entertainment",
     "happiness": 2,
-    "requiresCivic": "civic_urbanization"
+    "requiresCivic": "civic_urbanization",
+    "regional": {
+      "radius": 6,
+      "effects": [
+        {
+          "effect": "modify_happiness",
+          "params": {
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "building",
@@ -941,7 +1000,8 @@
       "production": 6
     },
     "district": "district_industrial_zone",
-    "requiresTech": "tech_nuclear_fission"
+    "requiresTech": "tech_nuclear_fission",
+    "requiresBuilding": "building_power_plant"
   },
   {
     "type": "building",

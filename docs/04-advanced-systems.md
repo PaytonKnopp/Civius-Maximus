@@ -171,6 +171,20 @@ because each one is unique.
 - **Content:** great people are just data, so a mod can add "Great Engineer Mike: completes 50% of
   any wonder" in about 10 lines of JSON.
 
+### Final gameplay pass (November 2026)
+
+- **69 great people**, in every era for every class: Galileo, Newton, Darwin, Einstein, Turing
+  and Katherine Johnson for science; Brunelleschi, Sinan, Watt, Brunel, Tesla, Goddard and
+  Margaret Hamilton for engineering; Fugger, the Medici, Adam Smith, Helena Rubinstein and
+  Estée Lauder for trade; Joan of Arc, Gustavus Adolphus, Bolívar, Zhukov and Sudirman; Yi
+  Sun-sin, Drake, Nelson, Tōgō and Nimitz. Before, the scientists, engineers, merchants,
+  generals and admirals ran out after the Medieval era and every one of the 41 people was taken
+  by turn ~190.
+- New activations: **finish** (a share of the current build's cost: in full for the kinds
+  named, such as a wonder or a space project, half for anything else) and **envoys**. Lumps of
+  yield scale with the game's speed.
+- The AI walks its builders to a settlement building the right kind of thing.
+
 ### Built so far (V1 part 6)
 
 - Seven classes (Scientist, Engineer, Merchant, Prophet, General, Writer, Admiral), 26 named
@@ -379,7 +393,9 @@ feel populated and give players something to compete over even when there's no w
 era (its own techs and civics), not when a world era advances. Everything else in the game
 already follows a civ's own era (units, buildings, music, city art), and in simultaneous play it
 never ends an era early for a civ that hasn't reached it. The "first into an era" moment rewards
-whoever gets there first. Legacy goals and dark-age policy cards are still to come.
+whoever gets there first. Legacy goals are still to come. **Dark-age policy cards** (Martial Law,
+Monastic Retreat, Rally the Levies) arrived in the final gameplay pass: wildcard cards with a
+price, open only during a dark age (`requiresAge`), dropped from their slots when it ends.
 
 ### Ages mode (optional, later)
 

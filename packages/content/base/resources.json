@@ -201,6 +201,112 @@
   },
   {
     "type": "resource",
+    "id": "dyes",
+    "name": "Dyes",
+    "class": "luxury",
+    "yields": {
+      "faith": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validFeatures": ["rainforest", "woods"]
+  },
+  {
+    "type": "resource",
+    "id": "furs",
+    "name": "Furs",
+    "class": "luxury",
+    "yields": {
+      "food": 1,
+      "gold": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["tundra"],
+    "validFeatures": ["woods"]
+  },
+  {
+    "type": "resource",
+    "id": "ivory",
+    "name": "Ivory",
+    "class": "luxury",
+    "yields": {
+      "production": 1,
+      "gold": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["plains", "grassland", "desert"],
+    "validElevations": ["flat"]
+  },
+  {
+    "type": "resource",
+    "id": "marble",
+    "name": "Marble",
+    "class": "luxury",
+    "yields": {
+      "culture": 1,
+      "gold": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["hills"]
+  },
+  {
+    "type": "resource",
+    "id": "salt",
+    "name": "Salt",
+    "class": "luxury",
+    "yields": {
+      "food": 1,
+      "gold": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["desert", "plains", "tundra"],
+    "validElevations": ["flat"]
+  },
+  {
+    "type": "resource",
+    "id": "sugar",
+    "name": "Sugar",
+    "class": "luxury",
+    "yields": {
+      "food": 2
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validFeatures": ["marsh", "floodplains", "floodplains_grassland", "floodplains_plains"]
+  },
+  {
+    "type": "resource",
+    "id": "tea",
+    "name": "Tea",
+    "class": "luxury",
+    "yields": {
+      "science": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["hills"]
+  },
+  {
+    "type": "resource",
+    "id": "cotton",
+    "name": "Cotton",
+    "class": "luxury",
+    "yields": {
+      "gold": 2
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["flat"]
+  },
+  {
+    "type": "resource",
     "id": "horses",
     "name": "Horses",
     "class": "strategic",
