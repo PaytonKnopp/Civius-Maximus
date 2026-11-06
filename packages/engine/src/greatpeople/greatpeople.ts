@@ -6,6 +6,7 @@ import {
   type EngineContext,
   type Emit,
   type RuleError,
+  turnOrder,
   unitClassOf,
 } from '../context';
 import { view } from '../draft';
@@ -262,7 +263,7 @@ export const greatPeopleHandlers = {
 
 /** End of each turn: points come in, and whoever reaches a great person's cost first earns them. */
 export function greatPeopleTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
-  for (const id of draft.playerOrder) {
+  for (const id of turnOrder(draft)) {
     if (!draft.players[id]!.alive) continue;
     const snap = view(draft);
     const rates = greatPersonRates(ctx, snap, id);
@@ -276,7 +277,7 @@ export function greatPeopleTurn(draft: Draft<GameState>, ctx: EngineContext, emi
     if (!nextGreatPerson(ctx, snap, cls)) continue;
     const cost = greatPersonCost(ctx, snap, cls);
     let winner: { id: PlayerId; points: number } | undefined;
-    for (const id of snap.playerOrder) {
+    for (const id of turnOrder(snap)) {
       if (!snap.players[id]!.alive || !inRace(ctx, snap, id, cls)) continue;
       const pts = pointsOf(snap, id, cls);
       if (pts >= cost && (!winner || pts > winner.points)) winner = { id, points: pts };

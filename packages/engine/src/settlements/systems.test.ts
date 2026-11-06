@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { settlementStrength } from '../combat/strength';
+import { turnOrder } from '../context';
 import { appealOf, continentOf } from '../map/appeal';
 import { neighbors } from '../map/hex';
 import { civsWith, nodeCost, nodeCostFor } from '../progress/rules';
@@ -187,5 +188,15 @@ describe('trade, score and catch-up research', () => {
     expect(nodeCostFor(ctx, p2, 'p1', 'tech', 'tech_pottery')).toBe(full - full / 20);
     expect(settlementYields(ctx, p2, p2.settlements[p2.players.p1!.capital!]!)).toBeDefined();
     void endTurn;
+  });
+});
+
+describe('turn order', () => {
+  it('rotates by one seat each turn, so no seat always goes first', () => {
+    const order = ['p1', 'p2', 'p3'];
+    expect(turnOrder({ playerOrder: order, turn: 1 })).toEqual(['p1', 'p2', 'p3']);
+    expect(turnOrder({ playerOrder: order, turn: 2 })).toEqual(['p2', 'p3', 'p1']);
+    expect(turnOrder({ playerOrder: order, turn: 4 })).toEqual(['p1', 'p2', 'p3']);
+    expect(turnOrder({ playerOrder: [], turn: 7 })).toEqual([]);
   });
 });

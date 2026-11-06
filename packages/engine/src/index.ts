@@ -80,7 +80,7 @@ export type { MapSettings, MapState, MapTile, StartBias } from './map/types';
 export { type Replay, runReplay } from './replay';
 export { createRng, nextInt, nextRange, nextU32, type RngState } from './rng';
 export { decodeBits, encodeBits, getBit } from './bitset';
-export { atWar, FREE, HOSTILE, unitClassOf, unitDef, unitIds, warKey } from './context';
+export { atWar, FREE, HOSTILE, turnOrder, unitClassOf, unitDef, unitIds, warKey } from './context';
 export { unitsNeedingOrders } from './units/handlers';
 export {
   canTraverse,

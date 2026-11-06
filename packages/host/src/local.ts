@@ -10,6 +10,7 @@ import {
   type GameState,
   playAiTurn,
   type PlayerId,
+  turnOrder,
   validateAction,
 } from '@cx/engine';
 import type { GameHandle } from './handle';
@@ -76,7 +77,8 @@ export function runTurn(
   for (const ai of waiting) state = answerProposals(ctx, state, ai, apply);
   // AI seats play as soon as their turn starts (more than once if a turn ends meanwhile).
   for (let guard = 0; guard < 4 && state.status === 'playing'; guard++) {
-    const ais = state.playerOrder.filter((id) => {
+    // Seats act in the turn's rotating order, so no AI always gets first pick.
+    const ais = turnOrder(state).filter((id) => {
       const p = state.players[id]!;
       return p.alive && p.kind === 'ai' && !p.turnEnded;
     });

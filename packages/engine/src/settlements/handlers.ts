@@ -7,6 +7,7 @@ import {
   type EngineContext,
   type Emit,
   type RuleError,
+  turnOrder,
   unitClassOf,
   unitDef,
 } from '../context';
@@ -1066,7 +1067,7 @@ function burnDown(draft: Draft<GameState>, ctx: EngineContext, id: string, emit:
  * research, civics, celebrations and boosts.
  */
 export function settlementsTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
-  for (const player of draft.playerOrder) {
+  for (const player of turnOrder(draft)) {
     const p = draft.players[player]!;
     if (!p.alive) continue;
     const totals = { science: 0, culture: 0, tourism: 0, happiness: 0 };

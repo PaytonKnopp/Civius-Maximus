@@ -1,5 +1,6 @@
 import type { CompiledContent } from '@cx/content';
 import {
+  turnOrder,
   type Action,
   applyAction,
   createGame,
@@ -91,7 +92,7 @@ export function runSimulation(content: CompiledContent, o: SimOptions, clock = (
   };
   while (state.status === 'playing') {
     const turn = state.turn;
-    for (const player of state.playerOrder) {
+    for (const player of turnOrder(state)) {
       const p = state.players[player]!;
       if (!p.alive || p.turnEnded) continue;
       if (p.kind === 'human') {
