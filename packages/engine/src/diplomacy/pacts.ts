@@ -19,7 +19,10 @@ export const haveResearchAgreement = (state: GameState, a: PlayerId, b: PlayerId
 
 /** The players `player` has a research agreement with, in seat order. */
 export function researchPartners(state: GameState, player: PlayerId): PlayerId[] {
-  if (!state.diplomacy?.research) return [];
+  const research = state.diplomacy?.research;
+  if (!research) return [];
+  // Most of the time nothing is running: skip asking about every pair.
+  if (!Object.values(research).some((until) => until >= state.turn)) return [];
   return state.playerOrder.filter(
     (o) => o !== player && state.players[o]?.alive && haveResearchAgreement(state, player, o),
   );

@@ -233,30 +233,83 @@ export function regionalSources(
   state: GameState,
   s: SettlementState,
 ): EffectSource[] {
-  const e = ctx.content.entities;
+  const emitters = regionalEmitters(ctx, state, s.owner);
+  if (emitters.length === 0) return [];
   const own = new Set([...s.buildings.map((b) => baseOf(ctx, 'building', b)), ...s.wonders]);
   const out = new Map<string, EffectSource>();
-  const ids = Object.keys(state.settlements).sort(
-    (a, b) => Number(a.slice(1)) - Number(b.slice(1)),
-  );
-  for (const id of ids) {
-    const other = state.settlements[id]!;
-    if (other.owner !== s.owner || other.id === s.id) continue;
-    const things = [
-      ...other.buildings.map((b) => ({ id: baseOf(ctx, 'building', b), def: e.building[b] })),
-      ...other.wonders.map((w) => ({ id: w, def: e.wonder[w] })),
-    ];
-    for (const { id: kind, def } of things) {
-      if (!def?.regional || own.has(kind) || out.has(kind)) continue;
-      if (distance(state.map, other.tile, s.tile) > def.regional.radius) continue;
-      out.set(kind, {
-        id: `regional:${kind}`,
-        label: `${resolveText(ctx.content, def.name)} in ${other.name}`,
-        effects: def.regional.effects,
-      });
-    }
+  for (const em of emitters) {
+    if (em.settlement === s.id || own.has(em.kind) || out.has(em.kind)) continue;
+    if (distance(state.map, em.tile, s.tile) > em.radius) continue;
+    out.set(em.kind, {
+      id: `regional:${em.kind}`,
+      label: `${em.name} in ${em.town}`,
+      effects: em.effects,
+    });
   }
   return [...out.values()];
+}
+
+/** A building or wonder with regional effects, in one of a player's settlements. */
+interface RegionalEmitter {
+  settlement: string;
+  town: string;
+  tile: number;
+  /** The base building (a unique counts as what it replaces) or the wonder. */
+  kind: string;
+  name: string;
+  radius: number;
+  effects: Effect[];
+}
+
+const regionalCache = new WeakMap<object, Map<PlayerId, RegionalEmitter[]>>();
+
+/**
+ * A player's regional buildings and wonders, in settlement order (then buildings before
+ * wonders, as built). Every settlement asks for its owner's, so they're worked out once per
+ * frozen state, or once per `withSourceMemo` read of a draft.
+ */
+function regionalEmitters(
+  ctx: EngineContext,
+  state: GameState,
+  owner: PlayerId,
+): RegionalEmitter[] {
+  const frozen = Object.isFrozen(state.settlements);
+  const cached = frozen ? regionalCache.get(state.settlements)?.get(owner) : undefined;
+  if (cached) return cached;
+  const compute = (): RegionalEmitter[] => {
+    const e = ctx.content.entities;
+    const out: RegionalEmitter[] = [];
+    const ids = Object.keys(state.settlements).sort(
+      (a, b) => Number(a.slice(1)) - Number(b.slice(1)),
+    );
+    for (const id of ids) {
+      const other = state.settlements[id]!;
+      if (other.owner !== owner) continue;
+      const things = [
+        ...other.buildings.map((b) => ({ kind: baseOf(ctx, 'building', b), def: e.building[b] })),
+        ...other.wonders.map((w) => ({ kind: w, def: e.wonder[w] })),
+      ];
+      for (const { kind, def } of things) {
+        if (!def?.regional) continue;
+        out.push({
+          settlement: other.id,
+          town: other.name,
+          tile: other.tile,
+          kind,
+          name: resolveText(ctx.content, def.name),
+          radius: def.regional.radius,
+          effects: def.regional.effects,
+        });
+      }
+    }
+    return out;
+  };
+  if (!frozen) return memoRead(state, `regional:${owner}`, compute);
+  const list = compute();
+  const byPlayer = regionalCache.get(state.settlements) ?? new Map<PlayerId, RegionalEmitter[]>();
+  byPlayer.set(owner, list);
+  regionalCache.set(state.settlements, byPlayer);
+  return list;
 }
 
 const builtCache = new WeakMap<object, Map<PlayerId, EffectSource[]>>();

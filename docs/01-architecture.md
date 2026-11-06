@@ -301,16 +301,24 @@ times depend on the machine, the shape of the curve doesn't):
   "The world is turning…" and then "Rivals are moving… 3 of 7". Closing the rest of the gap
   needs a different shape of turn processing (reading unchanged parts of the state without
   Immer proxies), which is its own piece of work.
-- **Final gameplay pass (November 2026):** `pnpm cx profile 8 120 1 standard` on one cloud
-  core (slower than the machine above): turn processing 1.22 s (pre-pass code) → 1.27 s at turn
-  ~120, all AIs 0.54 → 0.63 s, save 1.03 MB (45 KB gzipped). The pass added luxuries, strategic
-  stockpiles, monopolies, trades and more, and empires grow larger; two of the new reads first
-  made turns twice as slow (monopolies and luxuries re-read every tile through the Immer draft
-  for each settlement), so both now come from the state as each action began, computed once
-  and cached.
 - **Games are identical to before the pass:** the same seed plays out to the same state hash
   (checked on five seeds, map types and player counts, 2–8 players), so old saves and replays
   are unaffected.
+- **Final gameplay pass (November 2026)**, on one cloud core (slower than the machine above),
+  at turn ~120: `pnpm cx profile 8 120 1 standard` (8 civs, Standard map) takes 1.22 s of turn
+  processing with the pre-pass code and 1.27 s after it, all AIs 0.54 → 0.63 s, save 1.03 MB
+  (45 KB gzipped); `pnpm cx profile 12 120 1 huge` (12 civs, Huge map) takes 1.53 s with
+  the pre-pass code and 2.05 s after it, all AIs 0.73 → 1.04 s. The pass added luxuries,
+  strategic stockpiles, monopolies, trades, regional buildings and more, and empires grow
+  larger. Some of the new reads first scaled badly and now don't: monopolies and luxuries
+  re-read every tile through the Immer draft for each settlement (both now come from the
+  state as each action began, computed once and cached), regional buildings were found by
+  scanning every settlement for every settlement (now once per player and state), and loyalty
+  worked out each settlement's effects from scratch (now once per turn). A CPU profile of the
+  Huge game puts the rest of the difference in many places: evaluating more effects (about a
+  third of it), copying a bigger state each turn (a quarter), barbarians' and city-states'
+  turns, and the AI's deals. The bigger the map, the more it shows (+4% on Standard, +34% on
+  Huge at turn 120); the CI budget still passes with room to spare.
 
 ### How it is kept from getting worse
 
