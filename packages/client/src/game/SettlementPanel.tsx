@@ -500,8 +500,9 @@ export function SettlementPanel({
                     const progress = s.progress[itemKey(item)] ?? 0;
                     const buy: Action = { type: 'buy_item', player: viewer, settlement: id, item };
                     const price = whole(purchaseCost(ctx, state, viewer, item, s));
+                    const faithPrice = whole(purchaseCost(ctx, state, viewer, item, s, 'faith'));
                     const faithBuy: Action | undefined =
-                      isBuyable(item) && canBuyWithFaith(ctx, state, viewer, item)
+                      isBuyable(ctx, item) && canBuyWithFaith(ctx, state, viewer, item, s)
                         ? { ...buy, currency: 'faith' }
                         : undefined;
                     const tiled = needsTile(item);
@@ -560,7 +561,7 @@ export function SettlementPanel({
                             </button>
                           </>
                         )}
-                        {isBuyable(item) && (
+                        {isBuyable(ctx, item) && (
                           <button
                             type="button"
                             disabled={!can(buy)}
@@ -574,10 +575,10 @@ export function SettlementPanel({
                           <button
                             type="button"
                             disabled={!can(faithBuy)}
-                            title={why(faithBuy) ?? `Buy now for ${price} faith`}
+                            title={why(faithBuy) ?? `Buy now for ${faithPrice} faith`}
                             onClick={() => act(faithBuy)}
                           >
-                            {icon('faith')} {price}
+                            {icon('faith')} {faithPrice}
                           </button>
                         )}
                       </li>

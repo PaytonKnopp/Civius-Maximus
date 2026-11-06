@@ -85,6 +85,7 @@ import {
   fmt,
 } from './model';
 import { GovernmentScreen } from './GovernmentScreen';
+import { effectLines } from './effectText';
 import { GreatPeopleScreen } from './GreatPeopleScreen';
 import { ReligionScreen } from './ReligionScreen';
 import { CityStatesScreen } from './CityStatesScreen';
@@ -351,6 +352,12 @@ function noticeFor(
       return e.target === ME
         ? `Emergency: you are ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing you (U)`
         : `Emergency: ${civName(content, state, e.target)} is ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing them (U)`;
+    }
+    case 'legacy_earned': {
+      const g = content.entities.government[e.government];
+      return e.player === ME && g
+        ? `Your years under ${resolveText(content, g.name)} left a legacy (${e.count} of ${content.rules.progress.legacy.max}): ${effectLines(content, g.legacy).join('; ')}`
+        : undefined;
     }
     case 'containment_ended':
       return e.player === ME

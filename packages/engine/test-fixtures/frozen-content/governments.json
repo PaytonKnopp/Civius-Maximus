@@ -10,7 +10,22 @@
       "diplomatic": 0,
       "wildcard": 0
     },
-    "order": 1
+    "order": 1,
+    "legacy": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 5,
+          "toward": {
+            "kind": "unit",
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "government",
@@ -104,6 +119,20 @@
           "settlement_is_capital": true
         }
       }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 5,
+          "toward": {
+            "kind": "wonder"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
     ]
   },
   {
@@ -126,6 +155,21 @@
           "percent": 20,
           "toward": {
             "kind": "unit"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 5,
+          "toward": {
+            "kind": "unit",
+            "military": true
           }
         },
         "target": {
@@ -166,6 +210,18 @@
           "scope": "player"
         }
       }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 3
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
     ]
   },
   {
@@ -187,6 +243,18 @@
         "params": {
           "yield": "faith",
           "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 5
         },
         "target": {
           "scope": "settlements"
@@ -229,6 +297,17 @@
           "settlement_is_capital": true
         }
       }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_border_growth",
+        "params": {
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
     ]
   },
   {
@@ -262,6 +341,18 @@
         },
         "target": {
           "scope": "player"
+        }
+      }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 4
+        },
+        "target": {
+          "scope": "settlements"
         }
       }
     ]
@@ -311,6 +402,20 @@
           "scope": "player"
         }
       }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 5,
+          "toward": {
+            "kind": "building"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
     ]
   },
   {
@@ -332,6 +437,18 @@
         "params": {
           "yield": "production",
           "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "percent": 3
         },
         "target": {
           "scope": "settlements"
@@ -375,6 +492,21 @@
           "scope": "settlements"
         }
       }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 5,
+          "toward": {
+            "kind": "unit",
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
     ]
   },
   {
@@ -408,6 +540,18 @@
           "toward": {
             "kind": "district"
           }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 4
         },
         "target": {
           "scope": "settlements"
@@ -457,6 +601,18 @@
           "scope": "player"
         }
       }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "tourism",
+          "percent": 5
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
     ]
   },
   {
@@ -502,6 +658,18 @@
         },
         "target": {
           "scope": "player"
+        }
+      }
+    ],
+    "legacy": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 5
+        },
+        "target": {
+          "scope": "settlements"
         }
       }
     ]

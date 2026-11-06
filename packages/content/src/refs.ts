@@ -292,6 +292,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       yieldKeys(out, entity.yields, ['yields']);
       requirements(out, entity);
       ids(out, 'building', entity.requiresBuilding, ['requiresBuilding']);
+      ids(out, 'building', entity.excludes, ['excludes']);
       ids(out, 'district', entity.district, ['district']);
       effectList(out, entity.localEffects, ['localEffects']);
       effectList(out, entity.effects, ['effects']);
@@ -367,6 +368,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
     case 'government':
       ids(out, 'civic', entity.requiresCivic, ['requiresCivic']);
       effectList(out, entity.effects, ['effects']);
+      effectList(out, entity.legacy, ['legacy']);
       break;
     case 'policy':
       ids(out, 'civic', entity.requiresCivic, ['requiresCivic']);

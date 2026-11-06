@@ -149,6 +149,16 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
   const gov = content.entities.government[p.government];
   if (gov && gov.effects.length > 0)
     out.push({ id: gov.id, label: resolveText(content, gov.name), effects: gov.effects });
+  // Legacies of the governments they've lived under (D113), one copy per legacy earned.
+  for (const [id, n] of Object.entries(p.legacies ?? {}).sort()) {
+    const g = content.entities.government[id];
+    if (!g || n <= 0 || g.legacy.length === 0) continue;
+    out.push({
+      id: `legacy:${id}`,
+      label: `${resolveText(content, g.name)} legacy${n > 1 ? ` (×${n})` : ''}`,
+      effects: g.legacy.map((e) => timesEffect(e, n)),
+    });
+  }
   for (const kind of SLOT_KINDS) {
     for (const id of p.policies[kind]) {
       const pol = content.entities.policy[id];
@@ -175,6 +185,15 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
   // Only frozen (finished) states are cached: a draft or snapshot may still change.
   if (Object.isFrozen(p)) sourceCache.set(p, out);
   return out;
+}
+
+/** An effect `n` times over: its `amount` or `percent` multiplied (one line, not n). */
+function timesEffect(effect: Effect, n: number): Effect {
+  if (n === 1) return effect;
+  const params: Record<string, unknown> = { ...effect.params };
+  for (const key of ['amount', 'percent'] as const)
+    if (typeof params[key] === 'number') params[key] = (params[key] as number) * n;
+  return { ...effect, params } as Effect;
 }
 
 type Built = { localEffects: Effect[]; effects: Effect[]; name: string };

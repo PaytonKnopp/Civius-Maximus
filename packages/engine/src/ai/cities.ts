@@ -1,3 +1,4 @@
+import { faithUnitCost } from '../religion/rules';
 import type { Effect } from '@cx/content';
 import {
   isRevealed,
@@ -478,7 +479,7 @@ function buyThings(t: Turn) {
     .sort((a, b) => b.population - a.population || (a.id < b.id ? -1 : 1));
   // Only what could be finished now (a unit's resources must be in the stockpile).
   const buyable = (s: SettlementState, head: BuildItem | undefined): head is BuildItem =>
-    !!head && isBuyable(head) && !completionProblem(t.ctx, t.state, s, head);
+    !!head && isBuyable(t.ctx, head) && !completionProblem(t.ctx, t.state, s, head);
   for (const s of cities) {
     const head = s.queue[0];
     if (!buyable(s, head) || !inDanger(t, s)) continue;
@@ -488,12 +489,21 @@ function buyThings(t: Turn) {
       return;
     }
   }
-  // Faith has no other use yet: spend it where an ability allows.
+  // Spare faith buys buildings where our religion is followed (D114), or what an ability
+  // allows; a founder keeps enough for its religious units.
+  const keepFaith = t.p.religion
+    ? Math.max(
+        0,
+        ...t.ctx.content.ids.unit.map((id) =>
+          faithUnitCost(t.ctx, t.state, t.ctx.content.entities.unit[id]!.faithCost),
+        ),
+      )
+    : 0;
   for (const s of cities) {
     const head = s.queue[0];
-    if (!buyable(s, head) || !canBuyWithFaith(t.ctx, t.state, t.player, head)) continue;
+    if (!buyable(s, head) || !canBuyWithFaith(t.ctx, t.state, t.player, head, s)) continue;
     if (turnsFor(t, s, head) <= 2) continue;
-    if (t.p.faith >= purchaseCost(t.ctx, t.state, t.player, head, s)) {
+    if (t.p.faith >= purchaseCost(t.ctx, t.state, t.player, head, s, 'faith') + keepFaith) {
       t.act({
         type: 'buy_item',
         player: t.player,

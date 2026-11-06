@@ -636,15 +636,18 @@ export const settlementHandlers = {
 
   buy_item: settlementAction<'buy_item'>(
     (s, state, action, ctx) => {
-      if (!isBuyable(action.item))
-        return { code: 'not_buyable', message: "Districts, wonders and projects can't be bought" };
+      if (!isBuyable(ctx, action.item))
+        return {
+          code: 'not_buyable',
+          message: "Districts, wonders and one-time projects can't be bought",
+        };
       const problem =
         itemProblem(ctx, state, s, action.item) ?? completionProblem(ctx, state, s, action.item);
       if (problem) return problem;
-      const cost = purchaseCost(ctx, state, action.player, action.item, s);
+      const cost = purchaseCost(ctx, state, action.player, action.item, s, action.currency);
       const p = state.players[action.player]!;
       if (action.currency === 'faith') {
-        if (!canBuyWithFaith(ctx, state, action.player, action.item))
+        if (!canBuyWithFaith(ctx, state, action.player, action.item, s))
           return { code: 'no_faith_purchase', message: "That can't be bought with faith" };
         return p.faith < cost
           ? { code: 'no_faith', message: `Needs ${Math.ceil(cost / 100)} faith` }
@@ -660,6 +663,7 @@ export const settlementHandlers = {
         action.player,
         action.item,
         snap.settlements[action.settlement],
+        action.currency,
       );
       if (action.currency === 'faith') draft.players[action.player]!.faith -= cost;
       else draft.players[action.player]!.gold -= cost;

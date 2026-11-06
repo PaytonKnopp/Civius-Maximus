@@ -15,6 +15,7 @@ import {
   SLOT_KINDS,
 } from '@cx/engine';
 import { useEffect, useState } from 'react';
+import { effectLines } from './effectText';
 import { whole } from './model';
 import { Icon, Rich } from '../ui/Icon';
 
@@ -132,6 +133,20 @@ export function GovernmentScreen({ ctx, state, viewer, act, onClose }: Props) {
                     </span>
                   </div>
                   {g.description && <p className="hint">{resolveText(content, g.description)}</p>}
+                  {g.legacy.length > 0 && (
+                    <p
+                      className="hint"
+                      title={`Every ${content.rules.progress.legacy.everyTurns} turns in it (scaled by speed) earns one, kept after you switch, up to ${content.rules.progress.legacy.max}`}
+                    >
+                      Legacy: {effectLines(content, g.legacy).join('; ')}
+                      {(p.legacies?.[g.id] ?? 0) > 0
+                        ? ` · earned ${p.legacies![g.id]} of ${content.rules.progress.legacy.max}`
+                        : ''}
+                      {current && (p.legacies?.[g.id] ?? 0) < content.rules.progress.legacy.max
+                        ? ` · next in ${Math.max(0, content.rules.progress.legacy.everyTurns - (p.legacyClock ?? 0))} turns`
+                        : ''}
+                    </p>
+                  )}
                   {(() => {
                     // Ideologies (D118): the camp, and how its rivals' culture would sit with us.
                     const camp = campOfGovernment(ctx, g.id);

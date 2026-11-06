@@ -331,6 +331,11 @@ Each settlement has a 😊 **happiness** balance:
 - **Overflow** carries extra production into the next item.
 - **Buying:** gold for units and buildings (not districts or wonders), and faith for religious units
   and some others (module).
+- **Late-game sinks (D114, final pass):** gold also buys **repeatable district projects** at 2
+  gold per production (`purchase.projectGoldPerProduction`; units and buildings cost 4), and a
+  religion's founder can buy **buildings with faith** (4 faith per production,
+  `faithPerProduction`) in its settlements that follow that religion. Influence buys open
+  borders and research agreements ([04-advanced-systems.md](04-advanced-systems.md)).
 - **Nothing is wasted (final pass):** a city with nothing queued sells its production for gold
   at the town rate, and so does overflow with nothing after it.
 - **District projects (built in the final pass):** every specialty district has a repeatable
@@ -643,6 +648,15 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
     a price and only open during a dark age. New cards for the civics that had none (Border
     Forts, Air Doctrine, Self-Determination, Space Program, Green Energy, World Forum) and a
     fourth diplomatic one (Trade Delegations).
+  - **Legacies (D113):** every 25 turns in one government (scaled by speed) earns one more of
+    its `legacy` bonus, kept after you switch, up to 3 per government (`rules.progress.legacy`).
+    Changing government starts the count over. Chiefdom, Oligarchy and Militarism: +5%
+    production toward soldiers; Autocracy: +5% toward wonders; Classical Republic: +3% culture;
+    Theocracy: +5% faith; Monarchy: +10% border growth; Merchant Republic: +4% gold; Democracy:
+    +5% toward buildings; Collectivism: +3% production; Technocracy: +4% science; Digital
+    Republic: +5% tourism; Corporate Federation: +5% gold. Staying the course pays; a civ that
+    lived under several governments carries a mix. The government screen shows each legacy, how
+    many you have and when the next comes.
 - This is one of Civ 6's best systems. It's very moddable, and it creates lots of strategic
   choices, so we keep it as-is.
 
@@ -707,7 +721,7 @@ Districts are Civ 6's signature system and the main source of city planning.
 | Entertainment Complex | 😊 happiness | — |
 | Aqueduct | +growth, +😊 | Must be next to a city center and fresh water or a mountain |
 | Neighborhood | 😊 by appeal, +growth | — |
-| Government Plaza | unique | One per empire. Extra policy slot |
+| Government Plaza | unique | One per empire. Extra policy slot; three tiers of buildings, one of two each (D110) |
 | Spaceport | science victory | — |
 
 - **Final gameplay pass (November 2026):**
@@ -725,6 +739,14 @@ Districts are Civ 6's signature system and the main source of city planning.
     each kind counts once (`regional` on buildings and wonders). The Colosseum, Taj Mahal and
     Maracanã reach the same way with happiness.
   - The Nuclear Plant needs a Power Plant.
+  - **Government Plaza buildings (D110):** three tiers, each a choice of two; building one
+    closes the other for good (`excludes`):
+    - Political Philosophy: **Envoys' Hall** (+3 influence, +1 favor a turn) or **Builders'
+      Lodge** (+25% production toward districts in its settlement).
+    - Civil Service: **Treasury Hall** (+4 gold, +5% gold everywhere) or **War College** (+10%
+      production toward soldiers everywhere).
+    - Nationalism: **Grand Archive** (+15% Great Scientist, Writer and Artist points) or
+      **National Monument** (+1 happiness in every settlement).
   - **Wonders:** every wonder now has a placement rule (St. Basil's next to the city center,
     Big Ben next to a Commercial Hub, Broadway next to a Theater Square, the Statue of Liberty
     on the coast...), and the empire-wide trickles became signature effects (Stonehenge +3

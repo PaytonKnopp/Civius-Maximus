@@ -160,6 +160,11 @@ export const RulesDef = z.strictObject({
     purchase: z.strictObject({
       /** Gold cost of buying a unit or building = production cost × this. */
       goldPerProduction: z.int().min(1),
+      /** Gold per production for a repeatable district project (D114: a late-game sink). */
+      projectGoldPerProduction: z.int().min(1).default(2),
+      /** Faith per production, where faith can buy (D114: buildings in settlements following
+       * the religion you founded; abilities may allow more). */
+      faithPerProduction: z.int().min(1).default(4),
       /** Tile cost = `tileBase + tilePerAcquired × tiles acquired + tilePerDistance × distance`. */
       tileBase: z.int().min(0),
       tilePerAcquired: z.int().min(0),
@@ -312,6 +317,13 @@ export const RulesDef = z.strictObject({
       .default({ perCiv: 0, max: 0 }),
     /** Gold to change government outside the free window. */
     governmentChangeCost: z.int().min(0),
+    /**
+     * Government legacies (D113): every `everyTurns` turns in one government (scaled by speed)
+     * earns one more of its `legacy` effects, kept after switching, up to `max` per government.
+     */
+    legacy: z
+      .strictObject({ everyTurns: z.int().min(1), max: z.int().min(0) })
+      .default({ everyTurns: 25, max: 3 }),
     celebration: z.strictObject({
       /** Happiness surplus needed: `base + perCelebration × celebrations so far`. */
       base: z.int().min(1),
@@ -1346,6 +1358,8 @@ export const BuildingDef = z.strictObject({
   cityOnly: z.boolean().default(false),
   /** Needs this building in the settlement first (e.g. a University needs a Library). */
   requiresBuilding: Id.optional(),
+  /** Can't be built once any of these stands in the empire (D110: one of each plaza pair). */
+  excludes: z.array(Id).default([]),
   /** Built inside this district (the settlement needs it first). */
   district: Id.optional(),
   /** Outer defenses: HP that attacks must break before they hurt the settlement much. */
@@ -1733,6 +1747,8 @@ export const GovernmentDef = z.strictObject({
     wildcard: z.int().min(0),
   }),
   effects: z.array(Effect).default([]),
+  /** A lasting bonus earned for time spent in it (D113): one copy per legacy earned. */
+  legacy: z.array(Effect).default([]),
   requiresCivic: Id.optional(),
   /** Display order. */
   order: z.int().default(100),

@@ -1,3 +1,4 @@
+import { scaleCost } from '../speed';
 import type { Draft } from 'immer';
 import type { Action } from '../actions';
 import { type ActionHandler, type EngineContext, type Emit, type RuleError } from '../context';
@@ -114,6 +115,8 @@ export const progressHandlers = {
       const p = draft.players[action.player]!;
       p.gold -= governmentChangeCost(ctx, view(draft), action.player);
       p.government = action.government;
+      // A new government starts its own count toward a legacy (D113).
+      p.legacyClock = 0;
       refreshPlayer(draft, ctx, action.player);
       emit({
         type: 'government_changed',
@@ -317,6 +320,19 @@ export function empireTurn(
         reason: 'no_gold',
         visibleTo: [player],
       });
+    }
+  }
+
+  // Government legacies (D113): time in one government earns lasting bonuses of its kind.
+  const legacy = ctx.content.rules.progress.legacy;
+  const gov = ctx.content.entities.government[p.government];
+  if (gov && gov.legacy.length > 0 && (p.legacies?.[p.government] ?? 0) < legacy.max) {
+    p.legacyClock = (p.legacyClock ?? 0) + 1;
+    if (p.legacyClock >= Math.max(1, scaleCost(ctx, draft, legacy.everyTurns))) {
+      p.legacyClock = 0;
+      const count = (p.legacies?.[p.government] ?? 0) + 1;
+      p.legacies = { ...p.legacies, [p.government]: count };
+      emit({ type: 'legacy_earned', player, government: p.government, count, visibleTo: [player] });
     }
   }
 

@@ -516,6 +516,10 @@ export interface PlayerState {
   resources?: Record<string, number>;
   /** A World Congress containment against them (D120). */
   contained?: Containment;
+  /** Government legacies earned (D113), by government: how many of its `legacy` effects. */
+  legacies?: Record<string, number>;
+  /** Turns in the current government since it last earned a legacy (or was adopted). */
+  legacyClock?: number;
   /** Resources whose unit upkeep couldn't be covered last turn: those units fight weaker. */
   resourcesShort?: string[];
   capital: SettlementId | null;

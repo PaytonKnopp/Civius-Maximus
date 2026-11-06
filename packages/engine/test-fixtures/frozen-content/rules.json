@@ -30,6 +30,8 @@
     },
     "purchase": {
       "goldPerProduction": 4,
+      "projectGoldPerProduction": 2,
+      "faithPerProduction": 4,
       "tileBase": 25,
       "tilePerAcquired": 5,
       "tilePerDistance": 10
@@ -223,6 +225,10 @@
       "max": 25
     },
     "governmentChangeCost": 100,
+    "legacy": {
+      "everyTurns": 25,
+      "max": 3
+    },
     "celebration": {
       "base": 40,
       "perCelebration": 30,

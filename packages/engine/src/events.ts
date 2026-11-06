@@ -45,6 +45,7 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         percent: number;
       }
     | { type: 'containment_ended'; player: PlayerId; resolution: string }
+    | { type: 'legacy_earned'; player: PlayerId; government: string; count: number }
     | { type: 'denounced'; by: PlayerId; target: PlayerId }
     | {
         type: 'trade_route_started';

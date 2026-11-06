@@ -921,26 +921,45 @@ export function canBuyWithFaith(
   state: GameState,
   player: PlayerId,
   item: BuildItem,
+  s?: SettlementState,
 ): boolean {
+  // D114: buildings in settlements that follow the religion this player founded.
+  const religion = state.players[player]?.religion;
+  if (item.kind === 'building' && s && religion && s.religion === religion) return true;
   return playerEffects(ctx, state, player, 'purchase_with_faith').some(
     (e) => e.effect.params.kind === item.kind,
   );
 }
 
-/** Units and buildings can be bought; districts, wonders and projects can't. */
-export const isBuyable = (item: BuildItem) => item.kind === 'unit' || item.kind === 'building';
+/**
+ * Units and buildings can be bought, and repeatable district projects with gold (D114);
+ * districts, wonders and one-time projects can't.
+ */
+export const isBuyable = (ctx: EngineContext, item: BuildItem) =>
+  item.kind === 'unit' ||
+  item.kind === 'building' ||
+  (item.kind === 'project' && ctx.content.entities.project[item.id]?.repeatable === true);
 
-/** Gold to buy an item outright (policies, and a settlement's own effects, can make it cheaper). */
+/**
+ * Gold (or faith) to buy an item outright (policies, and a settlement's own effects, can make it
+ * cheaper). Repeatable projects cost `projectGoldPerProduction` a point of production.
+ */
 export function purchaseCost(
   ctx: EngineContext,
   state: GameState,
   player: PlayerId,
   item: BuildItem,
   s?: SettlementState,
+  currency: 'gold' | 'faith' = 'gold',
 ): Fixed {
-  const base =
-    itemCost(ctx, state, player, item, s) *
-    ctx.content.rules.settlements.purchase.goldPerProduction;
+  const rates = ctx.content.rules.settlements.purchase;
+  const rate =
+    currency === 'faith'
+      ? rates.faithPerProduction
+      : item.kind === 'project'
+        ? rates.projectGoldPerProduction
+        : rates.goldPerProduction;
+  const base = itemCost(ctx, state, player, item, s) * rate;
   let percent = 0;
   for (const { effect } of playerEffects(ctx, state, player, 'modify_purchase_cost', s))
     percent += effect.params.percent;
@@ -1034,6 +1053,18 @@ export function itemProblem(
     return { code: 'needs_coast', message: 'Needs a settlement on the coast' };
   if (b.cityOnly && s.kind === 'town')
     return { code: 'city_only', message: 'Only cities can have this' };
+  if (b.excludes.length > 0) {
+    // One of each pair (Government Plaza tiers, D110): the other choice is closed for good.
+    const chosen = Object.values(state.settlements)
+      .filter((x) => x.owner === s.owner)
+      .flatMap((x) => x.buildings)
+      .find((x) => b.excludes.includes(x));
+    if (chosen)
+      return {
+        code: 'excluded',
+        message: `You chose the ${resolveText(ctx.content, ctx.content.entities.building[chosen]?.name ?? chosen)} instead`,
+      };
+  }
   if (b.worship) {
     const beliefs = s.religion ? (state.religions[s.religion]?.beliefs ?? []) : [];
     if (!beliefs.some((id) => ctx.content.entities.belief[id]?.building === b.id))

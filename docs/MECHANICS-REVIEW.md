@@ -572,3 +572,7 @@ Payton approved every recommended default (D106–D120), the four groups of know
 - **D118** Light monopolies (more than half of a luxury's tiles: an empire bonus per luxury)
   and light ideologies (three camps of late governments; rival camps' tourism costs happiness,
   the AI picks its camp with that in mind).
+- **D113** Government legacies (every 25 turns in a government: a lasting bonus of its kind, up
+  to 3). **D110** Six Government Plaza buildings in three exclusive pairs. **D114** Gold buys
+  repeatable district projects; a founder's faith buys buildings where its religion is
+  followed (the AI keeps faith for its religious units).
