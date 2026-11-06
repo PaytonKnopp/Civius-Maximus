@@ -553,3 +553,16 @@ Payton approved every recommended default (D106–D120), the four groups of know
 - **7.1** Trade routes grow with the destination's districts and the era.
 - **9.1 (D117)** Score: great people, religion, great works, future techs and civics.
 - **D119** Catch-up research.
+
+### 2D, part 2
+
+- **Fair turn order.** In the 72 baseline games the first seat won 21 times (about 12
+  expected): its settlements were processed first every turn, so it won same-turn wonder races
+  and great person ties, and among AIs it acted first. The processing order now rotates by one
+  seat each turn (D51's hotseat order for humans is unchanged).
+- **D118 deals:** resource trades (spare luxury copies, strategic resources per turn out of the
+  sender's income), open borders (+25% tourism toward each other, units heal there as at home)
+  and research agreements between friends (+10% science each while they run, a boost each at
+  the end), paid in influence (D114). War ends them; a sender that can't deliver breaks the deal.
+  The AI swaps spare luxuries, offers open borders and research agreements, values a luxury by
+  the happiness it brings, and no longer tries to buy a unit whose resources aren't stockpiled.

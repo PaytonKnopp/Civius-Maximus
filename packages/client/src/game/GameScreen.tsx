@@ -414,7 +414,15 @@ function noticeFor(
         ? `${civName(content, state, e.from)} offers you a deal (open their name above)`
         : undefined;
     case 'deal_accepted': {
-      const pact = e.alliance ? 'an alliance' : e.friendship ? 'a friendship' : undefined;
+      const pact = e.alliance
+        ? 'an alliance'
+        : e.friendship
+          ? 'a friendship'
+          : e.research
+            ? 'a research agreement'
+            : e.openBorders
+              ? 'open borders'
+              : undefined;
       if (e.from === ME || e.to === ME) {
         const them = civName(content, state, e.from === ME ? e.to : e.from);
         return e.from === ME ? `${them} accepted your deal` : `Deal signed with ${them}`;
@@ -429,14 +437,16 @@ function noticeFor(
       return e.from === ME ? `Your offer to ${civName(content, state, e.to)} expired` : undefined;
     case 'deal_broken':
       return e.by === ME
-        ? `You couldn't pay ${civName(content, state, e.to)}: the deal is broken`
+        ? `You couldn't deliver to ${civName(content, state, e.to)}: the deal is broken`
         : e.to === ME
-          ? `${civName(content, state, e.by)} stopped paying you: the deal is broken`
+          ? `${civName(content, state, e.by)} stopped delivering: the deal is broken`
           : `${civName(content, state, e.by)} broke a deal with ${civName(content, state, e.to)}`;
     case 'pact_ended': {
       const [a, b] = e.players;
       const them = civName(content, state, a === ME ? b : a);
-      return `Your ${e.kind} with ${them} has ended`;
+      if (e.kind === 'research')
+        return `Your research agreement with ${them} is done: a boost for both of you`;
+      return `Your ${e.kind === 'open_borders' ? 'open borders' : e.kind} with ${them} ${e.kind === 'open_borders' ? 'have' : 'has'} ended`;
     }
     case 'trade_route_started':
       return e.owner === ME

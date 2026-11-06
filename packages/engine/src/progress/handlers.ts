@@ -191,9 +191,9 @@ export function boostPercent(ctx: EngineContext, state: GameState, player: Playe
 }
 
 /**
- * A free boost (from an ability or a tribal village): toward the cheapest tech or civic (or only
- * `only`) the player can work on now that isn't boosted yet. Returns its id, or undefined if
- * there's none.
+ * A free boost (from an ability, a tribal village or a research agreement): toward `prefer` if
+ * it's open and not boosted yet, else the cheapest tech or civic (or only `only`) the player can
+ * work on now that isn't boosted yet. Returns its id, or undefined if there's none.
  */
 export function grantBoost(
   draft: Draft<GameState>,
@@ -201,6 +201,7 @@ export function grantBoost(
   player: PlayerId,
   emit: Emit,
   only?: TreeKind,
+  prefer?: string,
 ): string | undefined {
   const snap = view(draft);
   const p = snap.players[player]!;
@@ -210,8 +211,11 @@ export function grantBoost(
     for (const id of availableNodes(ctx, p, kind)) {
       if (track.boosted.includes(id)) continue;
       const cost = nodeCostFor(ctx, snap, player, kind, id);
-      if (!best || cost < best.cost || (cost === best.cost && id < best.id))
-        best = { kind, id, cost };
+      const better =
+        !best ||
+        id === prefer ||
+        (best.id !== prefer && (cost < best.cost || (cost === best.cost && id < best.id)));
+      if (better) best = { kind, id, cost };
     }
   }
   if (!best) return undefined;

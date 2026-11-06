@@ -92,19 +92,34 @@ same actions shift **war support** toward your enemy (see
 - **Influence** 🤝: +2 a turn plus influence yields (Government Plaza, Trade Outpost towns).
   Friendship costs 20 and an alliance 50 from each side; denouncing costs 20.
 - **Deals:** gold now, gold per turn (up to 30 turns, enforced: a missed payment breaks the deal
-  and everyone remembers), shared maps, friendship, alliance, peace. Offers wait in the other
-  player's panel for 10 turns; AI rivals answer at once, and the deal screen shows beforehand
-  whether they'd accept and why not.
+  and everyone remembers), shared maps, friendship, alliance, peace, and (D118):
+  - **resources** for the deal's turns: a spare luxury copy (each improved luxury tile is one
+    copy and one always stays home; a copy sent away stops counting at home, spares first, and
+    the one that arrives cheers the other's capital and its 3 nearest settlements), or a
+    strategic resource per turn out of the sender's own income (it moves from their stockpile
+    income into the other's). A sender that can no longer cover it breaks the deal, like a
+    missed payment.
+  - **open borders** (30 turns, 10 influence each): +25% tourism toward each other (D115) and
+    units heal in each other's land as at home. Units can always cross land at peace, so there
+    is no closed-borders rule.
+  - **research agreements** (between declared friends; 20 turns, 30 influence each): +10%
+    science for both while it runs (a "Research agreement with …" line in yields), and each
+    side gets a boost when it ends (toward their current tech if it isn't boosted yet).
+  - War ends every deal between the two: payments, trades, open borders, research agreements.
+  Offers wait in the other player's panel for 10 turns; AI rivals answer at once, and the deal
+  screen shows beforehand whether they'd accept and why not. AIs swap spare luxuries neither
+  side has (one for one, 30 turns), offer open borders to players they like and research
+  agreements to friends, and value a luxury by the happiness it brings them.
 - **Surprise wars:** a war declared without denouncing the target in the last 10 turns. It gives
   the target the war-support head start and is remembered by every AI. A formal war (denounce
   first, then declare) does neither.
 - **AI opinions** with reasons (shown in the rival panel): agenda likes and dislikes, long
   peace, same government, friendship or alliance, common enemies, denouncements, surprise
-  wars, broken deals, razed settlements, settling nearby, running deals. AIs offer friendships
+  wars, broken deals, razed settlements, settling nearby, running deals (payments, trades,
+  open borders and research agreements count, up to 2). AIs offer friendships
   and alliances to players they like, denounce ones they don't, and denounce before declaring
   war when they're diplomatic.
-- Not yet: open borders, endeavors and sanctions, promises, joint wars, research agreements,
-  resource trades (they need trade routes and strategic resources first).
+- Not yet: endeavors and sanctions, promises, joint wars, great works and cities in deals.
 
 ---
 

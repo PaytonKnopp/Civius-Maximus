@@ -333,13 +333,20 @@
       "nearDistance": 6,
       "nearMax": 3,
       "perDeal": 3,
+      "dealsMax": 2,
       "tradeRoute": 3,
+      "tradeRoutesMax": 2,
       "spiedOnUs": -2,
       "nukedUs": -10,
       "nukedOthers": -3
     },
     "friendshipOpinion": 6,
-    "allianceOpinion": 14
+    "allianceOpinion": 14,
+    "openBordersTurns": 30,
+    "openBordersCost": 10,
+    "researchTurns": 20,
+    "researchCost": 30,
+    "researchPercent": 10
   },
   "cityStates": {
     "minDistance": 7,
@@ -495,7 +502,8 @@
     "tourismPerTourist": 150,
     "tradeRoutePercent": 25,
     "religionPercent": 25,
-    "friendsPercent": 25
+    "friendsPercent": 25,
+    "openBordersPercent": 25
   },
   "governors": {
     "establishTurns": 5,

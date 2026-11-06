@@ -144,6 +144,12 @@ Strategic resources are only revealed once you research the matching tech.
   are for trading. The settlement's happiness breakdown names each one and where it comes from.
   Fifteen luxuries (D106): Silk, Spices, Wine, Incense, Diamonds, Pearls, Whales, Dyes, Furs,
   Ivory, Marble, Salt, Sugar, Tea and Cotton.
+- **Trading resources** (D118, see [04-advanced-systems.md](04-advanced-systems.md)): each
+  improved luxury tile is one copy; all but one can go in a deal. A copy sent away stops counting
+  at home (a settlement's second copies first, then the newest settlement's), and one received
+  cheers the receiver's capital and its 3 nearest settlements ("Wine (from Rome)"). Strategic
+  resources trade per turn out of the sender's own income: their stockpile gains that much less
+  and the other's that much more.
 - **Strategic resources** (`rules.strategic`), after Civ VI:
   - Hidden until their tech: horses (Animal Husbandry), iron (Bronze Working), niter (Military
     Tactics), coal (Industrialization), oil (Steam Power), aluminum (Radio), uranium (Nuclear

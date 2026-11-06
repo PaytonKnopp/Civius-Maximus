@@ -90,6 +90,9 @@ export function playerView(ctx: EngineContext, state: GameState, player: PlayerI
       ...state.diplomacy,
       proposals: state.diplomacy.proposals.filter((p) => involves(p.from, p.to)),
       payments: state.diplomacy.payments.filter((p) => involves(p.from, p.to)),
+      ...(state.diplomacy.trades
+        ? { trades: state.diplomacy.trades.filter((t) => involves(t.from, t.to)) }
+        : {}),
     },
   };
 }

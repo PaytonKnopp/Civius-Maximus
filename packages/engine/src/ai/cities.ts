@@ -29,6 +29,7 @@ import {
   type YieldScope,
   townUpgradeCost,
 } from '../settlements/rules';
+import { completionProblem } from '../settlements/handlers';
 import type { BuildItem, SettlementState } from '../state';
 import { routesOf, tradeCapacity } from '../trade/rules';
 import { obsoletedBy } from '../units/upgrades';
@@ -475,9 +476,12 @@ function buyThings(t: Turn) {
     .mySettlements()
     .filter((s) => s.kind === 'city' && !s.captureChoice && !s.puppet)
     .sort((a, b) => b.population - a.population || (a.id < b.id ? -1 : 1));
+  // Only what could be finished now (a unit's resources must be in the stockpile).
+  const buyable = (s: SettlementState, head: BuildItem | undefined): head is BuildItem =>
+    !!head && isBuyable(head) && !completionProblem(t.ctx, t.state, s, head);
   for (const s of cities) {
     const head = s.queue[0];
-    if (!head || !isBuyable(head) || !inDanger(t, s)) continue;
+    if (!buyable(s, head) || !inDanger(t, s)) continue;
     if (head.kind === 'unit' && !isSoldier(unitRole(t.ctx, { type: head.id }))) continue;
     if (t.p.gold >= purchaseCost(t.ctx, t.state, t.player, head, s)) {
       t.act({ type: 'buy_item', player: t.player, settlement: s.id, item: head });
@@ -487,7 +491,7 @@ function buyThings(t: Turn) {
   // Faith has no other use yet: spend it where an ability allows.
   for (const s of cities) {
     const head = s.queue[0];
-    if (!head || !isBuyable(head) || !canBuyWithFaith(t.ctx, t.state, t.player, head)) continue;
+    if (!buyable(s, head) || !canBuyWithFaith(t.ctx, t.state, t.player, head)) continue;
     if (turnsFor(t, s, head) <= 2) continue;
     if (t.p.faith >= purchaseCost(t.ctx, t.state, t.player, head, s)) {
       t.act({
@@ -504,7 +508,7 @@ function buyThings(t: Turn) {
   if (buyResourceTile(t, rich)) return;
   for (const s of cities) {
     const head = s.queue[0];
-    if (!head || !isBuyable(head) || !itemDef(t.ctx, head)) continue;
+    if (!buyable(s, head) || !itemDef(t.ctx, head)) continue;
     if (turnsFor(t, s, head) <= 2) continue;
     const cost = purchaseCost(t.ctx, t.state, t.player, head, s);
     if (t.p.gold >= cost + rich) {

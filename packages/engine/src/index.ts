@@ -167,13 +167,20 @@ export {
   workableTiles,
 } from './settlements/rules';
 export { bestDevelopChoice } from './settlements/handlers';
-export { luxuriesOf, ownLuxuries, type LuxuryReach } from './settlements/luxuries';
+export {
+  luxuriesOf,
+  luxuryCopies,
+  ownLuxuries,
+  spareLuxury,
+  type LuxuryReach,
+} from './settlements/luxuries';
 export {
   isRevealed,
   resourceCostOf,
   resourceProblem,
   resourceUpkeepOf,
   shortages,
+  sourceIncome,
   stockpileCap,
   stockpileIncome,
   stockpileOf,
@@ -230,6 +237,8 @@ export {
   areFriends,
   dealProblem,
   denounceProblem,
+  haveOpenBorders,
+  haveResearchAgreement,
   influencePerTurn,
   isSurpriseWar,
   NO_TERMS,
@@ -240,6 +249,7 @@ export {
   sameTeam,
   warBlock,
 } from './diplomacy/rules';
+export { researchPartners, tradedBy, tradesOf } from './diplomacy/pacts';
 export {
   allUnitsOf,
   type Command,

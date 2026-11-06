@@ -1,6 +1,7 @@
 import { resolveText } from '@cx/content';
 import type { Draft } from 'immer';
 import type { Emit, EngineContext, RuleError } from '../context';
+import { tradedBy } from '../diplomacy/pacts';
 import { tilesWithin } from '../map/hex';
 import { eraOrderOf } from '../progress/era';
 import type { GameState, PlayerId, UnitState } from '../state';
@@ -56,8 +57,27 @@ export function stockpileCap(ctx: EngineContext, state: GameState, player: Playe
   return r.stockpileBase + r.stockpilePerEra * (eraOrderOf(ctx, state.players[player]) - 1);
 }
 
-/** What a player's improved, revealed sources add each turn, per resource. */
+/**
+ * What a player's stockpiles gain each turn, per resource: their own sources, plus what trades
+ * bring in, less what they send away (D118). It can be below 0 for a turn when a source is lost.
+ */
 export function stockpileIncome(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+): Record<string, number> {
+  const out = sourceIncome(ctx, state, player);
+  const trades = state.diplomacy?.trades;
+  if (!trades?.length) return out;
+  for (const [r, n] of Object.entries(tradedBy(ctx, state, player, 'to', 'strategic')))
+    out[r] = (out[r] ?? 0) + n;
+  for (const [r, n] of Object.entries(tradedBy(ctx, state, player, 'from', 'strategic')))
+    out[r] = (out[r] ?? 0) - n;
+  return out;
+}
+
+/** What a player's own improved, revealed sources add each turn, per resource. */
+export function sourceIncome(
   ctx: EngineContext,
   state: GameState,
   player: PlayerId,
@@ -170,7 +190,7 @@ export function strategicTurn(
   const stock = { ...(p.resources ?? {}) };
   const short: string[] = [];
   for (const r of [...new Set([...Object.keys(income), ...Object.keys(upkeep)])].sort()) {
-    let have = Math.min(cap, (stock[r] ?? 0) + (income[r] ?? 0));
+    let have = Math.max(0, Math.min(cap, (stock[r] ?? 0) + (income[r] ?? 0)));
     const need = upkeep[r] ?? 0;
     if (have >= need) have -= need;
     else {

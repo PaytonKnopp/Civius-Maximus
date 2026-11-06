@@ -11,8 +11,13 @@ import {
 import { type Fixed, toFixed } from '../fixed';
 import { distance } from '../map/hex';
 import { playerEffects, withSourceMemo } from '../progress/sources';
+import { isRevealed, sourceIncome } from '../resources/strategic';
+import { luxuryCopies } from '../settlements/luxuries';
 import { goldPerTurn, settlementYields } from '../settlements/rules';
 import type { DealTerms, DiplomacyState, GameState, PlayerId, Proposal } from '../state';
+import { haveOpenBorders, haveResearchAgreement, tradedBy, tradesOf } from './pacts';
+
+export { haveOpenBorders, haveResearchAgreement } from './pacts';
 
 /**
  * Diplomacy (docs/04-advanced-systems.md, "Diplomacy & deals"): who is friends or allied with
@@ -272,15 +277,19 @@ export function opinionOf(
       s.owner === toward && ours.some((m) => distance(state.map, m.tile, s.tile) <= o.nearDistance),
   ).length;
   add('Settled near us', Math.min(near, o.nearMax) * o.settledNear);
-  const deals = d.payments.filter(
-    (p) => (p.from === of && p.to === toward) || (p.from === toward && p.to === of),
-  ).length;
-  add('Deals with us', Math.min(deals, 2) * o.perDeal);
+  const between = (a: PlayerId, b: PlayerId) =>
+    (a === of && b === toward) || (a === toward && b === of);
+  const deals =
+    d.payments.filter((p) => between(p.from, p.to)).length +
+    tradesOf(state).filter((t) => between(t.from, t.to)).length +
+    (haveOpenBorders(state, of, toward) ? 1 : 0) +
+    (haveResearchAgreement(state, of, toward) ? 1 : 0);
+  add('Deals with us', Math.min(deals, o.dealsMax) * o.perDeal);
   const routes = (state.routes ?? []).filter((r) => {
     const dest = state.settlements[r.to]?.owner;
     return (r.owner === of && dest === toward) || (r.owner === toward && dest === of);
   }).length;
-  add('Trade routes between us', Math.min(routes, 2) * o.tradeRoute);
+  add('Trade routes between us', Math.min(routes, o.tradeRoutesMax) * o.tradeRoute);
   const leader = ctx.content.entities.leader[state.players[of]?.leader ?? ''];
   for (const rule of leader?.agenda.rules ?? []) {
     const theirs = metric(ctx, state, toward, rule);
@@ -292,9 +301,62 @@ export function opinionOf(
 
 // --- Deals -------------------------------------------------------------------------------------
 
-export const NO_TERMS: DealTerms = { gold: 0, goldPerTurn: 0, maps: false };
+export const NO_TERMS: Required<DealTerms> = {
+  gold: 0,
+  goldPerTurn: 0,
+  maps: false,
+  resources: {},
+};
 
-const empty = (t: DealTerms) => t.gold === 0 && t.goldPerTurn === 0 && !t.maps;
+const empty = (t: DealTerms) =>
+  t.gold === 0 && t.goldPerTurn === 0 && !t.maps && Object.keys(t.resources ?? {}).length === 0;
+
+/**
+ * Why `giver` can't send these resources to `taker` every turn of a deal, or undefined. A luxury
+ * needs spare copies (each improved tile is one; one stays home); a strategic resource needs
+ * enough of the giver's own income per turn, and both sides must know about it.
+ */
+export function resourceTermsProblem(
+  ctx: EngineContext,
+  state: GameState,
+  giver: PlayerId,
+  taker: PlayerId,
+  resources: Record<string, number> | undefined,
+): RuleError | undefined {
+  const g = state.players[giver]!;
+  const t = state.players[taker]!;
+  for (const [r, amount] of Object.entries(resources ?? {}).sort()) {
+    const res = ctx.content.entities.resource[r];
+    if (!res || (res.class !== 'luxury' && res.class !== 'strategic') || amount < 1)
+      return { code: 'bad_resource', message: "That can't be traded" };
+    const name = resolveText(ctx.content, res.name);
+    const sent = tradedBy(ctx, state, giver, 'from')[r] ?? 0;
+    if (res.class === 'luxury') {
+      const spare = Math.max(0, (luxuryCopies(ctx, state, giver)[r] ?? 0) - sent - 1);
+      if (amount > spare)
+        return {
+          code: 'no_resource',
+          message:
+            spare === 0
+              ? `${g.name} has no spare ${name} (one copy stays home)`
+              : `${g.name} can spare ${spare} ${name}`,
+        };
+      continue;
+    }
+    if (!isRevealed(ctx, state, taker, r))
+      return { code: 'no_resource', message: `${t.name} doesn't know about ${name} yet` };
+    const spare = Math.max(0, (sourceIncome(ctx, state, giver)[r] ?? 0) - sent);
+    if (amount > spare)
+      return {
+        code: 'no_resource',
+        message:
+          spare === 0
+            ? `${g.name} has no ${name} to spare each turn`
+            : `${g.name} can send ${spare} ${name} a turn`,
+      };
+  }
+  return undefined;
+}
 
 /** Why a deal (proposed or about to be signed) can't happen now, or undefined. */
 export function dealProblem(
@@ -308,7 +370,15 @@ export function dealProblem(
   const b = state.players[to];
   if (!a?.alive || !b?.alive || from === to || !state.playerOrder.includes(to))
     return { code: 'bad_target', message: 'No such player in the game' };
-  if (empty(deal.give) && empty(deal.get) && !deal.friendship && !deal.alliance && !deal.peace)
+  if (
+    empty(deal.give) &&
+    empty(deal.get) &&
+    !deal.friendship &&
+    !deal.alliance &&
+    !deal.peace &&
+    !deal.openBorders &&
+    !deal.research
+  )
     return { code: 'empty_deal', message: 'Put something on the table' };
   if (deal.turns < 1 || deal.turns > rules.maxDealTurns)
     return { code: 'bad_turns', message: `Payments run 1 to ${rules.maxDealTurns} turns` };
@@ -325,12 +395,27 @@ export function dealProblem(
   } else if (war) {
     return { code: 'at_war', message: 'At war, the only deal is peace' };
   }
-  if ((deal.friendship || deal.alliance) && war)
+  if ((deal.friendship || deal.alliance || deal.openBorders || deal.research) && war)
     return { code: 'at_war', message: 'Make peace first' };
   if (deal.alliance && !deal.friendship && !areFriends(state, from, to))
     return { code: 'not_friends', message: 'An alliance needs a declared friendship first' };
+  if (deal.research && !deal.friendship && !areFriends(state, from, to))
+    return { code: 'not_friends', message: 'A research agreement needs a declared friendship' };
+  if (deal.openBorders && haveOpenBorders(state, from, to))
+    return {
+      code: 'already',
+      message: `Open borders already run until turn ${state.diplomacy.openBorders![warKey(from, to)]}`,
+    };
+  if (deal.research && haveResearchAgreement(state, from, to))
+    return {
+      code: 'already',
+      message: `A research agreement already runs until turn ${state.diplomacy.research![warKey(from, to)]}`,
+    };
   const cost =
-    (deal.friendship ? rules.friendshipCost : 0) + (deal.alliance ? rules.allianceCost : 0);
+    (deal.friendship ? rules.friendshipCost : 0) +
+    (deal.alliance ? rules.allianceCost : 0) +
+    (deal.openBorders ? rules.openBordersCost : 0) +
+    (deal.research ? rules.researchCost : 0);
   for (const p of [a, b]) {
     if (p.influence < toFixed(cost))
       return {
@@ -342,7 +427,10 @@ export function dealProblem(
     return { code: 'no_gold', message: `${a.name} doesn't have ${deal.give.gold} gold` };
   if (b.gold < toFixed(deal.get.gold))
     return { code: 'no_gold', message: `${b.name} doesn't have ${deal.get.gold} gold` };
-  return undefined;
+  return (
+    resourceTermsProblem(ctx, state, from, to, deal.give.resources) ??
+    resourceTermsProblem(ctx, state, to, from, deal.get.resources)
+  );
 }
 
 /** Why `by` can't denounce `target` now, or undefined. */

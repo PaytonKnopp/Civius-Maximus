@@ -27,11 +27,17 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         friendship: boolean;
         alliance: boolean;
         peace: boolean;
+        openBorders?: boolean;
+        research?: boolean;
       }
     | { type: 'deal_declined'; deal: string; from: PlayerId; to: PlayerId }
     | { type: 'deal_expired'; deal: string; from: PlayerId; to: PlayerId }
     | { type: 'deal_broken'; by: PlayerId; to: PlayerId }
-    | { type: 'pact_ended'; kind: 'friendship' | 'alliance'; players: [PlayerId, PlayerId] }
+    | {
+        type: 'pact_ended';
+        kind: 'friendship' | 'alliance' | 'open_borders' | 'research';
+        players: [PlayerId, PlayerId];
+      }
     | { type: 'denounced'; by: PlayerId; target: PlayerId }
     | {
         type: 'trade_route_started';

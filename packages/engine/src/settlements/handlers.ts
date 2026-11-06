@@ -187,7 +187,8 @@ function trainedHere(draft: Draft<GameState>, ctx: EngineContext, id: string, un
 }
 
 /** Whether finishing (or buying) this item now would work: room for the unit, citizens to spare. */
-function completionProblem(
+/** Why a unit couldn't be finished (or bought) now: resources, citizens, room. */
+export function completionProblem(
   ctx: EngineContext,
   state: GameState,
   s: SettlementState,

@@ -248,7 +248,10 @@ Simultaneous turns are played live, so notifications are mostly about getting ev
 - **Built so far (M10):** 1–8 human players plus AI rivals, chosen in the new-game dialog.
   Within each (simultaneous) turn the humans play one after another in turn order; ending your
   turn brings up the pass screen for the next one, and once everyone is done the turn is
-  processed and the first player is up again (D51). Each player starts their turn with a
+  processed and the first player is up again (D51). The turn itself is processed in an order
+  that rotates by one seat each turn (settlements, same-turn wonder and great person races,
+  space arrivals, AI rivals), so no seat always goes first; in 72 baseline games the first seat
+  had won 21 against about 12 expected. Each player starts their turn with a
   summary of what they could see happen since their last one (wars, captures, kills, growth,
   wonders...). Undo isn't there yet.
 

@@ -156,6 +156,22 @@ export interface DiplomacyState {
   proposals: Proposal[];
   /** What every AI remembers for a while: surprise wars, broken deals, razed settlements. */
   incidents: Incident[];
+  /** Open borders (D118): the turn each pair's ends. */
+  openBorders?: Record<string, number>;
+  /** Research agreements (D118): the turn each pair's ends. */
+  research?: Record<string, number>;
+  /** Resources one player sends another every turn, until a turn. */
+  trades?: ResourceTrade[];
+}
+
+export interface ResourceTrade {
+  from: PlayerId;
+  to: PlayerId;
+  resource: string;
+  /** Luxury: copies; strategic: units a turn. */
+  amount: number;
+  /** The last turn it's sent. */
+  until: number;
 }
 
 export interface Payment {
@@ -175,6 +191,8 @@ export interface DealTerms {
   goldPerTurn: number;
   /** Share the map: the other side learns every tile this side has explored. */
   maps: boolean;
+  /** Resources sent every turn of the deal (luxury copies, strategic per turn). */
+  resources?: Record<string, number>;
 }
 
 export interface Proposal {
@@ -192,6 +210,8 @@ export interface Proposal {
   friendship: boolean;
   alliance: boolean;
   peace: boolean;
+  openBorders?: boolean;
+  research?: boolean;
 }
 
 export interface Incident {

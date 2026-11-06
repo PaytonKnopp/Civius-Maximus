@@ -14,9 +14,9 @@ import {
 } from '../context';
 import { view } from '../draft';
 import { addEnvoys } from '../citystates/handlers';
-import { forgetPlayer } from '../diplomacy/handlers';
+import { endDealsBetween, forgetPlayer } from '../diplomacy/handlers';
 import { endRoutesBetween } from '../trade/handlers';
-import { isSurpriseWar, warBlock } from '../diplomacy/rules';
+import { haveOpenBorders, isSurpriseWar, warBlock } from '../diplomacy/rules';
 import { toFixed } from '../fixed';
 import { grantBoost } from '../progress/handlers';
 import { playerEffects } from '../progress/sources';
@@ -706,12 +706,7 @@ export const combatHandlers = {
           turn: draft.turn,
         });
       // Deals between them stop.
-      const d = draft.diplomacy;
-      const between = (a: string, b: string) =>
-        (a === action.player && b === action.target) ||
-        (a === action.target && b === action.player);
-      d.payments = d.payments.filter((p) => !between(p.from, p.to));
-      d.proposals = d.proposals.filter((p) => !between(p.from, p.to));
+      endDealsBetween(draft, action.player, action.target);
       endRoutesBetween(draft, ctx, action.player, action.target, emit);
       emit({ type: 'war_declared', by: action.player, target: action.target, visibleTo: 'all' });
     },
@@ -790,7 +785,7 @@ export function healUnits(draft: Draft<GameState>, ctx: EngineContext) {
     const amount =
       home && home.tile === u.tile && home.owner === u.owner
         ? heal.settlement
-        : t.owner === u.owner
+        : t.owner === u.owner || (t.owner !== null && haveOpenBorders(draft, u.owner, t.owner))
           ? heal.own
           : t.owner !== null && atWar(draft, u.owner, t.owner)
             ? heal.enemy

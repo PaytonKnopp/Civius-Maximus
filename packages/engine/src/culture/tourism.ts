@@ -1,7 +1,7 @@
 import type { Draft } from 'immer';
 import { getBit } from '../bitset';
 import type { EngineContext, Emit } from '../context';
-import { areAllies, areFriends } from '../diplomacy/rules';
+import { areAllies, areFriends, haveOpenBorders } from '../diplomacy/rules';
 import { view } from '../draft';
 import { toFixed } from '../fixed';
 import type { GameState, PlayerId } from '../state';
@@ -41,6 +41,8 @@ export function tourismBonus(
     out.push({ label: 'Shared religion', percent: r.religionPercent });
   if (areFriends(state, from, to) || areAllies(state, from, to))
     out.push({ label: 'Friends', percent: r.friendsPercent });
+  if (haveOpenBorders(state, from, to))
+    out.push({ label: 'Open borders', percent: r.openBordersPercent });
   return out.filter((l) => l.percent !== 0);
 }
 

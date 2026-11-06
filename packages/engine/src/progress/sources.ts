@@ -11,6 +11,7 @@ import type { GameState, PlayerId, PlayerState, SettlementState, Track } from '.
 import { ageSources } from '../eras/ages';
 import { congressSources } from '../congress/congress';
 import { governorOf, governorSources } from '../governors/governors';
+import { pactSources } from '../diplomacy/pacts';
 
 /**
  * Where a player's effects come from (docs/05-modding.md, "The effects system"): their
@@ -352,6 +353,7 @@ export function sourcesFor(
       ...activeSources(ctx, state.players[player]!),
       ...builtSources(ctx, state, player),
       ...cityStateSources(ctx, state, player),
+      ...pactSources(ctx, state, player),
     ];
     memo?.base.set(player, base);
   }

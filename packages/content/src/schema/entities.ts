@@ -500,14 +500,26 @@ export const RulesDef = z.strictObject({
       settledNear: z.int(),
       nearDistance: z.int().min(1),
       nearMax: z.int().min(0),
-      /** Per deal with us still running. */
+      /** Per deal with us still running (payments, resource trades, open borders, research
+       * agreements), up to `dealsMax` of them. */
       perDeal: z.int(),
-      /** Per trade route between us (up to 2). */
+      dealsMax: z.int().min(0).default(2),
+      /** Per trade route between us, up to `tradeRoutesMax`. */
       tradeRoute: z.int(),
+      tradeRoutesMax: z.int().min(0).default(2),
     }),
     /** Opinion an AI needs before it agrees to a friendship or an alliance. */
     friendshipOpinion: z.int(),
     allianceOpinion: z.int(),
+    /** Open borders (D118): turns, and influence from each side. While they run, tourism between
+     * the two goes further (`culture.openBordersPercent`) and units heal there as at home. */
+    openBordersTurns: z.int().min(1).default(30),
+    openBordersCost: z.int().min(0).default(10),
+    /** Research agreements (D118), between declared friends: turns, influence from each side,
+     * and more science for both while one runs (percent each); each side gets a boost at the end. */
+    researchTurns: z.int().min(1).default(20),
+    researchCost: z.int().min(0).default(30),
+    researchPercent: z.int().min(0).default(10),
   }),
   /** City-states (docs/04-advanced-systems.md, "Independent powers"). */
   cityStates: z.strictObject({
@@ -583,6 +595,8 @@ export const RulesDef = z.strictObject({
     tradeRoutePercent: z.int().min(0),
     religionPercent: z.int().min(0),
     friendsPercent: z.int().min(0),
+    /** More tourism toward a civ you have open borders with (D115). */
+    openBordersPercent: z.int().min(0).default(25),
   }),
   /** Great people: buying the one you're racing for. */
   greatPeople: z.strictObject({

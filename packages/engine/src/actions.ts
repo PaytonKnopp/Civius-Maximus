@@ -18,8 +18,10 @@ const Terms = z
     gold: z.int().min(0).max(1_000_000).default(0),
     goldPerTurn: z.int().min(0).max(10_000).default(0),
     maps: z.boolean().default(false),
+    /** Resources sent every turn of the deal: luxury copies, or strategic resources per turn. */
+    resources: z.record(ContentRef, z.int().min(1).max(50)).default({}),
   })
-  .default({ gold: 0, goldPerTurn: 0, maps: false });
+  .default({ gold: 0, goldPerTurn: 0, maps: false, resources: {} });
 const Focus = z.enum(['balanced', 'food', 'production', 'gold', 'science', 'culture', 'faith']);
 
 /**
@@ -264,6 +266,10 @@ export const Action = z.discriminatedUnion('type', [
     friendship: z.boolean().default(false),
     alliance: z.boolean().default(false),
     peace: z.boolean().default(false),
+    /** Open borders for the deal's turns (D118). */
+    openBorders: z.boolean().default(false),
+    /** A research agreement (D118). */
+    research: z.boolean().default(false),
   }),
   /** Accept or decline a deal offered to you. */
   z.strictObject({
