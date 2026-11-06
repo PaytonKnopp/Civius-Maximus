@@ -3,37 +3,195 @@
     "type": "project",
     "id": "project_clear_woods",
     "name": "Clear Woods",
-    "description": "Cut down the woods on a tile: +25 production toward what this city builds next.",
+    "description": "Cut down the woods on a tile: +25 production toward what this city builds next (more in later eras).",
     "icon": "CW",
     "cost": 15,
     "clears": ["woods"],
     "reward": {
       "production": 25
-    }
+    },
+    "perEraPercent": 25
   },
   {
     "type": "project",
     "id": "project_clear_rainforest",
     "name": "Clear Rainforest",
-    "description": "Clear a rainforest tile: +15 food and +15 production.",
+    "description": "Clear a rainforest tile: +15 food and +15 production (more in later eras).",
     "icon": "CR",
     "cost": 15,
     "clears": ["rainforest"],
     "reward": {
       "food": 15,
       "production": 15
-    }
+    },
+    "perEraPercent": 25
   },
   {
     "type": "project",
     "id": "project_drain_marsh",
     "name": "Drain Marsh",
-    "description": "Drain a marsh tile: +20 food.",
+    "description": "Drain a marsh tile: +20 food (more in later eras).",
     "icon": "DM",
     "cost": 15,
     "clears": ["marsh"],
     "reward": {
       "food": 20
+    },
+    "perEraPercent": 25
+  },
+  {
+    "type": "project",
+    "id": "project_research_grants",
+    "name": "Research Grants",
+    "description": "Fund the scholars of this Campus: half of what it costs comes back as science, plus great scientist points. It can be repeated, and grows with the era.",
+    "icon": "RG",
+    "cost": 60,
+    "onDistrict": "district_campus",
+    "repeatable": true,
+    "perEraPercent": 50,
+    "costShare": {
+      "science": 50
+    },
+    "greatPersonPoints": {
+      "class": "gp_scientist",
+      "percent": 10
+    }
+  },
+  {
+    "type": "project",
+    "id": "project_pilgrimage",
+    "name": "Pilgrimage",
+    "description": "Pilgrims crowd this Holy Site: three fifths of what it costs comes back as faith, plus great prophet points while a religion can still be founded. Repeatable.",
+    "icon": "PG",
+    "cost": 60,
+    "onDistrict": "district_holy_site",
+    "repeatable": true,
+    "perEraPercent": 50,
+    "costShare": {
+      "faith": 60
+    },
+    "greatPersonPoints": {
+      "class": "gp_prophet",
+      "percent": 10
+    }
+  },
+  {
+    "type": "project",
+    "id": "project_arts_festival",
+    "name": "Arts Festival",
+    "description": "A season of plays and poetry at this Theater Square: half of what it costs comes back as culture, plus great writer points. Repeatable.",
+    "icon": "AF",
+    "cost": 60,
+    "onDistrict": "district_theater",
+    "repeatable": true,
+    "perEraPercent": 50,
+    "costShare": {
+      "culture": 50
+    },
+    "greatPersonPoints": {
+      "class": "gp_writer",
+      "percent": 10
+    }
+  },
+  {
+    "type": "project",
+    "id": "project_market_fair",
+    "name": "Market Fair",
+    "description": "Merchants from far and wide come to this Commercial Hub: three quarters of what it costs comes back as gold, plus great merchant points. Repeatable.",
+    "icon": "MF",
+    "cost": 60,
+    "onDistrict": "district_commercial_hub",
+    "repeatable": true,
+    "perEraPercent": 50,
+    "costShare": {
+      "gold": 75
+    },
+    "greatPersonPoints": {
+      "class": "gp_merchant",
+      "percent": 10
+    }
+  },
+  {
+    "type": "project",
+    "id": "project_trade_fleet",
+    "name": "Trade Fleet",
+    "description": "Outfit merchant ships at this Harbor: half of what it costs comes back as gold and a fifth as food for the city, plus great admiral points. Repeatable.",
+    "icon": "TF",
+    "cost": 60,
+    "onDistrict": "district_harbor",
+    "repeatable": true,
+    "perEraPercent": 50,
+    "costShare": {
+      "gold": 50,
+      "food": 20
+    },
+    "greatPersonPoints": {
+      "class": "gp_admiral",
+      "percent": 10
+    }
+  },
+  {
+    "type": "project",
+    "id": "project_engineering_works",
+    "name": "Engineering Works",
+    "description": "Train engineers in this Industrial Zone: two fifths of what it costs comes back as gold, plus generous great engineer points. Repeatable.",
+    "icon": "EW",
+    "cost": 60,
+    "onDistrict": "district_industrial_zone",
+    "repeatable": true,
+    "perEraPercent": 50,
+    "costShare": {
+      "gold": 40
+    },
+    "greatPersonPoints": {
+      "class": "gp_engineer",
+      "percent": 15
+    }
+  },
+  {
+    "type": "project",
+    "id": "project_war_games",
+    "name": "War Games",
+    "description": "Drill the garrison at this Encampment: a third of what it costs comes back as gold, plus generous great general points. Repeatable.",
+    "icon": "WG",
+    "cost": 60,
+    "onDistrict": "district_encampment",
+    "repeatable": true,
+    "perEraPercent": 50,
+    "costShare": {
+      "gold": 30
+    },
+    "greatPersonPoints": {
+      "class": "gp_general",
+      "percent": 15
+    }
+  },
+  {
+    "type": "project",
+    "id": "project_festival_of_games",
+    "name": "Festival of Games",
+    "description": "Races and games at this Entertainment Complex: half of what it costs goes toward your next celebration as happiness. Repeatable.",
+    "icon": "FG",
+    "cost": 60,
+    "onDistrict": "district_entertainment",
+    "repeatable": true,
+    "perEraPercent": 50,
+    "costShare": {
+      "happiness": 50
+    }
+  },
+  {
+    "type": "project",
+    "id": "project_diplomatic_courier",
+    "name": "Envoys Abroad",
+    "description": "Send couriers from the Government Plaza: two fifths of what it costs comes back as influence. Repeatable.",
+    "icon": "EA",
+    "cost": 60,
+    "onDistrict": "district_government_plaza",
+    "repeatable": true,
+    "perEraPercent": 50,
+    "costShare": {
+      "influence": 40
     }
   },
   {

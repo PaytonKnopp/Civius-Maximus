@@ -281,6 +281,7 @@ function flip(draft: Draft<GameState>, ctx: EngineContext, id: string, to: Playe
     }
   }
   s.owner = to;
+  delete s.puppet;
   for (const t of draft.map.tiles) if (t.settlement === id) t.owner = to;
   s.queue = [];
   s.progress = {};

@@ -434,6 +434,10 @@
               "minimum": 0,
               "maximum": 9007199254740991
             },
+            "revealedBy": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
             "validTerrains": {
               "default": [],
               "type": "array",
@@ -6425,6 +6429,30 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 9007199254740991
+            },
+            "resourceCost": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              }
+            },
+            "resourceUpkeep": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              }
             },
             "requiresTech": {
               "type": "string",
@@ -32049,6 +32077,48 @@
               "type": "integer",
               "minimum": 1,
               "maximum": 9007199254740991
+            },
+            "repeatable": {
+              "default": false,
+              "type": "boolean"
+            },
+            "perEraPercent": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 500
+            },
+            "costShare": {
+              "default": {},
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 300
+              }
+            },
+            "greatPersonPoints": {
+              "type": "object",
+              "properties": {
+                "class": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "percent": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                }
+              },
+              "required": [
+                "class",
+                "percent"
+              ],
+              "additionalProperties": false
             },
             "requiresTech": {
               "type": "string",
@@ -75804,6 +75874,12 @@
                       "minimum": 0,
                       "maximum": 9007199254740991
                     },
+                    "maintainedPerUnhappy": {
+                      "default": 1,
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
                     "perSettlementOverLimit": {
                       "type": "integer",
                       "minimum": 0,
@@ -75904,6 +75980,44 @@
                     "populationPer",
                     "neighborBonus",
                     "costPerProgressPercent"
+                  ],
+                  "additionalProperties": false
+                },
+                "puppet": {
+                  "default": {
+                    "yieldPercent": -25,
+                    "limitPercent": 50,
+                    "annexBase": 50,
+                    "annexPerCitizen": 15
+                  },
+                  "type": "object",
+                  "properties": {
+                    "yieldPercent": {
+                      "type": "integer",
+                      "minimum": -100,
+                      "maximum": 0
+                    },
+                    "limitPercent": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "annexBase": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "annexPerCitizen": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "yieldPercent",
+                    "limitPercent",
+                    "annexBase",
+                    "annexPerCitizen"
                   ],
                   "additionalProperties": false
                 },
@@ -76168,6 +76282,37 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 9007199254740991
+            },
+            "strategic": {
+              "default": {
+                "stockpileBase": 30,
+                "stockpilePerEra": 15,
+                "shortageStrength": 20
+              },
+              "type": "object",
+              "properties": {
+                "stockpileBase": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "stockpilePerEra": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "shortageStrength": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "stockpileBase",
+                "stockpilePerEra",
+                "shortageStrength"
+              ],
+              "additionalProperties": false
             },
             "progress": {
               "type": "object",
@@ -81534,6 +81679,10 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              "revealedBy": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
               },
               "validTerrains": {
                 "default": [],
@@ -87526,6 +87675,30 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              "resourceCost": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                }
+              },
+              "resourceUpkeep": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                }
               },
               "requiresTech": {
                 "type": "string",
@@ -113150,6 +113323,48 @@
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 9007199254740991
+              },
+              "repeatable": {
+                "default": false,
+                "type": "boolean"
+              },
+              "perEraPercent": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 500
+              },
+              "costShare": {
+                "default": {},
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 300
+                }
+              },
+              "greatPersonPoints": {
+                "type": "object",
+                "properties": {
+                  "class": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "percent": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "class",
+                  "percent"
+                ],
+                "additionalProperties": false
               },
               "requiresTech": {
                 "type": "string",
@@ -156905,6 +157120,12 @@
                         "minimum": 0,
                         "maximum": 9007199254740991
                       },
+                      "maintainedPerUnhappy": {
+                        "default": 1,
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
                       "perSettlementOverLimit": {
                         "type": "integer",
                         "minimum": 0,
@@ -157005,6 +157226,44 @@
                       "populationPer",
                       "neighborBonus",
                       "costPerProgressPercent"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "puppet": {
+                    "default": {
+                      "yieldPercent": -25,
+                      "limitPercent": 50,
+                      "annexBase": 50,
+                      "annexPerCitizen": 15
+                    },
+                    "type": "object",
+                    "properties": {
+                      "yieldPercent": {
+                        "type": "integer",
+                        "minimum": -100,
+                        "maximum": 0
+                      },
+                      "limitPercent": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "annexBase": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "annexPerCitizen": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "yieldPercent",
+                      "limitPercent",
+                      "annexBase",
+                      "annexPerCitizen"
                     ],
                     "additionalProperties": false
                   },
@@ -157269,6 +157528,37 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              "strategic": {
+                "default": {
+                  "stockpileBase": 30,
+                  "stockpilePerEra": 15,
+                  "shortageStrength": 20
+                },
+                "type": "object",
+                "properties": {
+                  "stockpileBase": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "stockpilePerEra": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "shortageStrength": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "stockpileBase",
+                  "stockpilePerEra",
+                  "shortageStrength"
+                ],
+                "additionalProperties": false
               },
               "progress": {
                 "type": "object",

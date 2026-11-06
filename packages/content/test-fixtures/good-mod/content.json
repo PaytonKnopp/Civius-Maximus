@@ -39,11 +39,11 @@
   {
     "type": "patch",
     "target": "improvement_mine",
-    "ops": [{ "op": "remove", "path": "resources", "value": "uranium" }]
+    "ops": [{ "op": "remove", "path": "resources", "value": "diamonds" }]
   },
   {
     "type": "patch",
-    "target": "uranium",
+    "target": "diamonds",
     "ops": [{ "op": "delete" }]
   }
 ]

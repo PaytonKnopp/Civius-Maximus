@@ -4,13 +4,15 @@ import type { GameEvent } from './events';
 import type { MapTile } from './map/types';
 import type { GameState, PlayerId, SettlementState, UnitState } from './state';
 import { fogOfWar } from './units/vision';
+import { isRevealed } from './resources/strategic';
 
 /**
  * What one player may know of a game (docs/01-architecture.md, "Multiplayer data flow"): the
  * state with what they can't see taken out, in the same shape, so a client runs on it as on a
  * full state. An online host sends each remote player only this.
  *
- * Hidden: unexplored tiles (they read as empty ocean), other players' units out of sight (and
+ * Hidden: unexplored tiles (they read as empty ocean), strategic resources whose tech the player
+ * doesn't know yet, other players' units out of sight (and
  * the orders of those in sight), settlements whose land they've never seen, other players'
  * build queues and exploration, deals between others, and the seed and dice.
  */
@@ -18,7 +20,11 @@ export function playerView(ctx: EngineContext, state: GameState, player: PlayerI
   const fog = fogOfWar(ctx, state, player);
   const known = (tile: number) => fog[tile] !== 0;
   const hidden = hiddenTile(ctx);
-  const tiles = state.map.tiles.map((t, i) => (known(i) ? t : hidden));
+  // Strategic resources stay hidden until the player knows the tech that reveals them.
+  const unseen = (t: MapTile) => t.resource !== null && !isRevealed(ctx, state, player, t.resource);
+  const tiles = state.map.tiles.map((t, i) =>
+    !known(i) ? hidden : unseen(t) ? { ...t, resource: null } : t,
+  );
 
   // Foreign settlements: those with any land the player knows (their name shows on the border).
   const seenSettlements = new Set<string>();

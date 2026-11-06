@@ -285,6 +285,7 @@ export function captureSettlement(
 
   const loss = ctx.content.rules.combat.settlement.capturePopulationLoss;
   s.owner = captor;
+  delete s.puppet;
   for (const t of draft.map.tiles) if (t.settlement === id) t.owner = captor;
   s.population = Math.max(1, s.population - Math.ceil((s.population * loss) / 100));
   s.health = Math.floor(settlementMaxHealth(ctx, s.kind) / 4);
@@ -379,6 +380,7 @@ function liberate(draft: Draft<GameState>, ctx: EngineContext, id: string, emit:
   const cityState = draft.players[to]!.kind === 'cityState';
   if (cityState) draft.players[to]!.alive = true;
   s.owner = to;
+  delete s.puppet;
   s.capturedFrom = null;
   s.captureChoice = false;
   delete s.loyalty;
@@ -657,7 +659,14 @@ export const combatHandlers = {
     apply(draft, action, ctx, emit) {
       const s = draft.settlements[action.settlement]!;
       if (action.choice === 'keep') s.captureChoice = false;
-      else if (action.choice === 'raze') raze(draft, action.settlement, emit);
+      else if (action.choice === 'puppet') {
+        // A puppet runs itself (docs/03): its own builds, balanced focus, nothing pinned.
+        s.captureChoice = false;
+        s.puppet = true;
+        s.queue = [];
+        s.focus = 'balanced';
+        s.locked = [];
+      } else if (action.choice === 'raze') raze(draft, action.settlement, emit);
       else liberate(draft, ctx, action.settlement, emit);
     },
   } satisfies ActionHandler<A<'capture_choice'>>,

@@ -286,6 +286,8 @@ export interface SettlementState {
   captureChoice: boolean;
   /** Being razed: it loses a citizen each turn, and produces nothing, until it's gone. */
   razing?: boolean;
+  /** A captured settlement kept as a puppet: it runs itself until annexed (docs/03). */
+  puppet?: boolean;
   /** Soldiers trained here (some abilities count them). */
   unitsTrained: number;
   /** The religion most of its people follow, if any. */
@@ -472,6 +474,10 @@ export interface PlayerState {
   expeditionArrives: number | null;
   /** Faith stored, in hundredths (spent from M13). */
   faith: number;
+  /** Strategic resource stockpiles, whole units (see resources/strategic.ts). */
+  resources?: Record<string, number>;
+  /** Resources whose unit upkeep couldn't be covered last turn: those units fight weaker. */
+  resourcesShort?: string[];
   capital: SettlementId | null;
   /** How many settlements this player has founded (picks the next name). */
   settlementsFounded: number;

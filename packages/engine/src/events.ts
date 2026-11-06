@@ -157,6 +157,8 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         detail?: string;
       }
     | { type: 'pantheon_founded'; player: PlayerId; belief: string }
+    /** A player ran out of a strategic resource its units use up every turn. */
+    | { type: 'resource_shortage'; player: PlayerId; resource: string }
     /** A player found a city-state (and got `envoys` free envoys there for being first). */
     | { type: 'city_state_met'; cityState: PlayerId; player: PlayerId; envoys: number }
     | { type: 'envoy_sent'; player: PlayerId; cityState: PlayerId }

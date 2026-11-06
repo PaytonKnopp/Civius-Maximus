@@ -18,6 +18,7 @@ import { tradePartners } from '../trade/rules';
 import { promotionsOf, unitRange } from '../units/promotions';
 import { lineOfSight, visibleTiles } from '../units/vision';
 import { damageRange } from './damage';
+import { shortages } from '../resources/strategic';
 
 /**
  * Who can attack what, and how strong each side is (docs/03-core-mechanics.md, section 5). Every
@@ -318,6 +319,7 @@ export function defenseStrength(
   const friends = friendsAround(ctx, state, unit.owner, unit.tile, unit.id);
   if (friends > 0) lines.push({ label: `Support (${friends})`, amount: friends * combat.support });
   lines.push(wounded(ctx, unit));
+  lines.push(...shortageLines(ctx, state, unit));
   lines.push(...classBonuses(ctx, unit, by));
   lines.push(
     ...bonusLines(
@@ -337,6 +339,16 @@ export function defenseStrength(
   return strength(lines);
 }
 
+/** Units whose strategic upkeep their owner couldn't cover fight weaker ("Short of oil"). */
+function shortageLines(ctx: EngineContext, state: GameState, unit: UnitState): StrengthLine[] {
+  const short = shortages(ctx, state, unit);
+  if (short.length === 0) return [];
+  const names = short
+    .map((r) => resolveText(ctx.content, ctx.content.entities.resource[r]?.name ?? r))
+    .join(' and ');
+  return [{ label: `Short of ${names}`, amount: -ctx.content.rules.strategic.shortageStrength }];
+}
+
 /** A unit's strength attacking `target` from `from` (its own tile by default). */
 export function attackStrength(
   ctx: EngineContext,
@@ -353,6 +365,7 @@ export function attackStrength(
     { label: unitName(ctx, unit), amount: mode === 'ranged' ? def.rangedStrength : def.strength },
   ];
   lines.push(wounded(ctx, unit));
+  lines.push(...shortageLines(ctx, state, unit));
   if (target.kind === 'unit') lines.push(...classBonuses(ctx, unit, target.unit));
   if (target.kind === 'settlement') {
     const bonus = unitClassOf(ctx, unit).vsSettlement;

@@ -2,7 +2,7 @@ import { type Effect, resolveText, type SlotKind } from '@cx/content';
 import { cityStateSources } from '../citystates/rules';
 import type { EngineContext } from '../context';
 import { evaluateCondition } from '../effects/conditions';
-import type { PlayerFacts, SettlementFacts } from '../effects/tile';
+import type { PlayerFacts, SettlementFacts, TileFacts } from '../effects/tile';
 import type { EffectSource } from '../effects/yields';
 import { tileTouchesRiver } from '../map/hex';
 import type { GameState, PlayerId, PlayerState, SettlementState, Track } from '../state';
@@ -249,13 +249,34 @@ interface SourceMemo {
   base: Map<PlayerId, EffectSource[]>;
   full: WeakMap<SettlementState, EffectSource[]>;
   facts: WeakMap<PlayerState, PlayerFacts>;
+  /** Anything else worked out once per read (see `memoRead`), by key. */
+  other: Map<string, unknown>;
 }
 let activeMemo: SourceMemo | null = null;
+
+/**
+ * `compute()` once per `withSourceMemo` read of `state` for this key (and every time outside one).
+ * For pure facts many settlements share, such as which luxuries reach which settlement.
+ */
+export function memoRead<T>(state: GameState, key: string, compute: () => T): T {
+  const memo = activeMemo?.state === state ? activeMemo : undefined;
+  if (!memo) return compute();
+  if (memo.other.has(key)) return memo.other.get(key) as T;
+  const value = compute();
+  memo.other.set(key, value);
+  return value;
+}
 
 export function withSourceMemo<T>(state: GameState, read: () => T): T {
   if (activeMemo?.state === state) return read();
   const outer = activeMemo;
-  activeMemo = { state, base: new Map(), full: new WeakMap(), facts: new WeakMap() };
+  activeMemo = {
+    state,
+    base: new Map(),
+    full: new WeakMap(),
+    facts: new WeakMap(),
+    other: new Map(),
+  };
   try {
     return read();
   } finally {
@@ -307,6 +328,32 @@ function factsOf(ctx: EngineContext, state: GameState, player: PlayerId): Player
 }
 
 /** Effects of one type from a player's sources whose conditions hold (player-level context). */
+/**
+ * Whether a condition holds for a player, optionally in one settlement and on one tile (facts
+ * built by the caller). The AI uses it to value an effect where it would actually apply.
+ */
+export function conditionHolds(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  condition: Effect['condition'],
+  settlement?: SettlementState,
+  tile?: TileFacts,
+  neighbors?: TileFacts[],
+): boolean {
+  if (condition === undefined) return true;
+  return evaluateCondition(
+    {
+      content: ctx.content,
+      playerId: player,
+      player: factsOf(ctx, state, player),
+      ...(settlement ? { settlement: settlementFacts(state, settlement) } : {}),
+      ...(tile ? { tile, neighbors: neighbors ?? [] } : {}),
+    },
+    condition,
+  );
+}
+
 export function playerEffects<T extends Effect['effect']>(
   ctx: EngineContext,
   state: GameState,

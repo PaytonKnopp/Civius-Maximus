@@ -1,6 +1,7 @@
 import { resolveText } from '@cx/content';
 import {
   type Action,
+  annexCost,
   availableItems,
   type BuildItem,
   type CitizenFocus,
@@ -191,8 +192,25 @@ export function SettlementPanel({
           <p className="unit-sub">
             {s.razing
               ? `Being razed: gone in ${s.population} turn${s.population === 1 ? '' : 's'}`
-              : `${s.kind === 'city' ? 'City' : 'Town'} · ${growthText}`}
+              : `${s.puppet ? 'Puppet ' : ''}${s.kind === 'city' ? 'city' : 'town'} · ${growthText}`}
           </p>
+          {s.puppet && mine && (
+            <p className="unit-sub puppet-line">
+              Runs itself ({content.rules.settlements.puppet.yieldPercent}% yields).{' '}
+              <button
+                type="button"
+                className="small"
+                disabled={!can({ type: 'annex_puppet', player: viewer, settlement: id })}
+                title={
+                  why({ type: 'annex_puppet', player: viewer, settlement: id }) ??
+                  'Take full control: it counts in full toward your settlement limit'
+                }
+                onClick={() => act({ type: 'annex_puppet', player: viewer, settlement: id })}
+              >
+                Annex for {whole(annexCost(ctx, state, s))} gold
+              </button>
+            </p>
+          )}
           {(() => {
             const owner = state.players[s.owner];
             const entry = Object.entries(owner?.governors ?? {}).find(

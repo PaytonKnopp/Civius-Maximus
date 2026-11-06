@@ -117,6 +117,11 @@ export const ResourceDef = z.strictObject({
   happiness: z.int().min(0).default(0),
   /** Strategic: stockpile gained per turn once improved. */
   stockpilePerTurn: z.int().min(0).default(0),
+  /**
+   * Hidden until its owner researches this tech (Civ's strategic resources): before that it
+   * can't be seen, improved or worked for its yields.
+   */
+  revealedBy: Id.optional(),
   /** The resource can appear on any of these terrains... */
   validTerrains: z.array(Id).default([]),
   /** ...or on any of these features. */
@@ -161,6 +166,8 @@ export const RulesDef = z.strictObject({
       /** One unhappiness per this many citizens. */
       citizensPerUnhappy: z.int().min(1),
       perMaintainedBuilding: z.int().min(0),
+      /** How many maintained buildings make one `perMaintainedBuilding` of unhappiness. */
+      maintainedPerUnhappy: z.int().min(1).default(1),
       /** In every settlement, for each settlement you have over the settlement limit. */
       perSettlementOverLimit: z.int().min(0),
       /** At or above: thriving. */
@@ -186,6 +193,19 @@ export const RulesDef = z.strictObject({
       /** District cost rises this many percent for each tech and civic finished. */
       costPerProgressPercent: z.int().min(0),
     }),
+    /**
+     * Captured settlements kept as puppets (Civ V; docs/03, "Capture, puppet, raze, liberate"):
+     * they run themselves, give this percent change to their yields, count this percent of a
+     * settlement toward the limit, and can be annexed for gold (base + per citizen).
+     */
+    puppet: z
+      .strictObject({
+        yieldPercent: z.int().min(-100).max(0),
+        limitPercent: z.int().min(0).max(100),
+        annexBase: z.int().min(0),
+        annexPerCitizen: z.int().min(0),
+      })
+      .default({ yieldPercent: -25, limitPercent: 50, annexBase: 50, annexPerCitizen: 15 }),
     specialization: z.strictObject({
       minPopulation: z.int().min(1),
       /** Gold to change a town's specialization (choosing the first one is free). */
@@ -239,7 +259,22 @@ export const RulesDef = z.strictObject({
     seaDistrict: Id.optional(),
     seaRange: z.int().min(1).default(20),
   }),
+  /**
+   * How many of the owner's other settlements (nearest first) each improved luxury also cheers,
+   * besides its own (doc 03, "Resources"). A settlement counts each kind of luxury once.
+   */
   luxuryHappinessRadius: z.int().min(0),
+  /**
+   * Strategic resource stockpiles (docs/03, "Resources"): the most a player can hold of each
+   * (base + per era past the first), and the strength units lose while their upkeep isn't met.
+   */
+  strategic: z
+    .strictObject({
+      stockpileBase: z.int().min(1),
+      stockpilePerEra: z.int().min(0),
+      shortageStrength: z.int().min(0),
+    })
+    .default({ stockpileBase: 30, stockpilePerEra: 15, shortageStrength: 20 }),
   progress: z.strictObject({
     /** Percent of a tech's or civic's cost a boost pays. */
     boostPercent: z.int().min(0).max(100),
@@ -900,6 +935,13 @@ export const UnitDef = z.strictObject({
   upkeep: z.int().min(0).default(1),
   /** Can be bought with this much faith (missionaries); 0 = not with faith. */
   faithCost: z.int().min(0).default(0),
+  /**
+   * Strategic resources it takes to train (or buy, or upgrade into), from the stockpile. Unique
+   * units without their own take what the unit they replace takes.
+   */
+  resourceCost: z.record(Id, z.int().min(1)).optional(),
+  /** Strategic resources it uses up every turn; when the stockpile can't cover them, it fights weaker. */
+  resourceUpkeep: z.record(Id, z.int().min(1)).optional(),
   ...requires,
   /**
    * What it upgrades to (for gold, in your territory). Once that unit is available, this one
@@ -1375,6 +1417,17 @@ export const ProjectDef = z
     reward: YieldMap.default({}),
     /** Brings its builder's exoplanet expedition this many turns sooner (built while it travels). */
     speedsExpedition: z.int().min(1).optional(),
+    /** Can be built again and again (district projects that turn production into a yield). */
+    repeatable: z.boolean().default(false),
+    /**
+     * Its cost and its `reward` grow by this percent of the base for each era its builder is
+     * past the first (chopping and district projects keep pace with the game).
+     */
+    perEraPercent: z.int().min(0).max(500).default(0),
+    /** Paid back on completion as these yields, in percent of what it cost (whole numbers). */
+    costShare: z.record(Id, z.int().min(1).max(300)).default({}),
+    /** Great person points on completion, in percent of what it cost. */
+    greatPersonPoints: z.strictObject({ class: Id, percent: z.int().min(1).max(100) }).optional(),
     ...requires,
   })
   .refine((p) => (p.clears === undefined) !== (p.onDistrict === undefined), {

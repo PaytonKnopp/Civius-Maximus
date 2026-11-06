@@ -220,6 +220,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       yieldKeys(out, entity.yields, ['yields']);
       ids(out, 'terrain', entity.validTerrains, ['validTerrains']);
       ids(out, 'feature', entity.validFeatures, ['validFeatures']);
+      ids(out, 'tech', entity.revealedBy, ['revealedBy']);
       break;
     case 'ability':
       effectList(out, entity.effects, ['effects']);
@@ -266,6 +267,8 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       uniqueRefs(out, 'unit', entity);
       yieldKeys(out, entity.killYields, ['killYields']);
       ids(out, 'unit', entity.upgradesTo, ['upgradesTo']);
+      ids(out, 'resource', Object.keys(entity.resourceCost ?? {}).sort(), ['resourceCost']);
+      ids(out, 'resource', Object.keys(entity.resourceUpkeep ?? {}).sort(), ['resourceUpkeep']);
       break;
     case 'improvement':
       requirements(out, entity);
@@ -309,6 +312,13 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ids(out, 'feature', entity.clears, ['clears']);
       ids(out, 'district', entity.onDistrict, ['onDistrict']);
       yieldKeys(out, entity.reward, ['reward']);
+      yieldKeys(out, entity.costShare, ['costShare']);
+      if (entity.greatPersonPoints)
+        out.push({
+          path: ['greatPersonPoints', 'class'],
+          kind: 'greatPersonClass',
+          id: entity.greatPersonPoints.class,
+        });
       requirements(out, entity);
       break;
     case 'specialization':

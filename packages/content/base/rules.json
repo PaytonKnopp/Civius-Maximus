@@ -38,7 +38,8 @@
       "base": 2,
       "citizensPerUnhappy": 2,
       "perMaintainedBuilding": 1,
-      "perSettlementOverLimit": 2,
+      "maintainedPerUnhappy": 2,
+      "perSettlementOverLimit": 1,
       "thrivingAt": 5,
       "unrestAt": -5,
       "thrivingYieldPercent": 10,
@@ -63,6 +64,12 @@
       "populationPer": 3,
       "neighborBonus": 0.5,
       "costPerProgressPercent": 2
+    },
+    "puppet": {
+      "yieldPercent": -25,
+      "limitPercent": 50,
+      "annexBase": 50,
+      "annexPerCitizen": 15
     },
     "specialization": {
       "minPopulation": 5,
@@ -116,6 +123,11 @@
     "seaRange": 20
   },
   "luxuryHappinessRadius": 3,
+  "strategic": {
+    "stockpileBase": 30,
+    "stockpilePerEra": 15,
+    "shortageStrength": 20
+  },
   "mapgen": {
     "coastTerrain": "coast",
     "oceanTerrain": "ocean",

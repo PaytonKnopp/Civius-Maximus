@@ -1,6 +1,8 @@
 import type { Effect, Personality } from '@cx/content';
 import type { Fixed } from '../fixed';
-import { happinessOf } from '../settlements/rules';
+import { neighbors } from '../map/hex';
+import { conditionHolds } from '../progress/sources';
+import { happinessOf, tileFacts } from '../settlements/rules';
 import type { SettlementState } from '../state';
 import { maxReligions } from '../religion/rules';
 import type { Turn } from './turn';
@@ -56,20 +58,48 @@ export function happinessWeight(t: Turn, s: SettlementState): number {
   return 7;
 }
 
+/** How many of my settlements an effect applies in (its condition, if any, holding there). */
+function settlementsWhere(t: Turn, effect: Effect): number {
+  const mine = t.mySettlements();
+  if (effect.condition === undefined || effect.target.scope === 'tiles')
+    return Math.max(1, mine.length);
+  return t.memo(
+    `where:${JSON.stringify(effect.condition)}`,
+    () => mine.filter((s) => conditionHolds(t.ctx, t.state, t.player, effect.condition, s)).length,
+  );
+}
+
+/** How many of my worked tiles a tile effect applies to (at least 1, for what's to come). */
+function tilesWhere(t: Turn, effect: Effect): number {
+  if (effect.condition === undefined) return Math.max(1, t.mySettlements().length * 3);
+  return t.turnMemo(`tiles:${JSON.stringify(effect.condition)}`, () => {
+    let n = 0;
+    for (const s of t.mySettlements())
+      for (const tile of s.worked) {
+        const facts = tileFacts(t.state, tile);
+        const near = neighbors(t.state.map, tile).map((i) => tileFacts(t.state, i));
+        if (conditionHolds(t.ctx, t.state, t.player, effect.condition, s, facts, near)) n++;
+      }
+    return Math.max(1, n);
+  });
+}
+
 /**
  * Points for an effect (government, policy, wonder...), roughly: what it's worth across the
  * empire per turn. Unknown kinds of effect get a small default, so modded effects aren't ignored.
  */
 export function effectValue(t: Turn, effect: Effect): number {
   const me = t.me;
-  const settlements = Math.max(1, t.mySettlements().length);
+  // Where the effect would apply: settlements whose conditions hold ("+1 in the capital" is one
+  // settlement, not all of them), or worked tiles that match a tile effect.
+  const settlements = settlementsWhere(t, effect);
   switch (effect.effect) {
     case 'modify_yield': {
       const params = effect.params;
       const w = yieldWeight(me, params.yield);
       if ('amount' in params) {
-        const per = effect.target.scope === 'settlements' ? settlements : 1;
-        return params.amount * w * per;
+        const per = effect.target.scope === 'tiles' ? tilesWhere(t, effect) : settlements;
+        return Math.floor(params.amount * w * per);
       }
       // A percentage of roughly 6 of that yield per settlement.
       return Math.floor((params.percent * w * 6 * settlements) / 100);

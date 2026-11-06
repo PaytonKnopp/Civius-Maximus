@@ -198,8 +198,9 @@ export function generateMap(input: GenerateInput, random: Random): GenerateResul
   // 7. Resources.
   placeResources(map, content, settings.resources, random);
 
-  // 8. Start positions.
+  // 8. Start positions, each with a fair share of resources around it.
   const starts = placeStarts(map, content, script, input.players, settings.startBalance, random);
+  shareResources(map, content, starts, random);
 
   // 9. Natural wonders, away from each other and from every start.
   placeNaturalWonders(map, content, size.naturalWonders, Object.values(starts), random);
@@ -494,15 +495,102 @@ function placeResources(
   const resources = content.ids.resource
     .map((id) => content.entities.resource[id]!)
     .filter((r) => r.frequency > 0);
+  const total = resources.reduce((sum, r) => sum + r.frequency, 0);
+  if (total <= 0) return;
   random.shuffle(eligible);
-  let placed = 0;
-  for (const i of eligible) {
-    if (placed >= target) break;
-    if (neighbors(map, i).some((n) => map.tiles[n]!.resource !== null)) continue;
-    const options = resources.filter((r) => canHold(content, map.tiles[i]!, r.id));
-    if (options.length === 0) continue;
-    map.tiles[i]!.resource = random.weighted(options, (r) => r.frequency).id;
-    placed++;
+  // Each resource gets its share of the map by frequency (at least one), wherever it fits, so a
+  // resource that fits few tiles (iron on hills) isn't crowded out by one that fits many.
+  const quota = new Map(
+    resources.map((r) => [r.id, Math.max(1, Math.floor((target * r.frequency) / total))]),
+  );
+  const cursor = new Map(resources.map((r) => [r.id, 0]));
+  const otherNear = (i: number, id: string) =>
+    neighbors(map, i).some((n) => {
+      const r = map.tiles[n]!.resource;
+      return r !== null && r !== id;
+    });
+  const open = (i: number, id: string) =>
+    map.tiles[i]!.resource === null && canHold(content, map.tiles[i]!, id) && !otherNear(i, id);
+  // Round by round, every resource with share left takes its next site; luxuries come in small
+  // clusters of the same kind (two or three tiles), as in Civ.
+  for (let placedAny = true; placedAny;) {
+    placedAny = false;
+    for (const r of resources) {
+      let left = quota.get(r.id)!;
+      if (left <= 0) continue;
+      let c = cursor.get(r.id)!;
+      const alone = (i: number) =>
+        open(i, r.id) && !neighbors(map, i).some((n) => map.tiles[n]!.resource !== null);
+      while (c < eligible.length && !alone(eligible[c]!)) c++;
+      cursor.set(r.id, c + 1);
+      if (c >= eligible.length) {
+        quota.set(r.id, 0);
+        continue;
+      }
+      const seed = eligible[c]!;
+      map.tiles[seed]!.resource = r.id;
+      left--;
+      placedAny = true;
+      if (r.class === 'luxury') {
+        const extra = Math.min(left, 1 + random.int(2));
+        for (const n of neighbors(map, seed)
+          .filter((n) => open(n, r.id))
+          .slice(0, extra)) {
+          map.tiles[n]!.resource = r.id;
+          left--;
+        }
+      }
+      quota.set(r.id, left);
+    }
+  }
+}
+
+/**
+ * A fair share of resources near every start (Civ's "strategic balance"): at least one luxury
+ * within 3 tiles and a source of horses or iron within 4, added where the land allows if the
+ * map didn't put them there.
+ */
+function shareResources(
+  map: MapState,
+  content: CompiledContent,
+  starts: Record<PlayerId, number>,
+  random: Random,
+) {
+  const ids = content.ids.resource.map((id) => content.entities.resource[id]!);
+  const luxuries = ids.filter((r) => r.class === 'luxury' && r.frequency > 0);
+  const early = ids.filter(
+    (r) => r.class === 'strategic' && r.frequency > 0 && (r.id === 'horses' || r.id === 'iron'),
+  );
+  const near = (start: number, radius: number, ok: (id: string) => boolean) =>
+    tilesWithin(map, start, radius).some((t) => {
+      const r = map.tiles[t]!.resource;
+      return r !== null && ok(r);
+    });
+  const place = (start: number, from: number, to: number, kinds: typeof ids) => {
+    const spots = tilesWithin(map, start, to)
+      .filter((t) => t !== start && distance(map, start, t) >= from)
+      .filter((t) => {
+        const tile = map.tiles[t]!;
+        return (
+          tile.resource === null &&
+          eligibleForResource(content, tile) &&
+          !neighbors(map, t).some((n) => map.tiles[n]!.resource !== null)
+        );
+      })
+      .sort((a, b) => a - b);
+    for (const kind of random.shuffle([...kinds])) {
+      const fits = spots.filter((t) => canHold(content, map.tiles[t]!, kind.id));
+      if (fits.length === 0) continue;
+      map.tiles[fits[random.int(fits.length)]!]!.resource = kind.id;
+      return;
+    }
+  };
+  for (const id of Object.keys(starts).sort()) {
+    const start = starts[id]!;
+    const isLuxury = (r: string) => content.entities.resource[r]?.class === 'luxury';
+    if (luxuries.length > 0 && !near(start, 3, isLuxury)) place(start, 2, 3, luxuries);
+    const isEarly = (r: string) => early.some((e) => e.id === r);
+    if (early.length > 0 && !near(start, 4, isEarly)) place(start, 2, 4, early);
   }
 }
 

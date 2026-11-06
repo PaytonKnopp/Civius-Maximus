@@ -417,9 +417,10 @@ export function nextAction(
     };
   }
   const mine = settlementsOf(state, player);
-  const growing = mine.find((s) => s.pendingDevelop > 0);
+  // Puppets run themselves: their growth and builds are chosen for them.
+  const growing = mine.find((s) => s.pendingDevelop > 0 && !s.puppet);
   if (growing) return { kind: 'develop', id: growing.id, label: 'Choose a tile to develop' };
-  const idle = mine.find((s) => s.kind === 'city' && s.queue.length === 0);
+  const idle = mine.find((s) => s.kind === 'city' && s.queue.length === 0 && !s.puppet);
   if (idle) return { kind: 'production', id: idle.id, label: 'Choose production' };
   if (p.ages && p.ages.pending > 0) return { kind: 'dedication', label: 'Choose a dedication' };
   const c = state.congress;

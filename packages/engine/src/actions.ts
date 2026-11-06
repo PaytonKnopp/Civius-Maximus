@@ -246,8 +246,10 @@ export const Action = z.discriminatedUnion('type', [
     type: z.literal('capture_choice'),
     player: PlayerRef,
     settlement: SettlementRef,
-    choice: z.enum(['keep', 'raze', 'liberate']),
+    choice: z.enum(['keep', 'puppet', 'raze', 'liberate']),
   }),
+  /** Take full control of a puppet, for gold. */
+  z.strictObject({ type: z.literal('annex_puppet'), player: PlayerRef, settlement: SettlementRef }),
 
   // Diplomacy (M15)
   /** Offer a deal; it waits for the other player's answer. */

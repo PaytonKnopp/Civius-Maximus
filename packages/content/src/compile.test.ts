@@ -61,8 +61,8 @@ describe('a valid mod', () => {
   it('applies set, append and delete patches', () => {
     expect(c.entities.terrain.grassland?.yields).toEqual({ food: 2, gold: 1 });
     expect(c.entities.feature.woods?.validTerrains).toContain('savanna');
-    expect(c.entities.resource.uranium).toBeUndefined();
-    expect(c.ids.resource).not.toContain('uranium');
+    expect(c.entities.resource.diamonds).toBeUndefined();
+    expect(c.ids.resource).not.toContain('diamonds');
   });
 
   it('fills in schema defaults', () => {

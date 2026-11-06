@@ -51,6 +51,32 @@
   },
   {
     "type": "improvement",
+    "id": "improvement_oil_well",
+    "name": "Oil Well",
+    "icon": "OW",
+    "yields": {
+      "production": 2
+    },
+    "order": 6,
+    "resources": ["oil"],
+    "model": "mine",
+    "requiresTech": "tech_steam_power"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_offshore_platform",
+    "name": "Offshore Platform",
+    "icon": "OP",
+    "yields": {
+      "production": 2
+    },
+    "order": 6,
+    "resources": ["oil"],
+    "model": "boats",
+    "requiresTech": "tech_combustion"
+  },
+  {
+    "type": "improvement",
     "id": "improvement_quarry",
     "name": "Quarry",
     "icon": "Qu",

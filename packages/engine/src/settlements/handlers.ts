@@ -11,6 +11,10 @@ import {
   unitDef,
 } from '../context';
 import { percentOf, toFixed } from '../fixed';
+import { eraOrderOf, perEra } from '../progress/era';
+import { scaleCost } from '../speed';
+import { placementTiles } from './districts';
+import { payResources, resourceProblem, strategicTurn } from '../resources/strategic';
 import { distance, tilesWithin } from '../map/hex';
 import type { BuildItem, GameState, PlayerId, SettlementState } from '../state';
 import { view } from '../draft';
@@ -24,7 +28,9 @@ import { obsoletedBy } from '../units/upgrades';
 import { spaceStep } from '../science/space';
 import { exploreVisible } from '../units/vision';
 import {
+  annexCost,
   assignCitizens,
+  availableItems,
   borderCulture,
   borderThreshold,
   developCandidates,
@@ -42,6 +48,7 @@ import {
   productionToward,
   purchasableTiles,
   purchaseCost,
+  puppetProblem,
   settlementIds,
   settlementYields,
   tilePurchaseCost,
@@ -187,6 +194,9 @@ function completionProblem(
 ): RuleError | undefined {
   if (item.kind !== 'unit') return undefined;
   const def = ctx.content.entities.unit[item.id]!;
+  // Its strategic resources must be in the stockpile when it's finished (it waits until they are).
+  const short = resourceProblem(ctx, state, s.owner, item.id, true);
+  if (short) return short;
   if (s.population - def.populationCost < 1) {
     return {
       code: 'needs_population',
@@ -251,11 +261,22 @@ function projectReward(
   }
   spaceStep(draft, ctx, s.owner, item.id, emit);
   const p = draft.players[s.owner]!;
-  for (const [y, v] of Object.entries(def.reward).sort()) {
-    const amount = toFixed(v);
+  // Rewards keep pace with the game: scaled by speed like every cost, and by era where the
+  // project says so (chopping). A share of the cost comes back as yields (district projects).
+  const era = eraOrderOf(ctx, view(draft).players[s.owner]);
+  const reward: Record<string, number> = {};
+  for (const [y, v] of Object.entries(def.reward))
+    reward[y] = perEra(scaleCost(ctx, draft, toFixed(v)), def.perEraPercent, era);
+  const cost = itemCost(ctx, view(draft), s.owner, item);
+  for (const [y, percent] of Object.entries(def.costShare))
+    reward[y] = (reward[y] ?? 0) + percentOf(cost, percent);
+  for (const [y, amount] of Object.entries(reward).sort()) {
     if (y === 'food') s.food += amount;
     else if (y === 'gold') p.gold += amount;
     else if (y === 'faith') p.faith += amount;
+    else if (y === 'influence') p.influence += amount;
+    // Happiness from festivals goes toward the next celebration.
+    else if (y === 'happiness') p.celebration.store += Math.floor(amount / 100);
     else if (y === 'production') {
       // Toward whatever comes next; with nothing queued it's sold for gold.
       const next = s.queue[0];
@@ -267,6 +288,14 @@ function projectReward(
         track.progress[track.current] = (track.progress[track.current] ?? 0) + amount;
       else track.stored += amount;
     }
+  }
+  // Great person points, for a race the player is still in (a religion's founder is out of the
+  // prophet race).
+  const gp = def.greatPersonPoints;
+  const out = gp && ctx.content.entities.greatPersonClass[gp.class]?.foundsReligion && p.religion;
+  if (gp && !out) {
+    const points = (draft.greatPeople.points[s.owner] ??= {});
+    points[gp.class] = (points[gp.class] ?? 0) + Math.floor(percentOf(cost, gp.percent) / 100);
   }
 }
 
@@ -284,6 +313,7 @@ function complete(
   switch (item.kind) {
     case 'unit': {
       const unit = spawnUnit(draft, ctx, s.owner, item.id, s.tile);
+      payResources(draft, ctx, s.owner, item.id);
       s.population -= ctx.content.entities.unit[item.id]!.populationCost;
       if (unit) trainedHere(draft, ctx, id, unit);
       break;
@@ -437,6 +467,56 @@ function develop(
   });
 }
 
+/**
+ * Resource tiles developed before their own improvement was known get it once it is (a farm on
+ * wine becomes a plantation the turn Irrigation arrives), like Civ VII placing the right
+ * improvement on a resource. Runs at the start of each settlement's turn.
+ */
+export function upgradeResourceTiles(
+  draft: Draft<GameState>,
+  ctx: EngineContext,
+  id: string,
+  emit: Emit,
+) {
+  const s = draft.settlements[id]!;
+  const snap = view(draft);
+  for (const t of tilesWithin(draft.map, s.tile, ctx.content.rules.settlements.ownRadius)) {
+    const tile = draft.map.tiles[t]!;
+    if (tile.settlement !== id || tile.resource === null || tile.improvement === null) continue;
+    if (ctx.content.entities.improvement[tile.improvement]?.resources.includes(tile.resource))
+      continue;
+    const better = improvementsFor(ctx, snap, t, s.owner)[0];
+    if (!better || !ctx.content.entities.improvement[better]!.resources.includes(tile.resource))
+      continue;
+    tile.improvement = better;
+    emit({
+      type: 'tile_developed',
+      settlement: id,
+      owner: s.owner,
+      tile: t,
+      improvement: better,
+      visibleTo: [s.owner],
+    });
+  }
+}
+
+/**
+ * What developing a tile with an improvement is worth beyond its yields: an improved luxury
+ * cheers several settlements and a strategic resource fills a stockpile, so growth (and
+ * auto-develop) reaches for them first, as a player would.
+ */
+function resourceBonus(ctx: EngineContext, tile: number, improvement: string, state: GameState) {
+  const t = state.map.tiles[tile]!;
+  if (t.resource === null) return 0;
+  if (!ctx.content.entities.improvement[improvement]!.resources.includes(t.resource)) return 0;
+  const res = ctx.content.entities.resource[t.resource]!;
+  const w = ctx.content.rules.settlements.citizenWeights;
+  const reach = 1 + ctx.content.rules.luxuryHappinessRadius;
+  if (res.class === 'luxury') return res.happiness * 100 * (w.happiness ?? 10) * reach;
+  if (res.class === 'strategic') return (res.stockpilePerTurn || 1) * 100 * 20;
+  return 0;
+}
+
 /** The develop choice auto-play makes: the tile that gains the most, with its first improvement. */
 export function bestDevelopChoice(
   ctx: EngineContext,
@@ -459,7 +539,7 @@ function chooseDevelopment(
       const yields = { ...tileYields(ctx, state, tile, s.owner, scope).total };
       const extra = ctx.content.entities.improvement[improvement]!.yields;
       for (const [y, v] of Object.entries(extra)) yields[y] = (yields[y] ?? 0) + toFixed(v);
-      const score = tileScore(ctx, yields, s.focus);
+      const score = tileScore(ctx, yields, s.focus) + resourceBonus(ctx, tile, improvement, state);
       if (!best || score > best.score) best = { tile, improvement, score };
     }
   }
@@ -479,9 +559,15 @@ function settlementAction<T extends Action['type']>(
 ): ActionHandler<A<T>> {
   return {
     validate(state, action, ctx) {
-      const a = action as unknown as { player: string; settlement: string };
+      const a = action as unknown as { type: string; player: string; settlement: string };
       const s = ownedSettlement(state, a.player, a.settlement);
-      return isError(s) ? s : check(s, state, action, ctx);
+      if (isError(s)) return s;
+      // A puppet runs itself: only renaming and annexing it are up to its owner.
+      if (a.type !== 'rename_settlement' && a.type !== 'annex_puppet') {
+        const puppet = puppetProblem(s);
+        if (puppet) return puppet;
+      }
+      return check(s, state, action, ctx);
     },
     apply,
   };
@@ -686,6 +772,20 @@ export const settlementHandlers = {
     },
   ),
 
+  annex_puppet: settlementAction<'annex_puppet'>(
+    (s, state, action, ctx) => {
+      if (!s.puppet) return { code: 'not_puppet', message: `${s.name} isn't a puppet` };
+      const cost = annexCost(ctx, state, s);
+      if (state.players[action.player]!.gold < cost)
+        return { code: 'no_gold', message: `Needs ${Math.ceil(cost / 100)} gold` };
+      return undefined;
+    },
+    (draft, action, ctx) => {
+      const s = draft.settlements[action.settlement]!;
+      draft.players[action.player]!.gold -= annexCost(ctx, view(draft), s);
+      s.puppet = false;
+    },
+  ),
   rename_settlement: settlementAction<'rename_settlement'>(
     () => undefined,
     (draft, action) => {
@@ -704,6 +804,7 @@ export const settlementHandlers = {
       | 'buy_tile'
       | 'upgrade_town'
       | 'set_specialization'
+      | 'annex_puppet'
       | 'rename_settlement'
   ]: ActionHandler<A<T>>;
 };
@@ -742,6 +843,7 @@ export function processSettlement(
   const owner = s.owner;
   const player = draft.players[owner]!;
 
+  upgradeResourceTiles(draft, ctx, id, emit);
   // Growth choices nobody made (an AI seat, or the turn timer ran out) are made automatically.
   while (s.pendingDevelop > 0) {
     const snap = view(draft);
@@ -793,6 +895,10 @@ export function processSettlement(
       if (done) s.progress[itemKey(s.queue[i]!)] = (s.progress[itemKey(s.queue[i]!)] ?? 0) + done;
     }
     while (s.queue.length > 0 && itemProblem(ctx, snap, s, s.queue[0]!)) s.queue.shift();
+    if (s.puppet && s.queue.length === 0) {
+      const next = puppetBuild(ctx, snap, snap.settlements[id]!);
+      if (next) s.queue.push(next);
+    }
     // A plain copy: events outlive the draft.
     const first = s.queue[0];
     const head: BuildItem | undefined = first && {
@@ -801,8 +907,11 @@ export function processSettlement(
       ...(first.tile !== undefined ? { tile: first.tile } : {}),
     };
     if (!head) {
-      if (production > 0)
+      // Nothing to build: the production isn't lost, it's sold for gold like a town's.
+      if (production > 0) {
+        player.gold += percentOf(production, rules.townGoldPercent);
         emit({ type: 'production_idle', settlement: id, owner, visibleTo: [owner] });
+      }
     } else {
       const key = itemKey(head);
       s.progress[key] =
@@ -817,6 +926,9 @@ export function processSettlement(
         const next = s.queue[0];
         if (next && overflow > 0) {
           s.progress[itemKey(next)] = (s.progress[itemKey(next)] ?? 0) + overflow;
+        } else if (overflow > 0) {
+          // Nothing queued after it: the overflow is sold for gold rather than lost.
+          player.gold += percentOf(overflow, rules.townGoldPercent);
         }
       }
     }
@@ -877,6 +989,38 @@ export function processSettlement(
   };
 }
 
+/**
+ * What a puppet builds by itself (it runs on its own, like Civ V's): the building with the most
+ * yield for its cost, else a district project, never units, districts or wonders.
+ */
+function puppetBuild(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+): BuildItem | undefined {
+  const items = availableItems(ctx, state, s);
+  let best: { item: BuildItem; score: number } | undefined;
+  for (const item of items) {
+    if (item.kind !== 'building') continue;
+    const def = ctx.content.entities.building[item.id]!;
+    if (def.walls > 0) continue;
+    const value =
+      Object.values(def.yields).reduce((a, b) => a + b, 0) + 2 * def.happiness - def.maintenance;
+    if (value <= 0) continue;
+    const score = Math.floor((value * 10_000) / Math.max(1, def.cost));
+    if (!best || score > best.score) best = { item, score };
+  }
+  if (best) return best.item;
+  for (const item of items) {
+    if (item.kind !== 'project') continue;
+    const def = ctx.content.entities.project[item.id]!;
+    if (!def.repeatable || def.clears || def.speedsExpedition) continue;
+    const tile = placementTiles(ctx, state, s, 'project', item.id)[0];
+    if (tile !== undefined) return { kind: 'project', id: item.id, tile };
+  }
+  return undefined;
+}
+
 /** A settlement being razed loses a citizen; at none, it's gone and its land is free. */
 function burnDown(draft: Draft<GameState>, ctx: EngineContext, id: string, emit: Emit) {
   const s = draft.settlements[id]!;
@@ -924,6 +1068,7 @@ export function settlementsTurn(draft: Draft<GameState>, ctx: EngineContext, emi
       totals.happiness += t.happiness;
     }
     empireTurn(draft, ctx, player, totals, emit);
+    strategicTurn(draft, ctx, player, view(draft), emit);
     refreshExplored(draft, ctx, player);
   }
 }

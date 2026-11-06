@@ -8,6 +8,7 @@ import type { GameState, PlayerId } from '../state';
 import { replacementFor, uniqueProblem } from '../uniques';
 import { ownedUnit } from './handlers';
 import { scaleCost } from '../speed';
+import { payResources, resourceProblem } from '../resources/strategic';
 
 /**
  * Unit upgrades (docs/03-core-mechanics.md, "Units"): each unit names what it becomes
@@ -50,6 +51,9 @@ export function obsoletedBy(
   const seen = new Set<string>([type]);
   for (let next = upgradeTarget(ctx, state, player, type); next && !seen.has(next);) {
     if (!buildable(ctx, state, player, next)) break;
+    // A newer unit whose strategic resources the player can't get (no stockpile, no source)
+    // doesn't replace the old one: warriors stay buildable without iron, as in Civ VI.
+    if (resourceProblem(ctx, state, player, next, false)) break;
     best = next;
     seen.add(next);
     next = upgradeTarget(ctx, state, player, next);
@@ -98,7 +102,8 @@ export function upgradeProblem(
   const cost = upgradeCost(ctx, state, u.type, to);
   if (state.players[player]!.gold < cost)
     return { code: 'no_gold', message: `Needs ${Math.ceil(cost / 100)} gold` };
-  return undefined;
+  // The newer unit's strategic resources come out of the stockpile, as if it were trained.
+  return resourceProblem(ctx, state, player, to, true);
 }
 
 type A<T extends Action['type']> = Extract<Action, { type: T }>;
@@ -113,6 +118,7 @@ export const upgradeHandlers = {
       const from = u.type;
       const to = obsoletedBy(ctx, view(draft), action.player, from)!;
       draft.players[action.player]!.gold -= upgradeCost(ctx, draft, from, to);
+      payResources(draft, ctx, action.player, to);
       u.type = to;
       u.moves = 0;
       u.orders = null;

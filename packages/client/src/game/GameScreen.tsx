@@ -457,6 +457,10 @@ function noticeFor(
     }
     case 'great_person_activated':
       return undefined;
+    case 'resource_shortage': {
+      const r = resolveText(content, content.entities.resource[e.resource]?.name ?? e.resource);
+      return `You've run out of ${r}: units that use it up fight weaker until the stockpile recovers`;
+    }
     case 'pantheon_founded': {
       const b = resolveText(content, content.entities.belief[e.belief]?.name ?? e.belief);
       return e.player === ME

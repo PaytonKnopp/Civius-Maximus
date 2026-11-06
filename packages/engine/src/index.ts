@@ -151,6 +151,9 @@ export {
   purchaseCost,
   settlementIds,
   settlementLimit,
+  limitCount,
+  annexCost,
+  puppetProblem,
   settlementsOf,
   type SettlementYields,
   settlementYields,
@@ -163,6 +166,18 @@ export {
   workableTiles,
 } from './settlements/rules';
 export { bestDevelopChoice } from './settlements/handlers';
+export { luxuriesOf, ownLuxuries, type LuxuryReach } from './settlements/luxuries';
+export {
+  isRevealed,
+  resourceCostOf,
+  resourceProblem,
+  resourceUpkeepOf,
+  shortages,
+  stockpileCap,
+  stockpileIncome,
+  stockpileOf,
+  stockpileUpkeep,
+} from './resources/strategic';
 export {
   districtCost,
   districtLimit,

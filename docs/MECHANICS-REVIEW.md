@@ -489,3 +489,32 @@ Each is a taste call (D118). Recommended:
 - **A lead that runs away:** in the baseline the leader doesn't run away (score ranks stay
   mixed), but the world gangs up only through the AI's agendas. Proposed: the World Congress
   can call an emergency against a civ close to winning (Taste, D120).
+
+---
+
+## Phase 2: what was built
+
+Payton approved every recommended default (D106–D120), the four groups of known gaps in D118,
+"fix first, then tune" for happiness and the turn 300–400 target with every victory type.
+
+### 2A–2B: the economy core and strategic resources
+
+- **1.1** Resource tiles take only their own improvement once it's known, and a placeholder is
+  replaced the turn it unlocks; growth reaches for luxuries and strategic resources first.
+- **1.2** Luxuries cheer their settlement and the 3 nearest others, each kind once per
+  settlement.
+- **1.3** Strategic resources: hidden until their tech, stockpiles with a cap by era, costs to
+  train and upgrade (uniques inherit), upkeep for Industrial-era units and later with −20
+  strength when short, Oil Wells and Offshore Platforms, older units stay buildable without the
+  newer one's resource. The AI only builds units whose upkeep it can carry.
+- **1.4** Resources placed by frequency (Small map, seed 7: iron 2 → 7, coal 1 → 5, uranium
+  20 → 2), luxury clusters, a luxury and horses or iron near every start.
+- **1.5** Chop rewards scale with speed and +25% per era.
+- **2.2** Puppets (capture choice, −25% yields, half toward the limit, self-chosen builds,
+  annex for gold); the AI puppets captures that would put it over the limit.
+- **2.3** Idle production and stray overflow become gold; nine repeatable district projects.
+- **2.6 (D107)** Building upkeep is −1 happiness per 2 maintained buildings and −1 per
+  settlement over the limit: with luxuries fixed, the AI built 50% more buildings by turn 250
+  and the old −1 per building put its cities back into unrest.
+- **6.3** The AI values an effect only where its condition holds (it no longer thinks "+1 in
+  the capital" is "+1 everywhere"), and picks a district project rather than idling.

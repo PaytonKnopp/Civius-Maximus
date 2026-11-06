@@ -40,6 +40,9 @@ import {
 import { scaleCost } from '../speed';
 import { loyaltyPenalty } from '../loyalty/loyalty';
 import { greatWorkYields } from '../greatworks/greatworks';
+import { luxuryLines } from './luxuries';
+import { eraOrderOf, perEra } from '../progress/era';
+import { isRevealed, resourceProblem } from '../resources/strategic';
 
 /**
  * Settlement rules as pure functions of the game state (docs/03-core-mechanics.md, section 3).
@@ -91,10 +94,14 @@ export function tileYields(
     shared = { facts: playerFacts(ctx, p), sources: sourcesFor(ctx, state, pid) };
     scope.set(pid, shared);
   }
+  const facts = tileFacts(state, tile);
+  // A strategic resource gives nothing until its owner knows the tech that reveals it.
+  if (facts.resource !== null && !isRevealed(ctx, state, pid, facts.resource))
+    facts.resource = null;
   return computeTileYields(
     {
       content: ctx.content,
-      tile: tileFacts(state, tile),
+      tile: facts,
       neighbors: neighbors(state.map, tile).map((n) => tileFacts(state, n, true)),
       playerId: pid ?? '',
       ...(p ? { player: shared?.facts ?? playerFacts(ctx, p) } : {}),
@@ -263,8 +270,13 @@ export function improvementsFor(
 ): string[] {
   const t = state.map.tiles[tile]!;
   if (t.elevation === 'mountain') return [];
+  // A resource its owner can't see yet is improved like the land under it.
+  const resource =
+    t.resource !== null && player !== undefined && !isRevealed(ctx, state, player, t.resource)
+      ? null
+      : t.resource;
   const fits = (imp: ImprovementDef): 0 | 1 | 2 => {
-    if (t.resource !== null && imp.resources.includes(t.resource)) return 2;
+    if (resource !== null && imp.resources.includes(resource)) return 2;
     const ok = imp.sites.some(
       (site) =>
         (site.terrains === undefined || site.terrains.includes(t.terrain)) &&
@@ -275,7 +287,7 @@ export function improvementsFor(
     );
     return ok ? 1 : 0;
   };
-  return ctx.content.ids.improvement
+  const options = ctx.content.ids.improvement
     .filter((id) => {
       const imp = ctx.content.entities.improvement[id]!;
       if (player === undefined) return imp.civ === undefined;
@@ -284,7 +296,13 @@ export function improvementsFor(
       );
     })
     .map((id) => ({ id, fit: fits(ctx.content.entities.improvement[id]!) }))
-    .filter((x) => x.fit > 0)
+    .filter((x) => x.fit > 0);
+  // A resource takes its own improvement once one is available (Civ VI, VII): nothing else may
+  // cover it. Until then any improvement that fits the land holds the tile, and is replaced by
+  // the resource's own when it unlocks (see `upgradeResourceTiles`).
+  const own = options.some((x) => x.fit === 2);
+  return options
+    .filter((x) => !own || x.fit === 2)
     .sort(
       (a, b) =>
         b.fit - a.fit ||
@@ -349,18 +367,28 @@ export function settlementLimit(ctx: EngineContext, state: GameState, player: Pl
   return settlementLimitOf(ctx, state, player);
 }
 
-function improvedLuxuries(ctx: EngineContext, state: GameState, s: SettlementState): Line[] {
-  const out: Line[] = [];
-  for (const t of tilesWithin(state.map, s.tile, ctx.content.rules.settlements.ownRadius)) {
-    const tile = state.map.tiles[t]!;
-    if (tile.settlement !== s.id || tile.resource === null || tile.improvement === null) continue;
-    const res = ctx.content.entities.resource[tile.resource]!;
-    const imp = ctx.content.entities.improvement[tile.improvement]!;
-    if (res.class === 'luxury' && res.happiness > 0 && imp.resources.includes(res.id)) {
-      out.push({ label: resolveText(ctx.content, res.name), amount: res.happiness });
-    }
-  }
-  return out;
+/**
+ * How many settlements count against the limit: puppets count a share
+ * (`rules.settlements.puppet.limitPercent`), rounded down over all of them.
+ */
+export function limitCount(ctx: EngineContext, state: GameState, player: PlayerId): number {
+  const mine = settlementsOf(state, player);
+  const puppets = mine.filter((s) => s.puppet).length;
+  const share = ctx.content.rules.settlements.puppet.limitPercent;
+  return mine.length - puppets + Math.floor((puppets * share) / 100);
+}
+
+/** Gold to annex a puppet (whole gold in hundredths). */
+export function annexCost(ctx: EngineContext, state: GameState, s: SettlementState): Fixed {
+  const p = ctx.content.rules.settlements.puppet;
+  return scaleCost(ctx, state, toFixed(p.annexBase + p.annexPerCitizen * s.population));
+}
+
+/** Why a settlement can't be managed by its owner right now (puppets run themselves). */
+export function puppetProblem(s: SettlementState): RuleError | undefined {
+  return s.puppet
+    ? { code: 'puppet', message: `${s.name} is a puppet and runs itself; annex it first` }
+    : undefined;
 }
 
 /** A settlement's happiness balance and what it does (docs/03, "Happiness"). Whole numbers. */
@@ -382,7 +410,7 @@ export function happinessOf(ctx: EngineContext, state: GameState, s: SettlementS
     if (def?.happiness)
       lines.push({ label: resolveText(ctx.content, def.name), amount: def.happiness });
   }
-  lines.push(...improvedLuxuries(ctx, state, s));
+  lines.push(...luxuryLines(ctx, state, s.id));
   for (const { source, effect } of playerEffects(ctx, state, s.owner, 'modify_happiness', s)) {
     lines.push({ label: source.label, amount: effect.params.amount });
   }
@@ -393,9 +421,9 @@ export function happinessOf(ctx: EngineContext, state: GameState, s: SettlementS
   const maintained = s.buildings.filter(
     (b) => ctx.content.entities.building[b]!.maintenance > 0,
   ).length;
-  if (maintained > 0 && h.perMaintainedBuilding > 0)
-    lines.push({ label: 'Building upkeep', amount: -maintained * h.perMaintainedBuilding });
-  const over = settlementsOf(state, s.owner).length - settlementLimit(ctx, state, s.owner);
+  const upkeep = Math.floor(maintained / h.maintainedPerUnhappy) * h.perMaintainedBuilding;
+  if (upkeep > 0) lines.push({ label: 'Building upkeep', amount: -upkeep });
+  const over = limitCount(ctx, state, s.owner) - settlementLimit(ctx, state, s.owner);
   if (over > 0)
     lines.push({ label: 'Over the settlement limit', amount: -over * h.perSettlementOverLimit });
   const balance = lines.reduce((sum, l) => sum + l.amount, 0);
@@ -543,6 +571,11 @@ function computeSettlementYields(
   if (disloyal) {
     for (const y of Object.keys(before).sort()) {
       if (y !== 'happiness') applyPercent(y, disloyal.label, disloyal.percent);
+    }
+  }
+  if (s.puppet && rules.puppet.yieldPercent !== 0) {
+    for (const y of Object.keys(before).sort()) {
+      if (y !== 'happiness') applyPercent(y, 'Puppet', rules.puppet.yieldPercent);
     }
   }
   for (const p of percents) applyPercent(p.y, p.label, p.percent);
@@ -773,12 +806,18 @@ export function itemCost(
   item: BuildItem,
   s?: SettlementState,
 ): Fixed {
+  const project = item.kind === 'project' ? ctx.content.entities.project[item.id] : undefined;
+  const raw =
+    item.kind === 'district'
+      ? districtCost(ctx, state, player, item.id)
+      : toFixed(itemDef(ctx, item)?.cost ?? 0);
+  // Projects that keep pace with the game cost more in later eras (chopping, district projects).
   const base = scaleCost(
     ctx,
     state,
-    item.kind === 'district'
-      ? districtCost(ctx, state, player, item.id)
-      : toFixed(itemDef(ctx, item)?.cost ?? 0),
+    project?.perEraPercent
+      ? perEra(raw, project.perEraPercent, eraOrderOf(ctx, state.players[player]))
+      : raw,
   );
   if (!s) return base;
   let percent = 0;
@@ -917,6 +956,8 @@ export function itemProblem(
       };
     if (u.nuke && state.settings.nukes === false)
       return { code: 'off', message: 'Nuclear weapons are off in this game' };
+    const short = resourceProblem(ctx, state, s.owner, u.id, false);
+    if (short) return short;
     const domain = ctx.content.entities.unitClass[u.class]!.domain;
     if (domain === 'sea' && !isCoastal(ctx, state, s.tile))
       return { code: 'needs_coast', message: 'Ships need a settlement on the coast' };

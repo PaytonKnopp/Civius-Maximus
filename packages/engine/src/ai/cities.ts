@@ -1,10 +1,17 @@
 import type { Effect } from '@cx/content';
+import {
+  isRevealed,
+  resourceUpkeepOf,
+  stockpileIncome,
+  stockpileUpkeep,
+} from '../resources/strategic';
 import { previewStrike, strikeTargets } from '../combat/strength';
 import { unitDef } from '../context';
 import { toFixed } from '../fixed';
 import { distance } from '../map/hex';
 import { districtLimit, districtYields, placementTiles } from '../settlements/districts';
 import {
+  annexCost,
   availableItems,
   canBuyWithFaith,
   goldPerTurn,
@@ -12,6 +19,7 @@ import {
   itemCost,
   itemDef,
   itemProblem,
+  limitCount,
   purchasableTiles,
   purchaseCost,
   settlementLimit,
@@ -29,11 +37,30 @@ import { wantsNuke } from './nukes';
 import { type Role, type Turn, unitPower, unitRole } from './turn';
 import { effectValue, fixedYieldsValue, happinessWeight, yieldsValue, yieldWeight } from './values';
 
-/** After taking a settlement the AI keeps it (raze and liberate are left to people for now). */
+/**
+ * After taking a settlement the AI keeps it, as a puppet when keeping it outright would push it
+ * over its settlement limit (raze and liberate are left to people). Puppets are annexed again
+ * once there's room under the limit and gold to spare.
+ */
 export function manageCaptures(t: Turn) {
   for (const s of t.mySettlements()) {
-    if (s.captureChoice)
-      t.act({ type: 'capture_choice', player: t.player, settlement: s.id, choice: 'keep' });
+    if (!s.captureChoice) continue;
+    const over = limitCount(t.ctx, t.state, t.player) > settlementLimit(t.ctx, t.state, t.player);
+    t.act({
+      type: 'capture_choice',
+      player: t.player,
+      settlement: s.id,
+      choice: over ? 'puppet' : 'keep',
+    });
+  }
+  const share = t.ctx.content.rules.settlements.puppet.limitPercent;
+  for (const s of t.mySettlements()) {
+    if (!s.puppet) continue;
+    // Annexing adds the rest of a settlement to the count.
+    const after = limitCount(t.ctx, t.state, t.player) + (share < 100 ? 1 : 0);
+    if (after > settlementLimit(t.ctx, t.state, t.player)) continue;
+    if (t.p.gold < annexCost(t.ctx, t.state, s) + reserve(t)) continue;
+    t.act({ type: 'annex_puppet', player: t.player, settlement: s.id });
   }
 }
 
@@ -59,7 +86,7 @@ const reserve = (t: Turn) => toFixed(30 + 10 * t.mySettlements().length);
 export function manageTowns(t: Turn) {
   const towns = t
     .mySettlements()
-    .filter((s) => s.kind === 'town')
+    .filter((s) => s.kind === 'town' && !s.puppet)
     .sort((a, b) => b.population - a.population || (a.id < b.id ? -1 : 1));
   const minPop = t.me.gold >= 8 ? 5 : 3;
   const town = towns.find((s) => s.population >= minPop && !s.captureChoice);
@@ -68,8 +95,8 @@ export function manageTowns(t: Turn) {
   }
   const spec = t.ctx.content.rules.settlements.specialization;
   for (const s of t.mySettlements()) {
-    if (s.kind !== 'town' || s.specialization !== null || s.population < spec.minPopulation)
-      continue;
+    if (s.kind !== 'town' || s.puppet || s.specialization !== null) continue;
+    if (s.population < spec.minPopulation) continue;
     const choice = bestSpecialization(t, s);
     if (choice)
       t.act({
@@ -122,7 +149,7 @@ export const isSoldier = (role: Role) => role === 'melee' || role === 'ranged' |
 /** Production queues: what each city should make next, and what's worth buying. */
 export function manageProduction(t: Turn) {
   for (const s of t.mySettlements()) {
-    if (s.kind !== 'city' || s.captureChoice) continue;
+    if (s.kind !== 'city' || s.captureChoice || s.puppet) continue;
     const head = s.queue[0];
     // Urgent needs go to the front of the queue (progress on the rest is kept).
     const urgent = urgentBuild(t, s);
@@ -139,7 +166,8 @@ export function manageProduction(t: Turn) {
       continue;
     }
     if (head) continue;
-    const choice = bestImprovement(t, s) ?? surplusUnit(t, s);
+    // Nothing worth building: a district project beats idle production or spare soldiers.
+    const choice = bestImprovement(t, s) ?? bestProject(t, s) ?? surplusUnit(t, s);
     if (choice) t.act({ type: 'set_queue', player: t.player, settlement: s.id, queue: [choice] });
   }
   buyThings(t);
@@ -178,15 +206,27 @@ function turnsFor(t: Turn, s: SettlementState, item: BuildItem): number {
   return Math.max(1, Math.ceil(left / production));
 }
 
-/** Units this city can make now. */
+/** Units this city can make now (and whose resource upkeep the empire can carry). */
 function unitItems(t: Turn, s: SettlementState): BuildItem[] {
-  return t.memo(`units:${s.id}`, () =>
-    t.ctx.content.ids.unit
-      // Nuclear weapons only through `urgentBuild`'s deterrent (see ai/nukes.ts).
-      .filter((id) => !t.ctx.content.entities.unit[id]!.nuke)
-      .map((id) => ({ kind: 'unit' as const, id }))
-      .filter((item) => !itemProblem(t.ctx, t.state, s, item)),
-  );
+  return t.memo(`units:${s.id}`, () => {
+    const spare = t.turnMemo('resourceRoom', () => {
+      const income = stockpileIncome(t.ctx, t.state, t.player);
+      const upkeep = stockpileUpkeep(t.ctx, t.state, t.player);
+      const out: Record<string, number> = {};
+      for (const r of new Set([...Object.keys(income), ...Object.keys(upkeep)]))
+        out[r] = (income[r] ?? 0) - (upkeep[r] ?? 0);
+      return out;
+    });
+    const sustainable = (id: string) =>
+      Object.entries(resourceUpkeepOf(t.ctx, id)).every(([r, n]) => (spare[r] ?? 0) >= n);
+    return (
+      t.ctx.content.ids.unit
+        // Nuclear weapons only through `urgentBuild`'s deterrent (see ai/nukes.ts).
+        .filter((id) => !t.ctx.content.entities.unit[id]!.nuke && sustainable(id))
+        .map((id) => ({ kind: 'unit' as const, id }))
+        .filter((item) => !itemProblem(t.ctx, t.state, s, item))
+    );
+  });
 }
 
 /** Something that should be built before anything else here, if anything. */
@@ -259,13 +299,31 @@ function surplusUnit(t: Turn, s: SettlementState): BuildItem | undefined {
   return bestUnit(t, unitItems(t, s), nextRoles(t));
 }
 
+/** The repeatable district project whose yields this leader values most here (or none). */
+function bestProject(t: Turn, s: SettlementState): BuildItem | undefined {
+  let best: { item: BuildItem; score: number } | undefined;
+  for (const raw of availableItems(t.ctx, t.state, s)) {
+    if (raw.kind !== 'project') continue;
+    const def = t.ctx.content.entities.project[raw.id]!;
+    if (!def.repeatable || def.speedsExpedition || def.clears) continue;
+    const item = withTile(t, s, raw);
+    if (!item) continue;
+    let score = 0;
+    for (const [y, percent] of Object.entries(def.costShare))
+      score += percent * yieldWeight(t.me, y);
+    if (def.greatPersonPoints) score += def.greatPersonPoints.percent * 8;
+    if (!best || score > best.score) best = { item, score };
+  }
+  return best?.item;
+}
+
 /** Some city of ours already has this as its current build. */
 function queued(t: Turn, id: string): boolean {
   return t.mySettlements().some((s) => s.queue[0]?.id === id);
 }
 
 function wantsSettler(t: Turn): boolean {
-  const n = t.mySettlements().length;
+  const n = limitCount(t.ctx, t.state, t.player);
   const settlers =
     t.myUnits().filter((u) => unitRole(t.ctx, u) === 'settler').length +
     t.mySettlements().filter((s) => {
@@ -415,7 +473,7 @@ function withTile(t: Turn, s: SettlementState, item: BuildItem): BuildItem | und
 function buyThings(t: Turn) {
   const cities = t
     .mySettlements()
-    .filter((s) => s.kind === 'city' && !s.captureChoice)
+    .filter((s) => s.kind === 'city' && !s.captureChoice && !s.puppet)
     .sort((a, b) => b.population - a.population || (a.id < b.id ? -1 : 1));
   for (const s of cities) {
     const head = s.queue[0];
@@ -463,9 +521,11 @@ function buyThings(t: Turn) {
 function buyResourceTile(t: Turn, rich: number): boolean {
   let best: { s: string; tile: number; cost: number; luxury: boolean } | undefined;
   for (const s of t.mySettlements()) {
+    if (s.puppet) continue;
     for (const tile of purchasableTiles(t.ctx, t.state, s)) {
       const res = t.state.map.tiles[tile]!.resource;
-      const cls = res ? t.ctx.content.entities.resource[res]?.class : undefined;
+      const known = res !== null && isRevealed(t.ctx, t.state, t.player, res);
+      const cls = known ? t.ctx.content.entities.resource[res]?.class : undefined;
       if (cls !== 'luxury' && cls !== 'strategic') continue;
       const cost = tilePurchaseCost(t.ctx, t.state, s, tile);
       const luxury = cls === 'luxury';

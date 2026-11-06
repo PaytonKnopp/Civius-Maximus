@@ -133,6 +133,35 @@ All math is integer-only so every browser generates the identical map from the s
 
 Strategic resources are only revealed once you research the matching tech.
 
+**Built (final gameplay pass, November 2026):**
+- **A resource gets its own improvement.** Once its improvement is known, a resource tile can
+  only take that one (wine: a plantation). Before then any improvement that fits the land can
+  hold it, and it's replaced by the resource's own the turn that unlocks (a farm on wine becomes
+  a plantation when Irrigation arrives). Growth values luxuries and strategic resources first.
+- **Luxuries** (`rules.luxuryHappinessRadius` = 3): each improved luxury gives its happiness
+  (+2) to the settlement that owns it and to the 3 nearest other settlements of its owner. A
+  settlement counts each kind once, however many reach it, so variety matters and spare copies
+  are for trading. The settlement's happiness breakdown names each one and where it comes from.
+- **Strategic resources** (`rules.strategic`), after Civ VI:
+  - Hidden until their tech: horses (Animal Husbandry), iron (Bronze Working), niter (Military
+    Tactics), coal (Industrialization), oil (Steam Power), aluminum (Radio), uranium (Nuclear
+    Fission). Before that they can't be seen, improved or worked for their yields.
+  - Each improved source adds its `stockpilePerTurn` to its owner's stockpile, up to 30 + 15
+    per era past the first. Oil is improved by Oil Wells (Steam Power) and, at sea, Offshore
+    Platforms (Combustion).
+  - Units take resources to train (`resourceCost`; Swordsman 10 iron, Horseman 10 horses,
+    Musketman 10 niter, Tank 10 oil, Fighter 10 aluminum, Atomic Bomb 20 uranium...); unique
+    units take what the unit they replace takes. A source is enough to start one; it finishes
+    when the stockpile can pay. Upgrading into a unit pays its resources too.
+  - Industrial-era and later units use some up every turn (`resourceUpkeep`: ironclads and
+    battleships coal, tanks, aircraft and destroyers oil). When the stockpile can't cover it,
+    those units fight with −20 strength ("Short of Oil") until it can.
+  - An older unit stays buildable while its replacement's resource is out of reach (warriors
+    without iron), as in Civ VI.
+- **Placement:** each resource gets its share of the map by frequency, wherever it fits, so
+  resources that fit few tiles aren't crowded out; luxuries come in clusters of two or three.
+  Every start gets at least one luxury within 3 tiles and horses or iron within 4.
+
 ### Appeal
 
 Each tile has an **appeal** score from neighbors (mountains, coast, woods, natural wonders: +.
@@ -237,8 +266,9 @@ Each settlement has a 😊 **happiness** balance:
 - **Sources:** luxuries, the Palace, certain buildings and districts (Entertainment Complex,
   Aqueduct building, Thermae...), wonders, policies, religion, town specializations, and war
   support when defending.
-- **Costs:** 1 per 2 citizens, 1 per building that has maintenance, settlements above your
-  **settlement limit** (−2 per settlement over the limit, in every settlement), and negative
+- **Costs:** 1 per 2 citizens, 1 per 2 buildings that have maintenance (final pass, D107; was 1
+  per building), settlements above your
+  **settlement limit** (−1 per settlement over the limit, in every settlement; −2 before the final pass, D107; puppets count half), and negative
   war support.
 
 | Settlement balance | Effect |
@@ -261,6 +291,16 @@ Each settlement has a 😊 **happiness** balance:
 - **Overflow** carries extra production into the next item.
 - **Buying:** gold for units and buildings (not districts or wonders), and faith for religious units
   and some others (module).
+- **Nothing is wasted (final pass):** a city with nothing queued sells its production for gold
+  at the town rate, and so does overflow with nothing after it.
+- **District projects (built in the final pass):** every specialty district has a repeatable
+  project costing 60 production (+50% per era past the first): Research Grants (Campus, half
+  back as science), Pilgrimage (Holy Site, 60% as faith), Arts Festival (Theater, half as
+  culture), Market Fair (Commercial Hub, 75% as gold), Trade Fleet (Harbor, half as gold and a
+  fifth as food), Engineering Works (Industrial Zone, 40% as gold), War Games (Encampment, 30%
+  as gold), Festival of Games (Entertainment Complex, half toward the next celebration) and
+  Envoys Abroad (Government Plaza, 40% as influence), plus great person points of the district's
+  kind (10–15% of the cost). Clearing woods, rainforest and marsh pays 25% more per era.
 - **Projects:** repeatable city projects that convert production into another yield (e.g., Campus
   Research Grants → science and great scientist points).
 
@@ -284,7 +324,15 @@ over turns: it produces nothing and loses a citizen each turn until it's gone, u
 takes it back first; original capitals and settlements with a wonder can't be razed. Liberating returns it to its founder (not if
 you took it from them). Not answering by the end of the turn keeps it. Losing the capital moves
 it to the biggest remaining settlement; losing the last settlement knocks a player out, and the
-last player standing wins. Puppets wait for the loyalty and settlement-limit work.
+last player standing wins.
+
+**Puppets (built in the final pass):** the capture choice also offers **Make it a puppet**
+(`rules.settlements.puppet`). A puppet runs itself: balanced focus, its own growth choices, and
+its own builds (the building with the most yield for its cost, else a district project; never
+units, districts or wonders). It gives its yields at −25% and counts half toward the settlement
+limit (rounded down over all of them). Its owner can rename it and **annex** it for 50 + 15 gold
+per citizen; nothing else. The AI puppets a capture that would push it over its limit and annexes
+when there's room.
 
 ---
 
@@ -631,7 +679,7 @@ Districts are Civ 6's signature system and the main source of city planning.
 - **Specialists:** each building in a district opens one specialist slot. Specialists give the
   district's specialist yields (e.g. +2🔬 in a Campus) instead of working a tile, and are assigned
   by the citizen focus like tiles.
-- Clear Woods (+25⚙️ toward the next item), Clear Rainforest (+15🍞 +15⚙️) and Drain Marsh
+- Clear Woods (+25⚙️ toward the next item, +25% per era past the first), Clear Rainforest (+15🍞 +15⚙️) and Drain Marsh
   (+20🍞) are 15-production city projects on a tile.
 - The settlement screen previews each possible tile's yield before you place a district, on the
   map and in a list.
