@@ -503,7 +503,10 @@ forces new crisis policies. Off by default, for groups that like chaos.
   tourism never caught up with a rival's lifetime culture, so no AI could win by culture);
   tourism goes each turn to every civ whose settlement you've seen, +25% each with a trade route between you, a shared religion (both capitals
   follow it) or a friendship or alliance.
-- **Culture victory:** your visitors from each other civ outnumber its domestic tourists.
+- **Culture victory:** your visitors from each other civ outnumber its domestic tourists, once
+  you've reached the Atomic era (`rules.culture.victoryEra`, D121: before that, a civ that took
+  most of the early wonders could win around turn 90 at Online speed while every rival's culture
+  was still small; Civ VII likewise keeps its victories for the last age).
 - Ideologies, great works, national parks and seaside resorts came later (below).
 
 ### Great works (V1 final, F11)
@@ -850,10 +853,10 @@ score victory).
 |---|---|
 | **Domination** | Hold every other player's original capital (the original capital of an eliminated player counts as held if you own it) |
 | **Science** | Complete the space program chain: launch satellite → moon landing → Mars colony → exoplanet expedition traveling to its destination |
-| **Culture** | Your foreign tourists exceed every other civ's domestic tourists |
+| **Culture** | Your foreign tourists exceed every other civ's domestic tourists, from the Atomic era on |
 | **Religious** | Your religion is the majority in more than half of every other civ's cities |
 | **Score** | Highest score at the turn limit |
-| **Diplomatic** | Reach 20 diplomatic victory points through the World Congress (built in V1 final F13) |
+| **Diplomatic** | Reach 24 diplomatic victory points through the World Congress (built in V1 final F13; 20 before the final gameplay pass) |
 | **Custom** | Defined by mods using the effects/conditions system (e.g., "Hold 5 natural wonders for 10 turns") |
 
 **Team victory:** if any member of a team meets a condition, the team wins.

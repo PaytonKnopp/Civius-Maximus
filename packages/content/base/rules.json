@@ -545,7 +545,8 @@
     "friendsPercent": 25,
     "openBordersPercent": 25,
     "agingPercent": 25,
-    "agingMaxPercent": 100
+    "agingMaxPercent": 100,
+    "victoryEra": "era_atomic"
   },
   "governors": {
     "establishTurns": 5,

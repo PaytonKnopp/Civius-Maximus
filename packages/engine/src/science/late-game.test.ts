@@ -1,7 +1,12 @@
 import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 import type { Action } from '../actions';
-import { cultureProgress, domesticTourists, tourismBonus } from '../culture/tourism';
+import {
+  cultureProgress,
+  domesticTourists,
+  hasCultureVictory,
+  tourismBonus,
+} from '../culture/tourism';
 import { toFixed } from '../fixed';
 import { applyAction } from '../game';
 import { foundSettlement } from '../settlements/handlers';
@@ -197,6 +202,13 @@ describe('tourism and the culture victory', () => {
       d.tourism.p1 = { p2: toFixed(ctx.content.rules.culture.tourismPerTourist * 5) };
     });
     expect(cultureProgress(ctx, s, 'p1')).toEqual([{ player: 'p2', visiting: 5, domestic: 0 }]);
+    // Not before the Atomic era (D121): no winning early on ancient wonders.
+    expect(ctx.content.rules.culture.victoryEra).toBe('era_atomic');
+    expect(hasCultureVictory(ctx, s, 'p1')).toBe(false);
+    s = produce(s, (d) => {
+      d.players.p1!.techs.done.push('tech_flight');
+    });
+    expect(hasCultureVictory(ctx, s, 'p1')).toBe(true);
     s = endTurn(s);
     expect(s.result).toEqual({ reason: 'culture', winner: 'p1' });
   });

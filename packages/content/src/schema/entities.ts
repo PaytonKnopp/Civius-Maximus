@@ -623,6 +623,9 @@ export const RulesDef = z.strictObject({
      * per era their owner is past their own, up to `agingMaxPercent`. */
     agingPercent: z.int().min(0).default(25),
     agingMaxPercent: z.int().min(0).default(100),
+    /** A culture victory needs the winner to have reached this era (D121): no winning early on
+     * ancient wonders while every rival's culture is still small. None: any era. */
+    victoryEra: Id.optional(),
   }),
   /** Great people: buying the one you're racing for. */
   greatPeople: z.strictObject({

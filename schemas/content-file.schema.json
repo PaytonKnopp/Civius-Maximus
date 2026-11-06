@@ -95399,6 +95399,10 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
+                },
+                "victoryEra": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
                 }
               },
               "required": [
@@ -192146,6 +192150,10 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "victoryEra": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
                   }
                 },
                 "required": [

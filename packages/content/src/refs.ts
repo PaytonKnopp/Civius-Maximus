@@ -421,6 +421,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ids(out, 'unit', entity.units.startingUnits, ['units', 'startingUnits']);
       out.push({ path: ['greatPeople', 'unit'], kind: 'unit', id: entity.greatPeople.unit });
       ids(out, 'project', entity.science.projects, ['science', 'projects']);
+      ids(out, 'era', entity.culture.victoryEra, ['culture', 'victoryEra']);
       out.push({
         path: ['religion', 'holyDistrict'],
         kind: 'district',
