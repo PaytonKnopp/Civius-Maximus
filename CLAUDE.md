@@ -26,6 +26,8 @@
 | `pnpm cx map [script] [size] [seed]` | Print a generated map as text |
 | `pnpm cx mapcheck [count] [sizes]` | Generate + validate many maps (run after map generator changes) |
 | `pnpm cx simulate [players] [turns] [seed] [size] [script] [--afk]` | Play an all-AI game and report on it (run after AI or balance changes) |
+| `pnpm cx stats <preset\|matrix.json> [--out f.jsonl] [--jobs N]` | Play a batch of all-AI games in parallel (presets in `packages/tools/src/statsPresets.ts`: speeds, sizes, scripts, difficulty, eras, standard, options-off) and record pace, victories, yields over time, builds and choices, one JSON line per game. Run before and after balance changes |
+| `pnpm cx stats-report <f.jsonl> [speed\|size\|difficulty\|startEra\|script\|all]` | Summarize measured games into the tables used in `docs/MECHANICS-REVIEW.md` |
 | `pnpm cx profile [players] [turns] [seed] [size] [script] [--every N] [--from f] [--save f] [--check]` | Play an all-AI game and report turn time, AI time, save size and memory as it goes on, plus the final state hash. Run it before and after any engine change that touches turn processing, the AI or map code: the hash must not change for a speed-up, and `--check` (CI runs it) fails if late games get slow. `--save`/`--from` keep a mid-game state to re-measure quickly |
 
 Client checks: `pnpm build`, then `pnpm --filter @cx/client exec vite preview --port 4173` and
@@ -33,7 +35,8 @@ Client checks: `pnpm build`, then `pnpm --filter @cx/client exec vite preview --
 size, plus console errors); `node packages/client/scripts/screenshot-3d.mjs <out-dir>` captures
 the 3D view at Medium, in fog view, at High, every unit model close up, and every building style and age; `node packages/client/scripts/screenshot-art.mjs <out-dir>` captures close-ups of towns and figures at High (`QUALITY=medium` for another preset); `node packages/client/scripts/screenshot-game.mjs
 <out-dir>` plays the first turns of a local game (select, path preview, move, end turn, lenses,
-help, 2D view, phone size); `node packages/client/scripts/screenshot-menus.mjs <out-dir>` captures every screen before a game
+help, 2D view, phone size), or with `SAVE=<state.json>` plays on from a saved state (e.g. from
+`cx profile --save`) as seat p1; `node packages/client/scripts/screenshot-menus.mjs <out-dir>` captures every screen before a game
 (title, Options, New game and the leader picker, Civilopedia, Hall of Fame, Load, Play online) at
 desktop and phone size and flags anything wider than the screen; `node packages/client/scripts/screenshot-online.mjs <out-dir>` plays
 an online game between two tabs (`?net=local`): lobby, join, a turn, a friend dropping. The app opens on a home screen over a quick game; `#play` in the URL skips it (the game scripts use it) and `#lab` opens the Map Lab.
