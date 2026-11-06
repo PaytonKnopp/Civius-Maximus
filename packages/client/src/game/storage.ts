@@ -11,6 +11,8 @@ const STORE = 'saves';
 export const AUTOSAVE = 'autosave';
 /** The autosave of the online game this browser hosts (resumed online, not as hotseat). */
 export const ONLINE_AUTOSAVE = 'autosave-online';
+/** F5's quick save (F9 loads it). */
+export const QUICKSAVE = 'quicksave';
 
 export interface SaveSummary {
   id: string;

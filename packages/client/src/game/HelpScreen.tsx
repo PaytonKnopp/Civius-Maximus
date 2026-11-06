@@ -10,6 +10,8 @@ export const KEYS: [string, string][] = [
   ['B', 'Found a settlement with the selected settler'],
   ['F', 'Fortify the selected unit'],
   ['Z', 'Sleep the selected unit'],
+  ['Ctrl Z', 'Single player: take back the last move (if it revealed nothing new)'],
+  ['F5 / F9', 'Quick save / quick load (not online)'],
   ['T', 'Technologies'],
   ['C', 'Civics'],
   ['G', 'Government and policies'],

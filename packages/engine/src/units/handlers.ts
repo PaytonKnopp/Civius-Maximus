@@ -2,20 +2,23 @@ import { current, type Draft, original } from 'immer';
 import type { Action } from '../actions';
 import {
   type ActionHandler,
+  atWar,
   type EngineContext,
   type Emit,
   HOSTILE,
   type RuleError,
   unitClassOf,
+  unitDef,
   unitIds,
 } from '../context';
+import { getBit } from '../bitset';
 import { distance, neighbors, tilesWithin } from '../map/hex';
 import type { GameState, PlayerId, UnitState } from '../state';
 import { clearCampsOn } from '../combat/camps';
 import { takeHuts } from '../huts/huts';
 import { canTraverse, fullMoves, hasRoom } from './movement';
 import { findPath, type PathStep } from './pathfind';
-import { exploreVisible, lineOfSight, sightOf } from './vision';
+import { exploredBits, exploreVisible, lineOfSight, sightOf, visibleTiles } from './vision';
 import { unitSnapshot } from '../draft';
 import { startEraUnits } from '../progress/startEra';
 
@@ -181,6 +184,24 @@ export const unitHandlers = {
       unit.orders = { kind: 'fortify', turns: 0 };
     },
   ),
+  alert_unit: simple<'alert_unit'>(
+    (unit, _state, ctx) =>
+      unitClassOf(ctx, unit).combat
+        ? undefined
+        : { code: 'cannot_alert', message: 'Only military units stand on alert' },
+    (unit) => {
+      unit.orders = { kind: 'alert' };
+    },
+  ),
+  explore_unit: simple<'explore_unit'>(
+    (unit, state, ctx) =>
+      exploreTarget(ctx, state, unit) === undefined
+        ? { code: 'nothing_to_explore', message: 'There is nothing left it can reach to explore' }
+        : undefined,
+    (unit) => {
+      unit.orders = { kind: 'explore' };
+    },
+  ),
   wake_unit: simple<'wake_unit'>(
     (unit) =>
       unit.orders ? undefined : { code: 'no_orders', message: 'The unit has no orders to cancel' },
@@ -198,9 +219,72 @@ export const unitHandlers = {
   ),
 } satisfies {
   [
-    T in 'move_unit' | 'skip_unit' | 'sleep_unit' | 'fortify_unit' | 'wake_unit' | 'disband_unit'
+    T in
+      | 'move_unit'
+      | 'skip_unit'
+      | 'sleep_unit'
+      | 'fortify_unit'
+      | 'alert_unit'
+      | 'explore_unit'
+      | 'wake_unit'
+      | 'disband_unit'
   ]: ActionHandler<UnitAction<T>>;
 };
+
+/**
+ * Where an exploring unit heads next: the nearest tile it can reach at the edge of what its
+ * owner has explored (ties: the lower tile index), or undefined when there's none.
+ */
+export function exploreTarget(
+  ctx: EngineContext,
+  state: GameState,
+  unit: UnitState,
+): number | undefined {
+  const known = exploredBits(state, unit.owner);
+  const frontier: number[] = [];
+  for (let t = 0; t < state.map.tiles.length; t++) {
+    if (t === unit.tile || !getBit(known, t)) continue;
+    if (!neighbors(state.map, t).some((n) => !getBit(known, n))) continue;
+    if (!canTraverse(ctx, state, unit, t) || !hasRoom(ctx, state, unit, t)) continue;
+    frontier.push(t);
+  }
+  frontier.sort(
+    (a, b) => distance(state.map, unit.tile, a) - distance(state.map, unit.tile, b) || a - b,
+  );
+  // The nearest few by distance; the first with a path wins.
+  for (const t of frontier.slice(0, 8)) if (findPath(ctx, state, unit, t, 12)) return t;
+  return undefined;
+}
+
+/** Units on alert wake when an enemy soldier stands within their sight and their owner sees it. */
+function wakeAlerted(ctx: EngineContext, draft: Draft<GameState>, base: GameState, emit: Emit) {
+  const seen = new Map<PlayerId, Uint8Array>();
+  for (const id of unitIds(draft)) {
+    const u = draft.units[id]!;
+    if (u.orders?.kind !== 'alert') continue;
+    if (!seen.has(u.owner)) seen.set(u.owner, visibleTiles(ctx, base, u.owner));
+    const vis = seen.get(u.owner)!;
+    const sight = unitDef(ctx, u).sight;
+    const enemy = Object.values(base.units).find(
+      (o) =>
+        o.owner !== u.owner &&
+        (o.owner === HOSTILE || atWar(base, u.owner, o.owner)) &&
+        unitClassOf(ctx, o).combat &&
+        vis[o.tile] === 1 &&
+        distance(base.map, u.tile, o.tile) <= sight,
+    );
+    if (!enemy) continue;
+    u.orders = null;
+    emit({
+      type: 'unit_alerted',
+      unit: id,
+      owner: u.owner,
+      tile: u.tile,
+      enemy: enemy.tile,
+      visibleTo: [u.owner],
+    });
+  }
+}
 
 /** Units that still want orders this turn (drives the "Next action" button). */
 export function unitsNeedingOrders(state: GameState, player: PlayerId): string[] {
@@ -235,8 +319,30 @@ export function startTurnForUnits(draft: Draft<GameState>, ctx: EngineContext, e
       units = { ...units, [moved]: current(now) as GameState['units'][string] };
     }
   };
+  wakeAlerted(ctx, draft, base, emit);
   for (const id of unitIds(draft)) {
     const orders = draft.units[id]?.orders;
+    if (orders?.kind === 'explore') {
+      const snapshot = unitSnapshot(draft, base, units);
+      const target = exploreTarget(ctx, snapshot, snapshot.units[id]!);
+      const path =
+        target === undefined ? null : findPath(ctx, snapshot, snapshot.units[id]!, target);
+      if (!path || target === undefined) {
+        draft.units[id]!.orders = null;
+        emit({
+          type: 'orders_cancelled',
+          unit: id,
+          reason: 'explored',
+          visibleTo: [draft.units[id]!.owner],
+        });
+      } else {
+        advanceAlongPath(draft, ctx, id, path, target, emit, base, units);
+        // Still exploring next turn (unless the journey ended it).
+        if (draft.units[id]) draft.units[id]!.orders = { kind: 'explore' };
+      }
+      refreshUnits(id);
+      continue;
+    }
     if (orders?.kind !== 'move') continue;
     const snapshot = unitSnapshot(draft, base, units);
     const path = findPath(ctx, snapshot, snapshot.units[id]!, orders.target);

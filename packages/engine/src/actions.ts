@@ -10,6 +10,8 @@ const BuildItem = z.strictObject({
   id: ContentRef,
   /** Districts, wonders and projects go on a tile. */
   tile: TileRef.optional(),
+  /** Units and repeatable projects: start another as soon as one is done, until changed. */
+  repeat: z.boolean().optional(),
 });
 const DealRef = z.string().regex(/^d\d+$/);
 /** One side of a deal. */
@@ -39,6 +41,10 @@ export const Action = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('skip_unit'), player: PlayerRef, unit: UnitRef }),
   z.strictObject({ type: z.literal('sleep_unit'), player: PlayerRef, unit: UnitRef }),
   z.strictObject({ type: z.literal('fortify_unit'), player: PlayerRef, unit: UnitRef }),
+  /** Sleep until an enemy soldier comes into the unit's sight. */
+  z.strictObject({ type: z.literal('alert_unit'), player: PlayerRef, unit: UnitRef }),
+  /** Explore on its own, turn after turn, until there's nothing left it can reach. */
+  z.strictObject({ type: z.literal('explore_unit'), player: PlayerRef, unit: UnitRef }),
   /** Clears sleep, fortify or a queued move. */
   z.strictObject({ type: z.literal('wake_unit'), player: PlayerRef, unit: UnitRef }),
   z.strictObject({ type: z.literal('disband_unit'), player: PlayerRef, unit: UnitRef }),

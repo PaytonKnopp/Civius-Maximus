@@ -85,13 +85,17 @@ export function UnitPanel({
       ? 'Moving'
       : unit.orders?.kind === 'sleep'
         ? 'Asleep'
-        : unit.orders?.kind === 'fortify'
-          ? unit.orders.turns > 0
-            ? `Fortified (+${fortify[Math.min(unit.orders.turns, fortify.length) - 1]})`
-            : 'Fortifying'
-          : unit.moves === 0
-            ? 'Out of moves'
-            : 'Ready';
+        : unit.orders?.kind === 'alert'
+          ? 'On alert'
+          : unit.orders?.kind === 'explore'
+            ? 'Exploring'
+            : unit.orders?.kind === 'fortify'
+              ? unit.orders.turns > 0
+                ? `Fortified (+${fortify[Math.min(unit.orders.turns, fortify.length) - 1]})`
+                : 'Fortifying'
+              : unit.moves === 0
+                ? 'Out of moves'
+                : 'Ready';
   const found: Action = { type: 'found_settlement', player: viewer, unit: unit.id };
   const command = commandOf(ctx, unit);
   const person = unit.person ? ctx.content.entities.greatPerson[unit.person] : undefined;
@@ -580,7 +584,11 @@ export function UnitPanel({
           {unit.orders ? (
             <button type="button" onClick={() => act({ type: 'wake_unit', ...ref })}>
               <Icon name={unit.orders.kind === 'move' ? 'movement' : 'check'} />
-              {unit.orders.kind === 'move' ? 'Cancel move' : 'Wake'}
+              {unit.orders.kind === 'move'
+                ? 'Cancel move'
+                : unit.orders.kind === 'explore'
+                  ? 'Stop exploring'
+                  : 'Wake'}
             </button>
           ) : (
             <>
@@ -593,6 +601,26 @@ export function UnitPanel({
                 Sleep
                 <kbd>Z</kbd>
               </button>
+              {cls.combat && (
+                <button
+                  type="button"
+                  title="Sleep until an enemy soldier comes into sight"
+                  onClick={() => act({ type: 'alert_unit', ...ref })}
+                >
+                  <Icon name="sleep" />
+                  Alert
+                </button>
+              )}
+              {unit.moves > 0 && (
+                <button
+                  type="button"
+                  title="Explore on its own every turn, until there's nothing left to find"
+                  onClick={() => act({ type: 'explore_unit', ...ref })}
+                >
+                  <Icon name="movement" />
+                  Explore
+                </button>
+              )}
               {cls.combat && (
                 <button
                   type="button"

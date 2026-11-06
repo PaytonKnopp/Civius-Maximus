@@ -192,6 +192,7 @@ export {
   districtYields,
   needsTile,
   placementProblem,
+  placementFits,
   placementTiles,
   specialistSlots,
   TILE_KINDS,
@@ -261,6 +262,7 @@ export {
   type IdeologyPressure,
 } from './culture/ideology';
 export { containmentResolution, victoryProgress } from './congress/containment';
+export { appealOf, appealWord, continentOf, continentsOf } from './map/appeal';
 export {
   allUnitsOf,
   type Command,

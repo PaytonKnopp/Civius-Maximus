@@ -4,7 +4,8 @@ import { neighbors } from '../map/hex';
 import { activeSources } from '../progress/sources';
 import type { GameState } from '../state';
 import { act, addUnit, at, ctx, endTurn, testState } from '../testing/world';
-import { canBuyWithFaith, isBuyable, itemCost, itemProblem, purchaseCost } from './rules';
+import { applyAction } from '../game';
+import { canBuyWithFaith, isBuyable, itemCost, itemKey, itemProblem, purchaseCost } from './rules';
 
 const LAND = ['..........', '..........', '..........', '..........', '..........'];
 
@@ -96,5 +97,39 @@ describe('late-game sinks (D114)', () => {
       itemCost(ctx, s, 'p1', monument, c) *
         ctx.content.rules.settlements.purchase.faithPerProduction,
     );
+  });
+});
+
+describe('repeat production', () => {
+  it('a repeated unit starts again as soon as one is done', () => {
+    const { s: start, id } = capital();
+    let s = act(start, {
+      type: 'set_queue',
+      player: 'p1',
+      settlement: id,
+      queue: [{ kind: 'unit', id: 'unit_warrior', repeat: true }],
+    }).state;
+    s = structuredClone(s);
+    const item = s.settlements[id]!.queue[0]!;
+    s.settlements[id]!.progress[itemKey(item)] = itemCost(ctx, s, 'p1', item, s.settlements[id]);
+    s.players.p1!.gold = 10_000;
+    const warriors = (st: GameState) =>
+      Object.values(st.units).filter((u) => u.owner === 'p1' && u.type === 'unit_warrior').length;
+    const before = warriors(s);
+    s = endTurn(s);
+    expect(warriors(s)).toBe(before + 1);
+    expect(s.settlements[id]!.queue[0]).toEqual({ kind: 'unit', id: 'unit_warrior', repeat: true });
+    // Buildings don't repeat.
+    const r = applyAction(
+      s,
+      {
+        type: 'set_queue',
+        player: 'p1',
+        settlement: id,
+        queue: [{ kind: 'building', id: 'building_monument', repeat: true }],
+      },
+      ctx,
+    );
+    expect(r.ok ? undefined : r.error.code).toBe('cannot_repeat');
   });
 });

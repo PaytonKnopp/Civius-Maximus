@@ -355,15 +355,40 @@ export function SettlementPanel({
             Production {icon('production')} {fmt(production)}
           </h4>
           {sum.head ? (
-            <div className="bar" title={`${whole(sum.head.progress)} / ${whole(sum.head.cost)}`}>
-              <span
-                className="bar-fill production"
-                style={{ width: `${Math.min(100, (sum.head.progress / sum.head.cost) * 100)}%` }}
-              />
-              <span className="bar-text">
-                {sum.head.name} · {showTurns(sum.head.turns)} turn{sum.head.turns === 1 ? '' : 's'}
-              </span>
-            </div>
+            <>
+              <div className="bar" title={`${whole(sum.head.progress)} / ${whole(sum.head.cost)}`}>
+                <span
+                  className="bar-fill production"
+                  style={{ width: `${Math.min(100, (sum.head.progress / sum.head.cost) * 100)}%` }}
+                />
+                <span className="bar-text">
+                  {s.queue[0]?.repeat ? '↻ ' : ''}
+                  {sum.head.name} · {showTurns(sum.head.turns)} turn
+                  {sum.head.turns === 1 ? '' : 's'}
+                </span>
+              </div>
+              {s.queue[0] &&
+                (s.queue[0].kind === 'unit' ||
+                  (s.queue[0].kind === 'project' &&
+                    content.entities.project[s.queue[0].id]?.repeatable)) && (
+                  <label
+                    className="check small-text"
+                    title="Start another as soon as one is done, until you change it"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!s.queue[0].repeat}
+                      onChange={(e) =>
+                        setQueue([
+                          { ...s.queue[0]!, repeat: e.target.checked || undefined },
+                          ...s.queue.slice(1),
+                        ])
+                      }
+                    />
+                    Repeat
+                  </label>
+                )}
+            </>
           ) : (
             <p className="callout">Choose something to build.</p>
           )}

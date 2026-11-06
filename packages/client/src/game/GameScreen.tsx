@@ -51,7 +51,15 @@ import {
   blastTiles,
   nukeProblem,
 } from '@cx/engine';
-import { type GameHandle, LocalGame, makeSave, RemoteGame, type TurnProgress } from '@cx/host';
+import {
+  deepFreeze,
+  type GameHandle,
+  LocalGame,
+  makeSave,
+  readSave,
+  RemoteGame,
+  type TurnProgress,
+} from '@cx/host';
 import { Icon, Rich } from '../ui/Icon';
 import { ScreenButton } from '../ui/ScreenButton';
 import type { SeatInfo } from '@cx/protocol';
@@ -65,7 +73,7 @@ import { CombatPreview, type Side } from './CombatPreview';
 import { CaptureDialog, GameOver, PlayerPanel, WarPrompt } from './Diplomacy';
 import { cloudAutosave } from '../cloud/autosave';
 import { getSettings, useSettings } from '../settings';
-import { AUTOSAVE, ONLINE_AUTOSAVE, storeSave } from './storage';
+import { AUTOSAVE, loadSave, ONLINE_AUTOSAVE, QUICKSAVE, storeSave } from './storage';
 import {
   civName,
   cssColor,
@@ -353,6 +361,20 @@ function noticeFor(
       return e.target === ME
         ? `Emergency: you are ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing you (U)`
         : `Emergency: ${civName(content, state, e.target)} is ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing them (U)`;
+    }
+    case 'orders_cancelled': {
+      const u = state.units[e.unit];
+      if (!u || u.owner !== ME) return undefined;
+      const name = resolveText(content, content.entities.unit[u.type]?.name ?? u.type);
+      return e.reason === 'explored'
+        ? `Your ${name} has explored everything it can reach`
+        : `Your ${name} can't get through: its move is cancelled`;
+    }
+    case 'unit_alerted': {
+      const u = state.units[e.unit];
+      return e.owner === ME && u
+        ? `Your ${resolveText(content, content.entities.unit[u.type]?.name ?? u.type)} on alert sees an enemy soldier`
+        : undefined;
     }
     case 'legacy_earned': {
       const g = content.entities.government[e.government];
@@ -1580,6 +1602,24 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         return;
       }
       if (overlay) return; // the open screen handles its own keys
+      // Quick save (F5) and quick load (F9), in games this tab holds (not online).
+      if ((e.key === 'F5' || e.key === 'F9') && game.saves && !game.online) {
+        e.preventDefault();
+        if (e.key === 'F5') {
+          void storeSave(QUICKSAVE, makeSave(game.state, `Quick save · turn ${game.state.turn}`))
+            .then(() => notify('Quick saved (F9 to load it)'))
+            .catch(() => notify("Couldn't quick save"));
+        } else {
+          void loadSave(QUICKSAVE).then((save) => {
+            if (!save) return notify('No quick save yet (F5 makes one)');
+            const read = readSave(JSON.stringify(save), ctx);
+            if (!read.ok) return notify(read.message);
+            game.load(deepFreeze(read.save.state));
+            notify(`Quick save loaded: turn ${read.save.state.turn}`);
+          });
+        }
+        return;
+      }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         if (game.canUndo?.()) game.undo?.();

@@ -324,7 +324,11 @@ function complete(
   emit: Emit,
 ) {
   const s = draft.settlements[id]!;
-  if (fromQueue) s.queue.shift();
+  if (fromQueue) {
+    s.queue.shift();
+    // Repeat production: the same again, at the front, until the player changes it.
+    if (item.repeat) s.queue.unshift({ ...item });
+  }
   switch (item.kind) {
     case 'unit': {
       const unit = spawnUnit(draft, ctx, s.owner, item.id, s.tile);
@@ -649,6 +653,12 @@ export const settlementHandlers = {
         seen.add(key);
         if (item.kind !== 'unit' && item.kind !== 'building' && item.tile === undefined)
           return { code: 'bad_placement', message: 'Pick a tile for it' };
+        if (
+          item.repeat &&
+          item.kind !== 'unit' &&
+          !(item.kind === 'project' && ctx.content.entities.project[item.id]?.repeatable)
+        )
+          return { code: 'cannot_repeat', message: 'Only units and repeatable projects repeat' };
       }
       return undefined;
     },
@@ -935,7 +945,7 @@ export function processSettlement(
       if (!newer) continue;
       const done = s.progress[itemKey(q)];
       delete s.progress[itemKey(q)];
-      s.queue[i] = { kind: 'unit', id: newer };
+      s.queue[i] = { kind: 'unit', id: newer, ...(q.repeat ? { repeat: true } : {}) };
       if (done) s.progress[itemKey(s.queue[i]!)] = (s.progress[itemKey(s.queue[i]!)] ?? 0) + done;
     }
     while (s.queue.length > 0 && itemProblem(ctx, snap, s, s.queue[0]!)) s.queue.shift();
@@ -949,6 +959,7 @@ export function processSettlement(
       kind: first.kind,
       id: first.id,
       ...(first.tile !== undefined ? { tile: first.tile } : {}),
+      ...(first.repeat ? { repeat: true } : {}),
     };
     if (!head) {
       // Nothing to build: the production isn't lost, it's sold for gold like a town's.

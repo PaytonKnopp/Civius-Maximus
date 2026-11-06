@@ -1,7 +1,7 @@
 import type { EngineContext, GameState, PlayerId } from '@cx/engine';
 import { useEffect, useRef } from 'react';
 import { Icon } from '../ui/Icon';
-import { type Lens, LENS_NAMES, LENSES } from './lenses';
+import { type Lens, LENS_LEGENDS, LENS_NAMES, LENSES } from './lenses';
 import { type Colors, cssColor } from './model';
 
 interface Props {
@@ -144,6 +144,16 @@ export function Minimap({ ctx, state, viewer, fog, colors, lens, onLens, onPick 
           ))}
         </select>
       </label>
+      {LENS_LEGENDS[lens].length > 0 && (
+        <ul className="lens-legend" aria-label="Lens legend">
+          {LENS_LEGENDS[lens].map((l) => (
+            <li key={l.text}>
+              {l.color && <span className="swatch" style={{ background: l.color }} />}
+              {l.text}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

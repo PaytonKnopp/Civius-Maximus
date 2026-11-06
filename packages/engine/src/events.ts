@@ -238,7 +238,8 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         /** Why, when it wasn't the player's choice. */
         reason?: 'no_gold';
       }
-    | { type: 'orders_cancelled'; unit: UnitId; reason: 'path_blocked' }
+    | { type: 'orders_cancelled'; unit: UnitId; reason: 'path_blocked' | 'explored' }
+    | { type: 'unit_alerted'; unit: UnitId; owner: PlayerId; tile: number; enemy: number }
     | {
         type: 'settlement_founded';
         settlement: SettlementId;

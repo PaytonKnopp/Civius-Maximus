@@ -242,6 +242,8 @@ export interface BuildItem {
   id: string;
   /** Where it goes (districts, wonders and projects). */
   tile?: number | undefined;
+  /** Units and repeatable projects: another one starts as soon as this is done. */
+  repeat?: boolean | undefined;
 }
 
 /** Which yield auto-assign favors when picking tiles for citizens. */
@@ -326,7 +328,11 @@ export type UnitOrders =
   /** Asleep until woken (or an enemy comes into view, later). */
   | { kind: 'sleep' }
   /** Dug in for a defense bonus that grows over the first turns (`turns` fortified so far). */
-  | { kind: 'fortify'; turns: number };
+  | { kind: 'fortify'; turns: number }
+  /** Asleep until an enemy soldier comes within its sight. */
+  | { kind: 'alert' }
+  /** Head for the nearest edge of the known map every turn, until nothing's left to find. */
+  | { kind: 'explore' };
 
 export interface UnitState {
   id: UnitId;
