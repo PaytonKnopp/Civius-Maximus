@@ -413,6 +413,21 @@ when there's room.
 - **Nuclear weapons:** Atomic Bomb and Nuclear Missile; see docs/04, "Nukes".
 - The AI builds and flies aircraft (bombers first). It never builds nuclear weapons.
 
+**Built (final gameplay pass, D112),** reusing existing 3D models:
+- **Recon:** Ranger (Military Science; 45 strength, 3 moves, ignores terrain costs) and Spec
+  Ops (Combined Arms; 65, also ignores zones of control). Scout → Ranger → Spec Ops.
+- **Support** (`support` on units; they share a tile with a soldier and are captured if
+  caught alone): **Battering Ram** (Masonry): melee and anti-cavalry attacks next to it put all
+  their damage into standing walls instead of 15%; **Siege Tower** (Construction): their
+  damage skips the walls altogether; **Medic** (Sanitation): units next to it heal +20 a turn.
+- **Fleet Commander** (Mercenaries): an Army Commander for ships (packs up to 3, +2 strength
+  in its radius) that falls back to a port. The AI doesn't use it yet.
+- **Late navy:** Submarine (Electricity) → Nuclear Submarine (Telecommunications, 5 uranium),
+  and Missile Cruiser (Lasers, 10 aluminum, after the Battleship).
+- **Anti-air** (a new class, +25 against aircraft): Anti-Air Gun (Advanced Flight) → Mobile
+  SAM (Guidance Systems).
+- Dead ends closed: Cavalry → Helicopter, Battleship → Missile Cruiser.
+
 ### Stacking
 
 - One **military** unit and one **civilian** unit per tile (plus one support unit). This matches
@@ -434,7 +449,8 @@ when there's room.
   retreats for 5 turns when caught (packed units it can't put down are lost). Its tree: Assault /
   Bastion (+2 attacking / defending), then Logistics (+2 capacity, +1 movement) / Field Medicine
   (+10 healing), then Leadership (+1 radius). Unpacked units can act at once if the commander
-  still has moves. Fleet Commanders wait for a naval AI.
+  still has moves. The Fleet Commander came in the final gameplay pass (D112); the AI doesn't
+  use it yet.
 
 ### Movement
 

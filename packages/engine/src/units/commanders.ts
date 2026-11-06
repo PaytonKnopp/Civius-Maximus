@@ -15,6 +15,7 @@ import { playerEffects } from '../progress/sources';
 import { ownedUnit, watchers } from './handlers';
 import { canTraverse, fullMoves, hasForeignUnit, hasRoom } from './movement';
 import { promotionsOf } from './promotions';
+import { isCoastal } from '../settlements/rules';
 
 /**
  * Commanders (docs/03-core-mechanics.md, "Commanders"): they pack nearby soldiers to move them
@@ -173,8 +174,16 @@ export function retreatCommander(
   const snap = current(draft);
   const c = snap.units[id]!;
   const command = commandOf(ctx, c)!;
+  // A fleet commander falls back to a port.
+  const sea = unitClassOf(ctx, c).domain === 'sea';
   const home = Object.values(snap.settlements)
-    .filter((s) => s.owner === c.owner && s.tile !== c.tile && hasRoom(ctx, snap, c, s.tile))
+    .filter(
+      (s) =>
+        s.owner === c.owner &&
+        s.tile !== c.tile &&
+        hasRoom(ctx, snap, c, s.tile) &&
+        (!sea || isCoastal(ctx, snap, s.tile)),
+    )
     .sort(
       (a, b) =>
         distance(snap.map, c.tile, a.tile) - distance(snap.map, c.tile, b.tile) ||

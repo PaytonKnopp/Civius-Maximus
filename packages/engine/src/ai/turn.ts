@@ -221,11 +221,13 @@ export type Role =
 export function roleOf(def: UnitDef, cls: UnitClassDef): Role {
   if (def.actions.includes('found_settlement')) return 'settler';
   if (def.actions.includes('trade_route')) return 'trader';
-  if (def.commander) return 'commander';
+  // A fleet commander isn't for leading land armies (the AI leaves it to people for now).
+  if (def.commander) return cls.domain === 'land' ? 'commander' : 'civilian';
   if (!cls.combat) return 'civilian';
   if (cls.domain === 'sea') return 'naval';
   if (def.rangedStrength > 0 && def.range > 0) return cls.vsSettlement > 0 ? 'siege' : 'ranged';
-  if (cls.captures) return 'melee';
+  // Line soldiers take settlements; specialists (anti-air) hold the line beside them.
+  if (cls.captures || cls.bonuses.length > 0) return 'melee';
   return 'explorer';
 }
 

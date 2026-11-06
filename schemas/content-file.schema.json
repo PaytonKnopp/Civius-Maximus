@@ -9733,6 +9733,41 @@
               ],
               "additionalProperties": false
             },
+            "support": {
+              "type": "object",
+              "properties": {
+                "radius": {
+                  "default": 1,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 3
+                },
+                "heal": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "wallsPercent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "bypassWalls": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "classes": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
             "civ": {
               "type": "string",
               "pattern": "^[a-z][a-z0-9_]*$"
@@ -106422,6 +106457,41 @@
                   "strength",
                   "retreatTurns"
                 ],
+                "additionalProperties": false
+              },
+              "support": {
+                "type": "object",
+                "properties": {
+                  "radius": {
+                    "default": 1,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3
+                  },
+                  "heal": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "wallsPercent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "bypassWalls": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "classes": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                  }
+                },
                 "additionalProperties": false
               },
               "civ": {

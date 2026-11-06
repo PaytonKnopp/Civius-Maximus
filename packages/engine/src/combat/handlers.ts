@@ -40,10 +40,12 @@ import {
   settlementHit,
   settlementMaxHealth,
   settlementStrength,
+  siegeHelp,
   strikeProblem,
   targetAt,
   wallsMax,
 } from './strength';
+import { distance } from '../map/hex';
 
 /**
  * Fighting, taking settlements, and war and peace (docs/03-core-mechanics.md, sections 3 and 5).
@@ -531,7 +533,7 @@ export function performAttack(
   const s = draft.settlements[target.settlement.id]!;
   const defense = settlementStrength(ctx, base, target.settlement);
   const diff = attack.total - defense.total;
-  const hit = settlementHit(ctx, s, rollDamage(draft, ctx, diff), unit);
+  const hit = settlementHit(ctx, s, rollDamage(draft, ctx, diff), unit, siegeHelp(ctx, base, unit));
   s.walls -= hit.walls;
   s.health -= hit.health;
   s.attackedTurn = draft.turn;
@@ -766,9 +768,21 @@ export const combatHandlers = {
   ]: ActionHandler<A<T>>;
 };
 
+/** The most extra healing a player's support units give on a tile (a medic nearby, D112). */
+function supportHeal(ctx: EngineContext, state: GameState, owner: PlayerId, tile: number): number {
+  let best = 0;
+  for (const u of Object.values(state.units)) {
+    if (u.owner !== owner) continue;
+    const help = ctx.content.entities.unit[u.type]?.support;
+    if (help && help.heal > best && distance(state.map, u.tile, tile) <= help.radius)
+      best = help.heal;
+  }
+  return best;
+}
+
 /**
- * Start of a turn, before units refresh: units that didn't act last turn heal (more at home),
- * fortified units dig in further.
+ * Start of a turn, before units refresh: units that didn't act last turn heal (more at home,
+ * more next to a medic), fortified units dig in further.
  */
 export function healUnits(draft: Draft<GameState>, ctx: EngineContext) {
   const { heal, maxHealth } = ctx.content.rules.combat;
@@ -776,9 +790,12 @@ export function healUnits(draft: Draft<GameState>, ctx: EngineContext) {
     const u = draft.units[id]!;
     if (u.orders?.kind === 'fortify') u.orders.turns = Math.min(u.orders.turns + 1, 99);
     if (u.health >= maxHealth || u.moves < fullMoves(ctx, u)) continue;
-    const medic = commandersAround(ctx, view(draft), u.owner, u.tile).reduce(
-      (best, c) => Math.max(best, c.command.heal),
-      0,
+    const medic = Math.max(
+      commandersAround(ctx, view(draft), u.owner, u.tile).reduce(
+        (best, c) => Math.max(best, c.command.heal),
+        0,
+      ),
+      supportHeal(ctx, view(draft), u.owner, u.tile),
     );
     const t = draft.map.tiles[u.tile]!;
     const home = t.settlement ? draft.settlements[t.settlement] : undefined;

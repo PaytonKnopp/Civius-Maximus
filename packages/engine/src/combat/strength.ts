@@ -464,15 +464,42 @@ export function attackTargets(
     .sort((a, b) => a - b);
 }
 
+/**
+ * What the attacker's own support units around it do to walls (D112): the best walls percent
+ * of a battering ram in reach, and whether a siege tower lets the hit skip the walls.
+ */
+export function siegeHelp(
+  ctx: EngineContext,
+  state: GameState,
+  attacker: Pick<UnitState, 'type' | 'owner' | 'tile'>,
+): { wallsPercent: number; bypass: boolean } {
+  const cls = unitDef(ctx, attacker).class;
+  let wallsPercent = 0;
+  let bypass = false;
+  for (const u of Object.values(state.units)) {
+    if (u.owner !== attacker.owner) continue;
+    const help = unitDef(ctx, u).support;
+    if (!help || !help.classes.includes(cls)) continue;
+    if (distance(state.map, u.tile, attacker.tile) > help.radius) continue;
+    wallsPercent = Math.max(wallsPercent, help.wallsPercent ?? 0);
+    bypass ||= help.bypassWalls;
+  }
+  return { wallsPercent, bypass };
+}
+
 /** Damage to a settlement: walls absorb the hit first (and let through only part of it). */
 export function settlementHit(
   ctx: EngineContext,
   s: Pick<SettlementState, 'walls' | 'health'>,
   damage: number,
   attacker: Pick<UnitState, 'type'> | null,
+  help?: { wallsPercent: number; bypass: boolean },
 ): { walls: number; health: number } {
-  if (s.walls <= 0) return { walls: 0, health: Math.min(s.health, damage) };
-  const percent = attacker ? unitClassOf(ctx, attacker).wallsDamagePercent : 100;
+  if (s.walls <= 0 || help?.bypass) return { walls: 0, health: Math.min(s.health, damage) };
+  const percent = Math.max(
+    attacker ? unitClassOf(ctx, attacker).wallsDamagePercent : 100,
+    help?.wallsPercent ?? 0,
+  );
   const through = Math.floor((damage * percent) / 100);
   const walls = Math.min(s.walls, through);
   return { walls, health: Math.min(s.health, through - walls) };
@@ -525,8 +552,9 @@ export function previewAttack(
   const toDefender = damageRange(ctx, diff);
   let split: CombatPreview['split'] = null;
   if (target.kind === 'settlement') {
-    const lo = settlementHit(ctx, target.settlement, toDefender[0], unit);
-    const hi = settlementHit(ctx, target.settlement, toDefender[1], unit);
+    const help = siegeHelp(ctx, state, unit);
+    const lo = settlementHit(ctx, target.settlement, toDefender[0], unit, help);
+    const hi = settlementHit(ctx, target.settlement, toDefender[1], unit, help);
     split = { walls: [lo.walls, hi.walls], health: [lo.health, hi.health] };
   }
   return {

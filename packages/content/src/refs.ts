@@ -277,6 +277,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ids(out, 'unit', entity.upgradesTo, ['upgradesTo']);
       ids(out, 'resource', Object.keys(entity.resourceCost ?? {}).sort(), ['resourceCost']);
       ids(out, 'resource', Object.keys(entity.resourceUpkeep ?? {}).sort(), ['resourceUpkeep']);
+      ids(out, 'unitClass', entity.support?.classes, ['support', 'classes']);
       break;
     case 'improvement':
       requirements(out, entity);

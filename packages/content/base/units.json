@@ -23,7 +23,8 @@
     "strength": 10,
     "cost": 30,
     "icon": "Sc",
-    "model": "scout"
+    "model": "scout",
+    "upgradesTo": "unit_ranger"
   },
   {
     "type": "unit",
@@ -581,7 +582,8 @@
     "requiresTech": "tech_military_science",
     "resourceCost": {
       "horses": 10
-    }
+    },
+    "upgradesTo": "unit_helicopter"
   },
   {
     "type": "unit",
@@ -1351,7 +1353,8 @@
     },
     "resourceUpkeep": {
       "coal": 1
-    }
+    },
+    "upgradesTo": "unit_missile_cruiser"
   },
   {
     "type": "unit",
@@ -1383,5 +1386,190 @@
     "resourceCost": {
       "aluminum": 10
     }
+  },
+  {
+    "type": "unit",
+    "id": "unit_ranger",
+    "name": "Ranger",
+    "class": "class_recon",
+    "movement": 3,
+    "sight": 3,
+    "strength": 45,
+    "cost": 200,
+    "icon": "Rg",
+    "model": "rifle",
+    "requiresTech": "tech_military_science",
+    "ignoresTerrainCost": true,
+    "upgradesTo": "unit_spec_ops"
+  },
+  {
+    "type": "unit",
+    "id": "unit_spec_ops",
+    "name": "Spec Ops",
+    "class": "class_recon",
+    "movement": 3,
+    "sight": 3,
+    "strength": 65,
+    "cost": 400,
+    "icon": "SO",
+    "model": "infantry",
+    "requiresTech": "tech_combined_arms",
+    "ignoresTerrainCost": true,
+    "ignoresZoc": true
+  },
+  {
+    "type": "unit",
+    "id": "unit_battering_ram",
+    "name": "Battering Ram",
+    "class": "class_support",
+    "movement": 2,
+    "sight": 1,
+    "cost": 65,
+    "icon": "BR",
+    "model": "siege",
+    "requiresTech": "tech_masonry",
+    "support": {
+      "radius": 1,
+      "wallsPercent": 100,
+      "classes": ["class_melee", "class_anti_cavalry"]
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_siege_tower",
+    "name": "Siege Tower",
+    "class": "class_support",
+    "movement": 2,
+    "sight": 1,
+    "cost": 100,
+    "icon": "ST",
+    "model": "siege",
+    "requiresTech": "tech_construction",
+    "support": {
+      "radius": 1,
+      "bypassWalls": true,
+      "classes": ["class_melee", "class_anti_cavalry"]
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_medic",
+    "name": "Medic",
+    "class": "class_support",
+    "movement": 2,
+    "sight": 2,
+    "cost": 300,
+    "icon": "Md",
+    "model": "infantry",
+    "requiresTech": "tech_sanitation",
+    "support": {
+      "radius": 1,
+      "heal": 20
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_fleet_commander",
+    "name": "Fleet Commander",
+    "class": "class_naval_commander",
+    "movement": 4,
+    "sight": 2,
+    "cost": 140,
+    "upkeep": 1,
+    "icon": "FC",
+    "model": "frigate",
+    "requiresCivic": "civic_mercenaries",
+    "deepWater": true,
+    "commander": {
+      "capacity": 3,
+      "radius": 1,
+      "strength": 2,
+      "retreatTurns": 5
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_submarine",
+    "name": "Submarine",
+    "class": "class_naval_ranged",
+    "movement": 4,
+    "sight": 2,
+    "strength": 65,
+    "rangedStrength": 75,
+    "range": 2,
+    "cost": 400,
+    "icon": "Sb",
+    "model": "destroyer",
+    "requiresTech": "tech_electricity",
+    "deepWater": true,
+    "upgradesTo": "unit_nuclear_submarine"
+  },
+  {
+    "type": "unit",
+    "id": "unit_nuclear_submarine",
+    "name": "Nuclear Submarine",
+    "class": "class_naval_ranged",
+    "movement": 5,
+    "sight": 3,
+    "strength": 80,
+    "rangedStrength": 95,
+    "range": 3,
+    "cost": 680,
+    "icon": "NS",
+    "model": "destroyer",
+    "requiresTech": "tech_telecommunications",
+    "deepWater": true,
+    "resourceCost": {
+      "uranium": 5
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_missile_cruiser",
+    "name": "Missile Cruiser",
+    "class": "class_naval_ranged",
+    "movement": 5,
+    "sight": 3,
+    "strength": 85,
+    "rangedStrength": 100,
+    "range": 3,
+    "cost": 680,
+    "icon": "MC",
+    "model": "steamship",
+    "requiresTech": "tech_lasers",
+    "deepWater": true,
+    "resourceCost": {
+      "aluminum": 10
+    },
+    "resourceUpkeep": {
+      "oil": 1
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_anti_air_gun",
+    "name": "Anti-Air Gun",
+    "class": "class_anti_air",
+    "movement": 2,
+    "sight": 2,
+    "strength": 60,
+    "cost": 440,
+    "icon": "AA",
+    "model": "artillery",
+    "requiresTech": "tech_advanced_flight",
+    "upgradesTo": "unit_mobile_sam"
+  },
+  {
+    "type": "unit",
+    "id": "unit_mobile_sam",
+    "name": "Mobile SAM",
+    "class": "class_anti_air",
+    "movement": 3,
+    "sight": 2,
+    "strength": 80,
+    "cost": 620,
+    "icon": "MS",
+    "model": "artillery",
+    "requiresTech": "tech_guidance_systems"
   }
 ]

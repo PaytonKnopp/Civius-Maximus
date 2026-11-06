@@ -576,3 +576,8 @@ Payton approved every recommended default (D106–D120), the four groups of know
   to 3). **D110** Six Government Plaza buildings in three exclusive pairs. **D114** Gold buys
   repeatable district projects; a founder's faith buys buildings where its religion is
   followed (the AI keeps faith for its religious units).
+- **D111** Neighborhood, Dam and Preserve. **D112** Eleven units: Ranger, Spec Ops, Battering
+  Ram, Siege Tower, Medic, Fleet Commander, Submarine, Nuclear Submarine, Missile Cruiser,
+  Anti-Air Gun, Mobile SAM, with support-unit rules (walls, healing) and the upgrade dead ends
+  closed. The AI builds the recon and naval ones through its usual choices but not support
+  units, anti-air or the Fleet Commander (a known gap).

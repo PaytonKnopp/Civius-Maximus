@@ -1100,6 +1100,21 @@ export const UnitDef = z.strictObject({
       retreatTurns: z.int().min(1),
     })
     .optional(),
+  /**
+   * A support unit (D112): helps its owner's units within `radius` tiles. `heal`: extra health
+   * each turn (a medic); `wallsPercent`: attacks by `classes` put this much of their damage
+   * into standing walls (a battering ram); `bypassWalls`: their damage skips the walls (a
+   * siege tower).
+   */
+  support: z
+    .strictObject({
+      radius: z.int().min(0).max(3).default(1),
+      heal: z.int().min(0).default(0),
+      wallsPercent: z.int().min(0).max(100).optional(),
+      bypassWalls: z.boolean().default(false),
+      classes: z.array(Id).default([]),
+    })
+    .optional(),
   ...unique,
   /** Short placeholder glyph until icons exist. */
   icon: z.string().min(1).max(3),
