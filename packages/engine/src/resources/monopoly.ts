@@ -1,4 +1,5 @@
 import { resolveText } from '@cx/content';
+import { isDraft, original } from 'immer';
 import type { EngineContext } from '../context';
 import type { EffectSource } from '../effects/yields';
 import type { MapTile } from '../map/types';
@@ -15,26 +16,32 @@ import type { GameState, PlayerId } from '../state';
 /** Per content, per (frozen) tile array: every player's monopolies. */
 const cache = new WeakMap<object, WeakMap<readonly MapTile[], Map<PlayerId, string[]>>>();
 
-/** Every player's monopolies (luxury ids, sorted). */
+/**
+ * Every player's monopolies (luxury ids, sorted). While an action is being applied (the map is
+ * an Immer draft) they come from the map as it was when the action began: reading every tile
+ * through the draft for each settlement's effects made turns several times slower, and a
+ * monopoly won or lost during a turn counts from the next action on.
+ */
 export function monopolies(ctx: EngineContext, state: GameState): Map<PlayerId, string[]> {
-  const tiles = state.map.tiles;
+  let tiles: readonly MapTile[] = state.map.tiles;
+  if (isDraft(tiles)) tiles = original(state.map.tiles as MapTile[]) as readonly MapTile[];
   if (Object.isFrozen(tiles)) {
     let byTiles = cache.get(ctx.content);
     if (!byTiles) cache.set(ctx.content, (byTiles = new WeakMap()));
     const known = byTiles.get(tiles);
     if (known) return known;
-    const out = computeMonopolies(ctx, state);
+    const out = computeMonopolies(ctx, tiles);
     byTiles.set(tiles, out);
     return out;
   }
-  return memoRead(state, 'monopolies', () => computeMonopolies(ctx, state));
+  return memoRead(state, 'monopolies', () => computeMonopolies(ctx, tiles));
 }
 
-function computeMonopolies(ctx: EngineContext, state: GameState): Map<PlayerId, string[]> {
+function computeMonopolies(ctx: EngineContext, tiles: readonly MapTile[]): Map<PlayerId, string[]> {
   const { sharePercent, minCopies } = ctx.content.rules.monopoly;
   const total: Record<string, number> = {};
   const held: Record<string, Record<PlayerId, number>> = {};
-  for (const tile of state.map.tiles) {
+  for (const tile of tiles) {
     if (tile.resource === null) continue;
     const res = ctx.content.entities.resource[tile.resource];
     if (!res || res.class !== 'luxury' || res.monopoly.length === 0) continue;

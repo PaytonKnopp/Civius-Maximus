@@ -301,6 +301,13 @@ times depend on the machine, the shape of the curve doesn't):
   "The world is turning…" and then "Rivals are moving… 3 of 7". Closing the rest of the gap
   needs a different shape of turn processing (reading unchanged parts of the state without
   Immer proxies), which is its own piece of work.
+- **Final gameplay pass (November 2026):** `pnpm cx profile 8 120 1 standard` on one cloud
+  core (slower than the machine above): turn processing 1.22 s (pre-pass code) → 1.27 s at turn
+  ~120, all AIs 0.54 → 0.63 s, save 1.03 MB (45 KB gzipped). The pass added luxuries, strategic
+  stockpiles, monopolies, trades and more, and empires grow larger; two of the new reads first
+  made turns twice as slow (monopolies and luxuries re-read every tile through the Immer draft
+  for each settlement), so both now come from the state as each action began, computed once
+  and cached.
 - **Games are identical to before the pass:** the same seed plays out to the same state hash
   (checked on five seeds, map types and player counts, 2–8 players), so old saves and replays
   are unaffected.

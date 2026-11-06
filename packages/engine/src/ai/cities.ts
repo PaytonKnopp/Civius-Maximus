@@ -7,7 +7,7 @@ import {
   stockpileUpkeep,
 } from '../resources/strategic';
 import { previewStrike, strikeTargets } from '../combat/strength';
-import { unitDef } from '../context';
+import { unitClassOf, unitDef } from '../context';
 import { toFixed } from '../fixed';
 import { distance } from '../map/hex';
 import {
@@ -255,8 +255,10 @@ function urgentBuild(t: Turn, s: SettlementState): BuildItem | undefined {
   // 2. Settlers while there's room to grow.
   const settler = units.find((i) => role(i) === 'settler');
   if (settler && s.population >= 2 && wantsSettler(t)) return settler;
-  // 3. The army this leader wants.
+  // 3. The army this leader wants, and at war a wall-breaker (a siege tower or a ram) for it.
   if (army.have + armyQueued(t) < army.want) {
+    const breaker = wallBreaker(t, units);
+    if (breaker) return breaker;
     const unit = bestUnit(t, units, nextRoles(t));
     if (unit) return unit;
   }
@@ -373,6 +375,34 @@ function enemyClasses(t: Turn): Set<string> {
     }
     return new Set([...counts].filter(([, n]) => n >= 2).map(([c]) => c));
   });
+}
+
+/**
+ * At war with a civ, with a few line soldiers and no support unit that helps them against walls
+ * (D112): the best such unit (a siege tower beats a ram), if one can be built here.
+ */
+function wallBreaker(t: Turn, units: BuildItem[]): BuildItem | undefined {
+  if (t.civWars().length === 0) return undefined;
+  const helps = (type: string) => {
+    const sup = t.ctx.content.entities.unit[type]?.support;
+    return !!sup && (sup.bypassWalls || (sup.wallsPercent ?? 0) > 0);
+  };
+  const mine = t.myUnits();
+  if (mine.some((u) => helps(u.type)) || units.some((i) => queued(t, i.id) && helps(i.id)))
+    return undefined;
+  const line = mine.filter((u) => unitClassOf(t.ctx, u).captures).length;
+  if (line < 3) return undefined;
+  return units
+    .filter((i) => helps(i.id))
+    .sort((a, b) => {
+      const sa = t.ctx.content.entities.unit[a.id]!.support!;
+      const sb = t.ctx.content.entities.unit[b.id]!.support!;
+      return (
+        Number(sb.bypassWalls) - Number(sa.bypassWalls) ||
+        (sb.wallsPercent ?? 0) - (sa.wallsPercent ?? 0) ||
+        (a.id < b.id ? -1 : 1)
+      );
+    })[0];
 }
 
 /** The strongest unit of the first role that has one, counters first (ties: cheaper). */

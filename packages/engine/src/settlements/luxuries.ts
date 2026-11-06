@@ -1,4 +1,5 @@
 import { resolveText } from '@cx/content';
+import { type Draft, isDraft, original } from 'immer';
 import type { EngineContext } from '../context';
 import { tradedBy } from '../diplomacy/pacts';
 import { distance, tilesWithin } from '../map/hex';
@@ -79,13 +80,34 @@ export function spareLuxury(
   return Math.max(0, copies - sent - 1);
 }
 
-/** Every luxury kind each of a player's settlements enjoys (their own first, then shared). */
+/** Per content, per (frozen) state, per player: the luxuries each settlement enjoys. */
+const cache = new WeakMap<
+  object,
+  WeakMap<GameState, Map<PlayerId, Map<SettlementId, LuxuryReach[]>>>
+>();
+
+/**
+ * Every luxury kind each of a player's settlements enjoys (their own first, then shared). While
+ * an action is being applied (the state is an Immer draft) this is the state as the action
+ * began: building it from the draft for every settlement made turns much slower, and a luxury
+ * improved or traded during a turn cheers from the next action on.
+ */
 export function luxuriesOf(
   ctx: EngineContext,
   state: GameState,
   player: PlayerId,
 ): Map<SettlementId, LuxuryReach[]> {
-  return memoRead(state, `luxuries:${player}`, () => computeLuxuries(ctx, state, player));
+  const base = isDraft(state) ? (original(state as Draft<GameState>) as GameState) : state;
+  if (Object.isFrozen(base)) {
+    let byState = cache.get(ctx.content);
+    if (!byState) cache.set(ctx.content, (byState = new WeakMap()));
+    let byPlayer = byState.get(base);
+    if (!byPlayer) byState.set(base, (byPlayer = new Map()));
+    let out = byPlayer.get(player);
+    if (!out) byPlayer.set(player, (out = computeLuxuries(ctx, base, player)));
+    return out;
+  }
+  return memoRead(base, `luxuries:${player}`, () => computeLuxuries(ctx, base, player));
 }
 
 function computeLuxuries(

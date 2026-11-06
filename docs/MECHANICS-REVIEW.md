@@ -459,8 +459,12 @@ gap (section 13).
 
 ## 12. Performance and robustness
 
-⏳ `cx profile --check` before and after; thousands of simulated turns without a crash so far
-(no engine errors in the baseline batches).
+**Measured (`pnpm cx profile 8 120 1 standard --check`, one cloud core):** turn processing
+averages 1.22 s at turn ~120 before the pass and 1.27 s after it; the AIs 0.54 s → 0.63 s; the
+save 1.03 MB (45 KB gzipped). The check passes. On the way, two new systems made turns twice as
+slow by re-reading the whole map through the Immer draft for every settlement (monopolies,
+then luxuries); both now read the state as the action began, once per action. Hundreds of
+simulated games (over 50,000 turns) ran without an engine error.
 
 ## 13. Known gaps: what the final game should have
 
