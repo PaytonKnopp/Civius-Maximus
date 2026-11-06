@@ -24,8 +24,8 @@ A new tool plays whole all-AI games and records everything as they go:
 - `pnpm cx stats <preset>` plays a batch of games in parallel (one process per game) and writes
   one line of JSON per game; `pnpm cx stats-report <file> [speed|size|difficulty|startEra|script]`
   turns them into the tables on this page. Presets are in `packages/tools/src/statsPresets.ts`;
-  each varies one thing around a base setup of 6 civs on a Small Continents map at Standard
-  speed, Prince, Ancient start.
+  each varies one thing around a base setup of 6 civs on a Small map with the Continents
+  script, at Standard speed, Prince, Ancient start.
 - Per game it records: the length and the victory; the turn the first civ and half the civs
   reached each era; every 10 turns, each civ's yields (food, production, gold, science, culture,
   faith, influence, tourism), net gold, treasury, settlements, cities, population, techs, civics,
@@ -39,7 +39,7 @@ A new tool plays whole all-AI games and records everything as they go:
   (500-turn limit), plus batches over every speed, every map size, eleven map scripts, six
   difficulties, seven start eras and a game with every optional system off.
 
-### The baseline in one table (6 Standard games, 6 civs, Small Continents)
+### The baseline in one table (6 Standard games, 6 civs, Continents on a Small map)
 
 | | Turn 50 | 100 | 150 | 200 | 250 | 300 | 400 |
 |---|---|---|---|---|---|---|---|
@@ -445,15 +445,15 @@ religion and domination never.
 
 ### Measured before and after the pass
 
-Each batch varies one setting around the base setup (6 civs, Small Continents, Prince, Ancient
-start); all but the speed batch play at Online speed (half costs) so they finish quickly. The
-baseline ran two to four seeds per setting, the final sweep seeds 1 and 2 (only seed 1 for the
-start eras and the two biggest maps), so each table puts the final games next to the baseline
-games on the same seeds, then the whole baseline row. A row is a handful of games: read them as
-a direction, not a measurement to the turn. Each cell is the turn of the first decisive win and
-its kind.
+Each batch varies one setting around the base setup (6 civs, Continents on a Small map,
+Prince, Ancient start); all but the speed batch play at Online speed (half costs) so they
+finish quickly. The baseline ran two to four seeds per setting, the final sweep seeds 1 and 2
+(only seed 1 for the start eras and the two biggest maps), so each table puts the final games
+next to the baseline games on the same seeds, then the whole baseline row. A row is a handful
+of games: read them as a direction, not a measurement to the turn. Each cell is the turn of
+the first decisive win and its kind.
 
-**Speed** (6 civs, Small Continents, Prince):
+**Speed** (6 civs, Continents on a Small map, Prince):
 
 | Speed (costs, turn limit) | Final | Baseline, same seeds | Baseline, all seeds |
 |---|---|---|---|
@@ -461,12 +461,15 @@ its kind.
 | Quick (67%, 330) | 214 science, 170 culture | 276 diplomatic, 228 culture | 228–295 (average 268): 2 diplomatic, 1 culture, 1 science |
 | Standard (100%, 500) | 277–385 (average 316, seeds 1–6): 4 science, 1 culture, 1 diplomatic | | 363–485 (average 413): 4 science, 2 diplomatic |
 | Epic (150%, 750) | 469 science | 559 science | 559 and 693: 2 science |
-| Marathon (300%, 1,500) | (being measured) | 1,500: the turn limit, won on score | |
+| Marathon (300%, 1,500) | 788 science | 1,500: the turn limit, won on score | |
 
-Game length follows each speed's costs, before and after: an Online game lasts about 0.53 of a
-Standard one, Quick about 0.6 and Epic 1.5. The whole curve moved about a quarter earlier and
-mostly sits on D117's target scaled by cost (Standard 300–400, so Online 150–200, Quick 200–270,
-Epic 450–600, Marathon 900–1,200).
+Game length follows each speed's costs, before and after: an Online game lasts about 0.53 of
+a Standard one, Quick about 0.6 and Epic 1.5. The whole curve moved about a quarter earlier
+and mostly sits on D117's target scaled by cost (Standard 300–400, so Online 150–200, Quick
+200–270, Epic 450–600, Marathon 900–1,200). Marathon now ends in a decisive win instead of
+running into its 1,500-turn limit, on turn 788: about 2.8 times the same map's Standard game
+(285), a little short of its scaled target, since the eras pass 2.3–2.8 times slower rather
+than 3.
 
 **Map size** (Online speed; Duel 2 civs, Tiny 4, Small 6, Standard 8, Large 10, Huge 12):
 
@@ -527,21 +530,47 @@ in the last two eras (240% and 300% costs, 2G), which every start goes through: 
 Information-era start still lasts 140 Online turns, so a late start skips the opening rather
 than making a short game.
 
-**Map scripts and optional systems off** are being re-measured (20 map-script games and the
-three games with every optional system off). The first two are in: Pangaea now ends in culture
-victories on turns 92 and 192 (the baseline: science on turns 235 and 195); see "One AI takes
-most of the wonders" below.
+**Map script** (Online speed, 6 civs, Small, seeds 1 and 2; the baseline on the same seeds):
 
-**The victory mix across the sweep.** The 27 distinct games of the final speed, size,
-difficulty and start-era batches: science 19, diplomatic 6, culture 2 (the baseline's 53 games
-on the same settings: diplomatic 33, science 15, culture 2, score 2, religion 1). The batches reuse seeds, so the same map and civs come
-back: seed 1's Small map made 15 of the 27 games and Korea won 14 of them (13 by science), at
-every speed, difficulty and start era; the other 12 games went 6 science, 4 diplomatic and 2
-culture. Korea's kit is the strongest science stack in the game (Campuses +1 science per
-neighboring hills and built 25% faster, Libraries +1 science, +50% great scientist points, a
-science-first personality); with more rivals on the same seed (the Standard and Huge maps) it
-didn't win. Science has replaced diplomacy as the usual winner, and religion and domination
-still never win an AI game: that's D121.
+| Script | Final | Baseline |
+|---|---|---|
+| Continents | 163 science, 174 science | 225 science, 180 diplomatic |
+| Pangaea | 92 culture, 192 culture | 235 science, 195 science |
+| Archipelago | 205 diplomatic, 195 diplomatic | 158 diplomatic, 162 diplomatic |
+| Fractal | 183 science, 163 diplomatic | 231 diplomatic, 209 diplomatic |
+| Small Continents | 250 (the turn limit, won on score), 184 diplomatic | 231 science, 224 diplomatic |
+| Island Plates | 211 science, 166 science | 216 diplomatic, 176 diplomatic |
+| Inland Sea | 180 science, 144 culture | 250 (the turn limit, won on score), 197 science |
+| Continents and Islands | 176 science, 178 science | 146 diplomatic, 216 science |
+| Highlands | 148 culture, 150 culture | 219 culture, 226 science |
+| Lakes | 204 culture, 202 science | 204 science, 177 science |
+| Mirror | 198 science, 137 culture | 125 diplomatic, 119 religion |
+
+- On varied maps the mix is much closer to D117's: of the 22 games, science won 10, culture 7
+  and diplomacy 4, and one ran to the turn limit (the baseline: diplomatic 10, science 9, and
+  culture, religion and the turn limit 1 each). Culture now wins on five of the eleven scripts,
+  sometimes early (137–150 turns on Highlands, Inland Sea and Mirror, about 275–300 at
+  Standard; and turn 92 in the Pangaea game where one civ built 26 of the 34 wonders, see
+  "One AI takes most of the wonders" below). Archipelago still goes to diplomacy.
+- The average game is 177 turns (196 before), inside D117's Online range (150–200).
+
+**Optional systems off** (Online speed, Continents on a Small map; no barbarians,
+city-states, tribal villages, loyalty, spies, World Congress, disasters, nuclear weapons or
+religion, and no diplomatic victory): the baseline's three games ended at the 250-turn limit
+twice and by science on turn 248 once; now all three end by science, on turns 158, 193 and
+193. The core game alone grows and finishes.
+
+**The victory mix across the sweep.** The 27 distinct games of the final speed, size, difficulty
+and start-era batches: science 19, diplomatic 6, culture 2 (the baseline's 53 games on the same
+settings: diplomatic 33, science 15, culture 2, score 2, religion 1). The batches reuse seeds,
+so the same map and civs come back: seed 1's Small map made 15 of the 27 games and Korea won 14
+of them (13 by science), at every speed, difficulty and start era; the other 12 games went 6
+science, 4 diplomatic and 2 culture. Korea's kit is the strongest science stack in the game
+(Campuses +1 science per neighboring hills and built 25% faster, Libraries +1 science, +50%
+great scientist points, a science-first personality); with more rivals on the same seed (the
+Standard and Huge maps) it didn't win. On Continents science has replaced diplomacy as the
+usual winner; across the other map scripts culture is close behind (above). Religion and
+domination still never win an AI game: that's D121.
 
 ## 11. Turn flow and quality of life
 
@@ -728,7 +757,7 @@ Payton approved every recommended default (D106–D120), the four groups of know
 
 After 2A–2C the economy grew as intended, and games got much shorter: the space race finished
 around turn 230–280 at Standard because all four space projects unlocked in the Modern era.
-Each round below is the same six Standard games (6 civs, Small Continents, Prince):
+Each round below is the same six Standard games (6 civs, Continents on a Small map, Prince):
 
 | Measured | First decisive win (Standard) | Victories |
 |---|---|---|
@@ -772,12 +801,13 @@ than Civ" below.
 
 ## What's still weaker than Civ, and what it would take
 
-- **Victory variety in AI games.** Science wins most simulated games. Culture, religion and
-  domination are reachable (tourism converts three times faster, containment slows a runaway,
-  armies bring wall-breakers) but AIs rarely build toward them on purpose. It would take
-  victory-minded AI strategies: a culture AI that chases wonders, great works, national parks
-  and open borders; a religious AI that floods rivals with apostles; a conqueror that plans
-  sieges with navies.
+- **Victory variety in AI games.** Science wins most simulated games: four of the six Standard
+  games, and 10 of 22 on the varied map scripts, where culture took 7. Religion and domination
+  never win. Culture, religion and domination are reachable (tourism converts three times faster,
+  containment slows a runaway, armies bring wall-breakers) but AIs rarely build toward them on
+  purpose. It would take victory-minded AI strategies: a culture AI that chases wonders, great
+  works, national parks and open borders; a religious AI that floods rivals with apostles; a
+  conqueror that plans sieges with navies.
 - **One AI out-researches everyone.** Science stacking (adjacency cards that double a Campus,
   buildings sharing it, dedications, founder beliefs) is strong for whoever leans into it, and
   most AI personalities invest little in science, so the gap reaches 3–5×. Options: soften the
