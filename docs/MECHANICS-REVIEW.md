@@ -594,14 +594,67 @@ Payton approved every recommended default (D106–D120), the four groups of know
   military, trade and natural wonders are new; yields covers every explored tile).
 - **Section 11:** Explore and Alert orders, repeat production, quick save and load (F5/F9), a
   "welcome back" summary when a save is resumed, unlock lists with districts, wonders, projects
-  and revealed resources, and strategic stockpiles in the top bar.
-- **8.3** Three more city-state quests (bring your religion, earn a great person of its kind,
-  field a siege unit). **7.2** The AI spends banked faith on more preachers, keeping a reserve.
-- **5.1 (part)** The AI counts a class's bonus against what its enemies field (two or more seen)
-  as strength when it picks a soldier, so it answers cavalry with anti-cavalry and aircraft with
-  anti-air. Navies (escorts, coastal sieges) are still missing. **8.5** AI spies also stir
-  discontent in wartime, and culture-minded leaders try to lift masterpieces in peace.
+  and revealed resources, strategic stockpiles in the top bar, and a switch for online turn
+  notices.
 - **9.3** "One more turn" after a win (it wasn't possible: every action was refused once a game
   ended).
 - Not done: one-yield heatmaps, resource filters, tourism/climate/great works/governors lenses,
   map filters, pins and planning ghosts, and settings for which notices stop the turn.
+
+### 2F: the AI and the last fixes
+
+- **8.3** Three more city-state quests (bring your religion, earn a great person of its kind,
+  field a siege unit).
+- **7.2** The AI spends banked faith on more preachers, keeping a reserve (one game had banked
+  9,695 faith).
+- **5.1 (part)** The AI counts a class's bonus against what its enemies field (two or more
+  seen) as strength when it picks a soldier (anti-cavalry against cavalry, anti-air against
+  aircraft), and armies at war bring a siege tower or a battering ram. Navies (escorts,
+  coastal sieges) are still missing.
+- **8.5** AI spies also stir discontent in wartime, and culture-minded leaders try to lift
+  masterpieces in peace.
+- **12** Turn speed: see section 12.
+
+### 2G: pace (D117)
+
+After 2A–2C the economy grew as intended, and games got much shorter: the space race finished
+around turn 230–280 at Standard because all four space projects unlocked in the Modern era.
+Each round below is the same six Standard games (6 civs, Small Continents, Prince):
+
+| Measured | First decisive win (Standard) | Victories |
+|---|---|---|
+| Baseline (PR #58, 6 games) | 363–485 | 4 science, 2 diplomatic |
+| After 2C (4 games) | 229–279 | 2 science, 1 culture, 1 diplomatic |
+| After 2D (6 games) | 230–281 | 5 science, 1 diplomatic |
+| Projects follow the tree, late eras 110–185% (3 games) | 266–283 | 3 science |
+| Late eras up to 210%, projects +40%, 50 tourism a visitor (3 games) | 275–303 | 3 science |
+| Up to 250%, projects 1000–2200, 15-turn journey, tech-based containment (2 games) | 284–288 | 2 science |
+| **Final:** Information 240%, Future 300%, 20-turn journey (6 games) | (being measured) | (being measured) |
+
+Why science kept winning: one AI with a science personality and a good start stacks campus
+adjacency (doubled by a policy card, shared by its buildings), a +15% dedication and a founder
+belief, and by turn 120 makes 3–5 times the science of anyone else (182 against 25–44 in one
+game). Raising late costs moves its finish less than one would expect, because its science
+keeps growing; the other AIs barely invest in science or tourism. See "What's still weaker
+than Civ" below.
+
+## What's still weaker than Civ, and what it would take
+
+- **Victory variety in AI games.** Science wins most simulated games. Culture, religion and
+  domination are reachable (tourism converts three times faster, containment slows a runaway,
+  armies bring wall-breakers) but AIs rarely build toward them on purpose. It would take
+  victory-minded AI strategies: a culture AI that chases wonders, great works, national parks
+  and open borders; a religious AI that floods rivals with apostles; a conqueror that plans
+  sieges with navies.
+- **One AI out-researches everyone.** Science stacking (adjacency cards that double a Campus,
+  buildings sharing it, dedications, founder beliefs) is strong for whoever leans into it, and
+  most AI personalities invest little in science, so the gap reaches 3–5×. Options: soften the
+  doubling cards (+50%), or make every AI keep a Campus and a Library in its larger cities.
+- **Navies.** The AI builds ships but doesn't escort, blockade or siege from the sea; the
+  Fleet Commander, support units' AI use beyond wall-breakers, anti-air and the new ships are
+  mostly for human players for now.
+- **Lenses and planning:** one-yield heatmaps, resource filters, tourism and climate lenses,
+  map pins and planning ghosts are not built.
+- **Deferred by D118:** endeavors and sanctions, crises, Ages mode, an Earth map, spectators;
+  undo only covers moves in single player.
+
