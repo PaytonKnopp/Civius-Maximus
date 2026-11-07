@@ -13,6 +13,8 @@ const env = import.meta.env as Record<string, string | undefined>;
 
 export const BUILD_ID = env.VITE_BUILD_ID ?? 'dev';
 export const BUILD_AT = env.VITE_BUILD_AT ?? '';
+/** The version number people see: 1.0, then 1.01, 1.02 … (src/version.ts). */
+export const VERSION = env.VITE_VERSION ?? '';
 
 /** The website the desktop app opens (set only in the desktop build). */
 const LIVE_URL = env.VITE_LIVE_URL ?? '';
@@ -69,7 +71,7 @@ export async function openLiveSite(): Promise<boolean> {
   return true;
 }
 
-/** "Oct 30, 2026 · 1a2b3c4" for the title screen. */
+/** "Oct 30, 2026 · 1.01" for the title screen. */
 export function versionLabel(): string {
   const when = BUILD_AT
     ? new Date(BUILD_AT).toLocaleDateString(undefined, {
@@ -78,6 +80,6 @@ export function versionLabel(): string {
         year: 'numeric',
       })
     : '';
-  const id = BUILD_ID.startsWith('local-') ? 'local build' : BUILD_ID.slice(0, 7);
+  const id = VERSION || 'local build';
   return [when, id].filter(Boolean).join(' · ');
 }

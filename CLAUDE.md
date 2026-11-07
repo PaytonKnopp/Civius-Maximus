@@ -10,6 +10,10 @@
   2-player assumptions anywhere; every rule constant lives in content, not code; the host is
   authoritative and only sends each player what they can see; it must stay free to run.
 - **No copyrighted assets, text or ability names** from Civilization games. Mechanics only.
+- **The version number is automatic.** The title screen and Options show 1.0, then +0.01 for every
+  merge into `main` (1.01, 1.02 …). It's counted from the merge history at build time
+  (`packages/client/src/version.ts`), so there is nothing to bump. Don't hand-edit it; if the
+  numbering ever needs to restart, change `RELEASE_MERGES` there.
 - Each milestone ends with a short "what's new / how to try it / new decisions" note for the user.
 
 ## Commands
