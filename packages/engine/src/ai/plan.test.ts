@@ -62,7 +62,8 @@ describe('victory plans (D121)', () => {
     const planned = withPlan(me, 'culture');
     expect(planned.culture).toBe(Math.min(10, me.culture + 2));
     expect(planned.wonders).toBe(Math.min(10, me.wonders + 2));
-    const plain = { ...planned, tourismFocus: undefined };
+    const plain = { ...planned };
+    delete plain.tourismFocus;
     expect(yieldWeight(planned, 'tourism')).toBe(4 * yieldWeight(plain, 'tourism'));
     expect(yieldWeight(planned, 'science')).toBe(yieldWeight(plain, 'science'));
     expect(withPlan(me, null)).toBe(me);
