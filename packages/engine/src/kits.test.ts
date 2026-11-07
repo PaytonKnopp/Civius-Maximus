@@ -59,7 +59,11 @@ describe('civ uniques', () => {
     s = as(s, 'p2', 'civ_egypt', 'leader_cleopatra', ['tech_bronze_working', 'tech_iron_working']);
     const rome = settle(s, 'p1', at(s, 2, 2));
     const egypt = settle(rome.s, 'p2', at(s, 6, 2));
-    s = egypt.s;
+    // Both have the iron their swordsmen take.
+    s = produce(egypt.s, (d) => {
+      d.players.p1!.resources = { iron: 20 };
+      d.players.p2!.resources = { iron: 20 };
+    });
     const romeItems = availableItems(ctx, s, s.settlements[rome.id]!).map((i) => i.id);
     const egyptItems = availableItems(ctx, s, s.settlements[egypt.id]!).map((i) => i.id);
     expect(romeItems).toContain('unit_legionary');
@@ -160,6 +164,7 @@ describe('leader and civ abilities', () => {
     s = produce(after, (d) => {
       d.settlements[id]!.buildings.push('building_ordu');
       d.players.p1!.gold = 100_000;
+      d.players.p1!.resources = { horses: 20 };
     });
     s = act(s, {
       type: 'buy_item',

@@ -2,13 +2,17 @@ import { type Effect, resolveText, type SlotKind } from '@cx/content';
 import { cityStateSources } from '../citystates/rules';
 import type { EngineContext } from '../context';
 import { evaluateCondition } from '../effects/conditions';
-import type { PlayerFacts, SettlementFacts } from '../effects/tile';
+import type { PlayerFacts, SettlementFacts, TileFacts } from '../effects/tile';
 import type { EffectSource } from '../effects/yields';
-import { tileTouchesRiver } from '../map/hex';
+import { distance, tileTouchesRiver } from '../map/hex';
+import { baseOf } from '../uniques';
+import { continentOf } from '../map/appeal';
 import type { GameState, PlayerId, PlayerState, SettlementState, Track } from '../state';
 import { ageSources } from '../eras/ages';
 import { congressSources } from '../congress/congress';
 import { governorOf, governorSources } from '../governors/governors';
+import { pactSources } from '../diplomacy/pacts';
+import { monopolySources } from '../resources/monopoly';
 
 /**
  * Where a player's effects come from (docs/05-modding.md, "The effects system"): their
@@ -72,8 +76,19 @@ function eraOrderOf(ctx: EngineContext, p: PlayerState): number {
   return best;
 }
 
-export function settlementFacts(state: GameState, s: SettlementState): SettlementFacts {
+export function settlementFacts(
+  state: GameState,
+  s: SettlementState,
+  ctx?: EngineContext,
+): SettlementFacts {
   const governor = governorOf(state, s.id);
+  // On the capital's landmass (needs the content to tell land from water).
+  const capital = state.players[s.owner]?.capital;
+  const home =
+    ctx && capital && state.settlements[capital]
+      ? continentOf(ctx, state.map, s.tile) ===
+        continentOf(ctx, state.map, state.settlements[capital]!.tile)
+      : undefined;
   return {
     kind: s.kind,
     capital: s.capital,
@@ -83,6 +98,7 @@ export function settlementFacts(state: GameState, s: SettlementState): Settlemen
     onRiver: tileTouchesRiver(state.map, state.map.tiles, s.tile),
     unitsTrained: s.unitsTrained,
     ...(governor ? { governor } : {}),
+    ...(home !== undefined ? { homeContinent: home } : {}),
   };
 }
 
@@ -133,6 +149,16 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
   const gov = content.entities.government[p.government];
   if (gov && gov.effects.length > 0)
     out.push({ id: gov.id, label: resolveText(content, gov.name), effects: gov.effects });
+  // Legacies of the governments they've lived under (D113), one copy per legacy earned.
+  for (const [id, n] of Object.entries(p.legacies ?? {}).sort()) {
+    const g = content.entities.government[id];
+    if (!g || n <= 0 || g.legacy.length === 0) continue;
+    out.push({
+      id: `legacy:${id}`,
+      label: `${resolveText(content, g.name)} legacy${n > 1 ? ` (×${n})` : ''}`,
+      effects: g.legacy.map((e) => timesEffect(e, n)),
+    });
+  }
   for (const kind of SLOT_KINDS) {
     for (const id of p.policies[kind]) {
       const pol = content.entities.policy[id];
@@ -161,6 +187,15 @@ export function activeSources(ctx: EngineContext, p: PlayerState): EffectSource[
   return out;
 }
 
+/** An effect `n` times over: its `amount` or `percent` multiplied (one line, not n). */
+function timesEffect(effect: Effect, n: number): Effect {
+  if (n === 1) return effect;
+  const params: Record<string, unknown> = { ...effect.params };
+  for (const key of ['amount', 'percent'] as const)
+    if (typeof params[key] === 'number') params[key] = (params[key] as number) * n;
+  return { ...effect, params } as Effect;
+}
+
 type Built = { localEffects: Effect[]; effects: Effect[]; name: string };
 
 /** What a settlement has built or chosen that can carry effects, with labels. */
@@ -187,6 +222,94 @@ export function localSources(ctx: EngineContext, s: SettlementState): EffectSour
       label: resolveText(ctx.content, x.def.name),
       effects: x.def.localEffects,
     }));
+}
+
+/**
+ * Regional effects reaching a settlement from its owner's other settlements nearby (a Factory's
+ * production, a Stadium's happiness): each kind once, and none of a kind it has itself.
+ */
+export function regionalSources(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+): EffectSource[] {
+  const emitters = regionalEmitters(ctx, state, s.owner);
+  if (emitters.length === 0) return [];
+  const own = new Set([...s.buildings.map((b) => baseOf(ctx, 'building', b)), ...s.wonders]);
+  const out = new Map<string, EffectSource>();
+  for (const em of emitters) {
+    if (em.settlement === s.id || own.has(em.kind) || out.has(em.kind)) continue;
+    if (distance(state.map, em.tile, s.tile) > em.radius) continue;
+    out.set(em.kind, {
+      id: `regional:${em.kind}`,
+      label: `${em.name} in ${em.town}`,
+      effects: em.effects,
+    });
+  }
+  return [...out.values()];
+}
+
+/** A building or wonder with regional effects, in one of a player's settlements. */
+interface RegionalEmitter {
+  settlement: string;
+  town: string;
+  tile: number;
+  /** The base building (a unique counts as what it replaces) or the wonder. */
+  kind: string;
+  name: string;
+  radius: number;
+  effects: Effect[];
+}
+
+const regionalCache = new WeakMap<object, Map<PlayerId, RegionalEmitter[]>>();
+
+/**
+ * A player's regional buildings and wonders, in settlement order (then buildings before
+ * wonders, as built). Every settlement asks for its owner's, so they're worked out once per
+ * frozen state, or once per `withSourceMemo` read of a draft.
+ */
+function regionalEmitters(
+  ctx: EngineContext,
+  state: GameState,
+  owner: PlayerId,
+): RegionalEmitter[] {
+  const frozen = Object.isFrozen(state.settlements);
+  const cached = frozen ? regionalCache.get(state.settlements)?.get(owner) : undefined;
+  if (cached) return cached;
+  const compute = (): RegionalEmitter[] => {
+    const e = ctx.content.entities;
+    const out: RegionalEmitter[] = [];
+    const ids = Object.keys(state.settlements).sort(
+      (a, b) => Number(a.slice(1)) - Number(b.slice(1)),
+    );
+    for (const id of ids) {
+      const other = state.settlements[id]!;
+      if (other.owner !== owner) continue;
+      const things = [
+        ...other.buildings.map((b) => ({ kind: baseOf(ctx, 'building', b), def: e.building[b] })),
+        ...other.wonders.map((w) => ({ kind: w, def: e.wonder[w] })),
+      ];
+      for (const { kind, def } of things) {
+        if (!def?.regional) continue;
+        out.push({
+          settlement: other.id,
+          town: other.name,
+          tile: other.tile,
+          kind,
+          name: resolveText(ctx.content, def.name),
+          radius: def.regional.radius,
+          effects: def.regional.effects,
+        });
+      }
+    }
+    return out;
+  };
+  if (!frozen) return memoRead(state, `regional:${owner}`, compute);
+  const list = compute();
+  const byPlayer = regionalCache.get(state.settlements) ?? new Map<PlayerId, RegionalEmitter[]>();
+  byPlayer.set(owner, list);
+  regionalCache.set(state.settlements, byPlayer);
+  return list;
 }
 
 const builtCache = new WeakMap<object, Map<PlayerId, EffectSource[]>>();
@@ -249,13 +372,34 @@ interface SourceMemo {
   base: Map<PlayerId, EffectSource[]>;
   full: WeakMap<SettlementState, EffectSource[]>;
   facts: WeakMap<PlayerState, PlayerFacts>;
+  /** Anything else worked out once per read (see `memoRead`), by key. */
+  other: Map<string, unknown>;
 }
 let activeMemo: SourceMemo | null = null;
+
+/**
+ * `compute()` once per `withSourceMemo` read of `state` for this key (and every time outside one).
+ * For pure facts many settlements share, such as which luxuries reach which settlement.
+ */
+export function memoRead<T>(state: GameState, key: string, compute: () => T): T {
+  const memo = activeMemo?.state === state ? activeMemo : undefined;
+  if (!memo) return compute();
+  if (memo.other.has(key)) return memo.other.get(key) as T;
+  const value = compute();
+  memo.other.set(key, value);
+  return value;
+}
 
 export function withSourceMemo<T>(state: GameState, read: () => T): T {
   if (activeMemo?.state === state) return read();
   const outer = activeMemo;
-  activeMemo = { state, base: new Map(), full: new WeakMap(), facts: new WeakMap() };
+  activeMemo = {
+    state,
+    base: new Map(),
+    full: new WeakMap(),
+    facts: new WeakMap(),
+    other: new Map(),
+  };
   try {
     return read();
   } finally {
@@ -282,6 +426,8 @@ export function sourcesFor(
       ...activeSources(ctx, state.players[player]!),
       ...builtSources(ctx, state, player),
       ...cityStateSources(ctx, state, player),
+      ...pactSources(ctx, state, player),
+      ...monopolySources(ctx, state, player),
     ];
     memo?.base.set(player, base);
   }
@@ -289,6 +435,7 @@ export function sourcesFor(
   const full = [
     ...base,
     ...localSources(ctx, settlement),
+    ...regionalSources(ctx, state, settlement),
     ...religionSources(ctx, state, settlement),
   ];
   memo?.full.set(settlement, full);
@@ -307,6 +454,32 @@ function factsOf(ctx: EngineContext, state: GameState, player: PlayerId): Player
 }
 
 /** Effects of one type from a player's sources whose conditions hold (player-level context). */
+/**
+ * Whether a condition holds for a player, optionally in one settlement and on one tile (facts
+ * built by the caller). The AI uses it to value an effect where it would actually apply.
+ */
+export function conditionHolds(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  condition: Effect['condition'],
+  settlement?: SettlementState,
+  tile?: TileFacts,
+  neighbors?: TileFacts[],
+): boolean {
+  if (condition === undefined) return true;
+  return evaluateCondition(
+    {
+      content: ctx.content,
+      playerId: player,
+      player: factsOf(ctx, state, player),
+      ...(settlement ? { settlement: settlementFacts(state, settlement, ctx) } : {}),
+      ...(tile ? { tile, neighbors: neighbors ?? [] } : {}),
+    },
+    condition,
+  );
+}
+
 export function playerEffects<T extends Effect['effect']>(
   ctx: EngineContext,
   state: GameState,
@@ -321,7 +494,8 @@ export function playerEffects<T extends Effect['effect']>(
   for (const source of sourcesFor(ctx, state, player, settlement)) {
     for (const effect of source.effects) {
       if (effect.effect !== type) continue;
-      if (settlement && effect.condition !== undefined) here ??= settlementFacts(state, settlement);
+      if (settlement && effect.condition !== undefined)
+        here ??= settlementFacts(state, settlement, ctx);
       const ok =
         effect.condition === undefined ||
         evaluateCondition(

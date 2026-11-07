@@ -47,3 +47,14 @@ export function atWar(state: Pick<GameState, 'wars'>, a: string, b: string): boo
   if (a === HOSTILE || b === HOSTILE || a === FREE || b === FREE) return true;
   return state.wars.includes(warKey(a, b));
 }
+
+/**
+ * Players in the order a turn handles them: the fixed order, rotated by one seat each turn, so
+ * no seat always goes first (same-turn wonder races, great person ties, AI seats acting first).
+ */
+export function turnOrder(state: { playerOrder: readonly string[]; turn: number }): string[] {
+  const n = state.playerOrder.length;
+  if (n === 0) return [];
+  const k = (((state.turn - 1) % n) + n) % n;
+  return [...state.playerOrder.slice(k), ...state.playerOrder.slice(0, k)];
+}

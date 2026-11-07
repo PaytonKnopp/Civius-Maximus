@@ -1,6 +1,7 @@
 import { ballotCost, diplomaticOn, diplomaticPoints, voteCost } from '../congress/congress';
 import type { Ballot } from '../state';
-import { scoreOf } from '../victory';
+import { areAllies } from '../diplomacy/rules';
+import { scoreOf, teamOf } from '../victory';
 import { personalityOf, type Turn } from './turn';
 
 /**
@@ -11,6 +12,10 @@ import { personalityOf, type Turn } from './turn';
 export function voteInCongress(t: Turn) {
   const c = t.state.congress;
   if (!c?.session || c.session.turn !== t.state.turn || c.votes[t.player]) return;
+  if (c.session.emergency) {
+    voteOnContainment(t, c.session.agenda[0]!, c.session.emergency.target);
+    return;
+  }
   const traits = personalityOf(t.ctx, t.state, t.player);
   const civs = t.state.playerOrder.filter((id) => t.state.players[id]!.alive);
   const rivals = civs
@@ -57,4 +62,32 @@ export function voteInCongress(t: Turn) {
     }
   }
   t.act({ type: 'cast_votes', player: t.player, ballots });
+}
+
+/**
+ * An emergency session (D120): the civ close to winning (and its team) votes against, its allies
+ * stay out of it, and everyone else votes to contain it, with what favor they can spare.
+ */
+function voteOnContainment(t: Turn, res: string, target: string) {
+  const def = t.ctx.content.entities.resolution[res]!;
+  const contain = def.options.find((o) => o.tone === 'bane') ?? def.options[0]!;
+  const decline = def.options.find((o) => o !== contain) ?? contain;
+  const mine = teamOf(t.state, t.player).includes(target);
+  const friendly = mine || areAllies(t.state, t.player, target);
+  const ballot: Ballot = {
+    resolution: res,
+    option: friendly ? decline.id : contain.id,
+    target,
+    votes: 1,
+  };
+  // The target and its team spend all they can; the others keep a reserve.
+  const keep = mine ? 0 : 20;
+  const most = mine ? 6 : 3;
+  if (mine || !friendly)
+    while (ballot.votes < most) {
+      const extra = voteCost(t.ctx, ballot.votes + 1) - voteCost(t.ctx, ballot.votes);
+      if (voteCost(t.ctx, ballot.votes) + extra + keep > (t.p.favor ?? 0)) break;
+      ballot.votes++;
+    }
+  t.act({ type: 'cast_votes', player: t.player, ballots: [ballot] });
 }

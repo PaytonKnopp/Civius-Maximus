@@ -58,7 +58,18 @@ describe('the trees', () => {
     expect(cols.tech_pottery).toBe(0);
     expect(cols.tech_writing).toBe(1);
     expect(cols.tech_currency).toBe(2);
-    expect(unlocksOf(ctx, 'tech', 'tech_writing').map((u) => u.id)).toContain('building_library');
+    expect(unlocksOf(ctx, 'tech', 'tech_writing').map((u) => u.id)).toEqual(
+      expect.arrayContaining(['building_library', 'district_campus']),
+    );
+    // Wonders, projects and the resources a tech reveals are listed too.
+    expect(unlocksOf(ctx, 'tech', 'tech_bronze_working')).toContainEqual({
+      kind: 'resource',
+      id: 'iron',
+      name: 'Iron',
+    });
+    expect(unlocksOf(ctx, 'tech', 'tech_rocketry').map((u) => u.kind)).toEqual(
+      expect.arrayContaining(['district', 'project']),
+    );
     expect(unlocksOf(ctx, 'civic', 'civic_political_philosophy').map((u) => u.id)).toEqual(
       expect.arrayContaining(['government_autocracy', 'policy_court_emissaries']),
     );
@@ -165,15 +176,17 @@ describe('governments and policies', () => {
     const before = settlementYields(ctx, s, s.settlements[id]!).total.production!;
     const warrior = { kind: 'unit' as const, id: 'unit_warrior' };
     expect(productionToward(ctx, s, s.settlements[id]!, warrior, 400)).toBe(400);
+    const monument = { kind: 'building' as const, id: 'building_monument' };
     const after = act(s, {
       type: 'set_policies',
       player: 'p1',
       policies: { ...empty, military: ['policy_militia_drills'], economic: ['policy_civic_works'] },
     }).state;
+    // Cards change production toward what they name, not the settlement's yields.
     const y = settlementYields(ctx, after, after.settlements[id]!);
-    expect(y.total.production).toBe(before + 100);
-    expect(y.lines.production!.map((l) => l.label)).toContain('Civic Works');
+    expect(y.total.production).toBe(before);
     expect(productionToward(ctx, after, after.settlements[id]!, warrior, 400)).toBe(600);
+    expect(productionToward(ctx, after, after.settlements[id]!, monument, 400)).toBe(600);
   });
 
   it('changes government once a civic unlocks it, trimming cards that no longer fit', () => {

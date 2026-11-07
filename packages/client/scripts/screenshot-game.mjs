@@ -1,9 +1,13 @@
 // Plays the first turns of a local game in a real browser and screenshots each step: select the
 // settler, found a capital, pick production, grow and develop a tile, the 2D view, phone size.
 // Usage: node scripts/screenshot-game.mjs <out-dir>   (BASE_URL defaults to a vite preview)
+// SAVE=<state.json> plays on from a saved state instead (e.g. one from `pnpm cx profile --save`),
+// as seat p1, for TURNS more turns: a quick way to check the mid and late game in a real browser.
+import { readFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 const out = process.argv[2];
-const url = `${process.env.BASE_URL ?? 'http://localhost:4173/'}#play`;
+const SAVE = process.env.SAVE;
+const url = `${process.env.BASE_URL ?? 'http://localhost:4173/'}${SAVE ? '?debug' : ''}#play`;
 const TURNS = Number(process.env.TURNS ?? 14);
 const browser = await chromium.launch({
   executablePath:
@@ -37,22 +41,34 @@ await page.screenshot({ path: `${out}/game-intro.png` });
 await page.click('.leader-intro .primary');
 await page.screenshot({ path: `${out}/game-start.png` });
 
-// The first unit is the settler: found the capital where it stands.
-await page.keyboard.press('Enter');
-await page.waitForSelector('.unit-panel');
-console.log('selected:', (await page.textContent('.unit-head h3'))?.trim());
-await page.screenshot({ path: `${out}/game-settler.png` });
-await page.keyboard.press('b');
-await page.waitForSelector('.settlement-panel');
-console.log('founded:', (await page.textContent('.settlement-head h3'))?.trim());
-await page.click('.items li:has-text("Warrior") button:has-text("Build")');
-await page.waitForTimeout(800);
-await page.screenshot({ path: `${out}/game-founded.png` });
+let startTurn = 0;
+if (SAVE) {
+  // Seat p1 becomes the human; everyone's turn starts fresh.
+  const saved = JSON.parse(readFileSync(SAVE, 'utf8'));
+  saved.players.p1.kind = 'human';
+  for (const id of saved.playerOrder) saved.players[id].turnEnded = false;
+  await page.evaluate((st) => window.cx.game.load(st), saved);
+  await page.waitForTimeout(1500);
+  startTurn = await turn(page);
+  console.log('loaded a save at turn', startTurn);
+} else {
+  // The first unit is the settler: found the capital where it stands.
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('.unit-panel');
+  console.log('selected:', (await page.textContent('.unit-head h3'))?.trim());
+  await page.screenshot({ path: `${out}/game-settler.png` });
+  await page.keyboard.press('b');
+  await page.waitForSelector('.settlement-panel');
+  console.log('founded:', (await page.textContent('.settlement-head h3'))?.trim());
+  await page.click('.items li:has-text("Warrior") button:has-text("Build")');
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: `${out}/game-founded.png` });
+}
 
 // Play turns: skip units, take growth choices, keep building, end the turn.
 let developShot = false;
 const shots = new Set();
-for (let guard = 0; guard < TURNS * 15 && (await turn(page)) < TURNS; guard++) {
+for (let guard = 0; guard < TURNS * 15 && (await turn(page)) < startTurn + TURNS; guard++) {
   const next = await label(page);
   if (next === 'End turn') {
     await page.keyboard.press('Enter');

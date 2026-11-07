@@ -223,6 +223,10 @@ Simultaneous turns are played live, so notifications are mostly about getting ev
   a small Supabase edge function, so webhook URLs never reach other players.
 - **Browser / desktop notifications:** "Turn 87 started", "Alex proposed a deal", "Everyone's
   waiting on you".
+- **Built (final gameplay pass, D118):** in an online game the browser asks once (on your
+  first click) whether it may notify you. When a new turn is yours while the tab is in the
+  background, it shows "Your turn" (turn N) and marks the tab title with ● until you come back.
+  Deal and waiting reminders aren't built yet.
 
 ## Communication
 
@@ -240,6 +244,11 @@ Simultaneous turns are played live, so notifications are mostly about getting ev
   fog, an attack, or anything random cannot.
 - **Host rewind:** the host can propose rolling back to the start of the turn (all human players
   must accept). This is useful for bugs or genuine misclicks.
+- **Built (final gameplay pass, D118): undo for moves,** in a game with one human: **Ctrl+Z**
+  (⌘Z) or the "↶ Undo move" button takes back the last moves (up to 10 in a row) that only
+  moved: nothing new explored, no other player's unit or settlement came into view, no village,
+  capture or discovery. Any other action, and the end of the turn, clears it. Hotseat and
+  online games have no undo (another player could have seen the move).
 
 ## Hotseat (same machine)
 
@@ -248,9 +257,12 @@ Simultaneous turns are played live, so notifications are mostly about getting ev
 - **Built so far (M10):** 1–8 human players plus AI rivals, chosen in the new-game dialog.
   Within each (simultaneous) turn the humans play one after another in turn order; ending your
   turn brings up the pass screen for the next one, and once everyone is done the turn is
-  processed and the first player is up again (D51). Each player starts their turn with a
+  processed and the first player is up again (D51). The turn itself is processed in an order
+  that rotates by one seat each turn (settlements, same-turn wonder and great person races,
+  space arrivals, AI rivals), so no seat always goes first; in 72 baseline games the first seat
+  had won 21 against about 12 expected. Each player starts their turn with a
   summary of what they could see happen since their last one (wars, captures, kills, growth,
-  wonders...). Undo isn't there yet.
+  wonders...). Undo for moves is single-player only (below).
 
 ## Spectators and eliminated players
 

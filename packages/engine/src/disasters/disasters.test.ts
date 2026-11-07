@@ -89,6 +89,17 @@ describe('disasters', () => {
     expect(tileYields(ctx, s, farm, 'p1').total.food).toBe(before + 100);
   });
 
+  it('a Dam keeps floods off its settlement’s land (D111)', () => {
+    const { s: start, farm } = riverside();
+    const s = produce(start, (d) => {
+      const c = d.settlements[d.players.p1!.capital!]!;
+      c.districts.push({ id: 'district_dam', tile: at(start, 2, 3) });
+    });
+    const { events, s: after } = run(s, only('disaster_flood'));
+    expect(events.find((x) => x.type === 'disaster')).toBeUndefined();
+    expect(after.map.tiles[farm]!.pillaged).toBeUndefined();
+  });
+
   it('raises the seas over low coastal land once emissions reach a phase', () => {
     let s = testState(ISLAND);
     const settler = addUnit(s, 'p1', 'unit_settler', at(s, 2, 2));

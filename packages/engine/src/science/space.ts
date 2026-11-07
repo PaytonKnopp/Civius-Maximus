@@ -1,6 +1,6 @@
 import { resolveText } from '@cx/content';
 import type { Draft } from 'immer';
-import type { EngineContext, Emit, RuleError } from '../context';
+import { type EngineContext, type Emit, type RuleError, turnOrder } from '../context';
 import type { GameState, PlayerId } from '../state';
 import { endGame } from '../victory';
 
@@ -92,7 +92,7 @@ export function spaceProgress(
 /** End of each turn: an expedition that has arrived wins. */
 export function scienceTurn(draft: Draft<GameState>, _ctx: EngineContext, emit: Emit) {
   if (draft.status !== 'playing' || draft.settings.science === false) return;
-  for (const id of draft.playerOrder) {
+  for (const id of turnOrder(draft)) {
     const p = draft.players[id]!;
     if (p.alive && p.expeditionArrives !== null && draft.turn >= p.expeditionArrives) {
       endGame(draft, 'science', id, emit);

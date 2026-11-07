@@ -49,7 +49,7 @@
     "type": "specialization",
     "id": "spec_trade_outpost",
     "name": "Trade Outpost",
-    "description": "+20% gold and +2 influence here.",
+    "description": "A market town on the roads: +20% gold, +2 influence, and one more trade route for your empire.",
     "icon": "Tr",
     "localEffects": [
       {
@@ -72,13 +72,24 @@
           "scope": "settlements"
         }
       }
+    ],
+    "effects": [
+      {
+        "effect": "extra_trade_route",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
     ]
   },
   {
     "type": "specialization",
     "id": "spec_fort_town",
     "name": "Fort Town",
-    "description": "+1 production and +1 happiness here. (Defense and healing arrive with combat.)",
+    "description": "A garrison town: +6 strength when it defends itself, your units heal 10 more in its territory, +1 production and +1 happiness.",
     "icon": "Fo",
     "localEffects": [
       {
@@ -100,13 +111,15 @@
           "scope": "settlements"
         }
       }
-    ]
+    ],
+    "defense": 6,
+    "heal": 10
   },
   {
     "type": "specialization",
     "id": "spec_religious_site",
     "name": "Religious Site",
-    "description": "+2 faith and +15% faith here.",
+    "description": "A place of pilgrimage: +2 faith and +15% faith, and religious units bought here cost 30% less faith.",
     "icon": "Re",
     "localEffects": [
       {
@@ -129,20 +142,44 @@
           "scope": "settlements"
         }
       }
-    ]
+    ],
+    "faithDiscount": 30
   },
   {
     "type": "specialization",
     "id": "spec_resort_town",
     "name": "Resort Town",
-    "description": "+2 gold here, and +1 happiness in every settlement.",
+    "description": "Visitors come for the views: +1 tourism for every 2 points of appeal on its charming and breathtaking tiles, +1 gold for every 3 and +1 happiness for every 6, and +1 happiness in all your settlements.",
     "icon": "Rs",
     "localEffects": [
       {
-        "effect": "modify_yield",
+        "effect": "yield_per_appeal",
+        "params": {
+          "yield": "tourism",
+          "per": 2,
+          "minAppeal": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "yield_per_appeal",
         "params": {
           "yield": "gold",
-          "amount": 2
+          "per": 3,
+          "minAppeal": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "yield_per_appeal",
+        "params": {
+          "yield": "happiness",
+          "per": 6,
+          "minAppeal": 2
         },
         "target": {
           "scope": "settlements"

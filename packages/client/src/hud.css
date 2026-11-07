@@ -142,6 +142,20 @@ button:disabled {
   color: var(--muted);
 }
 
+.empire-yields li.stockpiles {
+  gap: 6px;
+}
+
+.empire-yields .stockpile {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.empire-yields .stockpile.short .val {
+  color: #e08072;
+}
+
 .empire-yields li.celebrating .val {
   color: #b9e08c;
 }
@@ -594,13 +608,31 @@ button:disabled {
 }
 
 /* --- Laptops: the screen buttons and yields share less room ------------------------------- */
-@media (min-width: 641px) and (max-width: 1440px) {
-  .empire-yields .delta {
-    display: none;
+/* Small laptops: a little less room around each figure. */
+@media (min-width: 641px) and (max-width: 1360px) {
+  .empire-yields li {
+    padding: 0 4px;
+    gap: 4px;
   }
 
+  .empire-yields li > svg.icon,
+  .empire-yields .stockpile > svg.icon {
+    width: 19px;
+    height: 19px;
+  }
+}
+
+/* Until there's room for everything, the bar keeps to the essentials. */
+@media (min-width: 641px) and (max-width: 1800px) {
+  .empire-yields .delta,
+  .empire-yields .long {
+    display: none;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1440px) {
   .empire-yields li {
-    padding: 0 6px;
+    padding: 0 5px;
   }
 
   .screen-button {
@@ -1873,4 +1905,11 @@ button.turn-pill:hover {
 
 .climate-bar {
   margin: 4px 0 8px;
+}
+
+/* Phones: the stockpiles live in each unit's cost and the Civilopedia, not the crowded top bar. */
+@media (max-width: 640px) {
+  .empire-yields li.stockpiles {
+    display: none;
+  }
 }

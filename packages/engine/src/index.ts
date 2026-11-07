@@ -80,7 +80,7 @@ export type { MapSettings, MapState, MapTile, StartBias } from './map/types';
 export { type Replay, runReplay } from './replay';
 export { createRng, nextInt, nextRange, nextU32, type RngState } from './rng';
 export { decodeBits, encodeBits, getBit } from './bitset';
-export { atWar, FREE, HOSTILE, unitClassOf, unitDef, unitIds, warKey } from './context';
+export { atWar, FREE, HOSTILE, turnOrder, unitClassOf, unitDef, unitIds, warKey } from './context';
 export { unitsNeedingOrders } from './units/handlers';
 export {
   canTraverse,
@@ -151,6 +151,9 @@ export {
   purchaseCost,
   settlementIds,
   settlementLimit,
+  limitCount,
+  annexCost,
+  puppetProblem,
   settlementsOf,
   type SettlementYields,
   settlementYields,
@@ -159,16 +162,37 @@ export {
   tileYields,
   townUpgradeCost,
   unitUpkeep,
+  upkeepOf,
   warWeariness,
   workableTiles,
 } from './settlements/rules';
 export { bestDevelopChoice } from './settlements/handlers';
+export {
+  luxuriesOf,
+  luxuryCopies,
+  ownLuxuries,
+  spareLuxury,
+  type LuxuryReach,
+} from './settlements/luxuries';
+export {
+  isRevealed,
+  resourceCostOf,
+  resourceProblem,
+  resourceUpkeepOf,
+  shortages,
+  sourceIncome,
+  stockpileCap,
+  stockpileIncome,
+  stockpileOf,
+  stockpileUpkeep,
+} from './resources/strategic';
 export {
   districtCost,
   districtLimit,
   districtYields,
   needsTile,
   placementProblem,
+  placementFits,
   placementTiles,
   specialistSlots,
   TILE_KINDS,
@@ -184,6 +208,8 @@ export {
   governmentChangeCost,
   isPolicyAvailable,
   nodeCost,
+  nodeCostFor,
+  civsWith,
   pathTo,
   playerEra,
   policyChangeCost,
@@ -212,6 +238,8 @@ export {
   areFriends,
   dealProblem,
   denounceProblem,
+  haveOpenBorders,
+  haveResearchAgreement,
   influencePerTurn,
   isSurpriseWar,
   NO_TERMS,
@@ -222,6 +250,19 @@ export {
   sameTeam,
   warBlock,
 } from './diplomacy/rules';
+export { researchPartners, tradedBy, tradesOf } from './diplomacy/pacts';
+export { monopolies, monopolyShare, monopolySources } from './resources/monopoly';
+export {
+  campOf,
+  campOfGovernment,
+  culturalWeight,
+  type IdeologyCamp,
+  ideologyHappinessUnder,
+  ideologyPressure,
+  type IdeologyPressure,
+} from './culture/ideology';
+export { containmentResolution, victoryProgress } from './congress/containment';
+export { appealOf, appealWord, continentOf, continentsOf } from './map/appeal';
 export {
   allUnitsOf,
   type Command,

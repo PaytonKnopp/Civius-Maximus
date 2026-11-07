@@ -399,10 +399,14 @@ describe('citizens, tiles and happiness', () => {
     expect(h.lines.map((l) => l.label)).toEqual(['Base', 'Palace', 'Wine', 'Citizens']);
     expect(h.balance).toBe(2 + 2 + 2 - 3);
 
-    // Five settlements against a limit of four: -2 in each.
+    // Five settlements against a limit of four: -1 in each.
     for (let i = 0; i < 4; i++) {
       copy.settlements[`s9${i}`] = { ...structuredClone(city), id: `s9${i}`, capital: false };
     }
-    expect(happinessOf(ctx, copy, city).balance).toBe(3 - 2);
+    expect(happinessOf(ctx, copy, city).balance).toBe(3 - 1);
+    // Puppets count half: two of the five as puppets makes four, at the limit.
+    copy.settlements.s90!.puppet = true;
+    copy.settlements.s91!.puppet = true;
+    expect(happinessOf(ctx, copy, city).balance).toBe(3);
   });
 });

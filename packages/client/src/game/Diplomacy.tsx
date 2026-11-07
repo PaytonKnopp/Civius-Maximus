@@ -11,10 +11,12 @@ import {
   type EngineContext,
   type GameState,
   liberateProblem,
+  limitCount,
   militaryStrength,
   peaceProblem,
   type PlayerId,
   razeProblem,
+  settlementLimit,
   scoreOf,
   uniquesOf,
   warKey,
@@ -466,14 +468,21 @@ interface CaptureProps {
   act: (action: Action) => boolean;
 }
 
-/** After taking a settlement: keep it, raze it, or give it back to the civ that founded it. */
+/**
+ * After taking a settlement: keep it, make it a puppet, raze it, or give it back to the civ that
+ * founded it.
+ */
 export function CaptureDialog({ ctx, state, viewer, id, act }: CaptureProps) {
   const s = state.settlements[id]!;
   const raze = razeProblem(s);
   const liberate = liberateProblem(state, s);
   const from = s.capturedFrom ? civName(ctx.content, state, s.capturedFrom) : 'its owner';
   const founder = civName(ctx.content, state, s.founder);
-  const choose = (choice: 'keep' | 'raze' | 'liberate') =>
+  const puppet = ctx.content.rules.settlements.puppet;
+  // Keeping it outright counts in full against the settlement limit.
+  const limit = settlementLimit(ctx, state, viewer);
+  const over = limitCount(ctx, state, viewer) - limit;
+  const choose = (choice: 'keep' | 'puppet' | 'raze' | 'liberate') =>
     act({ type: 'capture_choice', player: viewer, settlement: id, choice });
   return (
     <div className="modal-backdrop">
@@ -489,7 +498,17 @@ export function CaptureDialog({ ctx, state, viewer, id, act }: CaptureProps) {
         <div className="modal-choices">
           <button type="button" className="primary" onClick={() => choose('keep')}>
             <strong>Keep it</strong>
-            <span>It becomes one of your settlements.</span>
+            <span>
+              It becomes one of your settlements
+              {over > 0 ? `; you'd be ${over} over your settlement limit of ${limit}` : ''}.
+            </span>
+          </button>
+          <button type="button" onClick={() => choose('puppet')}>
+            <strong>Make it a puppet</strong>
+            <span>
+              It runs itself and gives you its yields ({puppet.yieldPercent}%), counting only{' '}
+              {puppet.limitPercent}% toward your settlement limit. Annex it later for gold.
+            </span>
           </button>
           <button
             type="button"
@@ -541,6 +560,8 @@ interface GameOverProps {
   onGraphs?: () => void;
   /** Opens the replay of the game. */
   onReplay?: () => void;
+  /** Keeps playing after the win ("one more turn"). */
+  onContinue?: () => void;
   onClose: () => void;
 }
 
@@ -555,6 +576,7 @@ export function GameOver({
   content,
   onGraphs,
   onReplay,
+  onContinue,
   onClose,
 }: GameOverProps) {
   return (
@@ -614,6 +636,15 @@ export function GameOver({
           {onReplay && (
             <button type="button" onClick={onReplay}>
               Watch the replay
+            </button>
+          )}
+          {onContinue && (
+            <button
+              type="button"
+              onClick={onContinue}
+              title="Keep playing this game: the result stands"
+            >
+              One more turn
             </button>
           )}
           <button type="button" className="primary" onClick={onClose}>

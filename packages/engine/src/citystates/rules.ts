@@ -81,21 +81,34 @@ export function envoyProblem(
 }
 
 export interface Quest {
-  id: 'district' | 'route';
+  id: 'district' | 'route' | 'religion' | 'unit' | 'greatPerson';
   text: string;
 }
+
+const article = (name: string) => `${/^[aeiou]/i.test(name) ? 'an' : 'a'} ${name}`;
 
 /** What a city-state asks of every player (each pays `questEnvoys` envoys, once). */
 export function questsOf(ctx: EngineContext, state: GameState, target: PlayerId): Quest[] {
   const cs = state.cityStates[target];
   if (!cs) return [];
+  const t = (text: string) => resolveText(ctx.content, text);
   const type = cityStateType(ctx, cs);
   const out: Quest[] = [];
   if (type.district) {
-    const name = resolveText(ctx.content, ctx.content.entities.district[type.district]?.name ?? '');
-    out.push({ id: 'district', text: `Build ${/^[aeiou]/i.test(name) ? 'an' : 'a'} ${name}` });
+    const name = t(ctx.content.entities.district[type.district]?.name ?? '');
+    out.push({ id: 'district', text: `Build ${article(name)}` });
   }
   out.push({ id: 'route', text: 'Send a trade route here' });
+  if (state.settings.religion !== false && Object.keys(state.religions ?? {}).length > 0)
+    out.push({ id: 'religion', text: 'Bring your religion here (it must follow it)' });
+  if (type.unitClass) {
+    const name = t(ctx.content.entities.unitClass[type.unitClass]?.name ?? '').toLowerCase();
+    out.push({ id: 'unit', text: `Have ${article(name)} unit` });
+  }
+  if (type.greatPersonClass) {
+    const name = t(ctx.content.entities.greatPersonClass[type.greatPersonClass]?.name ?? '');
+    out.push({ id: 'greatPerson', text: `Earn ${article(name)}` });
+  }
   return out;
 }
 
@@ -110,6 +123,33 @@ export function questMet(
   if (quest === 'route') {
     const home = cityStateSettlement(state, target);
     return !!home && state.routes.some((r) => r.owner === player && r.to === home.id);
+  }
+  const type = cityStateType(ctx, state.cityStates[target]!);
+  if (quest === 'religion') {
+    const home = cityStateSettlement(state, target);
+    const mine = state.players[player]?.religion;
+    return !!home && !!mine && home.religion === mine;
+  }
+  if (quest === 'unit')
+    return (
+      !!type.unitClass &&
+      Object.values(state.units).some(
+        (u) => u.owner === player && ctx.content.entities.unit[u.type]?.class === type.unitClass,
+      )
+    );
+  if (quest === 'greatPerson') {
+    const cls = type.greatPersonClass;
+    const earned = state.players[player]?.greatPeople ?? [];
+    return (
+      !!cls &&
+      (earned.some((id) => ctx.content.entities.greatPerson[id]?.class === cls) ||
+        Object.values(state.units).some(
+          (u) =>
+            u.owner === player &&
+            !!u.person &&
+            ctx.content.entities.greatPerson[u.person]?.class === cls,
+        ))
+    );
   }
   const district = cityStateType(ctx, state.cityStates[target]!).district;
   return (

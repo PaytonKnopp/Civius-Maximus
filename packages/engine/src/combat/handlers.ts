@@ -14,9 +14,9 @@ import {
 } from '../context';
 import { view } from '../draft';
 import { addEnvoys } from '../citystates/handlers';
-import { forgetPlayer } from '../diplomacy/handlers';
+import { endDealsBetween, forgetPlayer } from '../diplomacy/handlers';
 import { endRoutesBetween } from '../trade/handlers';
-import { isSurpriseWar, warBlock } from '../diplomacy/rules';
+import { haveOpenBorders, isSurpriseWar, warBlock } from '../diplomacy/rules';
 import { toFixed } from '../fixed';
 import { grantBoost } from '../progress/handlers';
 import { playerEffects } from '../progress/sources';
@@ -40,10 +40,12 @@ import {
   settlementHit,
   settlementMaxHealth,
   settlementStrength,
+  siegeHelp,
   strikeProblem,
   targetAt,
   wallsMax,
 } from './strength';
+import { distance } from '../map/hex';
 
 /**
  * Fighting, taking settlements, and war and peace (docs/03-core-mechanics.md, sections 3 and 5).
@@ -285,6 +287,7 @@ export function captureSettlement(
 
   const loss = ctx.content.rules.combat.settlement.capturePopulationLoss;
   s.owner = captor;
+  delete s.puppet;
   for (const t of draft.map.tiles) if (t.settlement === id) t.owner = captor;
   s.population = Math.max(1, s.population - Math.ceil((s.population * loss) / 100));
   s.health = Math.floor(settlementMaxHealth(ctx, s.kind) / 4);
@@ -379,6 +382,7 @@ function liberate(draft: Draft<GameState>, ctx: EngineContext, id: string, emit:
   const cityState = draft.players[to]!.kind === 'cityState';
   if (cityState) draft.players[to]!.alive = true;
   s.owner = to;
+  delete s.puppet;
   s.capturedFrom = null;
   s.captureChoice = false;
   delete s.loyalty;
@@ -529,7 +533,7 @@ export function performAttack(
   const s = draft.settlements[target.settlement.id]!;
   const defense = settlementStrength(ctx, base, target.settlement);
   const diff = attack.total - defense.total;
-  const hit = settlementHit(ctx, s, rollDamage(draft, ctx, diff), unit);
+  const hit = settlementHit(ctx, s, rollDamage(draft, ctx, diff), unit, siegeHelp(ctx, base, unit));
   s.walls -= hit.walls;
   s.health -= hit.health;
   s.attackedTurn = draft.turn;
@@ -657,7 +661,14 @@ export const combatHandlers = {
     apply(draft, action, ctx, emit) {
       const s = draft.settlements[action.settlement]!;
       if (action.choice === 'keep') s.captureChoice = false;
-      else if (action.choice === 'raze') raze(draft, action.settlement, emit);
+      else if (action.choice === 'puppet') {
+        // A puppet runs itself (docs/03): its own builds, balanced focus, nothing pinned.
+        s.captureChoice = false;
+        s.puppet = true;
+        s.queue = [];
+        s.focus = 'balanced';
+        s.locked = [];
+      } else if (action.choice === 'raze') raze(draft, action.settlement, emit);
       else liberate(draft, ctx, action.settlement, emit);
     },
   } satisfies ActionHandler<A<'capture_choice'>>,
@@ -697,12 +708,7 @@ export const combatHandlers = {
           turn: draft.turn,
         });
       // Deals between them stop.
-      const d = draft.diplomacy;
-      const between = (a: string, b: string) =>
-        (a === action.player && b === action.target) ||
-        (a === action.target && b === action.player);
-      d.payments = d.payments.filter((p) => !between(p.from, p.to));
-      d.proposals = d.proposals.filter((p) => !between(p.from, p.to));
+      endDealsBetween(draft, action.player, action.target);
       endRoutesBetween(draft, ctx, action.player, action.target, emit);
       emit({ type: 'war_declared', by: action.player, target: action.target, visibleTo: 'all' });
     },
@@ -762,9 +768,21 @@ export const combatHandlers = {
   ]: ActionHandler<A<T>>;
 };
 
+/** The most extra healing a player's support units give on a tile (a medic nearby, D112). */
+function supportHeal(ctx: EngineContext, state: GameState, owner: PlayerId, tile: number): number {
+  let best = 0;
+  for (const u of Object.values(state.units)) {
+    if (u.owner !== owner) continue;
+    const help = ctx.content.entities.unit[u.type]?.support;
+    if (help && help.heal > best && distance(state.map, u.tile, tile) <= help.radius)
+      best = help.heal;
+  }
+  return best;
+}
+
 /**
- * Start of a turn, before units refresh: units that didn't act last turn heal (more at home),
- * fortified units dig in further.
+ * Start of a turn, before units refresh: units that didn't act last turn heal (more at home,
+ * more next to a medic), fortified units dig in further.
  */
 export function healUnits(draft: Draft<GameState>, ctx: EngineContext) {
   const { heal, maxHealth } = ctx.content.rules.combat;
@@ -772,21 +790,29 @@ export function healUnits(draft: Draft<GameState>, ctx: EngineContext) {
     const u = draft.units[id]!;
     if (u.orders?.kind === 'fortify') u.orders.turns = Math.min(u.orders.turns + 1, 99);
     if (u.health >= maxHealth || u.moves < fullMoves(ctx, u)) continue;
-    const medic = commandersAround(ctx, view(draft), u.owner, u.tile).reduce(
-      (best, c) => Math.max(best, c.command.heal),
-      0,
+    const medic = Math.max(
+      commandersAround(ctx, view(draft), u.owner, u.tile).reduce(
+        (best, c) => Math.max(best, c.command.heal),
+        0,
+      ),
+      supportHeal(ctx, view(draft), u.owner, u.tile),
     );
     const t = draft.map.tiles[u.tile]!;
     const home = t.settlement ? draft.settlements[t.settlement] : undefined;
     const amount =
       home && home.tile === u.tile && home.owner === u.owner
         ? heal.settlement
-        : t.owner === u.owner
+        : t.owner === u.owner || (t.owner !== null && haveOpenBorders(draft, u.owner, t.owner))
           ? heal.own
           : t.owner !== null && atWar(draft, u.owner, t.owner)
             ? heal.enemy
             : heal.neutral;
-    u.health = Math.min(maxHealth, u.health + amount + medic);
+    // A fort town tends to its own soldiers in its territory.
+    const spec =
+      home && home.owner === u.owner && home.specialization
+        ? ctx.content.entities.specialization[home.specialization]
+        : undefined;
+    u.health = Math.min(maxHealth, u.health + amount + medic + (spec?.heal ?? 0));
   }
 }
 

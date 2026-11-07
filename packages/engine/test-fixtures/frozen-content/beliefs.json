@@ -83,18 +83,34 @@
     "id": "bel_forge_god",
     "name": "God of the Forge",
     "kind": "pantheon",
-    "description": "+15% production toward units.",
+    "description": "+1 production and +1 faith on Mines.",
     "effects": [
       {
-        "effect": "modify_production",
+        "effect": "modify_yield",
         "params": {
-          "percent": 15,
-          "toward": {
-            "kind": "unit"
-          }
+          "yield": "production",
+          "amount": 1
         },
         "target": {
-          "scope": "settlements"
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_mine"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "amount": 1
+        },
+        "target": {
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_improvement": "improvement_mine"
         }
       }
     ]
@@ -104,15 +120,20 @@
     "id": "bel_harvest_rites",
     "name": "Harvest Rites",
     "kind": "pantheon",
-    "description": "+10% growth in every settlement.",
+    "description": "+1 food on Wheat, Rice and Cattle.",
     "effects": [
       {
-        "effect": "modify_growth",
+        "effect": "modify_yield",
         "params": {
-          "percent": 10
+          "yield": "food",
+          "amount": 1
         },
         "target": {
-          "scope": "settlements"
+          "scope": "tiles",
+          "owner": "self"
+        },
+        "condition": {
+          "tile_has_resource": ["wheat", "rice", "cattle"]
         }
       }
     ]
@@ -179,7 +200,7 @@
     "id": "bel_hearth_goddess",
     "name": "Hearth Goddess",
     "kind": "pantheon",
-    "description": "+1 happiness in every settlement.",
+    "description": "+1 happiness and +1 food in every settlement with a Granary.",
     "effects": [
       {
         "effect": "modify_happiness",
@@ -188,6 +209,22 @@
         },
         "target": {
           "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_granary"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_granary"
         }
       }
     ]
@@ -368,12 +405,12 @@
     "id": "bel_feasts",
     "name": "Feast Days",
     "kind": "follower",
-    "description": "+1 happiness.",
+    "description": "+2 happiness in every settlement that follows this religion.",
     "effects": [
       {
         "effect": "modify_happiness",
         "params": {
-          "amount": 1
+          "amount": 2
         },
         "target": {
           "scope": "settlements"

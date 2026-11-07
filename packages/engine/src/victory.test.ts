@@ -64,3 +64,24 @@ describe('replay frames', () => {
     expect(encodeOwners(s).length).toBeLessThan(s.map.tiles.length);
   });
 });
+
+describe('one more turn', () => {
+  it('keeps playing after a win, and the first result stands', () => {
+    let s = testState(['..........', '..........', '..........']);
+    s = produce(s, (d) => {
+      foundSettlement(d, ctx, 'p1', at(s, 2, 1), () => {});
+      foundSettlement(d, ctx, 'p2', at(s, 7, 1), () => {});
+    });
+    s = { ...s, settings: { ...s.settings, turnLimit: 1 } };
+    for (const p of s.playerOrder) s = act(s, { type: 'end_turn', player: p }).state;
+    expect(s.status).toBe('ended');
+    const result = s.result;
+    s = act(s, { type: 'keep_playing', player: 'p1' }).state;
+    expect(s.status).toBe('playing');
+    expect(s.afterVictory).toBe(true);
+    // Past the turn limit again: nothing ends the game now.
+    for (const p of s.playerOrder) s = act(s, { type: 'end_turn', player: p }).state;
+    expect(s.status).toBe('playing');
+    expect(s.result).toEqual(result);
+  });
+});

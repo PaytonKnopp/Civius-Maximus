@@ -15,7 +15,8 @@
     "fertility": {
       "food": 1
     },
-    "visual": "mist"
+    "visual": "mist",
+    "preventedBy": ["district_dam"]
   },
   {
     "type": "disaster",

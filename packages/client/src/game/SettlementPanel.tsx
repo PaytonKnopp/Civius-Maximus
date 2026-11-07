@@ -1,6 +1,7 @@
 import { resolveText } from '@cx/content';
 import {
   type Action,
+  annexCost,
   availableItems,
   type BuildItem,
   type CitizenFocus,
@@ -206,8 +207,25 @@ export function SettlementPanel({
           <p className="unit-sub">
             {s.razing
               ? `Being razed: gone in ${s.population} turn${s.population === 1 ? '' : 's'}`
-              : `${s.kind === 'city' ? 'City' : 'Town'} · ${growthText}`}
+              : `${s.puppet ? 'Puppet ' : ''}${s.kind === 'city' ? 'city' : 'town'} · ${growthText}`}
           </p>
+          {s.puppet && mine && (
+            <p className="unit-sub puppet-line">
+              Runs itself ({content.rules.settlements.puppet.yieldPercent}% yields).{' '}
+              <button
+                type="button"
+                className="small"
+                disabled={!can({ type: 'annex_puppet', player: viewer, settlement: id })}
+                title={
+                  why({ type: 'annex_puppet', player: viewer, settlement: id }) ??
+                  'Take full control: it counts in full toward your settlement limit'
+                }
+                onClick={() => act({ type: 'annex_puppet', player: viewer, settlement: id })}
+              >
+                Annex for {whole(annexCost(ctx, state, s))} gold
+              </button>
+            </p>
+          )}
           {(() => {
             const owner = state.players[s.owner];
             const entry = Object.entries(owner?.governors ?? {}).find(
@@ -355,15 +373,39 @@ export function SettlementPanel({
             Production {icon('production')} {fmt(production)}
           </h4>
           {sum.head ? (
-            <div className="bar" title={`${whole(sum.head.progress)} / ${whole(sum.head.cost)}`}>
-              <span
-                className="bar-fill production"
-                style={{ width: `${Math.min(100, (sum.head.progress / sum.head.cost) * 100)}%` }}
-              />
-              <span className="bar-text">
-                {sum.head.name} · {turnsLabel(sum.head.turns)}
-              </span>
-            </div>
+            <>
+              <div className="bar" title={`${whole(sum.head.progress)} / ${whole(sum.head.cost)}`}>
+                <span
+                  className="bar-fill production"
+                  style={{ width: `${Math.min(100, (sum.head.progress / sum.head.cost) * 100)}%` }}
+                />
+                <span className="bar-text">
+                  {s.queue[0]?.repeat ? '↻ ' : ''}
+                  {sum.head.name} · {turnsLabel(sum.head.turns)}
+                </span>
+              </div>
+              {s.queue[0] &&
+                (s.queue[0].kind === 'unit' ||
+                  (s.queue[0].kind === 'project' &&
+                    content.entities.project[s.queue[0].id]?.repeatable)) && (
+                  <label
+                    className="check small-text"
+                    title="Start another as soon as one is done, until you change it"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!s.queue[0].repeat}
+                      onChange={(e) =>
+                        setQueue([
+                          { ...s.queue[0]!, repeat: e.target.checked || undefined },
+                          ...s.queue.slice(1),
+                        ])
+                      }
+                    />
+                    Repeat
+                  </label>
+                )}
+            </>
           ) : (
             <p className="callout">Choose something to build.</p>
           )}
@@ -536,8 +578,9 @@ export function SettlementPanel({
                     const progress = s.progress[itemKey(item)] ?? 0;
                     const buy: Action = { type: 'buy_item', player: viewer, settlement: id, item };
                     const price = whole(purchaseCost(ctx, state, viewer, item, s));
+                    const faithPrice = whole(purchaseCost(ctx, state, viewer, item, s, 'faith'));
                     const faithBuy: Action | undefined =
-                      isBuyable(item) && canBuyWithFaith(ctx, state, viewer, item)
+                      isBuyable(ctx, item) && canBuyWithFaith(ctx, state, viewer, item, s)
                         ? { ...buy, currency: 'faith' }
                         : undefined;
                     const tiled = needsTile(item);
@@ -597,7 +640,7 @@ export function SettlementPanel({
                             </button>
                           </>
                         )}
-                        {isBuyable(item) && (
+                        {isBuyable(ctx, item) && (
                           <button
                             type="button"
                             disabled={!can(buy)}
@@ -611,10 +654,10 @@ export function SettlementPanel({
                           <button
                             type="button"
                             disabled={!can(faithBuy)}
-                            title={why(faithBuy) ?? `Buy now for ${price} faith`}
+                            title={why(faithBuy) ?? `Buy now for ${faithPrice} faith`}
                             onClick={() => act(faithBuy)}
                           >
-                            {icon('faith')} {price}
+                            {icon('faith')} {faithPrice}
                           </button>
                         )}
                       </li>

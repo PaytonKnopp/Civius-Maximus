@@ -1,3 +1,4 @@
+import { faithUnitCost } from '../religion/rules';
 import { type BeliefDef, type Effect, resolveText } from '@cx/content';
 import { atWar } from '../context';
 import { evaluateCondition } from '../effects/conditions';
@@ -138,12 +139,20 @@ function buyReligiousUnits(t: Turn) {
   const home = nearestFollower(t);
   if (!home) return;
   const mine = t.myUnits().filter((u) => u.religion !== undefined);
-  if (mine.length >= 1 + Math.floor(t.me.faith / 4)) return;
   const units = t.ctx.content.ids.unit.filter(
     (id) =>
       t.ctx.content.entities.unit[id]!.faithCost > 0 &&
       !faithUnitProblem(t.ctx, t.state, t.player, home.id, id),
   );
+  // A few preachers at a time by temperament, more while faith piles up unspent, and more again
+  // for a leader playing for a religious victory (D121).
+  const dearest = Math.max(
+    1,
+    ...units.map((id) => faithUnitCost(t.ctx, t.state, t.ctx.content.entities.unit[id]!.faithCost)),
+  );
+  const spare = Math.floor(t.p.faith / (dearest * 3));
+  const crusade = t.plan === 'religion' ? RELIGION_PLAN_PREACHERS : 0;
+  if (mine.length >= 1 + Math.floor(t.me.faith / 4) + Math.min(4, spare) + crusade) return;
   const buy = (unit: string) =>
     t.act({ type: 'buy_faith_unit', player: t.player, settlement: home.id, unit });
   if (heresyAtHome(t, religion) && !mine.some((u) => religiousDef(t, u.type)?.removesHeresy)) {
@@ -160,6 +169,9 @@ function buyReligiousUnits(t: Turn) {
   if (preacher && spreadTarget(t, home.tile, religion, preacher)) buy(preacher);
 }
 
+/** Extra preachers in the field for a leader playing for a religious victory. */
+const RELIGION_PLAN_PREACHERS = 3;
+
 /** Our holy city if we hold it, else our first settlement following our religion. */
 function nearestFollower(t: Turn): SettlementState | undefined {
   const religion = t.p.religion;
@@ -171,7 +183,8 @@ function nearestFollower(t: Turn): SettlementState | undefined {
 
 /**
  * The best settlement for a missionary to preach in next: close, not an enemy's, and one where
- * preaching would convert it (else the nearest that doesn't follow it yet).
+ * preaching would convert it (else the nearest that doesn't follow it yet); other civs' first
+ * for a leader playing for a religious victory.
  */
 function spreadTarget(
   t: Turn,
@@ -190,7 +203,9 @@ function spreadTarget(
     const lead = s.religion ? (s.pressure[s.religion] ?? 0) : 0;
     const converts =
       mine + r.missionaryPressure >= r.convertAt && mine + r.missionaryPressure > lead;
-    const score = distance(t.state.map, from, s.tile) + (converts ? 0 : 8);
+    // Playing for a religious victory, other civs' settlements come first.
+    const abroad = t.plan === 'religion' && s.owner !== t.player ? 4 : 0;
+    const score = distance(t.state.map, from, s.tile) + (converts ? 0 : 8) - abroad;
     if (!best || score < best.score || (score === best.score && s.id < best.s.id))
       best = { s, score };
   }

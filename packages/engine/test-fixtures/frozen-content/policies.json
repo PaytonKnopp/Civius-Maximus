@@ -3,7 +3,7 @@
     "type": "policy",
     "id": "policy_militia_drills",
     "name": "Militia Drills",
-    "description": "+50% production toward melee and anti-cavalry units.",
+    "description": "+50% production toward melee and anti-cavalry units. Obsolete with Nationalism.",
     "slot": "military",
     "requiresCivic": "civic_code_of_laws",
     "effects": [
@@ -20,7 +20,8 @@
           "scope": "settlements"
         }
       }
-    ]
+    ],
+    "obsoletedBy": "civic_nationalism"
   },
   {
     "type": "policy",
@@ -45,7 +46,7 @@
     "type": "policy",
     "id": "policy_bowyers_workshops",
     "name": "Bowyers' Workshops",
-    "description": "+50% production toward ranged units.",
+    "description": "+50% production toward ranged units. Obsolete with Nationalism.",
     "slot": "military",
     "requiresCivic": "civic_military_tradition",
     "effects": [
@@ -62,13 +63,14 @@
           "scope": "settlements"
         }
       }
-    ]
+    ],
+    "obsoletedBy": "civic_nationalism"
   },
   {
     "type": "policy",
     "id": "policy_remount_herds",
     "name": "Remount Herds",
-    "description": "+50% production toward cavalry.",
+    "description": "+50% production toward cavalry. Obsolete with Nationalism.",
     "slot": "military",
     "requiresCivic": "civic_military_training",
     "effects": [
@@ -85,13 +87,14 @@
           "scope": "settlements"
         }
       }
-    ]
+    ],
+    "obsoletedBy": "civic_nationalism"
   },
   {
     "type": "policy",
     "id": "policy_siege_engineers",
     "name": "Siege Engineers",
-    "description": "+50% production toward siege units.",
+    "description": "+50% production toward siege units. Obsolete with Nationalism.",
     "slot": "military",
     "requiresCivic": "civic_military_training",
     "effects": [
@@ -108,7 +111,8 @@
           "scope": "settlements"
         }
       }
-    ]
+    ],
+    "obsoletedBy": "civic_nationalism"
   },
   {
     "type": "policy",
@@ -133,21 +137,25 @@
     "type": "policy",
     "id": "policy_civic_works",
     "name": "Civic Works",
-    "description": "+1 production in every settlement.",
+    "description": "+50% production toward Monuments, Granaries and Water Mills: the first buildings every settlement wants. Obsolete with Civil Service.",
     "slot": "economic",
     "requiresCivic": "civic_code_of_laws",
     "effects": [
       {
-        "effect": "modify_yield",
+        "effect": "modify_production",
         "params": {
-          "yield": "production",
-          "amount": 1
+          "percent": 50,
+          "toward": {
+            "kind": "building",
+            "building": ["building_monument", "building_granary", "building_water_mill"]
+          }
         },
         "target": {
           "scope": "settlements"
         }
       }
-    ]
+    ],
+    "obsoletedBy": "civic_civil_service"
   },
   {
     "type": "policy",
@@ -185,7 +193,7 @@
     "type": "policy",
     "id": "policy_market_rights",
     "name": "Market Rights",
-    "description": "+2 gold in the capital and +1 gold in every town.",
+    "description": "+2 gold in the capital and +1 gold in every town. Obsolete with Mercantilism.",
     "slot": "economic",
     "requiresCivic": "civic_foreign_trade",
     "effects": [
@@ -215,7 +223,8 @@
           "settlement_kind": "town"
         }
       }
-    ]
+    ],
+    "obsoletedBy": "civic_mercantilism"
   },
   {
     "type": "policy",
@@ -266,18 +275,18 @@
     "type": "policy",
     "id": "policy_patrons_of_poetry",
     "name": "Patrons of Poetry",
-    "description": "+1 culture in every settlement.",
+    "description": "Theater Squares' adjacency bonuses are doubled (+100%).",
     "slot": "economic",
     "requiresCivic": "civic_drama_and_poetry",
     "effects": [
       {
-        "effect": "modify_yield",
+        "effect": "adjacency_percent",
         "params": {
-          "yield": "culture",
-          "amount": 1
+          "district": "district_theater",
+          "percent": 100
         },
         "target": {
-          "scope": "settlements"
+          "scope": "player"
         }
       }
     ]
@@ -286,17 +295,20 @@
     "type": "policy",
     "id": "policy_festival_calendar",
     "name": "Festival Calendar",
-    "description": "+1 happiness in every settlement.",
+    "description": "+2 happiness in every settlement with an Arena.",
     "slot": "economic",
     "requiresCivic": "civic_games_and_recreation",
     "effects": [
       {
         "effect": "modify_happiness",
         "params": {
-          "amount": 1
+          "amount": 2
         },
         "target": {
           "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_arena"
         }
       }
     ]
@@ -305,18 +317,18 @@
     "type": "policy",
     "id": "policy_scribes_stipend",
     "name": "Scribes' Stipend",
-    "description": "+10% science in every settlement.",
+    "description": "Campuses' adjacency bonuses are doubled (+100%).",
     "slot": "economic",
     "requiresCivic": "civic_recorded_history",
     "effects": [
       {
-        "effect": "modify_yield",
+        "effect": "adjacency_percent",
         "params": {
-          "yield": "science",
-          "percent": 10
+          "district": "district_campus",
+          "percent": 100
         },
         "target": {
-          "scope": "settlements"
+          "scope": "player"
         }
       }
     ]
@@ -325,18 +337,18 @@
     "type": "policy",
     "id": "policy_temple_tithes",
     "name": "Temple Tithes",
-    "description": "+1 faith in every settlement.",
+    "description": "Holy Sites' adjacency bonuses are doubled (+100%).",
     "slot": "economic",
     "requiresCivic": "civic_theology",
     "effects": [
       {
-        "effect": "modify_yield",
+        "effect": "adjacency_percent",
         "params": {
-          "yield": "faith",
-          "amount": 1
+          "district": "district_holy_site",
+          "percent": 100
         },
         "target": {
-          "scope": "settlements"
+          "scope": "player"
         }
       }
     ]
@@ -372,18 +384,18 @@
     "type": "policy",
     "id": "policy_royal_mint",
     "name": "Royal Mint",
-    "description": "+15% gold in every settlement.",
+    "description": "Commercial Hubs' adjacency bonuses are doubled (+100%).",
     "slot": "economic",
     "requiresCivic": "civic_civil_service",
     "effects": [
       {
-        "effect": "modify_yield",
+        "effect": "adjacency_percent",
         "params": {
-          "yield": "gold",
-          "percent": 15
+          "district": "district_commercial_hub",
+          "percent": 100
         },
         "target": {
-          "scope": "settlements"
+          "scope": "player"
         }
       }
     ]
@@ -392,21 +404,18 @@
     "type": "policy",
     "id": "policy_guild_charters",
     "name": "Guild Charters",
-    "description": "+15% production in cities.",
+    "description": "Industrial Zones' adjacency bonuses are doubled (+100%).",
     "slot": "economic",
     "requiresCivic": "civic_guilds",
     "effects": [
       {
-        "effect": "modify_yield",
+        "effect": "adjacency_percent",
         "params": {
-          "yield": "production",
-          "percent": 15
+          "district": "district_industrial_zone",
+          "percent": 100
         },
         "target": {
-          "scope": "settlements"
-        },
-        "condition": {
-          "settlement_kind": "city"
+          "scope": "player"
         }
       }
     ]
@@ -415,7 +424,7 @@
     "type": "policy",
     "id": "policy_court_emissaries",
     "name": "Court Emissaries",
-    "description": "+2 influence in the capital.",
+    "description": "+2 influence in the capital. Obsolete with Diplomatic Service.",
     "slot": "diplomatic",
     "requiresCivic": "civic_political_philosophy",
     "effects": [
@@ -432,7 +441,8 @@
           "settlement_is_capital": true
         }
       }
-    ]
+    ],
+    "obsoletedBy": "civic_diplomatic_service"
   },
   {
     "type": "policy",
@@ -479,7 +489,7 @@
     "type": "policy",
     "id": "policy_patron_of_learning",
     "name": "Patron of Learning",
-    "description": "+2 science in the capital.",
+    "description": "+2 science in the capital. Obsolete with The Enlightenment.",
     "slot": "wildcard",
     "requiresCivic": "civic_recorded_history",
     "effects": [
@@ -496,7 +506,8 @@
           "settlement_is_capital": true
         }
       }
-    ]
+    ],
+    "obsoletedBy": "civic_enlightenment"
   },
   {
     "type": "policy",
@@ -702,7 +713,7 @@
     "type": "policy",
     "id": "policy_national_parks",
     "name": "National Parks",
-    "description": "+1 tourism in every settlement.",
+    "description": "+3 tourism in every settlement with a Zoo.",
     "slot": "economic",
     "requiresCivic": "civic_conservation",
     "effects": [
@@ -710,10 +721,13 @@
         "effect": "modify_yield",
         "params": {
           "yield": "tourism",
-          "amount": 1
+          "amount": 3
         },
         "target": {
           "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_zoo"
         }
       }
     ]
@@ -781,7 +795,7 @@
     "type": "policy",
     "id": "policy_patent_offices",
     "name": "Patent Offices",
-    "description": "+10% science in every settlement.",
+    "description": "+3 science in every settlement with a University.",
     "slot": "wildcard",
     "requiresCivic": "civic_civil_engineering",
     "effects": [
@@ -789,12 +803,309 @@
         "effect": "modify_yield",
         "params": {
           "yield": "science",
-          "percent": 10
+          "amount": 3
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": "building_university"
+        }
+      }
+    ]
+  },
+  {
+    "type": "policy",
+    "id": "policy_charted_coasts",
+    "name": "Charted Coasts",
+    "description": "Harbors' adjacency bonuses are doubled (+100%).",
+    "slot": "economic",
+    "effects": [
+      {
+        "effect": "adjacency_percent",
+        "params": {
+          "district": "district_harbor",
+          "percent": 100
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "requiresCivic": "civic_exploration"
+  },
+  {
+    "type": "policy",
+    "id": "policy_border_forts",
+    "name": "Border Forts",
+    "description": "+100% production toward Walls, Castles and Star Forts.",
+    "slot": "military",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 100,
+          "toward": {
+            "kind": "building",
+            "building": ["building_walls", "building_castle", "building_star_fort"]
+          }
         },
         "target": {
           "scope": "settlements"
         }
       }
-    ]
+    ],
+    "requiresCivic": "civic_defensive_tactics"
+  },
+  {
+    "type": "policy",
+    "id": "policy_trade_delegations",
+    "name": "Trade Delegations",
+    "description": "+1 influence a turn for every deal you have running.",
+    "slot": "diplomatic",
+    "effects": [
+      {
+        "effect": "influence_per_deal",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "requiresCivic": "civic_foreign_trade"
+  },
+  {
+    "type": "policy",
+    "id": "policy_air_doctrine",
+    "name": "Air Doctrine",
+    "description": "+50% production toward aircraft.",
+    "slot": "military",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "kind": "unit",
+            "unitClass": "class_air"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "requiresCivic": "civic_cold_war"
+  },
+  {
+    "type": "policy",
+    "id": "policy_self_determination",
+    "name": "Self-Determination",
+    "description": "+4 loyalty in every settlement, and +1 happiness in towns.",
+    "slot": "diplomatic",
+    "effects": [
+      {
+        "effect": "modify_loyalty",
+        "params": {
+          "amount": 4
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_kind": "town"
+        }
+      }
+    ],
+    "requiresCivic": "civic_decolonization"
+  },
+  {
+    "type": "policy",
+    "id": "policy_space_program",
+    "name": "Space Program",
+    "description": "+50% production toward projects (the space race, and district projects).",
+    "slot": "economic",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "kind": "project"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "requiresCivic": "civic_space_age"
+  },
+  {
+    "type": "policy",
+    "id": "policy_green_energy",
+    "name": "Green Energy",
+    "description": "+3 production in every settlement with a Power Plant or a Nuclear Plant.",
+    "slot": "economic",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 3
+        },
+        "target": {
+          "scope": "settlements"
+        },
+        "condition": {
+          "settlement_has_building": ["building_power_plant", "building_nuclear_plant"]
+        }
+      }
+    ],
+    "requiresCivic": "civic_environmentalism"
+  },
+  {
+    "type": "policy",
+    "id": "policy_world_forum",
+    "name": "World Forum",
+    "description": "+2 diplomatic favor a turn.",
+    "slot": "diplomatic",
+    "effects": [
+      {
+        "effect": "diplomatic_favor",
+        "params": {
+          "amount": 2
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ],
+    "requiresCivic": "civic_globalization"
+  },
+  {
+    "type": "policy",
+    "id": "policy_martial_law",
+    "name": "Martial Law",
+    "description": "Dark age only: +3 loyalty and +2 happiness in every settlement, but −15% culture.",
+    "slot": "wildcard",
+    "effects": [
+      {
+        "effect": "modify_loyalty",
+        "params": {
+          "amount": 3
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": -15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "requiresCivic": "civic_code_of_laws",
+    "requiresAge": "age_dark"
+  },
+  {
+    "type": "policy",
+    "id": "policy_monastic_retreat",
+    "name": "Monastic Retreat",
+    "description": "Dark age only: +25% faith and +15% science, but −20% gold.",
+    "slot": "wildcard",
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 25
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": -20
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "requiresCivic": "civic_code_of_laws",
+    "requiresAge": "age_dark"
+  },
+  {
+    "type": "policy",
+    "id": "policy_rally_the_levies",
+    "name": "Rally the Levies",
+    "description": "Dark age only: +50% production toward soldiers, but −10% science.",
+    "slot": "wildcard",
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 50,
+          "toward": {
+            "kind": "unit",
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": -10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "requiresCivic": "civic_code_of_laws",
+    "requiresAge": "age_dark"
   }
 ]

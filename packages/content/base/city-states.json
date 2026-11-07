@@ -6,6 +6,7 @@
     "icon": "🔬",
     "color": "#3f7fd0",
     "district": "district_campus",
+    "greatPersonClass": "gp_scientist",
     "tiers": [
       {
         "envoys": 1,
@@ -73,6 +74,7 @@
     "icon": "🎭",
     "color": "#9a4fc0",
     "district": "district_theater",
+    "greatPersonClass": "gp_writer",
     "tiers": [
       {
         "envoys": 1,
@@ -140,6 +142,7 @@
     "icon": "💰",
     "color": "#d0a03f",
     "district": "district_commercial_hub",
+    "greatPersonClass": "gp_merchant",
     "tiers": [
       {
         "envoys": 1,
@@ -207,6 +210,7 @@
     "icon": "🙏",
     "color": "#d8d8d0",
     "district": "district_holy_site",
+    "greatPersonClass": "gp_prophet",
     "tiers": [
       {
         "envoys": 1,
@@ -274,6 +278,8 @@
     "icon": "⚔",
     "color": "#c03f3f",
     "district": "district_encampment",
+    "unitClass": "class_siege",
+    "greatPersonClass": "gp_general",
     "tiers": [
       {
         "envoys": 1,
@@ -344,6 +350,7 @@
     "icon": "⚙",
     "color": "#8a6a4a",
     "district": "district_industrial_zone",
+    "greatPersonClass": "gp_engineer",
     "tiers": [
       {
         "envoys": 1,

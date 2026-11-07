@@ -1,10 +1,11 @@
+import { ideologyHappinessUnder } from '../culture/ideology';
 import { type SlotKind } from '@cx/content';
 import { toFixed } from '../fixed';
 import {
   availableGovernments,
   availableNodes,
   availablePolicies,
-  nodeCost,
+  nodeCostFor,
   policyProblem,
   type TreeKind,
   trackOf,
@@ -240,7 +241,7 @@ function bestNode(t: Turn, kind: TreeKind): string | undefined {
   for (const id of availableNodes(t.ctx, t.p, kind)) {
     const left = Math.max(
       toFixed(1),
-      nodeCost(t.ctx, t.state, kind, id) - (track.progress[id] ?? 0),
+      nodeCostFor(t.ctx, t.state, t.player, kind, id) - (track.progress[id] ?? 0),
     );
     // What it unlocks, plus a little of what the nodes after it unlock (so paths get followed).
     const later = followers(t, kind, id).reduce((sum, next) => sum + nodeValue(t, kind, next), 0);
@@ -332,6 +333,14 @@ function bestGovernment(t: Turn): string | undefined {
     let v = 0;
     for (const kind of SLOT_KINDS) v += g.slots[kind] * weights[kind];
     for (const effect of g.effects) v += effectValue(t, effect);
+    // Ideologies (D118): the camp of the civs whose culture weighs on us is the calmer one.
+    const mood = ideologyHappinessUnder(t.ctx, t.state, t.player, id);
+    if (mood !== 0)
+      v += effectValue(t, {
+        effect: 'modify_happiness',
+        params: { amount: mood },
+        target: { scope: 'settlements' },
+      });
     return v;
   };
   let best = { id: t.p.government, score: score(t.p.government) };

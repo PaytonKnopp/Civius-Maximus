@@ -26,6 +26,10 @@ export interface Settings {
   muteInBackground: boolean;
   /** A save at the start of every turn (here, and to the account when signed in). */
   autosave: boolean;
+  /** Online games: a browser notification when your turn comes while the tab is hidden. */
+  turnNotices: boolean;
+  /** After a unit is done for the turn, the next one that needs orders is selected (D32). */
+  autoCycle: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -37,6 +41,8 @@ export const DEFAULT_SETTINGS: Settings = {
   largeText: false,
   muteInBackground: true,
   autosave: true,
+  turnNotices: true,
+  autoCycle: true,
 };
 
 const KEY = 'cx.settings';
@@ -57,6 +63,8 @@ function sanitize(raw: unknown): Settings {
     largeText: bool('largeText'),
     muteInBackground: bool('muteInBackground'),
     autosave: bool('autosave'),
+    turnNotices: bool('turnNotices'),
+    autoCycle: bool('autoCycle'),
   };
 }
 

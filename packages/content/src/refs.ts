@@ -142,6 +142,12 @@ export function effectRefs(out: Refs, e: Effect, path: PathSegment[]) {
     case 'free_building':
       ids(out, 'building', e.params.building, [...at, 'building']);
       break;
+    case 'adjacency_percent':
+      ids(out, 'district', e.params.district, [...at, 'district']);
+      break;
+    case 'yield_per_appeal':
+      out.push({ path: [...at, 'yield'], kind: 'yield', id: e.params.yield });
+      break;
     case 'extra_adjacency':
       ids(out, 'district', e.params.district, [...at, 'district']);
       adjacencyRefs(out, [e.params.adjacency], [...at, 'adjacency']);
@@ -220,6 +226,8 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       yieldKeys(out, entity.yields, ['yields']);
       ids(out, 'terrain', entity.validTerrains, ['validTerrains']);
       ids(out, 'feature', entity.validFeatures, ['validFeatures']);
+      ids(out, 'tech', entity.revealedBy, ['revealedBy']);
+      effectList(out, entity.monopoly, ['monopoly']);
       break;
     case 'ability':
       effectList(out, entity.effects, ['effects']);
@@ -248,6 +256,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ids(out, 'feature', entity.origin.feature, ['origin', 'feature']);
       ids(out, 'terrain', entity.origin.terrain, ['origin', 'terrain']);
       ids(out, 'feature', entity.spreadFeature, ['spreadFeature']);
+      ids(out, 'district', entity.preventedBy, ['preventedBy']);
       yieldKeys(out, entity.fertility, ['fertility']);
       break;
     case 'resolution':
@@ -266,6 +275,9 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       uniqueRefs(out, 'unit', entity);
       yieldKeys(out, entity.killYields, ['killYields']);
       ids(out, 'unit', entity.upgradesTo, ['upgradesTo']);
+      ids(out, 'resource', Object.keys(entity.resourceCost ?? {}).sort(), ['resourceCost']);
+      ids(out, 'resource', Object.keys(entity.resourceUpkeep ?? {}).sort(), ['resourceUpkeep']);
+      ids(out, 'unitClass', entity.support?.classes, ['support', 'classes']);
       break;
     case 'improvement':
       requirements(out, entity);
@@ -282,9 +294,11 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       yieldKeys(out, entity.yields, ['yields']);
       requirements(out, entity);
       ids(out, 'building', entity.requiresBuilding, ['requiresBuilding']);
+      ids(out, 'building', entity.excludes, ['excludes']);
       ids(out, 'district', entity.district, ['district']);
       effectList(out, entity.localEffects, ['localEffects']);
       effectList(out, entity.effects, ['effects']);
+      if (entity.regional) effectList(out, entity.regional.effects, ['regional', 'effects']);
       uniqueRefs(out, 'building', entity);
       break;
     case 'district':
@@ -303,12 +317,20 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       placementRefs(out, entity.placement, ['placement']);
       effectList(out, entity.localEffects, ['localEffects']);
       effectList(out, entity.effects, ['effects']);
+      if (entity.regional) effectList(out, entity.regional.effects, ['regional', 'effects']);
       requirements(out, entity);
       break;
     case 'project':
       ids(out, 'feature', entity.clears, ['clears']);
       ids(out, 'district', entity.onDistrict, ['onDistrict']);
       yieldKeys(out, entity.reward, ['reward']);
+      yieldKeys(out, entity.costShare, ['costShare']);
+      if (entity.greatPersonPoints)
+        out.push({
+          path: ['greatPersonPoints', 'class'],
+          kind: 'greatPersonClass',
+          id: entity.greatPersonPoints.class,
+        });
       requirements(out, entity);
       break;
     case 'specialization':
@@ -329,6 +351,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'era':
       ids(out, 'unit', entity.start?.units, ['start', 'units']);
+      ids(out, 'building', entity.start?.buildings, ['start', 'buildings']);
       break;
     case 'leader':
       out.push({ path: ['civ'], kind: 'civ', id: entity.civ });
@@ -347,10 +370,12 @@ export function collectRefs(entity: AnyEntity): Ref[] {
     case 'government':
       ids(out, 'civic', entity.requiresCivic, ['requiresCivic']);
       effectList(out, entity.effects, ['effects']);
+      effectList(out, entity.legacy, ['legacy']);
       break;
     case 'policy':
       ids(out, 'civic', entity.requiresCivic, ['requiresCivic']);
       ids(out, 'civic', entity.obsoletedBy, ['obsoletedBy']);
+      ids(out, 'age', entity.requiresAge, ['requiresAge']);
       effectList(out, entity.effects, ['effects']);
       break;
     case 'greatPersonClass':
@@ -361,6 +386,8 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       break;
     case 'cityStateType':
       ids(out, 'district', entity.district, ['district']);
+      ids(out, 'unitClass', entity.unitClass, ['unitClass']);
+      ids(out, 'greatPersonClass', entity.greatPersonClass, ['greatPersonClass']);
       entity.tiers.forEach((t, i) => effectList(out, t.effects, ['tiers', i, 'effects']));
       break;
     case 'cityState':
@@ -394,6 +421,7 @@ export function collectRefs(entity: AnyEntity): Ref[] {
       ids(out, 'unit', entity.units.startingUnits, ['units', 'startingUnits']);
       out.push({ path: ['greatPeople', 'unit'], kind: 'unit', id: entity.greatPeople.unit });
       ids(out, 'project', entity.science.projects, ['science', 'projects']);
+      ids(out, 'era', entity.culture.victoryEra, ['culture', 'victoryEra']);
       out.push({
         path: ['religion', 'holyDistrict'],
         kind: 'district',
@@ -417,6 +445,13 @@ export function collectRefs(entity: AnyEntity): Ref[] {
         ids(out, 'unit', u.units, ['camps', 'units', i, 'units']);
       });
       ids(out, 'district', entity.trade.seaDistrict, ['trade', 'seaDistrict']);
+      ids(out, 'era', Object.keys(entity.progress.eraCostPercent).sort(), [
+        'progress',
+        'eraCostPercent',
+      ]);
+      entity.ideology.camps.forEach((c, i) =>
+        ids(out, 'government', c.governments, ['ideology', 'camps', i, 'governments']),
+      );
       entity.huts?.rewards.forEach((r, i) =>
         ids(out, 'unit', r.unit, ['huts', 'rewards', i, 'unit']),
       );

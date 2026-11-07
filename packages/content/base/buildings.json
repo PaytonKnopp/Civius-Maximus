@@ -707,7 +707,7 @@
     "type": "building",
     "id": "building_factory",
     "name": "Factory",
-    "description": "+4 production. Emissions 2 a turn.",
+    "description": "+4 production. Emissions 2 a turn. +3 production in your other settlements within 6 tiles that have no Factory.",
     "icon": "Fa",
     "cost": 390,
     "maintenance": 3,
@@ -729,7 +729,22 @@
       }
     ],
     "requiresTech": "tech_industrialization",
-    "emissions": 2
+    "emissions": 2,
+    "regional": {
+      "radius": 6,
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "amount": 3
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "building",
@@ -774,7 +789,22 @@
       }
     ],
     "requiresTech": "tech_industrialization",
-    "emissions": 2
+    "emissions": 2,
+    "regional": {
+      "radius": 6,
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "amount": 3
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "building",
@@ -810,7 +840,7 @@
     "type": "building",
     "id": "building_power_plant",
     "name": "Power Plant",
-    "description": "+5 production. Emissions 3 a turn.",
+    "description": "+5 production. Emissions 3 a turn. +4 production in your other settlements within 6 tiles that have no Power Plant.",
     "icon": "PP",
     "cost": 450,
     "maintenance": 4,
@@ -820,7 +850,22 @@
     "requiresBuilding": "building_factory",
     "district": "district_industrial_zone",
     "requiresTech": "tech_electricity",
-    "emissions": 3
+    "emissions": 3,
+    "regional": {
+      "radius": 6,
+      "effects": [
+        {
+          "effect": "modify_yield",
+          "params": {
+            "yield": "production",
+            "amount": 4
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "building",
@@ -917,7 +962,7 @@
     "type": "building",
     "id": "building_stadium",
     "name": "Stadium",
-    "description": "+2 happiness and +2 tourism.",
+    "description": "+2 happiness and +2 tourism. +2 happiness in your other settlements within 6 tiles that have no Stadium.",
     "icon": "St",
     "cost": 450,
     "maintenance": 3,
@@ -927,7 +972,21 @@
     "requiresBuilding": "building_arena",
     "district": "district_entertainment",
     "happiness": 2,
-    "requiresCivic": "civic_urbanization"
+    "requiresCivic": "civic_urbanization",
+    "regional": {
+      "radius": 6,
+      "effects": [
+        {
+          "effect": "modify_happiness",
+          "params": {
+            "amount": 2
+          },
+          "target": {
+            "scope": "settlements"
+          }
+        }
+      ]
+    }
   },
   {
     "type": "building",
@@ -941,7 +1000,8 @@
       "production": 6
     },
     "district": "district_industrial_zone",
-    "requiresTech": "tech_nuclear_fission"
+    "requiresTech": "tech_nuclear_fission",
+    "requiresBuilding": "building_power_plant"
   },
   {
     "type": "building",
@@ -1843,6 +1903,179 @@
         "effect": "modify_growth",
         "params": {
           "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "building",
+    "id": "building_envoys_hall",
+    "name": "Envoys’ Hall",
+    "description": "Tier 1 of the Government Plaza (instead of the Builders’ Lodge): +3 influence, and +1 diplomatic favor a turn once the World Congress forms.",
+    "icon": "EH",
+    "cost": 90,
+    "maintenance": 1,
+    "district": "district_government_plaza",
+    "requiresCivic": "civic_political_philosophy",
+    "excludes": ["building_builders_lodge"],
+    "yields": {
+      "influence": 3
+    },
+    "effects": [
+      {
+        "effect": "diplomatic_favor",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "building",
+    "id": "building_builders_lodge",
+    "name": "Builders’ Lodge",
+    "description": "Tier 1 of the Government Plaza (instead of the Envoys’ Hall): +25% production toward districts in this settlement.",
+    "icon": "BL",
+    "cost": 90,
+    "maintenance": 1,
+    "district": "district_government_plaza",
+    "requiresCivic": "civic_political_philosophy",
+    "excludes": ["building_envoys_hall"],
+    "localEffects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 25,
+          "toward": {
+            "kind": "district"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "building",
+    "id": "building_treasury_hall",
+    "name": "Treasury Hall",
+    "description": "Tier 2 of the Government Plaza (instead of the War College): +4 gold here and +5% gold in every settlement.",
+    "icon": "TH",
+    "cost": 160,
+    "maintenance": 2,
+    "district": "district_government_plaza",
+    "requiresCivic": "civic_civil_service",
+    "excludes": ["building_war_college"],
+    "yields": {
+      "gold": 4
+    },
+    "effects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 5
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "building",
+    "id": "building_war_college",
+    "name": "War College",
+    "description": "Tier 2 of the Government Plaza (instead of the Treasury Hall): +10% production toward soldiers in every settlement.",
+    "icon": "WC",
+    "cost": 160,
+    "maintenance": 2,
+    "district": "district_government_plaza",
+    "requiresCivic": "civic_civil_service",
+    "excludes": ["building_treasury_hall"],
+    "effects": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 10,
+          "toward": {
+            "kind": "unit",
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "building",
+    "id": "building_grand_archive",
+    "name": "Grand Archive",
+    "description": "Tier 3 of the Government Plaza (instead of the National Monument): +15% Great Scientist, Writer and Artist points.",
+    "icon": "GA",
+    "cost": 280,
+    "maintenance": 3,
+    "district": "district_government_plaza",
+    "requiresCivic": "civic_nationalism",
+    "excludes": ["building_national_monument"],
+    "effects": [
+      {
+        "effect": "great_person_points_percent",
+        "params": {
+          "class": "gp_scientist",
+          "percent": 15
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "great_person_points_percent",
+        "params": {
+          "class": "gp_writer",
+          "percent": 15
+        },
+        "target": {
+          "scope": "player"
+        }
+      },
+      {
+        "effect": "great_person_points_percent",
+        "params": {
+          "class": "gp_artist",
+          "percent": 15
+        },
+        "target": {
+          "scope": "player"
+        }
+      }
+    ]
+  },
+  {
+    "type": "building",
+    "id": "building_national_monument",
+    "name": "National Monument",
+    "description": "Tier 3 of the Government Plaza (instead of the Grand Archive): +1 happiness in every settlement.",
+    "icon": "NM",
+    "cost": 280,
+    "maintenance": 3,
+    "district": "district_government_plaza",
+    "requiresCivic": "civic_nationalism",
+    "excludes": ["building_grand_archive"],
+    "effects": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
         },
         "target": {
           "scope": "settlements"

@@ -101,7 +101,8 @@ Supabase project), beside what an account adds.
 
 **Options:** Sound (master, music, effects and ambience volumes, mute, mute in a background tab,
 test sounds), Graphics (3D or 2D map, 3D quality, frame rate counter, full screen, reduce
-motion), Interface (larger menu text, tooltips, first-game hints, advisor tips), Game and saves
+motion), Interface (larger menu text, tooltips, first-game hints, advisor tips, and "select the
+next unit": D32's auto-cycling, on by default), Game and saves
 (autosave every turn, clear the Hall of Fame, reset options), Controls (every key and mouse
 action) and About. Everything applies at once and is kept in the browser (`settings.ts`); the
 game menu's quality switch and the game bar's 3D/2D switch change the same settings.
@@ -130,7 +131,9 @@ sizes, and fixed where it looked or worked worse than it should.
   so moving between screens no longer flashes the bare map; the leader picker is full screen.
   The New game World page shows each map type as a card with a picture, a Duel-size map made by
   the real generator from a fixed seed (mod map types get one too; `setup/MapTypes.tsx`, also
-  used when hosting online). The Players page aligns color and team, the name reads as an
+  used when hosting online). A setup likely to feel slow (12 or more civs, or 8 or more on the
+  biggest map) gets a gentle note under the map size, suggesting a smaller map, fewer civs or
+  Quick speed; it never blocks the choice (D98). The Players page aligns color and team, the name reads as an
   editable title, and the portrait is smaller so the leader's abilities fit; "Next" says where
   it goes. Options tabs and Load game have their own icons (sound, display, sliders, save,
   keyboard). The Civilopedia's facts sit in a compact grid, breadcrumbs read as links, and stale
@@ -313,6 +316,15 @@ the AI uses, the top three in gold), Resources (by name, colored bonus / luxury 
 Religion (each known settlement's territory in its religion's color, named on the center). The
 rest of the table comes later. District adjacency already shows while placing a district.
 
+**Built (final gameplay pass, 2E):** thirteen lenses, each with a legend under the picker (L
+cycles them): Yields (every explored tile), Settling, District adjacency (the specialty
+district with the best adjacency on each free tile of yours, "Cp+3"), Appeal (the number and
+its word, green to red), Resources, Empires (each civ's land in its color), Continents,
+Military (enemy zones of control in red, neutral units amber, your soldiers blue), Trade routes
+(paths in their owner's color, labeled with where they lead), Religion, Loyalty and Natural
+wonders. Still to come: one-yield heatmaps, resource filters, tourism, climate, great works and
+governors lenses, map filters, pins and planning ghosts.
+
 **First-game hints (D81):** players know Civ, so there's no tutorial, but the first time
 something this game does its own way comes up (growth develops a tile, towns, free policy swaps
 after a civic, commanders, envoys...) a short note says so, once. One click turns them off; the
@@ -358,6 +370,25 @@ the next blocker ("Choose production in Rome", "Units need orders", "Choose a re
 an empty policy slot", "Pick a pantheon") and takes you there on click. Once nothing's left it
 becomes **End Turn**. Units can sleep, fortify or skip so they stop asking. Optional setting:
 also stop for "a city finished a building" style notices.
+
+When a unit is done for the turn, the next one that needs orders is selected and the map moves
+to it (D32); a switch in Options turns that off, and the moved unit stays selected.
+
+**Built (final gameplay pass, 2E):**
+- Units can **Explore** (they head for the nearest edge of the known map every turn and say so
+  when nothing reachable is left) or stand on **Alert** (asleep until an enemy soldier comes into
+  sight, with a notice).
+- **Repeat** on the current build of a city keeps training the same unit (or doing the same
+  repeatable project) until changed; it survives the unit's upgrade.
+- **Quick save (F5) and quick load (F9)** in games this tab holds; **Ctrl+Z** takes back a
+  move in single player (see [02-multiplayer.md](02-multiplayer.md)).
+- **Welcome back:** a saved game picked up again opens with where things stand: era, score and
+  place, research and civic, wars, deals waiting, settlements with nothing to build, a Congress
+  vote.
+- The tech and civic trees list every district, wonder and project a node opens, and the
+  resources a tech reveals ("Reveals Iron").
+- The top bar shows each strategic stockpile you know about, with its change per turn (red when
+  short; the tooltip splits sources, trades and upkeep); phones leave it out.
 
 ## Graphs and statistics (a favourite, so more than Civ VI)
 

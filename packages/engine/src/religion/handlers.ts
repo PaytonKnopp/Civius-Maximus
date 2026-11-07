@@ -149,7 +149,7 @@ export const religionHandlers = {
       const religion = faithUnitReligion(view(draft), s)!;
       const id = spawnUnit(draft, ctx, action.player, action.unit, s.tile);
       if (!id) return;
-      draft.players[action.player]!.faith -= faithUnitCost(ctx, view(draft), def.faithCost);
+      draft.players[action.player]!.faith -= faithUnitCost(ctx, view(draft), def.faithCost, s);
       draft.units[id]!.religion = religion;
       draft.units[id]!.charges =
         def.religious?.charges ?? ctx.content.rules.religion.missionaryCharges;

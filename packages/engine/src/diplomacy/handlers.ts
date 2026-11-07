@@ -11,7 +11,10 @@ import {
 } from '../context';
 import { view } from '../draft';
 import { toFixed } from '../fixed';
-import type { GameState, PlayerId, Proposal } from '../state';
+import { grantBoost } from '../progress/handlers';
+import { sourceIncome } from '../resources/strategic';
+import { luxuryCopies } from '../settlements/luxuries';
+import type { GameState, PlayerId, Proposal, ResourceTrade } from '../state';
 import { dealProblem, denounceProblem, influencePerTurn } from './rules';
 
 /** Deals, denouncing, and each turn's influence, payments and expiries. */
@@ -64,6 +67,22 @@ function sign(draft: Draft<GameState>, ctx: EngineContext, deal: Proposal, emit:
     a.influence -= toFixed(rules.allianceCost);
     b.influence -= toFixed(rules.allianceCost);
   }
+  if (deal.openBorders) {
+    d.openBorders = { ...d.openBorders, [key]: draft.turn + rules.openBordersTurns };
+    a.influence -= toFixed(rules.openBordersCost);
+    b.influence -= toFixed(rules.openBordersCost);
+  }
+  if (deal.research) {
+    d.research = { ...d.research, [key]: draft.turn + rules.researchTurns };
+    a.influence -= toFixed(rules.researchCost);
+    b.influence -= toFixed(rules.researchCost);
+  }
+  const trades: ResourceTrade[] = [];
+  for (const [resource, amount] of Object.entries(deal.give.resources ?? {}).sort())
+    trades.push({ from, to, resource, amount, until: last });
+  for (const [resource, amount] of Object.entries(deal.get.resources ?? {}).sort())
+    trades.push({ from: to, to: from, resource, amount, until: last });
+  if (trades.length > 0) d.trades = [...(d.trades ?? []), ...trades];
   if (deal.peace) emit({ type: 'peace_made', players: [from, to], visibleTo: 'all' });
 }
 
@@ -91,6 +110,8 @@ export const diplomacyHandlers = {
         friendship: action.friendship,
         alliance: action.alliance,
         peace: action.peace,
+        ...(action.openBorders ? { openBorders: true } : {}),
+        ...(action.research ? { research: true } : {}),
       });
       emit({
         type: 'deal_proposed',
@@ -114,7 +135,11 @@ export const diplomacyHandlers = {
     apply(draft, action, ctx, emit) {
       const deal = findProposal(view(draft), action.deal)!;
       // A plain copy: the draft's entry is about to go.
-      const plain: Proposal = { ...deal, give: { ...deal.give }, get: { ...deal.get } };
+      const plain: Proposal = {
+        ...deal,
+        give: { ...deal.give, resources: { ...deal.give.resources } },
+        get: { ...deal.get, resources: { ...deal.get.resources } },
+      };
       draft.diplomacy.proposals = draft.diplomacy.proposals.filter((p) => p.id !== action.deal);
       if (!action.accept) {
         emit({
@@ -127,7 +152,12 @@ export const diplomacyHandlers = {
         return;
       }
       sign(draft, ctx, plain, emit);
-      const pact = plain.friendship || plain.alliance || plain.peace;
+      const pact =
+        plain.friendship ||
+        plain.alliance ||
+        plain.peace ||
+        plain.openBorders === true ||
+        plain.research === true;
       emit({
         type: 'deal_accepted',
         deal: plain.id,
@@ -136,6 +166,8 @@ export const diplomacyHandlers = {
         friendship: plain.friendship,
         alliance: plain.alliance,
         peace: plain.peace,
+        ...(plain.openBorders ? { openBorders: true } : {}),
+        ...(plain.research ? { research: true } : {}),
         visibleTo: pact ? 'all' : [plain.from, plain.to],
       });
     },
@@ -198,12 +230,28 @@ export function diplomacyTurn(draft: Draft<GameState>, ctx: EngineContext, emit:
     if (pay.until > turn) kept.push(pay);
   }
   d.payments = kept;
+  if (d.trades?.length) d.trades = deliverTrades(draft, ctx, emit);
   for (const kind of ['friendship', 'alliance'] as const) {
     const table = kind === 'friendship' ? d.friends : d.alliances;
     for (const key of Object.keys(table).sort()) {
       if (table[key]! > turn) continue;
       delete table[key];
       const [a, b] = key.split('|') as [PlayerId, PlayerId];
+      emit({ type: 'pact_ended', kind, players: [a, b], visibleTo: [a, b] });
+    }
+  }
+  for (const kind of ['open_borders', 'research'] as const) {
+    const table = kind === 'open_borders' ? d.openBorders : d.research;
+    if (!table) continue;
+    for (const key of Object.keys(table).sort()) {
+      if (table[key]! > turn) continue;
+      delete table[key];
+      const [a, b] = key.split('|') as [PlayerId, PlayerId];
+      // A research agreement that ran its course: a boost for each side.
+      if (kind === 'research')
+        for (const p of [a, b])
+          if (draft.players[p]?.alive)
+            grantBoost(draft, ctx, p, emit, 'tech', draft.players[p]!.techs.current ?? undefined);
       emit({ type: 'pact_ended', kind, players: [a, b], visibleTo: [a, b] });
     }
   }
@@ -222,13 +270,72 @@ export function diplomacyTurn(draft: Draft<GameState>, ctx: EngineContext, emit:
   }
 }
 
+/**
+ * This turn's resource trades: a luxury needs a copy for every one sent (each improved tile is
+ * one), a strategic resource the sender's own income per turn (the stockpiles move with each
+ * player's resource turn). One the sender can no longer cover breaks the deal, like a missed
+ * payment; the rest run until their last turn.
+ */
+function deliverTrades(draft: Draft<GameState>, ctx: EngineContext, emit: Emit): ResourceTrade[] {
+  const snap = view(draft);
+  const turn = draft.turn;
+  const kept: ResourceTrade[] = [];
+  const copies = new Map<PlayerId, Record<string, number>>();
+  const income = new Map<PlayerId, Record<string, number>>();
+  const used = new Map<string, number>();
+  for (const t of draft.diplomacy.trades ?? []) {
+    if (!draft.players[t.from]?.alive || !draft.players[t.to]?.alive) continue;
+    const res = ctx.content.entities.resource[t.resource];
+    if (!res) continue;
+    let have: number;
+    if (res.class === 'luxury') {
+      if (!copies.has(t.from)) copies.set(t.from, luxuryCopies(ctx, snap, t.from));
+      have = copies.get(t.from)![t.resource] ?? 0;
+    } else {
+      if (!income.has(t.from)) income.set(t.from, sourceIncome(ctx, snap, t.from));
+      have = income.get(t.from)![t.resource] ?? 0;
+    }
+    const key = `${t.from}:${t.resource}`;
+    const after = (used.get(key) ?? 0) + t.amount;
+    if (after > have) {
+      draft.diplomacy.incidents.push({ kind: 'broke_deal', by: t.from, against: t.to, turn });
+      emit({ type: 'deal_broken', by: t.from, to: t.to, visibleTo: 'all' });
+      continue;
+    }
+    used.set(key, after);
+    if (t.until > turn) kept.push({ ...t });
+  }
+  return kept;
+}
+
 /** A defeated player's pacts, payments and offers end (what they did is still remembered). */
 export function forgetPlayer(draft: Draft<GameState>, player: PlayerId) {
   const d = draft.diplomacy;
   const involves = (key: string) => key.split(/[|>]/).includes(player);
-  for (const table of [d.friends, d.alliances, d.peaceUntil, d.lastWar, d.denounced]) {
+  for (const table of [
+    d.friends,
+    d.alliances,
+    d.peaceUntil,
+    d.lastWar,
+    d.denounced,
+    d.openBorders ?? {},
+    d.research ?? {},
+  ]) {
     for (const key of Object.keys(table)) if (involves(key)) delete table[key];
   }
   d.payments = d.payments.filter((p) => p.from !== player && p.to !== player);
   d.proposals = d.proposals.filter((p) => p.from !== player && p.to !== player);
+  if (d.trades) d.trades = d.trades.filter((t) => t.from !== player && t.to !== player);
+}
+
+/** War ends every deal between the two: payments, trades, open borders, research, offers. */
+export function endDealsBetween(draft: Draft<GameState>, a: PlayerId, b: PlayerId) {
+  const d = draft.diplomacy;
+  const between = (x: string, y: string) => (x === a && y === b) || (x === b && y === a);
+  d.payments = d.payments.filter((p) => !between(p.from, p.to));
+  d.proposals = d.proposals.filter((p) => !between(p.from, p.to));
+  if (d.trades) d.trades = d.trades.filter((t) => !between(t.from, t.to));
+  const key = warKey(a, b);
+  if (d.openBorders?.[key] !== undefined) delete d.openBorders[key];
+  if (d.research?.[key] !== undefined) delete d.research[key];
 }

@@ -3,9 +3,11 @@ import {
   type Action,
   availableGovernments,
   availablePolicies,
+  campOfGovernment,
   type EngineContext,
   type GameState,
   governmentChangeCost,
+  ideologyHappinessUnder,
   type PlayerId,
   policyChangeCost,
   policyProblem,
@@ -14,6 +16,7 @@ import {
   withArticle,
 } from '@cx/engine';
 import { type DragEvent, useEffect, useState } from 'react';
+import { effectLines } from './effectText';
 import { whole } from './model';
 import { Icon, Rich } from '../ui/Icon';
 import { useEscape } from '../ui/Menu';
@@ -174,6 +177,36 @@ export function GovernmentScreen({ ctx, state, viewer, act, onClose }: Props) {
                 </span>
               </div>
               {g.description && <p className="hint">{t(g.description)}</p>}
+              {g.legacy.length > 0 && (
+                <p
+                  className="hint"
+                  title={`Every ${content.rules.progress.legacy.everyTurns} turns in it (scaled by speed) earns one, kept after you switch, up to ${content.rules.progress.legacy.max}`}
+                >
+                  Legacy: {effectLines(content, g.legacy).join('; ')}
+                  {(p.legacies?.[g.id] ?? 0) > 0
+                    ? ` · earned ${p.legacies![g.id]} of ${content.rules.progress.legacy.max}`
+                    : ''}
+                  {current && (p.legacies?.[g.id] ?? 0) < content.rules.progress.legacy.max
+                    ? ` · next in ${Math.max(0, content.rules.progress.legacy.everyTurns - (p.legacyClock ?? 0))} turns`
+                    : ''}
+                </p>
+              )}
+              {(() => {
+                // Ideologies (D118): the camp, and how its rivals' culture would sit with us.
+                const camp = campOfGovernment(ctx, g.id);
+                if (!camp) return null;
+                const mood = ideologyHappinessUnder(ctx, state, viewer, g.id);
+                return (
+                  <p className="hint">
+                    Ideology: <strong>{camp.name}</strong>
+                    {mood < 0
+                      ? ` · ${mood} happiness in every settlement from rival camps' tourism`
+                      : mood > 0
+                        ? ` · +${mood} happiness in every settlement (a culture of the same camp)`
+                        : ''}
+                  </p>
+                );
+              })()}
               {current ? (
                 <span className="badge">Current</span>
               ) : open ? (

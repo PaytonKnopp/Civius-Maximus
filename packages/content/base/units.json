@@ -23,7 +23,8 @@
     "strength": 10,
     "cost": 30,
     "icon": "Sc",
-    "model": "scout"
+    "model": "scout",
+    "upgradesTo": "unit_ranger"
   },
   {
     "type": "unit",
@@ -230,7 +231,10 @@
     "icon": "Ho",
     "model": "horseman",
     "requiresTech": "tech_horseback_riding",
-    "upgradesTo": "unit_courser"
+    "upgradesTo": "unit_courser",
+    "resourceCost": {
+      "horses": 10
+    }
   },
   {
     "type": "unit",
@@ -244,7 +248,10 @@
     "icon": "Sw",
     "model": "sword",
     "requiresTech": "tech_iron_working",
-    "upgradesTo": "unit_man_at_arms"
+    "upgradesTo": "unit_man_at_arms",
+    "resourceCost": {
+      "iron": 10
+    }
   },
   {
     "type": "unit",
@@ -304,7 +311,10 @@
     "icon": "Kn",
     "model": "knight",
     "requiresTech": "tech_stirrups",
-    "upgradesTo": "unit_tank"
+    "upgradesTo": "unit_tank",
+    "resourceCost": {
+      "iron": 10
+    }
   },
   {
     "type": "unit",
@@ -432,7 +442,10 @@
     "icon": "Mu",
     "model": "musket",
     "requiresTech": "tech_gunpowder",
-    "upgradesTo": "unit_line_infantry"
+    "upgradesTo": "unit_line_infantry",
+    "resourceCost": {
+      "niter": 10
+    }
   },
   {
     "type": "unit",
@@ -462,7 +475,10 @@
     "icon": "Bo",
     "model": "cannon",
     "requiresTech": "tech_metal_casting",
-    "upgradesTo": "unit_artillery"
+    "upgradesTo": "unit_artillery",
+    "resourceCost": {
+      "niter": 10
+    }
   },
   {
     "type": "unit",
@@ -494,7 +510,10 @@
     "model": "frigate",
     "requiresTech": "tech_square_rigging",
     "deepWater": true,
-    "upgradesTo": "unit_battleship"
+    "upgradesTo": "unit_battleship",
+    "resourceCost": {
+      "niter": 10
+    }
   },
   {
     "type": "unit",
@@ -529,7 +548,10 @@
     "icon": "LI",
     "model": "rifle",
     "requiresTech": "tech_military_science",
-    "upgradesTo": "unit_infantry"
+    "upgradesTo": "unit_infantry",
+    "resourceCost": {
+      "niter": 10
+    }
   },
   {
     "type": "unit",
@@ -557,7 +579,11 @@
     "cost": 330,
     "icon": "Cv",
     "model": "cavalry",
-    "requiresTech": "tech_military_science"
+    "requiresTech": "tech_military_science",
+    "resourceCost": {
+      "horses": 10
+    },
+    "upgradesTo": "unit_helicopter"
   },
   {
     "type": "unit",
@@ -591,7 +617,10 @@
     "icon": "FC",
     "model": "cannon",
     "requiresTech": "tech_ballistics",
-    "upgradesTo": "unit_machine_gun"
+    "upgradesTo": "unit_machine_gun",
+    "resourceCost": {
+      "niter": 10
+    }
   },
   {
     "type": "unit",
@@ -606,7 +635,13 @@
     "model": "steamship",
     "requiresTech": "tech_steam_power",
     "deepWater": true,
-    "upgradesTo": "unit_destroyer"
+    "upgradesTo": "unit_destroyer",
+    "resourceCost": {
+      "coal": 10
+    },
+    "resourceUpkeep": {
+      "coal": 1
+    }
   },
   {
     "type": "unit",
@@ -651,7 +686,10 @@
     "icon": "Ar",
     "model": "artillery",
     "requiresTech": "tech_steel",
-    "upgradesTo": "unit_rocket_artillery"
+    "upgradesTo": "unit_rocket_artillery",
+    "resourceCost": {
+      "niter": 10
+    }
   },
   {
     "type": "unit",
@@ -679,7 +717,13 @@
     "icon": "Tk",
     "model": "tank",
     "requiresTech": "tech_combustion",
-    "upgradesTo": "unit_modern_armor"
+    "upgradesTo": "unit_modern_armor",
+    "resourceCost": {
+      "oil": 10
+    },
+    "resourceUpkeep": {
+      "oil": 1
+    }
   },
   {
     "type": "unit",
@@ -693,7 +737,13 @@
     "icon": "De",
     "model": "destroyer",
     "requiresTech": "tech_combustion",
-    "deepWater": true
+    "deepWater": true,
+    "resourceCost": {
+      "oil": 10
+    },
+    "resourceUpkeep": {
+      "oil": 1
+    }
   },
   {
     "type": "unit",
@@ -710,7 +760,13 @@
     "icon": "Fi",
     "model": "plane",
     "requiresTech": "tech_flight",
-    "upgradesTo": "unit_jet_fighter"
+    "upgradesTo": "unit_jet_fighter",
+    "resourceCost": {
+      "aluminum": 10
+    },
+    "resourceUpkeep": {
+      "oil": 1
+    }
   },
   {
     "type": "unit",
@@ -727,7 +783,13 @@
     "icon": "Bo",
     "model": "bomber",
     "requiresTech": "tech_advanced_flight",
-    "upgradesTo": "unit_jet_bomber"
+    "upgradesTo": "unit_jet_bomber",
+    "resourceCost": {
+      "aluminum": 10
+    },
+    "resourceUpkeep": {
+      "oil": 1
+    }
   },
   {
     "type": "unit",
@@ -742,7 +804,13 @@
     "icon": "He",
     "model": "helicopter",
     "ignoresTerrainCost": true,
-    "requiresTech": "tech_combined_arms"
+    "requiresTech": "tech_combined_arms",
+    "resourceCost": {
+      "aluminum": 10
+    },
+    "resourceUpkeep": {
+      "oil": 1
+    }
   },
   {
     "type": "unit",
@@ -756,7 +824,13 @@
     "upkeep": 2,
     "icon": "MA",
     "model": "tank",
-    "requiresTech": "tech_composites"
+    "requiresTech": "tech_composites",
+    "resourceCost": {
+      "oil": 10
+    },
+    "resourceUpkeep": {
+      "oil": 1
+    }
   },
   {
     "type": "unit",
@@ -770,7 +844,13 @@
     "upkeep": 2,
     "icon": "MI",
     "model": "infantry",
-    "requiresTech": "tech_robotics"
+    "requiresTech": "tech_robotics",
+    "resourceCost": {
+      "oil": 10
+    },
+    "resourceUpkeep": {
+      "oil": 1
+    }
   },
   {
     "type": "unit",
@@ -786,7 +866,13 @@
     "upkeep": 2,
     "icon": "JF",
     "model": "plane",
-    "requiresTech": "tech_guidance_systems"
+    "requiresTech": "tech_guidance_systems",
+    "resourceCost": {
+      "aluminum": 15
+    },
+    "resourceUpkeep": {
+      "oil": 1
+    }
   },
   {
     "type": "unit",
@@ -802,7 +888,13 @@
     "upkeep": 3,
     "icon": "SB",
     "model": "bomber",
-    "requiresTech": "tech_stealth"
+    "requiresTech": "tech_stealth",
+    "resourceCost": {
+      "aluminum": 15
+    },
+    "resourceUpkeep": {
+      "oil": 1
+    }
   },
   {
     "type": "unit",
@@ -818,7 +910,13 @@
     "upkeep": 4,
     "icon": "TW",
     "model": "tank",
-    "requiresTech": "tech_nanotechnology"
+    "requiresTech": "tech_nanotechnology",
+    "resourceCost": {
+      "uranium": 15
+    },
+    "resourceUpkeep": {
+      "uranium": 1
+    }
   },
   {
     "type": "unit",
@@ -836,7 +934,10 @@
       "range": 8,
       "radius": 1
     },
-    "requiresTech": "tech_nuclear_fission"
+    "requiresTech": "tech_nuclear_fission",
+    "resourceCost": {
+      "uranium": 20
+    }
   },
   {
     "type": "unit",
@@ -854,7 +955,10 @@
       "range": 16,
       "radius": 2
     },
-    "requiresTech": "tech_guidance_systems"
+    "requiresTech": "tech_guidance_systems",
+    "resourceCost": {
+      "uranium": 30
+    }
   },
   {
     "type": "unit",
@@ -1207,7 +1311,10 @@
     "icon": "MA",
     "model": "sword",
     "requiresTech": "tech_apprenticeship",
-    "upgradesTo": "unit_musketman"
+    "upgradesTo": "unit_musketman",
+    "resourceCost": {
+      "iron": 10
+    }
   },
   {
     "type": "unit",
@@ -1221,7 +1328,10 @@
     "icon": "Cu",
     "model": "horseman",
     "requiresTech": "tech_machinery",
-    "upgradesTo": "unit_cavalry"
+    "upgradesTo": "unit_cavalry",
+    "resourceCost": {
+      "horses": 10
+    }
   },
   {
     "type": "unit",
@@ -1237,7 +1347,14 @@
     "icon": "Bs",
     "model": "steamship",
     "requiresTech": "tech_steel",
-    "deepWater": true
+    "deepWater": true,
+    "resourceCost": {
+      "coal": 10
+    },
+    "resourceUpkeep": {
+      "coal": 1
+    },
+    "upgradesTo": "unit_missile_cruiser"
   },
   {
     "type": "unit",
@@ -1264,6 +1381,194 @@
     "range": 3,
     "cost": 640,
     "icon": "RA",
+    "model": "artillery",
+    "requiresTech": "tech_guidance_systems",
+    "resourceCost": {
+      "aluminum": 10
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_ranger",
+    "name": "Ranger",
+    "class": "class_recon",
+    "movement": 3,
+    "sight": 3,
+    "strength": 45,
+    "cost": 200,
+    "icon": "Rg",
+    "model": "rifle",
+    "requiresTech": "tech_military_science",
+    "ignoresTerrainCost": true,
+    "upgradesTo": "unit_spec_ops"
+  },
+  {
+    "type": "unit",
+    "id": "unit_spec_ops",
+    "name": "Spec Ops",
+    "class": "class_recon",
+    "movement": 3,
+    "sight": 3,
+    "strength": 65,
+    "cost": 400,
+    "icon": "SO",
+    "model": "infantry",
+    "requiresTech": "tech_combined_arms",
+    "ignoresTerrainCost": true,
+    "ignoresZoc": true
+  },
+  {
+    "type": "unit",
+    "id": "unit_battering_ram",
+    "name": "Battering Ram",
+    "class": "class_support",
+    "movement": 2,
+    "sight": 1,
+    "cost": 65,
+    "icon": "BR",
+    "model": "siege",
+    "requiresTech": "tech_masonry",
+    "support": {
+      "radius": 1,
+      "wallsPercent": 100,
+      "classes": ["class_melee", "class_anti_cavalry"]
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_siege_tower",
+    "name": "Siege Tower",
+    "class": "class_support",
+    "movement": 2,
+    "sight": 1,
+    "cost": 100,
+    "icon": "ST",
+    "model": "siege",
+    "requiresTech": "tech_construction",
+    "support": {
+      "radius": 1,
+      "bypassWalls": true,
+      "classes": ["class_melee", "class_anti_cavalry"]
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_medic",
+    "name": "Medic",
+    "class": "class_support",
+    "movement": 2,
+    "sight": 2,
+    "cost": 300,
+    "icon": "Md",
+    "model": "infantry",
+    "requiresTech": "tech_sanitation",
+    "support": {
+      "radius": 1,
+      "heal": 20
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_fleet_commander",
+    "name": "Fleet Commander",
+    "class": "class_naval_commander",
+    "movement": 4,
+    "sight": 2,
+    "cost": 140,
+    "upkeep": 1,
+    "icon": "FC",
+    "model": "frigate",
+    "requiresCivic": "civic_mercenaries",
+    "deepWater": true,
+    "commander": {
+      "capacity": 3,
+      "radius": 1,
+      "strength": 2,
+      "retreatTurns": 5
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_submarine",
+    "name": "Submarine",
+    "class": "class_naval_ranged",
+    "movement": 4,
+    "sight": 2,
+    "strength": 65,
+    "rangedStrength": 75,
+    "range": 2,
+    "cost": 400,
+    "icon": "Sb",
+    "model": "destroyer",
+    "requiresTech": "tech_electricity",
+    "deepWater": true,
+    "upgradesTo": "unit_nuclear_submarine"
+  },
+  {
+    "type": "unit",
+    "id": "unit_nuclear_submarine",
+    "name": "Nuclear Submarine",
+    "class": "class_naval_ranged",
+    "movement": 5,
+    "sight": 3,
+    "strength": 80,
+    "rangedStrength": 95,
+    "range": 3,
+    "cost": 680,
+    "icon": "NS",
+    "model": "destroyer",
+    "requiresTech": "tech_telecommunications",
+    "deepWater": true,
+    "resourceCost": {
+      "uranium": 5
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_missile_cruiser",
+    "name": "Missile Cruiser",
+    "class": "class_naval_ranged",
+    "movement": 5,
+    "sight": 3,
+    "strength": 85,
+    "rangedStrength": 100,
+    "range": 3,
+    "cost": 680,
+    "icon": "MC",
+    "model": "steamship",
+    "requiresTech": "tech_lasers",
+    "deepWater": true,
+    "resourceCost": {
+      "aluminum": 10
+    },
+    "resourceUpkeep": {
+      "oil": 1
+    }
+  },
+  {
+    "type": "unit",
+    "id": "unit_anti_air_gun",
+    "name": "Anti-Air Gun",
+    "class": "class_anti_air",
+    "movement": 2,
+    "sight": 2,
+    "strength": 60,
+    "cost": 440,
+    "icon": "AA",
+    "model": "artillery",
+    "requiresTech": "tech_advanced_flight",
+    "upgradesTo": "unit_mobile_sam"
+  },
+  {
+    "type": "unit",
+    "id": "unit_mobile_sam",
+    "name": "Mobile SAM",
+    "class": "class_anti_air",
+    "movement": 3,
+    "sight": 2,
+    "strength": 80,
+    "cost": 620,
+    "icon": "MS",
     "model": "artillery",
     "requiresTech": "tech_guidance_systems"
   }

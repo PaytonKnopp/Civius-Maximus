@@ -172,6 +172,16 @@
   color: var(--muted);
 }
 
+/* A gentle note on setups likely to feel slow (D98). */
+.mx-heavy-note {
+  margin: 10px 0 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius-s);
+  background: rgba(210, 172, 92, 0.08);
+  color: var(--text);
+}
+
 .mx-row {
   display: flex;
   align-items: center;

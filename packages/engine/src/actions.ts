@@ -10,6 +10,8 @@ const BuildItem = z.strictObject({
   id: ContentRef,
   /** Districts, wonders and projects go on a tile. */
   tile: TileRef.optional(),
+  /** Units and repeatable projects: start another as soon as one is done, until changed. */
+  repeat: z.boolean().optional(),
 });
 const DealRef = z.string().regex(/^d\d+$/);
 /** One side of a deal. */
@@ -18,8 +20,10 @@ const Terms = z
     gold: z.int().min(0).max(1_000_000).default(0),
     goldPerTurn: z.int().min(0).max(10_000).default(0),
     maps: z.boolean().default(false),
+    /** Resources sent every turn of the deal: luxury copies, or strategic resources per turn. */
+    resources: z.record(ContentRef, z.int().min(1).max(50)).default({}),
   })
-  .default({ gold: 0, goldPerTurn: 0, maps: false });
+  .default({ gold: 0, goldPerTurn: 0, maps: false, resources: {} });
 const Focus = z.enum(['balanced', 'food', 'production', 'gold', 'science', 'culture', 'faith']);
 
 /**
@@ -37,9 +41,15 @@ export const Action = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('skip_unit'), player: PlayerRef, unit: UnitRef }),
   z.strictObject({ type: z.literal('sleep_unit'), player: PlayerRef, unit: UnitRef }),
   z.strictObject({ type: z.literal('fortify_unit'), player: PlayerRef, unit: UnitRef }),
+  /** Sleep until an enemy soldier comes into the unit's sight. */
+  z.strictObject({ type: z.literal('alert_unit'), player: PlayerRef, unit: UnitRef }),
+  /** Explore on its own, turn after turn, until there's nothing left it can reach. */
+  z.strictObject({ type: z.literal('explore_unit'), player: PlayerRef, unit: UnitRef }),
   /** Clears sleep, fortify or a queued move. */
   z.strictObject({ type: z.literal('wake_unit'), player: PlayerRef, unit: UnitRef }),
   z.strictObject({ type: z.literal('disband_unit'), player: PlayerRef, unit: UnitRef }),
+  /** After a game is won: keep playing ("one more turn"), the result kept for the record. */
+  z.strictObject({ type: z.literal('keep_playing'), player: PlayerRef }),
   /** A settler founds a settlement where it stands (and is used up). */
   z.strictObject({ type: z.literal('found_settlement'), player: PlayerRef, unit: UnitRef }),
   /** Replaces a city's production queue (the first item is built first). */
@@ -246,8 +256,10 @@ export const Action = z.discriminatedUnion('type', [
     type: z.literal('capture_choice'),
     player: PlayerRef,
     settlement: SettlementRef,
-    choice: z.enum(['keep', 'raze', 'liberate']),
+    choice: z.enum(['keep', 'puppet', 'raze', 'liberate']),
   }),
+  /** Take full control of a puppet, for gold. */
+  z.strictObject({ type: z.literal('annex_puppet'), player: PlayerRef, settlement: SettlementRef }),
 
   // Diplomacy (M15)
   /** Offer a deal; it waits for the other player's answer. */
@@ -262,6 +274,10 @@ export const Action = z.discriminatedUnion('type', [
     friendship: z.boolean().default(false),
     alliance: z.boolean().default(false),
     peace: z.boolean().default(false),
+    /** Open borders for the deal's turns (D118). */
+    openBorders: z.boolean().default(false),
+    /** A research agreement (D118). */
+    research: z.boolean().default(false),
   }),
   /** Accept or decline a deal offered to you. */
   z.strictObject({

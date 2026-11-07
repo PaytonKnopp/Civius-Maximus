@@ -133,11 +133,73 @@ All math is integer-only so every browser generates the identical map from the s
 
 Strategic resources are only revealed once you research the matching tech.
 
+**Built (final gameplay pass, November 2026):**
+- **A resource gets its own improvement.** Once its improvement is known, a resource tile can
+  only take that one (wine: a plantation). Before then any improvement that fits the land can
+  hold it, and it's replaced by the resource's own the turn that unlocks (a farm on wine becomes
+  a plantation when Irrigation arrives). Growth values luxuries and strategic resources first.
+- **Luxuries** (`rules.luxuryHappinessRadius` = 3): each improved luxury gives its happiness
+  (+2) to the settlement that owns it and to the 3 nearest other settlements of its owner. A
+  settlement counts each kind once, however many reach it, so variety matters and spare copies
+  are for trading. The settlement's happiness breakdown names each one and where it comes from.
+  Fifteen luxuries (D106): Silk, Spices, Wine, Incense, Diamonds, Pearls, Whales, Dyes, Furs,
+  Ivory, Marble, Salt, Sugar, Tea and Cotton.
+- **Trading resources** (D118, see [04-advanced-systems.md](04-advanced-systems.md)): each
+  improved luxury tile is one copy; all but one can go in a deal. A copy sent away stops counting
+  at home (a settlement's second copies first, then the newest settlement's), and one received
+  cheers the receiver's capital and its 3 nearest settlements ("Wine (from Rome)"). Strategic
+  resources trade per turn out of the sender's own income: their stockpile gains that much less
+  and the other's that much more.
+- **Monopolies** (D118, light; `rules.monopoly`): hold more than half of the map's tiles of a
+  luxury, improved and in your land, at least 3 of them, and its `monopoly` effects reach your
+  whole empire ("Silk monopoly (+10%)" in the yields): Silk and Ivory +10% culture, Spices and
+  Salt +10% food, Wine and Furs +10% gold, Diamonds +15% gold, Incense +15% faith, Pearls +10%
+  faith and +5% gold, Whales +15% production toward soldiers, Dyes +10% tourism, Marble +15%
+  production toward wonders, Sugar +1 happiness everywhere, Tea +10% science, Cotton +10%
+  production toward buildings. The Civilopedia's luxury articles say so. Luxuries come in
+  clusters, so a monopoly usually means settling or taking a second cluster.
+- **Strategic resources** (`rules.strategic`), after Civ VI:
+  - Hidden until their tech: horses (Animal Husbandry), iron (Bronze Working), niter (Military
+    Tactics), coal (Industrialization), oil (Steam Power), aluminum (Radio), uranium (Nuclear
+    Fission). Before that they can't be seen, improved or worked for their yields.
+  - Each improved source adds its `stockpilePerTurn` to its owner's stockpile, up to 30 + 15
+    per era past the first. Oil is improved by Oil Wells (Steam Power) and, at sea, Offshore
+    Platforms (Combustion).
+  - Units take resources to train (`resourceCost`; Swordsman 10 iron, Horseman 10 horses,
+    Musketman 10 niter, Tank 10 oil, Fighter 10 aluminum, Atomic Bomb 20 uranium...); unique
+    units take what the unit they replace takes. A source is enough to start one; it finishes
+    when the stockpile can pay. Upgrading into a unit pays its resources too.
+  - Industrial-era and later units use some up every turn (`resourceUpkeep`: ironclads and
+    battleships coal, tanks, aircraft and destroyers oil). When the stockpile can't cover it,
+    those units fight with −20 strength ("Short of Oil") until it can.
+  - An older unit stays buildable while its replacement's resource is out of reach (warriors
+    without iron), as in Civ VI.
+- **Placement:** each resource gets its share of the map by frequency, wherever it fits, so
+  resources that fit few tiles aren't crowded out; luxuries come in clusters of two or three.
+  Every start gets at least one luxury within 3 tiles and horses or iron within 4.
+
 ### Appeal
 
 Each tile has an **appeal** score from neighbors (mountains, coast, woods, natural wonders: +.
 Industrial zones, mines, marsh: −). Appeal affects neighborhoods' happiness, resort towns, national parks (culture),
 seaside resorts, and some beliefs.
+
+**Built (final gameplay pass):** a tile's appeal is the sum of its six neighbors' `appeal`:
+terrain (coast and lake +1, snow −1), features (woods +1, reef +2, oasis +1, rainforest, marsh
+and volcanoes −1, natural wonders +4 or +5), mountains +1, wonders +1 (`rules.appeal`),
+districts (Holy Site, Theater Square, Entertainment Complex +1; Industrial Zone, Encampment,
+Spaceport −1) and improvements (Mines, Quarries, Oil Wells, Offshore Platforms −1; National
+Parks +1). Words: Breathtaking at 4, Charming at 2, Uninviting at −2, Disgusting at −4.
+- **National Parks** (Conservation): an improvement for breathtaking land (woods, rainforest or
+  marsh may stay): +1 culture and +1 tourism per point of appeal.
+- **Seaside Resorts** (Radio): breathtaking flat land on the coast: +2 gold and +1 tourism per
+  point of appeal.
+- **Resort Towns** turn their charming and breathtaking tiles' appeal into tourism (1 per 2
+  points), gold (1 per 3) and happiness (1 per 6) (`yield_per_appeal`).
+
+**Continents (final pass):** every landmass is numbered (connected land, from the lowest tile
+index), for the continents lens and home-continent abilities (`settlement_on_home_continent`:
+the capital's landmass). Lincoln's +2 happiness on the home continent now works.
 
 ---
 
@@ -190,6 +252,13 @@ Every yield displayed anywhere can be clicked to see a **breakdown tree**, e.g.,
 radius), *Religious Site* (+faith, missionaries), *Resort Town* (+happiness and tourism by appeal).
 Mods can add more.
 
+- **Finished in the final pass:** Fort Towns get +6 strength defending themselves and heal your
+  units 10 more in their territory; Religious Sites sell religious units for 30% less faith;
+  Trade Outposts give one more trade route; Resort Towns earn by appeal (above).
+- **Later-era starts (final pass):** in a game started in a later era, every settlement founded
+  starts with that era's extra citizens (each with a tile to develop) and basic buildings
+  (Classical +1 and a Monument; Medieval +1, Monument and Granary; Renaissance +2 and Walls;
+  Industrial and Modern +2/+3 and Baths; Information +4), as in Civ VI (`era.start`).
 - **Built so far (M8):** all six, at 5 citizens; the first choice is free, a change costs 50 gold
   (D41). Farming and Mining towns send **half** their food or production to the owner's nearest
   city within 10 tiles (production goes toward that city's current build). Trade, Fort,
@@ -237,8 +306,9 @@ Each settlement has a 😊 **happiness** balance:
 - **Sources:** luxuries, the Palace, certain buildings and districts (Entertainment Complex,
   Aqueduct building, Thermae...), wonders, policies, religion, town specializations, and war
   support when defending.
-- **Costs:** 1 per 2 citizens, 1 per building that has maintenance, settlements above your
-  **settlement limit** (−2 per settlement over the limit, in every settlement), and negative
+- **Costs:** 1 per 2 citizens, 1 per 2 buildings that have maintenance (final pass, D107; was 1
+  per building), settlements above your
+  **settlement limit** (−1 per settlement over the limit, in every settlement; −2 before the final pass, D107; puppets count half), and negative
   war support.
 
 | Settlement balance | Effect |
@@ -261,6 +331,21 @@ Each settlement has a 😊 **happiness** balance:
 - **Overflow** carries extra production into the next item.
 - **Buying:** gold for units and buildings (not districts or wonders), and faith for religious units
   and some others (module).
+- **Late-game sinks (D114, final pass):** gold also buys **repeatable district projects** at 2
+  gold per production (`purchase.projectGoldPerProduction`; units and buildings cost 4), and a
+  religion's founder can buy **buildings with faith** (4 faith per production,
+  `faithPerProduction`) in its settlements that follow that religion. Influence buys open
+  borders and research agreements ([04-advanced-systems.md](04-advanced-systems.md)).
+- **Nothing is wasted (final pass):** a city with nothing queued sells its production for gold
+  at the town rate, and so does overflow with nothing after it.
+- **District projects (built in the final pass):** every specialty district has a repeatable
+  project costing 60 production (+50% per era past the first): Research Grants (Campus, half
+  back as science), Pilgrimage (Holy Site, 60% as faith), Arts Festival (Theater, half as
+  culture), Market Fair (Commercial Hub, 75% as gold), Trade Fleet (Harbor, half as gold and a
+  fifth as food), Engineering Works (Industrial Zone, 40% as gold), War Games (Encampment, 30%
+  as gold), Festival of Games (Entertainment Complex, half toward the next celebration) and
+  Envoys Abroad (Government Plaza, 40% as influence), plus great person points of the district's
+  kind (10–15% of the cost). Clearing woods, rainforest and marsh pays 25% more per era.
 - **Projects:** repeatable city projects that convert production into another yield (e.g., Campus
   Research Grants → science and great scientist points).
 
@@ -284,7 +369,15 @@ over turns: it produces nothing and loses a citizen each turn until it's gone, u
 takes it back first; original capitals and settlements with a wonder can't be razed. Liberating returns it to its founder (not if
 you took it from them). Not answering by the end of the turn keeps it. Losing the capital moves
 it to the biggest remaining settlement; losing the last settlement knocks a player out, and the
-last player standing wins. Puppets wait for the loyalty and settlement-limit work.
+last player standing wins.
+
+**Puppets (built in the final pass):** the capture choice also offers **Make it a puppet**
+(`rules.settlements.puppet`). A puppet runs itself: balanced focus, its own growth choices, and
+its own builds (the building with the most yield for its cost, else a district project; never
+units, districts or wonders). It gives its yields at −25% and counts half toward the settlement
+limit (rounded down over all of them). Its owner can rename it and **annex** it for 50 + 15 gold
+per citizen; nothing else. The AI puppets a capture that would push it over its limit and annexes
+when there's room.
 
 ---
 
@@ -320,6 +413,21 @@ last player standing wins. Puppets wait for the loyalty and settlement-limit wor
 - **Nuclear weapons:** Atomic Bomb and Nuclear Missile; see docs/04, "Nukes".
 - The AI builds and flies aircraft (bombers first). It never builds nuclear weapons.
 
+**Built (final gameplay pass, D112),** reusing existing 3D models:
+- **Recon:** Ranger (Military Science; 45 strength, 3 moves, ignores terrain costs) and Spec
+  Ops (Combined Arms; 65, also ignores zones of control). Scout → Ranger → Spec Ops.
+- **Support** (`support` on units; they share a tile with a soldier and are captured if
+  caught alone): **Battering Ram** (Masonry): melee and anti-cavalry attacks next to it put all
+  their damage into standing walls instead of 15%; **Siege Tower** (Construction): their
+  damage skips the walls altogether; **Medic** (Sanitation): units next to it heal +20 a turn.
+- **Fleet Commander** (Mercenaries): an Army Commander for ships (packs up to 3, +2 strength
+  in its radius) that falls back to a port. The AI doesn't use it yet.
+- **Late navy:** Submarine (Electricity) → Nuclear Submarine (Telecommunications, 5 uranium),
+  and Missile Cruiser (Lasers, 10 aluminum, after the Battleship).
+- **Anti-air** (a new class, +25 against aircraft): Anti-Air Gun (Advanced Flight) → Mobile
+  SAM (Guidance Systems).
+- Dead ends closed: Cavalry → Helicopter, Battleship → Missile Cruiser.
+
 ### Stacking
 
 - One **military** unit and one **civilian** unit per tile (plus one support unit). This matches
@@ -341,7 +449,8 @@ last player standing wins. Puppets wait for the loyalty and settlement-limit wor
   retreats for 5 turns when caught (packed units it can't put down are lost). Its tree: Assault /
   Bastion (+2 attacking / defending), then Logistics (+2 capacity, +1 movement) / Field Medicine
   (+10 healing), then Leadership (+1 radius). Unpacked units can act at once if the commander
-  still has moves. Fleet Commanders wait for a naval AI.
+  still has moves. The Fleet Commander came in the final gameplay pass (D112); the AI doesn't
+  use it yet.
 
 ### Movement
 
@@ -389,6 +498,9 @@ last player standing wins. Puppets wait for the loyalty and settlement-limit wor
 
 - Gold upkeep per unit, scaling with era. Each player gets **3 gold of upkeep free** each turn
   (D37), so a starting army doesn't drain an empty treasury.
+- **Built (final pass):** a unit costs at least its era's upkeep (`rules.units.upkeepByEra`: 1
+  gold in the Ancient and Classical eras, 2 Medieval–Renaissance, 3 Industrial–Modern, 4 from
+  the Atomic era); its own `upkeep` counts if higher, and free units stay free.
 - Strategic units cost a stockpile amount to train (e.g., Swordsman: 10 Iron) and a small amount
   per turn to maintain. If the stockpile runs out, those units get −20 combat strength.
 
@@ -505,6 +617,16 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
     **Orbital Laser Relay** (Lasers, on a Spaceport) brings a launched expedition 2 turns
     sooner each time it's built.
   - Games can start in the Atomic or Information era.
+- **Final gameplay pass (D117, the late game's pace):** once the economy grew (2A–2C) the space
+  race finished around turn 230–280 at Standard, mostly because every space project unlocked in
+  the Modern era. Now:
+  - The projects follow the tree: Launch a Satellite at Rocketry (Modern), Moon Landing at
+    Computers (Atomic), Mars Colony at Robotics (Information), the Exoplanet Expedition at
+    Nanotechnology (Future); they cost 1000, 1400, 1800 and 2200, and the expedition travels
+    20 turns.
+  - Techs and civics of later eras cost more than listed (`rules.progress.eraCostPercent`):
+    Renaissance 110%, Industrial 130%, Modern 150%, Atomic 185%, Information 240%, Future 300%.
+    The trees show the real cost.
 
 ### Civics tree
 
@@ -534,6 +656,34 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   - **Digital Republic** (Globalization): +15% gold, +1 happiness, +3 favor.
   - **Corporate Federation** (Social Networks): +20% toward buildings, +10% gold, two more
     trade routes.
+- **Final gameplay pass (November 2026):**
+  - **Catch-up research (D119):** a tech or civic costs 5% less for each civ you know (have seen
+    a settlement of) that has it, up to 25% (`rules.progress.catchUp`); the trees show the
+    lower cost.
+  - **Every node does something.** Synthetic Materials, Nuclear Fusion and Artificial
+    Intelligence now improve tiles and buildings; **Future Tech** and the new **Future Civic**
+    can be finished again and again (each time counts toward the score), so science and culture
+    never stop mattering. Every Atomic, Information and Future node has a boost.
+  - **46 policy cards.** The flat "+1 everywhere" cards became decisions: six **adjacency
+    cards** add half again to one district's adjacency (Scribes' Stipend: Campus; Temple Tithes:
+    Holy Site; Patrons of Poetry: Theater Square; Royal Mint: Commercial Hub; Guild Charters:
+    Industrial Zone; Charted Coasts: Harbor; +50%, D121: doubling let one civ run away with
+    science), and others need a building (Festival Calendar: Arenas).
+    Early cards go **obsolete** when their later version arrives (Militia Drills, Bowyers'
+    Workshops, Remount Herds and Siege Engineers at Nationalism...) and leave their slots.
+    Three **dark-age cards** (Martial Law, Monastic Retreat, Rally the Levies) are strong with
+    a price and only open during a dark age. New cards for the civics that had none (Border
+    Forts, Air Doctrine, Self-Determination, Space Program, Green Energy, World Forum) and a
+    fourth diplomatic one (Trade Delegations).
+  - **Legacies (D113):** every 25 turns in one government (scaled by speed) earns one more of
+    its `legacy` bonus, kept after you switch, up to 3 per government (`rules.progress.legacy`).
+    Changing government starts the count over. Chiefdom, Oligarchy and Militarism: +5%
+    production toward soldiers; Autocracy: +5% toward wonders; Classical Republic: +3% culture;
+    Theocracy: +5% faith; Monarchy: +10% border growth; Merchant Republic: +4% gold; Democracy:
+    +5% toward buildings; Collectivism: +3% production; Technocracy: +4% science; Digital
+    Republic: +5% tourism; Corporate Federation: +5% gold. Staying the course pays; a civ that
+    lived under several governments carries a mix. The government screen shows each legacy, how
+    many you have and when the next comes.
 - This is one of Civ 6's best systems. It's very moddable, and it creates lots of strategic
   choices, so we keep it as-is.
 
@@ -555,6 +705,12 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
 - Improvements: Farm, Mine, Quarry, Pasture, Plantation, Camp, Fishing Boats, Lumber Mill, Oil
   Well, Offshore Platform, Fort, Airstrip, Beach Resort, Ski Resort, Seaside Resort, plus unique
   ones from civs.
+- **Improvements grow through the tree (final pass):** Farms +1 food at Replaceable Parts and
+  Synthetic Materials; Mines +1 production at Apprenticeship, Industrialization and Robotics;
+  Quarries +1 at Metal Casting; Pastures +1 food at Stirrups and +1 production at Robotics;
+  Plantations and Camps +1 gold at Mercantilism; Camps +1 production at Synthetic Materials;
+  Fishing Boats +1 gold at Cartography and +1 food at Synthetic Materials; Woodcutters +1 at
+  Machinery and Steel; Oil Wells and Offshore Platforms +1 at Nuclear Fusion.
 - **Adjacency for improvements:** farms gain +1🍞 for every two adjacent farms (Feudalism makes it
   every one), mines gain from adjacent mines later, and so on.
 - **Built so far (M8):** farms get +1🍞 per two neighboring farms; the Open Fields policy
@@ -591,10 +747,50 @@ Districts are Civ 6's signature system and the main source of city planning.
 | Encampment | military | Defensive district with a ranged strike |
 | Entertainment Complex | 😊 happiness | — |
 | Aqueduct | +growth, +😊 | Must be next to a city center and fresh water or a mountain |
-| Neighborhood | 😊 by appeal, +growth | — |
-| Government Plaza | unique | One per empire. Extra policy slot |
+| Neighborhood | 😊 by appeal, +growth | Outside the limit (D111) |
+| Dam | ⚙️, no floods | On river floodplains, outside the limit (D111) |
+| Preserve | appeal, 🎭 🙏 to neighbors | On woods or rainforest, outside the limit (D111) |
+| Government Plaza | unique | One per empire. Extra policy slot; three tiers of buildings, one of two each (D110) |
 | Spaceport | science victory | — |
 
+- **Final gameplay pass (November 2026):**
+  - The **Holy Site** gets +2 faith per neighboring natural wonder (any feature marked as one,
+    so modded wonders count: the `naturalWonder` tile match).
+  - The **Encampment** gets +1 production per neighboring Pasture and strategic resource, and
+    its settlement can make its ranged strike from the Encampment's tile too (`rangedStrike`).
+  - **Buildings share their district's adjacency (D108):** each building inside a specialty
+    district adds a third of the district's adjacency bonus, rounded down to whole points
+    (`rules.settlements.districts.buildingAdjacencyPercent`). A +6 Campus with a Library,
+    University and Research Lab makes +12 from adjacency; a +1 Campus stays poor.
+  - **Adjacency cards** (`adjacency_percent`) add 50% to one district's adjacency (section 6).
+  - **Regional effects (D109):** a Factory (+3 production), Power Plant (+4) or Stadium (+2
+    happiness) also reaches your other settlements within 6 tiles that don't have their own;
+    each kind counts once (`regional` on buildings and wonders). The Colosseum, Taj Mahal and
+    Maracanã reach the same way with happiness.
+  - The Nuclear Plant needs a Power Plant.
+  - **New districts (D111),** none counting toward the district limit:
+    - **Neighborhood** (Urbanization): +10% growth, and happiness by its own tile's appeal
+      (`happinessByAppeal`: +3 breathtaking, +2 charming, +1 average, nothing below).
+    - **Dam** (Engineering): on a floodplains tile by a river; floods no longer touch its
+      settlement's land (`preventedBy` on the flood), +2 production, and +2 for a neighboring
+      Industrial Zone.
+    - **Preserve** (Mysticism): on woods or rainforest, which it keeps (`placement.features`
+      now also means "kept when built"); +2 appeal to its neighbors and +1 culture and +1
+      faith on each of your tiles next to it.
+    - The AI places a Neighborhood where the land is loveliest and values each by its yields.
+  - **Government Plaza buildings (D110):** three tiers, each a choice of two; building one
+    closes the other for good (`excludes`):
+    - Political Philosophy: **Envoys' Hall** (+3 influence, +1 favor a turn) or **Builders'
+      Lodge** (+25% production toward districts in its settlement).
+    - Civil Service: **Treasury Hall** (+4 gold, +5% gold everywhere) or **War College** (+10%
+      production toward soldiers everywhere).
+    - Nationalism: **Grand Archive** (+15% Great Scientist, Writer and Artist points) or
+      **National Monument** (+1 happiness in every settlement).
+  - **Wonders:** every wonder now has a placement rule (St. Basil's next to the city center,
+    Big Ben next to a Commercial Hub, Broadway next to a Theater Square, the Statue of Liberty
+    on the coast...), and the empire-wide trickles became signature effects (Stonehenge +3
+    great prophet points a turn; the Oracle makes boosts 10% bigger; Big Ben an economic slot;
+    the Eiffel Tower +15% tourism; the CN Tower +25% tourism where there's a Broadcast Center).
 - Every specialty district also gets **+0.5 for each adjacent district** of any kind
   (so clustering districts pays off).
 - **World wonders:** only one can exist per world, each with placement rules (e.g., the Pyramids
@@ -631,7 +827,7 @@ Districts are Civ 6's signature system and the main source of city planning.
 - **Specialists:** each building in a district opens one specialist slot. Specialists give the
   district's specialist yields (e.g. +2🔬 in a Campus) instead of working a tile, and are assigned
   by the citizen focus like tiles.
-- Clear Woods (+25⚙️ toward the next item), Clear Rainforest (+15🍞 +15⚙️) and Drain Marsh
+- Clear Woods (+25⚙️ toward the next item, +25% per era past the first), Clear Rainforest (+15🍞 +15⚙️) and Drain Marsh
   (+20🍞) are 15-production city projects on a tile.
 - The settlement screen previews each possible tile's yield before you place a district, on the
   map and in a list.
@@ -664,5 +860,8 @@ military unit onto a camp clears it for 50 gold. The new-game dialog can turn ca
 - Score from population, wonders, techs, civics, great people, eras and military. It's shown in
   reports and decides a **score victory** at the turn limit.
 - **Built so far (M10):** 1 per citizen, 5 per city, 2 per town, 2 per tech, 2 per civic, 10 per
-  wonder, 2 per district, 10 per era past the first, 1 per enemy unit destroyed (D50). Shown on
+  wonder, 2 per district, 10 per era past the first, 1 per enemy unit destroyed (D50).
+- **Final pass (D117):** also 5 per great person earned, 10 for founding a religion and 1 per
+  settlement following it, 2 per great work held, and 5 each time Future Tech or Future Civic
+  is finished again. Shown on
   each player's chip and panel and on the end-of-game screen.

@@ -38,6 +38,10 @@ const MAX_SEATS = 16;
 const TEAMS = [1, 2, 3, 4];
 const TEAM_COLORS = ['#d9b232', '#3f9fdc', '#c4429d', '#2f9a55'];
 
+/** Setups this big get a note that turns may be slow (D98): this many seats, or on the biggest map. */
+const HEAVY_SEATS = 12;
+const HEAVY_SEATS_ON_BIGGEST = 8;
+
 function byOrder<T extends { id: string; order: number }>(map: Record<string, T>): T[] {
   return Object.values(map).sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : 1));
 }
@@ -121,6 +125,9 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
     setO({ ...o, ...p.options, humans: p.options.humans ?? o.humans, seed: randomSeed() });
 
   const size = e.mapSize[o.size];
+  // A setup likely to feel slow (D98): a gentle note, never a block.
+  const biggest = sizes[sizes.length - 1]?.id;
+  const heavy = seats >= HEAVY_SEATS || (o.size === biggest && seats >= HEAVY_SEATS_ON_BIGGEST);
   const diff = e.difficulty[o.difficulty];
   const speed = e.gameSpeed[o.speed];
   const victories = [o.domination, o.science, o.culture, o.religion, o.diplomatic].filter(Boolean);
@@ -327,6 +334,12 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
               })
             }
           />
+          {heavy && (
+            <p className="mx-section-hint mx-heavy-note" role="note">
+              A big game: later turns can take a few seconds each while the world and the rivals
+              move. A smaller map, fewer civilizations or Quick speed play faster.
+            </p>
+          )}
         </Section>
         <Section title="The world">
           <Row label="Resources" hint="How many strategic and luxury resources the map holds.">

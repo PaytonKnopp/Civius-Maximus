@@ -1,7 +1,12 @@
 import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 import type { Action } from '../actions';
-import { cultureProgress, domesticTourists, tourismBonus } from '../culture/tourism';
+import {
+  cultureProgress,
+  domesticTourists,
+  hasCultureVictory,
+  tourismBonus,
+} from '../culture/tourism';
 import { toFixed } from '../fixed';
 import { applyAction } from '../game';
 import { foundSettlement } from '../settlements/handlers';
@@ -41,6 +46,11 @@ describe('unit upgrades', () => {
     const warrior: BuildItem = { kind: 'unit', id: 'unit_warrior' };
     expect(itemProblem(ctx, s, s.settlements[w.p1]!, warrior)).toBeUndefined();
     s = learn(s, 'p1', 'tech_mining', 'tech_bronze_working', 'tech_iron_working');
+    // (With the iron and niter the newer units need.)
+    s = produce(s, (d) => {
+      d.players.p1!.resources = { iron: 20, niter: 20 };
+      d.players.p2!.resources = { iron: 20 };
+    });
     // Rome's own Legionary takes the Swordsman's place.
     expect(obsoletedBy(ctx, s, 'p1', 'unit_warrior')).toBe('unit_legionary');
     expect(obsoletedBy(ctx, s, 'p2', 'unit_warrior')).toBeUndefined();
@@ -55,6 +65,8 @@ describe('unit upgrades', () => {
     let s = produce(w.s, (d) => {
       d.settlements[w.p1]!.queue = [{ kind: 'unit', id: 'unit_warrior' }];
       d.settlements[w.p1]!.progress = { 'unit:unit_warrior': toFixed(10) };
+      // The Legionary takes iron: with none at all, the Warrior would stay (see below).
+      d.players.p1!.resources = { iron: 20 };
     });
     s = learn(s, 'p1', 'tech_mining', 'tech_bronze_working', 'tech_iron_working');
     s = endTurn(s);
@@ -68,6 +80,7 @@ describe('unit upgrades', () => {
     let s = structuredClone(
       learn(w.s, 'p1', 'tech_mining', 'tech_bronze_working', 'tech_iron_working'),
     ) as GameState;
+    s.players.p1!.resources = { iron: 10 };
     const home = addUnit(s, 'p1', 'unit_warrior', at(s, 3, 3));
     const away = addUnit(s, 'p1', 'unit_warrior', at(s, 8, 3));
     s.units[home.id]!.xp = 7;
@@ -82,6 +95,18 @@ describe('unit upgrades', () => {
     s = act(s, up(home.id)).state;
     expect(s.units[home.id]).toMatchObject({ type: 'unit_legionary', xp: 7, moves: 0 });
     expect(s.players.p1!.gold).toBe(cost * 2);
+    // The new unit's iron comes out of the stockpile; with none left, no more upgrades.
+    expect(s.players.p1!.resources).toEqual({ iron: 0 });
+  });
+
+  it('leave the old unit buildable while the new one lacks its strategic resource', () => {
+    const w = world();
+    const s = learn(w.s, 'p1', 'tech_mining', 'tech_bronze_working', 'tech_iron_working');
+    expect(obsoletedBy(ctx, s, 'p1', 'unit_warrior')).toBeUndefined();
+    const stocked = produce(s, (d) => {
+      d.players.p1!.resources = { iron: 10 };
+    });
+    expect(obsoletedBy(ctx, stocked, 'p1', 'unit_warrior')).toBe('unit_legionary');
   });
 });
 
@@ -89,7 +114,14 @@ describe('the space race', () => {
   /** p1 knows everything for space and has a Spaceport next to its city. */
   function spacefaring() {
     const w = world();
-    let s = learn(w.s, 'p1', 'tech_rocketry', 'tech_satellites', 'tech_space_flight');
+    let s = learn(
+      w.s,
+      'p1',
+      'tech_rocketry',
+      'tech_computers',
+      'tech_robotics',
+      'tech_nanotechnology',
+    );
     const tile = at(s, 3, 3);
     s = produce(s, (d) => {
       d.map.tiles[tile]!.district = 'district_spaceport';
@@ -170,6 +202,13 @@ describe('tourism and the culture victory', () => {
       d.tourism.p1 = { p2: toFixed(ctx.content.rules.culture.tourismPerTourist * 5) };
     });
     expect(cultureProgress(ctx, s, 'p1')).toEqual([{ player: 'p2', visiting: 5, domestic: 0 }]);
+    // Not before the Atomic era (D121): no winning early on ancient wonders.
+    expect(ctx.content.rules.culture.victoryEra).toBe('era_atomic');
+    expect(hasCultureVictory(ctx, s, 'p1')).toBe(false);
+    s = produce(s, (d) => {
+      d.players.p1!.techs.done.push('tech_flight');
+    });
+    expect(hasCultureVictory(ctx, s, 'p1')).toBe(true);
     s = endTurn(s);
     expect(s.result).toEqual({ reason: 'culture', winner: 'p1' });
   });

@@ -1,6 +1,6 @@
 import { type BeliefDef, resolveText } from '@cx/content';
 import type { EngineContext, RuleError } from '../context';
-import { type Fixed, toFixed } from '../fixed';
+import { type Fixed, percentOf, toFixed } from '../fixed';
 import { distance } from '../map/hex';
 import { settlementAt } from '../combat/strength';
 import type { GameState, PlayerId, Religion, SettlementState } from '../state';
@@ -192,8 +192,14 @@ export function faithUnitCost(
   ctx: EngineContext,
   state: Pick<GameState, 'settings'>,
   faithCost: number,
+  s?: SettlementState,
 ): Fixed {
-  return scaleCost(ctx, state, toFixed(faithCost));
+  const cost = scaleCost(ctx, state, toFixed(faithCost));
+  // A religious-site town sells its religious units for less faith.
+  const spec = s?.specialization
+    ? ctx.content.entities.specialization[s.specialization]
+    : undefined;
+  return spec?.faithDiscount ? cost - percentOf(cost, spec.faithDiscount) : cost;
 }
 
 export function pantheonProblem(
@@ -308,7 +314,7 @@ export function faithUnitProblem(
   }
   if (faithUnitReligion(state, s) === null)
     return { code: 'no_religion', message: `${s.name} doesn't follow a religion yet` };
-  const cost = faithUnitCost(ctx, state, def.faithCost);
+  const cost = faithUnitCost(ctx, state, def.faithCost, s);
   if (p.faith < cost) return { code: 'no_faith', message: `Needs ${Math.ceil(cost / 100)} faith` };
   return undefined;
 }

@@ -344,6 +344,66 @@ export const ICONS: Record<string, IconDef> = {
       s('M11.2 12c-1.6-1.8-1.4-3.4 0-4.8s1.4-2.6.4-3.6c2 .8 2.6 2.6 1.2 4.4s-1.2 2.6 0 4Z'),
     ],
   },
+  dyes: {
+    bg: C.luxury,
+    glyph: [
+      s('M8.4 6.2c2.2 2.8 3.4 4.8 3.4 6.4a3.4 3.4 0 0 1-6.8 0c0-1.6 1.2-3.6 3.4-6.4Z'),
+      s('M15.6 9.4c2.2 2.8 3.4 4.8 3.4 6.4a3.4 3.4 0 0 1-6.8 0c0-1.6 1.2-3.6 3.4-6.4Z'),
+      dark(circle(8.4, 12.8, 1.1) + circle(15.6, 16, 1.1)),
+    ],
+  },
+  furs: {
+    bg: C.luxury,
+    glyph: [
+      s(poly(7, 6, 17, 6, 18.6, 9.4, 17.4, 18, 14, 16.4, 12, 19, 10, 16.4, 6.6, 18, 5.4, 9.4)),
+      dark(rect(10.6, 8.4, 2.8, 6.4, 1.2)),
+    ],
+  },
+  ivory: {
+    bg: C.luxury,
+    glyph: [
+      s('M6.6 18.6c0-6.6 3.6-11.4 10.8-12.6l.8 1.8c-5.6 1.6-8.4 5.4-8.6 10.8Z'),
+      s(rect(5.4, 17.6, 5.4, 1.8, 0.8)),
+    ],
+  },
+  marble: {
+    bg: C.luxury,
+    glyph: [
+      s(poly(5.6, 9.4, 12, 6.2, 18.4, 9.4, 18.4, 15.6, 12, 18.8, 5.6, 15.6)),
+      dark(bar(8, 10.6, 11, 15.6, 0.7) + bar(12.6, 9.2, 16.6, 13.2, 0.7)),
+    ],
+  },
+  salt: {
+    bg: C.luxury,
+    glyph: [
+      s(poly(4.8, 18.4, 12, 7, 19.2, 18.4)),
+      dark(rect(10.4, 12, 1.6, 1.6) + rect(13, 14.6, 1.6, 1.6) + rect(8.6, 15.2, 1.6, 1.6)),
+    ],
+  },
+  sugar: {
+    bg: C.luxury,
+    glyph: [
+      s(bar(8.6, 19, 10.2, 5, 1.8) + bar(13.2, 19, 14.6, 5.4, 1.8)),
+      dark(rect(7.8, 11, 3.2, 0.8) + rect(12.4, 9.6, 3.2, 0.8) + rect(12.8, 14, 3.2, 0.8)),
+      s(ellipse(17.4, 7.4, 2.6, 1, -35)),
+    ],
+  },
+  tea: {
+    bg: C.luxury,
+    glyph: [
+      s(ellipse(12, 10.4, 3.4, 5.8, 35)),
+      dark(bar(9.4, 14.2, 14.6, 6.6, 0.7)),
+      s(rect(7.4, 16.6, 9.2, 2.4, 1)),
+    ],
+  },
+  cotton: {
+    bg: C.luxury,
+    glyph: [
+      s(circle(10, 9.4, 2.6) + circle(14, 9.4, 2.6) + circle(12, 12.6, 2.8)),
+      s(bar(12, 15, 12, 19.4, 1.2)),
+      s(ellipse(9.6, 16.4, 2, 0.9, 30) + ellipse(14.4, 16.4, 2, 0.9, -30)),
+    ],
+  },
   diamonds: {
     bg: C.luxury,
     glyph: [
@@ -686,6 +746,30 @@ export const ICONS: Record<string, IconDef> = {
   district_government_plaza: { bg: '#6b7280', glyph: COLUMNS },
   district_suguba: { bg: C.gold, glyph: COIN },
   district_spaceport: { bg: '#4b5563', glyph: ROCKET },
+  district_neighborhood: {
+    bg: '#9a6b45',
+    glyph: [
+      s(poly(4.6, 11.8, 12, 5, 19.4, 11.8) + rect(6.6, 11.8, 10.8, 7.4)),
+      dark(rect(10.8, 14.6, 2.4, 4.6)),
+    ],
+  },
+  district_dam: {
+    bg: '#3f6f98',
+    glyph: [
+      s(rect(4.6, 5.6, 14.8, 3, 0.6) + rect(9.4, 8.6, 5.2, 7.2)),
+      ...WAVES.map((w) => ({ ...w, d: w.d.replace('M4.6 14.4', 'M4.6 17.4') })),
+    ],
+  },
+  district_preserve: {
+    bg: '#4d7f3f',
+    glyph: [
+      s(
+        poly(12, 4, 17.4, 12.4, 6.6, 12.4) +
+          poly(12, 7.6, 18.8, 16.8, 5.2, 16.8) +
+          rect(11, 16.8, 2, 2.8),
+      ),
+    ],
+  },
 
   // Improvements
   improvement_farm: {
@@ -751,6 +835,40 @@ export const ICONS: Record<string, IconDef> = {
     glyph: [
       s(bar(8, 18.6, 15.2, 6.8, 1.4)),
       s('M13.6 5.6c2-.8 4.2-.2 5.4 1.6c-1.8.4-3.4 1.6-4 3.4l-3-1.8Z'),
+    ],
+  },
+  improvement_oil_well: {
+    bg: C.production,
+    glyph: [
+      s(poly(8.4, 19, 12, 5, 15.6, 19) + rect(6.6, 18.4, 10.8, 1.4, 0.5)),
+      dark(rect(10.6, 10, 2.8, 1) + rect(10, 13.4, 4, 1)),
+      s(circle(17.8, 7.2, 1.6)),
+    ],
+  },
+  improvement_offshore_platform: {
+    bg: C.production,
+    glyph: [
+      s(rect(5.2, 9.4, 13.6, 2.4, 0.6) + rect(6.6, 11.8, 1.6, 5.4) + rect(15.8, 11.8, 1.6, 5.4)),
+      s(poly(10.6, 9.4, 12, 4.6, 13.4, 9.4)),
+      s(
+        'M4 18.2c1.6-1.2 3.2-1.2 4.8 0s3.2 1.2 4.8 0 3.2-1.2 4.8 0 1.6 1.2 1.6 1.2v1.2c-1.6-1.2-3.2-1.2-4.8 0s-3.2 1.2-4.8 0-3.2-1.2-4.8 0-1.6 0-1.6 0Z',
+      ),
+    ],
+  },
+  improvement_national_park: {
+    bg: C.culture,
+    glyph: [
+      s(poly(7.6, 13.6, 11.4, 5.6, 15.2, 13.6) + poly(10.4, 16.4, 14.6, 8.4, 18.8, 16.4)),
+      s(rect(10.6, 13.4, 1.6, 4.4) + rect(14, 16, 1.4, 2.6)),
+      s(rect(4.8, 18.4, 14.4, 1.4, 0.5)),
+    ],
+  },
+  improvement_seaside_resort: {
+    bg: C.gold,
+    glyph: [
+      s('M5.6 13.4c1.4-5 11.4-5 12.8 0Z'),
+      s(bar(12, 13.4, 13.4, 19.2, 1)),
+      s('M4 19.4c1.6-1 3.2-1 4.8 0s3.2 1 4.8 0 3.2-1 4.8 0 1.6 1 1.6 1v.8H4Z'),
     ],
   },
   improvement_obelisk: {

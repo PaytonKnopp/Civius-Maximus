@@ -1,6 +1,7 @@
 import { gzipSync } from 'node:zlib';
 import type { CompiledContent } from '@cx/content';
 import {
+  turnOrder,
   type Action,
   applyAction,
   createGame,
@@ -103,7 +104,7 @@ export function runProfile(
     const turn = state.turn;
     lastProcess = 0;
     const roundStart = clock();
-    for (const player of state.playerOrder) {
+    for (const player of turnOrder(state)) {
       const p = state.players[player]!;
       if (!p.alive || p.turnEnded) continue;
       state = playAiTurn(ctx, state, player, act);

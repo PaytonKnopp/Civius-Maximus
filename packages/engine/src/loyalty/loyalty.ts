@@ -4,7 +4,7 @@ import { bestSoldier, chooseBuild, keepUp } from '../citystates/handlers';
 import { killUnit } from '../combat/handlers';
 import { type EngineContext, type Emit, FREE, unitIds } from '../context';
 import { distance, tilesWithin } from '../map/hex';
-import { playerEffects } from '../progress/sources';
+import { playerEffects, withSourceMemo } from '../progress/sources';
 import { processSettlement, refreshCitizens, refreshExplored } from '../settlements/handlers';
 import { happinessOf, settlementIds } from '../settlements/rules';
 import type { GameState, PlayerId, SettlementState } from '../state';
@@ -281,6 +281,7 @@ function flip(draft: Draft<GameState>, ctx: EngineContext, id: string, to: Playe
     }
   }
   s.owner = to;
+  delete s.puppet;
   for (const t of draft.map.tiles) if (t.settlement === id) t.owner = to;
   s.queue = [];
   s.progress = {};
@@ -359,11 +360,14 @@ export function loyaltyTurn(draft: Draft<GameState>, ctx: EngineContext, emit: E
   const r = ctx.content.rules.loyalty;
   const snap = current(draft);
   const percents = new Map<PlayerId, number>();
-  // Every settlement moves on the same snapshot, so the order doesn't matter.
-  const reports = settlementIds(snap)
-    .map((id) => snap.settlements[id]!)
-    .filter((s) => !s.razing && !s.captureChoice)
-    .map((s) => ({ s, report: loyaltyOf(ctx, snap, s, percents) }));
+  // Every settlement moves on the same snapshot, so the order doesn't matter (and the
+  // snapshot's effects are worked out once for all of them).
+  const reports = withSourceMemo(snap, () =>
+    settlementIds(snap)
+      .map((id) => snap.settlements[id]!)
+      .filter((s) => !s.razing && !s.captureChoice)
+      .map((s) => ({ s, report: loyaltyOf(ctx, snap, s, percents) })),
+  );
   const flips: { id: string; to: PlayerId }[] = [];
   for (const { s, report } of reports) {
     const d = draft.settlements[s.id]!;

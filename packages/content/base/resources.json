@@ -4,7 +4,9 @@
     "id": "wheat",
     "name": "Wheat",
     "class": "bonus",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "validTerrains": ["plains"],
     "validFeatures": ["floodplains", "floodplains_plains"]
   },
@@ -13,7 +15,9 @@
     "id": "rice",
     "name": "Rice",
     "class": "bonus",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "validTerrains": ["grassland"],
     "validFeatures": ["marsh", "floodplains_grassland"],
     "validElevations": ["flat"]
@@ -23,7 +27,9 @@
     "id": "cattle",
     "name": "Cattle",
     "class": "bonus",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "validTerrains": ["grassland"],
     "validElevations": ["flat"]
   },
@@ -32,7 +38,9 @@
     "id": "sheep",
     "name": "Sheep",
     "class": "bonus",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "validTerrains": ["grassland", "plains", "desert", "tundra"],
     "validElevations": ["hills"]
   },
@@ -41,7 +49,9 @@
     "id": "deer",
     "name": "Deer",
     "class": "bonus",
-    "yields": { "production": 1 },
+    "yields": {
+      "production": 1
+    },
     "validTerrains": ["tundra"],
     "validFeatures": ["woods"]
   },
@@ -50,7 +60,9 @@
     "id": "bananas",
     "name": "Bananas",
     "class": "bonus",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "validFeatures": ["rainforest"]
   },
   {
@@ -58,7 +70,9 @@
     "id": "fish",
     "name": "Fish",
     "class": "bonus",
-    "yields": { "food": 1 },
+    "yields": {
+      "food": 1
+    },
     "validTerrains": ["coast", "lake"],
     "validElevations": ["flat"]
   },
@@ -67,7 +81,9 @@
     "id": "crabs",
     "name": "Crabs",
     "class": "bonus",
-    "yields": { "gold": 2 },
+    "yields": {
+      "gold": 2
+    },
     "validTerrains": ["coast"],
     "validElevations": ["flat"]
   },
@@ -76,7 +92,9 @@
     "id": "stone",
     "name": "Stone",
     "class": "bonus",
-    "yields": { "production": 1 },
+    "yields": {
+      "production": 1
+    },
     "validTerrains": ["grassland", "plains", "desert"]
   },
   {
@@ -84,163 +102,504 @@
     "id": "copper",
     "name": "Copper",
     "class": "bonus",
-    "yields": { "gold": 2 },
+    "yields": {
+      "gold": 2
+    },
     "validTerrains": ["grassland", "plains", "desert", "tundra"],
     "validElevations": ["hills"]
   },
-
   {
     "type": "resource",
     "id": "silk",
     "name": "Silk",
     "class": "luxury",
-    "yields": { "culture": 1 },
+    "yields": {
+      "culture": 1
+    },
     "happiness": 2,
     "validFeatures": ["woods"],
-    "frequency": 6
+    "frequency": 6,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
     "id": "spices",
     "name": "Spices",
     "class": "luxury",
-    "yields": { "food": 2 },
+    "yields": {
+      "food": 2
+    },
     "happiness": 2,
     "validFeatures": ["rainforest"],
-    "frequency": 6
+    "frequency": 6,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
     "id": "wine",
     "name": "Wine",
     "class": "luxury",
-    "yields": { "food": 1, "gold": 1 },
+    "yields": {
+      "food": 1,
+      "gold": 1
+    },
     "happiness": 2,
     "validTerrains": ["grassland", "plains"],
-    "frequency": 6
+    "frequency": 6,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
     "id": "incense",
     "name": "Incense",
     "class": "luxury",
-    "yields": { "faith": 1 },
+    "yields": {
+      "faith": 1
+    },
     "happiness": 2,
     "validTerrains": ["plains", "desert"],
     "validElevations": ["flat"],
-    "frequency": 6
+    "frequency": 6,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
     "id": "diamonds",
     "name": "Diamonds",
     "class": "luxury",
-    "yields": { "gold": 3 },
+    "yields": {
+      "gold": 3
+    },
     "happiness": 2,
     "validTerrains": ["tundra"],
     "validFeatures": ["rainforest"],
     "validElevations": ["hills"],
-    "frequency": 4
+    "frequency": 4,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 15
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
     "id": "pearls",
     "name": "Pearls",
     "class": "luxury",
-    "yields": { "faith": 1 },
+    "yields": {
+      "faith": 1
+    },
     "happiness": 2,
     "validTerrains": ["coast"],
     "validElevations": ["flat"],
-    "frequency": 5
+    "frequency": 5,
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "faith",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      },
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 5
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
   {
     "type": "resource",
     "id": "whales",
     "name": "Whales",
     "class": "luxury",
-    "yields": { "gold": 1, "production": 1 },
+    "yields": {
+      "gold": 1,
+      "production": 1
+    },
     "happiness": 2,
     "validTerrains": ["coast"],
     "validElevations": ["flat"],
-    "frequency": 5
+    "frequency": 5,
+    "monopoly": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 15,
+          "toward": {
+            "kind": "unit",
+            "military": true
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
   },
-
+  {
+    "type": "resource",
+    "id": "dyes",
+    "name": "Dyes",
+    "class": "luxury",
+    "yields": {
+      "faith": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validFeatures": ["rainforest", "woods"],
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "tourism",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "resource",
+    "id": "furs",
+    "name": "Furs",
+    "class": "luxury",
+    "yields": {
+      "food": 1,
+      "gold": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["tundra"],
+    "validFeatures": ["woods"],
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "gold",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "resource",
+    "id": "ivory",
+    "name": "Ivory",
+    "class": "luxury",
+    "yields": {
+      "production": 1,
+      "gold": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["plains", "grassland", "desert"],
+    "validElevations": ["flat"],
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "culture",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "resource",
+    "id": "marble",
+    "name": "Marble",
+    "class": "luxury",
+    "yields": {
+      "culture": 1,
+      "gold": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["hills"],
+    "monopoly": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 15,
+          "toward": {
+            "kind": "wonder"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "resource",
+    "id": "salt",
+    "name": "Salt",
+    "class": "luxury",
+    "yields": {
+      "food": 1,
+      "gold": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["desert", "plains", "tundra"],
+    "validElevations": ["flat"],
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "food",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "resource",
+    "id": "sugar",
+    "name": "Sugar",
+    "class": "luxury",
+    "yields": {
+      "food": 2
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validFeatures": ["marsh", "floodplains", "floodplains_grassland", "floodplains_plains"],
+    "monopoly": [
+      {
+        "effect": "modify_happiness",
+        "params": {
+          "amount": 1
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "resource",
+    "id": "tea",
+    "name": "Tea",
+    "class": "luxury",
+    "yields": {
+      "science": 1
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["hills"],
+    "monopoly": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "science",
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
+  {
+    "type": "resource",
+    "id": "cotton",
+    "name": "Cotton",
+    "class": "luxury",
+    "yields": {
+      "gold": 2
+    },
+    "happiness": 2,
+    "frequency": 5,
+    "validTerrains": ["grassland", "plains"],
+    "validElevations": ["flat"],
+    "monopoly": [
+      {
+        "effect": "modify_production",
+        "params": {
+          "percent": 10,
+          "toward": {
+            "kind": "building"
+          }
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ]
+  },
   {
     "type": "resource",
     "id": "horses",
     "name": "Horses",
     "class": "strategic",
-    "yields": { "food": 1, "production": 1 },
+    "yields": {
+      "food": 1,
+      "production": 1
+    },
     "stockpilePerTurn": 2,
     "validTerrains": ["grassland", "plains", "tundra"],
     "validElevations": ["flat"],
-    "frequency": 8
+    "frequency": 8,
+    "revealedBy": "tech_animal_husbandry"
   },
   {
     "type": "resource",
     "id": "iron",
     "name": "Iron",
     "class": "strategic",
-    "yields": { "science": 1 },
+    "yields": {
+      "science": 1
+    },
     "stockpilePerTurn": 2,
     "validTerrains": ["grassland", "plains", "desert", "tundra", "snow"],
     "validElevations": ["hills"],
-    "frequency": 8
+    "frequency": 8,
+    "revealedBy": "tech_bronze_working"
   },
   {
     "type": "resource",
     "id": "niter",
     "name": "Niter",
     "class": "strategic",
-    "yields": { "food": 1, "production": 1 },
+    "yields": {
+      "food": 1,
+      "production": 1
+    },
     "stockpilePerTurn": 2,
     "validTerrains": ["grassland", "plains", "desert", "tundra"],
     "validElevations": ["flat"],
-    "frequency": 6
+    "frequency": 6,
+    "revealedBy": "tech_military_tactics"
   },
   {
     "type": "resource",
     "id": "coal",
     "name": "Coal",
     "class": "strategic",
-    "yields": { "production": 2 },
+    "yields": {
+      "production": 2
+    },
     "stockpilePerTurn": 3,
     "validFeatures": ["woods", "rainforest"],
     "validElevations": ["hills"],
-    "frequency": 6
+    "frequency": 6,
+    "revealedBy": "tech_industrialization"
   },
   {
     "type": "resource",
     "id": "oil",
     "name": "Oil",
     "class": "strategic",
-    "yields": { "production": 3 },
+    "yields": {
+      "production": 3
+    },
     "stockpilePerTurn": 3,
     "validTerrains": ["desert", "tundra", "snow", "coast"],
     "validFeatures": ["marsh"],
     "validElevations": ["flat"],
-    "frequency": 6
+    "frequency": 6,
+    "revealedBy": "tech_steam_power"
   },
   {
     "type": "resource",
     "id": "aluminum",
     "name": "Aluminum",
     "class": "strategic",
-    "yields": { "science": 1 },
+    "yields": {
+      "science": 1
+    },
     "stockpilePerTurn": 2,
     "validTerrains": ["plains", "desert"],
     "validElevations": ["flat", "hills"],
-    "frequency": 5
+    "frequency": 5,
+    "revealedBy": "tech_radio"
   },
   {
     "type": "resource",
     "id": "uranium",
     "name": "Uranium",
     "class": "strategic",
-    "yields": { "production": 2 },
+    "yields": {
+      "production": 2
+    },
     "stockpilePerTurn": 1,
     "validTerrains": ["grassland", "plains", "desert", "tundra", "snow"],
     "validFeatures": ["woods", "rainforest", "marsh"],
-    "frequency": 3
+    "frequency": 3,
+    "revealedBy": "tech_nuclear_fission"
   }
 ]

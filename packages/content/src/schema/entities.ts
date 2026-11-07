@@ -117,6 +117,11 @@ export const ResourceDef = z.strictObject({
   happiness: z.int().min(0).default(0),
   /** Strategic: stockpile gained per turn once improved. */
   stockpilePerTurn: z.int().min(0).default(0),
+  /**
+   * Hidden until its owner researches this tech (Civ's strategic resources): before that it
+   * can't be seen, improved or worked for its yields.
+   */
+  revealedBy: Id.optional(),
   /** The resource can appear on any of these terrains... */
   validTerrains: z.array(Id).default([]),
   /** ...or on any of these features. */
@@ -124,6 +129,11 @@ export const ResourceDef = z.strictObject({
   validElevations: z.array(Elevation).min(1).default(['flat', 'hills']),
   /** Relative placement frequency for map generation. */
   frequency: z.int().min(0).default(10),
+  /**
+   * Luxury: what holding a monopoly gives the whole empire (D118): most of the map's tiles of it,
+   * improved and in your land (`rules.monopoly`).
+   */
+  monopoly: z.array(Effect).default([]),
 });
 
 /** Global rule constants. Exactly one `rules` entity exists; mods change it with patches. */
@@ -150,6 +160,11 @@ export const RulesDef = z.strictObject({
     purchase: z.strictObject({
       /** Gold cost of buying a unit or building = production cost × this. */
       goldPerProduction: z.int().min(1),
+      /** Gold per production for a repeatable district project (D114: a late-game sink). */
+      projectGoldPerProduction: z.int().min(1).default(2),
+      /** Faith per production, where faith can buy (D114: buildings in settlements following
+       * the religion you founded; abilities may allow more). */
+      faithPerProduction: z.int().min(1).default(4),
       /** Tile cost = `tileBase + tilePerAcquired × tiles acquired + tilePerDistance × distance`. */
       tileBase: z.int().min(0),
       tilePerAcquired: z.int().min(0),
@@ -161,6 +176,8 @@ export const RulesDef = z.strictObject({
       /** One unhappiness per this many citizens. */
       citizensPerUnhappy: z.int().min(1),
       perMaintainedBuilding: z.int().min(0),
+      /** How many maintained buildings make one `perMaintainedBuilding` of unhappiness. */
+      maintainedPerUnhappy: z.int().min(1).default(1),
       /** In every settlement, for each settlement you have over the settlement limit. */
       perSettlementOverLimit: z.int().min(0),
       /** At or above: thriving. */
@@ -183,9 +200,27 @@ export const RulesDef = z.strictObject({
       populationPer: z.int().min(1),
       /** Each specialty district gets this much of its main yield per neighboring district. */
       neighborBonus: z.number().multipleOf(0.5),
+      /**
+       * Each building in a specialty district adds this percent of the district's adjacency
+       * bonus, rounded down to whole points (D108): a well-placed district keeps paying.
+       */
+      buildingAdjacencyPercent: z.int().min(0).max(100).default(0),
       /** District cost rises this many percent for each tech and civic finished. */
       costPerProgressPercent: z.int().min(0),
     }),
+    /**
+     * Captured settlements kept as puppets (Civ V; docs/03, "Capture, puppet, raze, liberate"):
+     * they run themselves, give this percent change to their yields, count this percent of a
+     * settlement toward the limit, and can be annexed for gold (base + per citizen).
+     */
+    puppet: z
+      .strictObject({
+        yieldPercent: z.int().min(-100).max(0),
+        limitPercent: z.int().min(0).max(100),
+        annexBase: z.int().min(0),
+        annexPerCitizen: z.int().min(0),
+      })
+      .default({ yieldPercent: -25, limitPercent: 50, annexBase: 50, annexPerCitizen: 15 }),
     specialization: z.strictObject({
       minPopulation: z.int().min(1),
       /** Gold to change a town's specialization (choosing the first one is free). */
@@ -233,13 +268,42 @@ export const RulesDef = z.strictObject({
     /** ...and what the destination settlement gets. */
     destination: YieldMap,
     /** Gold for plundering an enemy's route (`+ goldPerEra ×` the plunderer's era number). */
+    /** Domestic routes: more at the origin for each district at the destination. */
+    domesticPerDistrict: YieldMap.default({}),
+    /** International routes: more at the origin for each era past the first. */
+    internationalPerEra: YieldMap.default({}),
     plunderGold: z.int().min(0).default(50),
     plunderGoldPerEra: z.int().min(0).default(15),
     /** Settlements with this district send routes over shallow water too, this far. */
     seaDistrict: Id.optional(),
     seaRange: z.int().min(1).default(20),
   }),
+  /**
+   * How many of the owner's other settlements (nearest first) each improved luxury also cheers,
+   * besides its own (doc 03, "Resources"). A settlement counts each kind of luxury once.
+   */
   luxuryHappinessRadius: z.int().min(0),
+  /** Appeal (docs/03, "Appeal"): a wonder next door, and the marks for its words. */
+  appeal: z
+    .strictObject({
+      wonder: z.int(),
+      breathtaking: z.int(),
+      charming: z.int(),
+      uninviting: z.int(),
+      disgusting: z.int(),
+    })
+    .default({ wonder: 1, breathtaking: 4, charming: 2, uninviting: -2, disgusting: -4 }),
+  /**
+   * Strategic resource stockpiles (docs/03, "Resources"): the most a player can hold of each
+   * (base + per era past the first), and the strength units lose while their upkeep isn't met.
+   */
+  strategic: z
+    .strictObject({
+      stockpileBase: z.int().min(1),
+      stockpilePerEra: z.int().min(0),
+      shortageStrength: z.int().min(0),
+    })
+    .default({ stockpileBase: 30, stockpilePerEra: 15, shortageStrength: 20 }),
   progress: z.strictObject({
     /** Percent of a tech's or civic's cost a boost pays. */
     boostPercent: z.int().min(0).max(100),
@@ -247,8 +311,24 @@ export const RulesDef = z.strictObject({
     startingGovernment: Id,
     /** Gold per policy card changed outside the free window after finishing a civic. */
     policySwapCost: z.int().min(0),
+    /**
+     * Each era's techs and civics cost this percent of their listed cost (D117: the late game's
+     * pace). Eras not listed cost 100%.
+     */
+    eraCostPercent: z.record(Id, z.int().min(1).max(1000)).default({}),
+    /** Catch-up research (D119): percent off per known civ that has a node, up to `max`. */
+    catchUp: z
+      .strictObject({ perCiv: z.int().min(0), max: z.int().min(0).max(90) })
+      .default({ perCiv: 0, max: 0 }),
     /** Gold to change government outside the free window. */
     governmentChangeCost: z.int().min(0),
+    /**
+     * Government legacies (D113): every `everyTurns` turns in one government (scaled by speed)
+     * earns one more of its `legacy` effects, kept after switching, up to `max` per government.
+     */
+    legacy: z
+      .strictObject({ everyTurns: z.int().min(1), max: z.int().min(0) })
+      .default({ everyTurns: 25, max: 3 }),
     celebration: z.strictObject({
       /** Happiness surplus needed: `base + perCelebration × celebrations so far`. */
       base: z.int().min(1),
@@ -277,6 +357,11 @@ export const RulesDef = z.strictObject({
     upgradeGoldPerProduction: z.number().min(0),
     /** ...and at least this much. */
     upgradeMinGold: z.int().min(0),
+    /**
+     * The least gold a unit costs a turn by its era (index 0 = the first era); a unit's own
+     * `upkeep` counts if higher, and free units stay free.
+     */
+    upkeepByEra: z.array(z.int().min(0)).default([]),
   }),
   /** Combat (docs/03-core-mechanics.md, section 5). */
   combat: z.strictObject({
@@ -377,6 +462,13 @@ export const RulesDef = z.strictObject({
     perEra: z.int().min(0),
     /** Per enemy unit destroyed. */
     perKill: z.int().min(0),
+    /** D117: great people earned, a religion founded and each settlement following it, great
+     * works held, and each Future Tech or Future Civic finished again. */
+    perGreatPerson: z.int().min(0).default(0),
+    perReligion: z.int().min(0).default(0),
+    perFollower: z.int().min(0).default(0),
+    perGreatWork: z.int().min(0).default(0),
+    perFuture: z.int().min(0).default(0),
     /** Every this many turns the history keeps a map of who owns what, for the replay. */
     replayEvery: z.int().min(1).default(5),
   }),
@@ -430,14 +522,26 @@ export const RulesDef = z.strictObject({
       settledNear: z.int(),
       nearDistance: z.int().min(1),
       nearMax: z.int().min(0),
-      /** Per deal with us still running. */
+      /** Per deal with us still running (payments, resource trades, open borders, research
+       * agreements), up to `dealsMax` of them. */
       perDeal: z.int(),
-      /** Per trade route between us (up to 2). */
+      dealsMax: z.int().min(0).default(2),
+      /** Per trade route between us, up to `tradeRoutesMax`. */
       tradeRoute: z.int(),
+      tradeRoutesMax: z.int().min(0).default(2),
     }),
     /** Opinion an AI needs before it agrees to a friendship or an alliance. */
     friendshipOpinion: z.int(),
     allianceOpinion: z.int(),
+    /** Open borders (D118): turns, and influence from each side. While they run, tourism between
+     * the two goes further (`culture.openBordersPercent`) and units heal there as at home. */
+    openBordersTurns: z.int().min(1).default(30),
+    openBordersCost: z.int().min(0).default(10),
+    /** Research agreements (D118), between declared friends: turns, influence from each side,
+     * and more science for both while one runs (percent each); each side gets a boost at the end. */
+    researchTurns: z.int().min(1).default(20),
+    researchCost: z.int().min(0).default(30),
+    researchPercent: z.int().min(0).default(10),
   }),
   /** City-states (docs/04-advanced-systems.md, "Independent powers"). */
   cityStates: z.strictObject({
@@ -513,6 +617,15 @@ export const RulesDef = z.strictObject({
     tradeRoutePercent: z.int().min(0),
     religionPercent: z.int().min(0),
     friendsPercent: z.int().min(0),
+    /** More tourism toward a civ you have open borders with (D115). */
+    openBordersPercent: z.int().min(0).default(25),
+    /** Great works and wonders draw more tourists as they age (D115): this much more tourism
+     * per era their owner is past their own, up to `agingMaxPercent`. */
+    agingPercent: z.int().min(0).default(25),
+    agingMaxPercent: z.int().min(0).default(100),
+    /** A culture victory needs the winner to have reached this era (D121): no winning early on
+     * ancient wonders while every rival's culture is still small. None: any era. */
+    victoryEra: Id.optional(),
   }),
   /** Great people: buying the one you're racing for. */
   greatPeople: z.strictObject({
@@ -523,6 +636,27 @@ export const RulesDef = z.strictObject({
     /** The unit a great person walks the map as. */
     unit: Id,
   }),
+  /**
+   * Ideologies (D118, light): the late governments fall into camps. Visitors from civs in another
+   * camp unsettle your citizens: −1 happiness in every settlement for each `stepPercent` of your
+   * domestic tourists they make up (all such civs together), up to `maxUnhappiness`; while a civ
+   * of your own camp has at least one step on you, +`sharedHappiness` instead.
+   */
+  ideology: z
+    .strictObject({
+      camps: z.array(z.strictObject({ id: Id, name: Text, governments: z.array(Id).min(1) })),
+      stepPercent: z.int().min(1),
+      maxUnhappiness: z.int().min(0),
+      sharedHappiness: z.int().min(0),
+    })
+    .default({ camps: [], stepPercent: 25, maxUnhappiness: 5, sharedHappiness: 1 }),
+  /**
+   * Monopolies (D118, light): a player whose land holds more than `sharePercent` of the map's
+   * tiles of a luxury, at least `minCopies` of them improved, gets its `monopoly` effects.
+   */
+  monopoly: z
+    .strictObject({ sharePercent: z.int().min(1).max(100), minCopies: z.int().min(1) })
+    .default({ sharePercent: 50, minCopies: 3 }),
   /** Hostile camps: raiders that belong to no one and attack everyone. */
   camps: z.strictObject({
     /** One camp per this many land tiles, at the start and at most (0 = no camps). */
@@ -710,6 +844,19 @@ export const RulesDef = z.strictObject({
         perAlliance: z.int(),
         perFriendship: z.int(),
       }),
+      /**
+       * Emergency sessions (D120): when a civ is `atPercent` of the way to a victory, the
+       * congress meets the next turn to vote on containing it (an `emergency` resolution) for
+       * `turns` turns (scaled by speed); the same civ and victory can't be called again for
+       * `cooldown` turns after a vote.
+       */
+      containment: z
+        .strictObject({
+          atPercent: z.int().min(1).max(100),
+          turns: z.int().min(1),
+          cooldown: z.int().min(0),
+        })
+        .default({ atPercent: 75, turns: 20, cooldown: 30 }),
     })
     .default({
       foundingEra: 'era_medieval',
@@ -719,6 +866,7 @@ export const RulesDef = z.strictObject({
       victoryPoints: 20,
       agendaPoints: 1,
       favor: { base: 1, perSuzerain: 2, perAlliance: 1, perFriendship: 1 },
+      containment: { atPercent: 75, turns: 20, cooldown: 30 },
     }),
   mapgen: z.strictObject({
     coastTerrain: Id,
@@ -832,6 +980,8 @@ export const DisasterDef = z.strictObject({
   radius: z.int().min(0).max(4),
   /** Only tiles with one of these features are hit (a flood stays on its floodplains). */
   spreadFeature: IdOrIds.optional(),
+  /** Districts that keep it off their settlement's land (a Dam stops floods, D111). */
+  preventedBy: IdOrIds.optional(),
   /** Percent of the improvements it hits that are damaged until repaired. */
   pillage: z.int().min(0).max(100).default(0),
   /** Damage to every unit it hits. */
@@ -900,6 +1050,13 @@ export const UnitDef = z.strictObject({
   upkeep: z.int().min(0).default(1),
   /** Can be bought with this much faith (missionaries); 0 = not with faith. */
   faithCost: z.int().min(0).default(0),
+  /**
+   * Strategic resources it takes to train (or buy, or upgrade into), from the stockpile. Unique
+   * units without their own take what the unit they replace takes.
+   */
+  resourceCost: z.record(Id, z.int().min(1)).optional(),
+  /** Strategic resources it uses up every turn; when the stockpile can't cover them, it fights weaker. */
+  resourceUpkeep: z.record(Id, z.int().min(1)).optional(),
   ...requires,
   /**
    * What it upgrades to (for gold, in your territory). Once that unit is available, this one
@@ -949,6 +1106,21 @@ export const UnitDef = z.strictObject({
       strength: z.int().min(0),
       /** Turns out of action after a retreat. */
       retreatTurns: z.int().min(1),
+    })
+    .optional(),
+  /**
+   * A support unit (D112): helps its owner's units within `radius` tiles. `heal`: extra health
+   * each turn (a medic); `wallsPercent`: attacks by `classes` put this much of their damage
+   * into standing walls (a battering ram); `bypassWalls`: their damage skips the walls (a
+   * siege tower).
+   */
+  support: z
+    .strictObject({
+      radius: z.int().min(0).max(3).default(1),
+      heal: z.int().min(0).default(0),
+      wallsPercent: z.int().min(0).max(100).optional(),
+      bypassWalls: z.boolean().default(false),
+      classes: z.array(Id).default([]),
     })
     .optional(),
   ...unique,
@@ -1124,6 +1296,10 @@ const ImprovementSite = z.strictObject({
   river: z.boolean().default(false),
   /** The tile must be on the edge of the player's territory. */
   edge: z.boolean().default(false),
+  /** Only on tiles at least this appealing (national parks, seaside resorts). */
+  minAppeal: z.int().optional(),
+  /** Only on land next to the sea or a lake. */
+  coastal: z.boolean().default(false),
 });
 
 /** A tile improvement (farm, mine...). Settlements build them as they grow (docs/03, "Growth"). */
@@ -1164,6 +1340,10 @@ export const ImprovementDef = z.strictObject({
   adjacency: z.array(Adjacency).default([]),
   /** Combat strength for a unit defending on it. */
   defense: z.int().min(0).default(0),
+  /** What it does to its neighbors' appeal (mines and quarries are ugly). */
+  appeal: z.int().default(0),
+  /** Yields for each point of the tile's appeal (a national park's tourism). */
+  yieldsPerAppeal: YieldMap.default({}),
   ...unique,
 });
 
@@ -1203,6 +1383,8 @@ export const BuildingDef = z.strictObject({
   cityOnly: z.boolean().default(false),
   /** Needs this building in the settlement first (e.g. a University needs a Library). */
   requiresBuilding: Id.optional(),
+  /** Can't be built once any of these stands in the empire (D110: one of each plaza pair). */
+  excludes: z.array(Id).default([]),
   /** Built inside this district (the settlement needs it first). */
   district: Id.optional(),
   /** Outer defenses: HP that attacks must break before they hurt the settlement much. */
@@ -1214,6 +1396,14 @@ export const BuildingDef = z.strictObject({
   /** A worship building: only where the religion followed has the worship belief naming it. */
   worship: z.boolean().default(false),
   /** Effects on the settlement it's in. */
+  /**
+   * Regional effects (Civ VI's factories and power plants): settlement effects that also reach
+   * the owner's other settlements within `radius` tiles of this one. A settlement gets each
+   * kind once, and not when it has one of its own.
+   */
+  regional: z
+    .strictObject({ radius: z.int().min(1).max(12), effects: z.array(Effect).min(1) })
+    .optional(),
   localEffects: z.array(Effect).default([]),
   /** Effects on the whole empire. */
   effects: z.array(Effect).default([]),
@@ -1263,7 +1453,18 @@ export const DistrictDef = z.strictObject({
   specialty: z.boolean().default(true),
   /** Only one in the whole empire (e.g. a government plaza). */
   onePerEmpire: z.boolean().default(false),
+  /** Its settlement can make its ranged strike from this district's tile too (Encampment). */
+  rangedStrike: z.boolean().default(false),
+  /** What it does to its neighbors' appeal. */
+  appeal: z.int().default(0),
   happiness: z.int().default(0),
+  /**
+   * Happiness by the appeal of its own tile (the Neighborhood, D111): the first band whose
+   * `minAppeal` the tile reaches, so list them from the highest down.
+   */
+  happinessByAppeal: z
+    .array(z.strictObject({ minAppeal: z.int(), happiness: z.int() }))
+    .default([]),
   placement: Placement.default(anyPlacement),
   /** Each building in the district adds one specialist slot; a specialist yields this. */
   specialistYields: YieldMap.default({}),
@@ -1305,6 +1506,14 @@ export const WonderDef = z.strictObject({
   /** Slots for great works. */
   slots: GreatWorkSlots,
   placement: Placement.default(anyPlacement),
+  /**
+   * Regional effects (Civ VI's factories and power plants): settlement effects that also reach
+   * the owner's other settlements within `radius` tiles of this one. A settlement gets each
+   * kind once, and not when it has one of its own.
+   */
+  regional: z
+    .strictObject({ radius: z.int().min(1).max(12), effects: z.array(Effect).min(1) })
+    .optional(),
   localEffects: z.array(Effect).default([]),
   effects: z.array(Effect).default([]),
   ...requires,
@@ -1375,6 +1584,17 @@ export const ProjectDef = z
     reward: YieldMap.default({}),
     /** Brings its builder's exoplanet expedition this many turns sooner (built while it travels). */
     speedsExpedition: z.int().min(1).optional(),
+    /** Can be built again and again (district projects that turn production into a yield). */
+    repeatable: z.boolean().default(false),
+    /**
+     * Its cost and its `reward` grow by this percent of the base for each era its builder is
+     * past the first (chopping and district projects keep pace with the game).
+     */
+    perEraPercent: z.int().min(0).max(500).default(0),
+    /** Paid back on completion as these yields, in percent of what it cost (whole numbers). */
+    costShare: z.record(Id, z.int().min(1).max(300)).default({}),
+    /** Great person points on completion, in percent of what it cost. */
+    greatPersonPoints: z.strictObject({ class: Id, percent: z.int().min(1).max(100) }).optional(),
     ...requires,
   })
   .refine((p) => (p.clears === undefined) !== (p.onDistrict === undefined), {
@@ -1393,6 +1613,12 @@ export const SpecializationDef = z.strictObject({
   /** Effects on the whole empire. */
   effects: z.array(Effect).default([]),
   /** Share of the town's food or production sent to its nearest city each turn. */
+  /** Fort towns: extra strength when the settlement defends itself. */
+  defense: z.int().min(0).default(0),
+  /** Fort towns: extra healing for your units in this settlement's territory. */
+  heal: z.int().min(0).default(0),
+  /** Religious sites: religious units bought here cost this percent less faith. */
+  faithDiscount: z.int().min(0).max(90).default(0),
   send: z
     .strictObject({ yield: z.enum(['food', 'production']), percent: z.int().min(1).max(100) })
     .optional(),
@@ -1500,12 +1726,16 @@ export const EraDef = z.strictObject({
   order: z.int(),
   /**
    * Starting a game in this era (setup "Start era"): every tech and civic of earlier eras is
-   * done, and each player gets this gold and these units on top of the usual ones.
+   * done, and each player gets this gold and these units on top of the usual ones. Every
+   * settlement founded in such a game starts with `population` more citizens (each with a tile
+   * to develop) and these buildings, where it can have them, as in Civ VI.
    */
   start: z
     .strictObject({
       gold: z.int().min(0).default(0),
       units: z.array(Id).default([]),
+      population: z.int().min(0).max(10).default(0),
+      buildings: z.array(Id).default([]),
     })
     .optional(),
 });
@@ -1524,6 +1754,11 @@ const progressShape = {
   boost: z.strictObject({ text: Text, goal: Goal }).optional(),
   /** Permanent effects once finished (e.g. a higher settlement limit). */
   effects: z.array(Effect).default([]),
+  /**
+   * Can be finished again and again (Future Tech, Future Civic): each time adds to the score,
+   * so science and culture never stop mattering.
+   */
+  repeatable: z.boolean().default(false),
 };
 
 /** A tech (science tree). Things it unlocks name it in their own `requiresTech`. */
@@ -1544,6 +1779,8 @@ export const GovernmentDef = z.strictObject({
     wildcard: z.int().min(0),
   }),
   effects: z.array(Effect).default([]),
+  /** A lasting bonus earned for time spent in it (D113): one copy per legacy earned. */
+  legacy: z.array(Effect).default([]),
   requiresCivic: Id.optional(),
   /** Display order. */
   order: z.int().default(100),
@@ -1560,6 +1797,8 @@ export const PolicyDef = z.strictObject({
   requiresCivic: Id.optional(),
   /** No longer available once this civic is finished. */
   obsoletedBy: Id.optional(),
+  /** Only while the player is in this age (dark-age cards: strong, with a price). */
+  requiresAge: Id.optional(),
 });
 
 /** A civilization: its names, colors and ability (its unique items name it with `civ`). */
@@ -1812,6 +2051,17 @@ export const GreatAction = z.discriminatedUnion('kind', [
   /** A promotion for your soldiers within `radius` of the settlement. */
   z.strictObject({ kind: z.literal('promote'), promotion: Id, radius: z.int().min(0).max(10) }),
   /**
+   * A share of the cost of the settlement's current build when it's one of these kinds (a great
+   * engineer's dome on a wonder), half that share for anything else.
+   */
+  z.strictObject({
+    kind: z.literal('finish'),
+    percent: z.int().min(1).max(100),
+    toward: z.array(z.enum(['unit', 'building', 'district', 'wonder', 'project'])).min(1),
+  }),
+  /** Envoys to send to city-states. */
+  z.strictObject({ kind: z.literal('envoys'), count: z.int().min(1).max(10) }),
+  /**
    * Great works, one per activation (the great person stays until all are made), each into an
    * empty slot of its kind in the settlement where it's made.
    */
@@ -1848,6 +2098,11 @@ export const ResolutionDef = z.strictObject({
   target: z.enum(['player', 'none']),
   /** On every session's agenda (e.g. naming a world leader). */
   always: z.boolean().default(false),
+  /**
+   * Never on a regular agenda: an emergency session votes on it, against a civ close to this
+   * victory (D120). Its target is that civ; its `bane` option holds for `containment.turns`.
+   */
+  emergency: z.enum(['science', 'culture', 'religion', 'diplomatic', 'domination']).optional(),
   options: z
     .array(
       z.strictObject({
@@ -1929,6 +2184,10 @@ export const CityStateTypeDef = z.strictObject({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a hex color like #8e1b1b'),
   /** Its quest: have a settlement with this district. */
   district: Id.optional(),
+  /** Another quest: have a unit of this class (Militaristic: heavy cavalry). */
+  unitClass: Id.optional(),
+  /** Another quest: have earned a great person of this class. */
+  greatPersonClass: Id.optional(),
   /** For each player with at least `envoys` envoys in a city-state of this kind (they add up). */
   tiers: z
     .array(

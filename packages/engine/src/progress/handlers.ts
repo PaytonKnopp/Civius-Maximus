@@ -1,15 +1,10 @@
+import { scaleCost } from '../speed';
 import type { Draft } from 'immer';
 import type { Action } from '../actions';
-import {
-  type ActionHandler,
-  type EngineContext,
-  type Emit,
-  type RuleError,
-  unitDef,
-} from '../context';
+import { type ActionHandler, type EngineContext, type Emit, type RuleError } from '../context';
 import { percentOf } from '../fixed';
 import { view } from '../draft';
-import { unitUpkeep } from '../settlements/rules';
+import { unitUpkeep, upkeepOf } from '../settlements/rules';
 import type { GameState, PlayerId, Track } from '../state';
 import {
   availableGovernments,
@@ -18,7 +13,8 @@ import {
   empireFacts,
   goalMet,
   governmentChangeCost,
-  nodeCost,
+  isPolicyAvailable,
+  nodeCostFor,
   pathTo,
   policyChangeCost,
   policyProblem,
@@ -46,7 +42,11 @@ const noGold = (cost: number): RuleError => ({
 function refreshPlayer(draft: Draft<GameState>, ctx: EngineContext, player: PlayerId) {
   const p = draft.players[player]!;
   const slots = policySlots(ctx, view(draft), player);
+  const snap = view(draft).players[player]!;
   for (const kind of SLOT_KINDS) {
+    // Cards that went obsolete (or whose age ended) come out of their slots.
+    const still = p.policies[kind].filter((id) => isPolicyAvailable(ctx, snap, id));
+    if (still.length !== p.policies[kind].length) p.policies[kind] = still;
     if (p.policies[kind].length > slots[kind])
       p.policies[kind] = p.policies[kind].slice(0, slots[kind]);
   }
@@ -82,7 +82,8 @@ function chooseHandler(
       const problem = playing(state, action.player);
       if (problem) return problem;
       if (!treeNode(ctx, kind, id)) return { code: 'unknown', message: `Unknown ${kind} "${id}"` };
-      if (trackOf(state.players[action.player]!, kind).done.includes(id))
+      const repeatable = treeNode(ctx, kind, id)!.repeatable;
+      if (trackOf(state.players[action.player]!, kind).done.includes(id) && !repeatable)
         return { code: 'already_done', message: 'Already finished' };
       return undefined;
     },
@@ -114,6 +115,8 @@ export const progressHandlers = {
       const p = draft.players[action.player]!;
       p.gold -= governmentChangeCost(ctx, view(draft), action.player);
       p.government = action.government;
+      // A new government starts its own count toward a legacy (D113).
+      p.legacyClock = 0;
       refreshPlayer(draft, ctx, action.player);
       emit({
         type: 'government_changed',
@@ -169,7 +172,10 @@ export function checkBoosts(
       if (!goalMet(ctx, facts, node.boost.goal)) continue;
       const track = trackOf(draft.players[player]!, kind);
       track.boosted.push(id);
-      const bonus = percentOf(nodeCost(ctx, snap, kind, id), boostPercent(ctx, snap, player));
+      const bonus = percentOf(
+        nodeCostFor(ctx, snap, player, kind, id),
+        boostPercent(ctx, snap, player),
+      );
       track.progress[id] = (track.progress[id] ?? 0) + bonus;
       emit({ type: 'boost_earned', player, kind, id, visibleTo: [player] });
     }
@@ -188,9 +194,9 @@ export function boostPercent(ctx: EngineContext, state: GameState, player: Playe
 }
 
 /**
- * A free boost (from an ability or a tribal village): toward the cheapest tech or civic (or only
- * `only`) the player can work on now that isn't boosted yet. Returns its id, or undefined if
- * there's none.
+ * A free boost (from an ability, a tribal village or a research agreement): toward `prefer` if
+ * it's open and not boosted yet, else the cheapest tech or civic (or only `only`) the player can
+ * work on now that isn't boosted yet. Returns its id, or undefined if there's none.
  */
 export function grantBoost(
   draft: Draft<GameState>,
@@ -198,6 +204,7 @@ export function grantBoost(
   player: PlayerId,
   emit: Emit,
   only?: TreeKind,
+  prefer?: string,
 ): string | undefined {
   const snap = view(draft);
   const p = snap.players[player]!;
@@ -206,9 +213,12 @@ export function grantBoost(
     const track = trackOf(p, kind);
     for (const id of availableNodes(ctx, p, kind)) {
       if (track.boosted.includes(id)) continue;
-      const cost = nodeCost(ctx, snap, kind, id);
-      if (!best || cost < best.cost || (cost === best.cost && id < best.id))
-        best = { kind, id, cost };
+      const cost = nodeCostFor(ctx, snap, player, kind, id);
+      const better =
+        !best ||
+        id === prefer ||
+        (best.id !== prefer && (cost < best.cost || (cost === best.cost && id < best.id)));
+      if (better) best = { kind, id, cost };
     }
   }
   if (!best) return undefined;
@@ -232,8 +242,15 @@ export function advance(
   emit: Emit,
 ): string | undefined {
   const track: Track = trackOf(draft.players[player]!, kind);
-  // Drop anything already finished from the front (e.g. a boost finished it earlier).
-  while (track.current && track.done.includes(track.current)) {
+  // Drop anything already finished from the front (e.g. a boost finished it earlier); a
+  // repeatable node can be worked on again.
+  const nodeOf = (id: string) =>
+    kind === 'tech' ? ctx.content.entities.tech[id] : ctx.content.entities.civic[id];
+  while (
+    track.current &&
+    track.done.includes(track.current) &&
+    !nodeOf(track.current)?.repeatable
+  ) {
     track.current = track.queue.shift() ?? null;
   }
   if (!track.current) {
@@ -242,11 +259,12 @@ export function advance(
   }
   const id = track.current;
   track.progress[id] = (track.progress[id] ?? 0) + amount;
-  const cost = nodeCost(ctx, draft, kind, id);
+  const cost = nodeCostFor(ctx, view(draft), player, kind, id);
   if (track.progress[id]! < cost) return undefined;
   const overflow = track.progress[id]! - cost;
   delete track.progress[id];
-  track.done.push(id);
+  if (!track.done.includes(id)) track.done.push(id);
+  else track.repeats = { ...track.repeats, [id]: (track.repeats?.[id] ?? 0) + 1 };
   // One-off rewards for finishing it: envoys.
   const node = kind === 'tech' ? ctx.content.entities.tech[id] : ctx.content.entities.civic[id];
   for (const e of node?.effects ?? [])
@@ -286,10 +304,10 @@ export function empireTurn(
   if (p.gold < 0) {
     p.gold = 0;
     const victim = Object.values(view(draft).units)
-      .filter((u) => u.owner === player && unitDef(ctx, u).upkeep > 0)
+      .filter((u) => u.owner === player && upkeepOf(ctx, u.type) > 0)
       .sort(
         (a, b) =>
-          unitDef(ctx, b).upkeep - unitDef(ctx, a).upkeep ||
+          upkeepOf(ctx, b.type) - upkeepOf(ctx, a.type) ||
           Number(b.id.slice(1)) - Number(a.id.slice(1)),
       )[0];
     if (victim) {
@@ -302,6 +320,19 @@ export function empireTurn(
         reason: 'no_gold',
         visibleTo: [player],
       });
+    }
+  }
+
+  // Government legacies (D113): time in one government earns lasting bonuses of its kind.
+  const legacy = ctx.content.rules.progress.legacy;
+  const gov = ctx.content.entities.government[p.government];
+  if (gov && gov.legacy.length > 0 && (p.legacies?.[p.government] ?? 0) < legacy.max) {
+    p.legacyClock = (p.legacyClock ?? 0) + 1;
+    if (p.legacyClock >= Math.max(1, scaleCost(ctx, draft, legacy.everyTurns))) {
+      p.legacyClock = 0;
+      const count = (p.legacies?.[p.government] ?? 0) + 1;
+      p.legacies = { ...p.legacies, [p.government]: count };
+      emit({ type: 'legacy_earned', player, government: p.government, count, visibleTo: [player] });
     }
   }
 

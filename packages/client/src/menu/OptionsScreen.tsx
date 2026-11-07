@@ -104,6 +104,12 @@ function SoundTab() {
           checked={settings.muteInBackground}
           onChange={(muteInBackground) => setSettings({ muteInBackground })}
         />
+        <Switch
+          label="Tell me when it's my turn online"
+          hint="A browser notification, and a mark on the tab, when your turn comes while you're in another tab."
+          checked={settings.turnNotices}
+          onChange={(turnNotices) => setSettings({ turnNotices })}
+        />
       </Section>
       <Section title="Try it" hint="A few of the game’s sounds, at your current volumes.">
         <div className="mx-options-foot">
@@ -239,6 +245,12 @@ function InterfaceTab() {
             setAdvisors(on);
             setAdvisorsOn(on);
           }}
+        />
+        <Switch
+          label="Select the next unit"
+          hint="When a unit is done for the turn, the next one that needs orders is selected and the map moves to it."
+          checked={settings.autoCycle}
+          onChange={(autoCycle) => setSettings({ autoCycle })}
         />
       </Section>
     </div>

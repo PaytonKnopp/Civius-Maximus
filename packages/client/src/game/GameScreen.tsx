@@ -18,7 +18,7 @@ import {
   teamOf,
   improvementsFor,
   celebrationThreshold,
-  nodeCost,
+  nodeCostFor,
   playerEra,
   titlesAvailable,
   type PlayerId,
@@ -50,9 +50,22 @@ import {
   disastersOn,
   blastTiles,
   nukeProblem,
+  isRevealed,
+  stockpileCap,
+  stockpileIncome,
+  stockpileOf,
+  stockpileUpkeep,
   withArticle,
 } from '@cx/engine';
-import { type GameHandle, LocalGame, makeSave, RemoteGame, type TurnProgress } from '@cx/host';
+import {
+  deepFreeze,
+  type GameHandle,
+  LocalGame,
+  makeSave,
+  readSave,
+  RemoteGame,
+  type TurnProgress,
+} from '@cx/host';
 import { Icon, Rich } from '../ui/Icon';
 import { ScreenButton } from '../ui/ScreenButton';
 import type { SeatInfo } from '@cx/protocol';
@@ -66,7 +79,7 @@ import { CombatPreview, type Side } from './CombatPreview';
 import { CaptureDialog, GameOver, PlayerPanel, WarPrompt } from './Diplomacy';
 import { cloudAutosave } from '../cloud/autosave';
 import { getSettings, useSettings } from '../settings';
-import { AUTOSAVE, ONLINE_AUTOSAVE, storeSave } from './storage';
+import { AUTOSAVE, loadSave, ONLINE_AUTOSAVE, QUICKSAVE, storeSave } from './storage';
 import {
   civName,
   cssColor,
@@ -88,6 +101,8 @@ import {
   fmt,
 } from './model';
 import { GovernmentScreen } from './GovernmentScreen';
+import { effectLines } from './effectText';
+import { askTurnNotices, turnNotice } from './turnNotice';
 import { GreatPeopleScreen } from './GreatPeopleScreen';
 import { ReligionScreen } from './ReligionScreen';
 import { CityStatesScreen } from './CityStatesScreen';
@@ -174,6 +189,7 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
       return e.player === me ? 'notify' : null;
     case 'congress_session':
     case 'congress_founded':
+    case 'containment_called':
     case 'climate_phase':
     case 'sea_level_rose':
       return 'notify';
@@ -344,7 +360,41 @@ function noticeFor(
     case 'congress_founded':
       return `The World Congress has formed (${civName(content, state, e.by)} was first into the age). Diplomatic favor comes in every turn (U)`;
     case 'congress_session':
-      return 'The World Congress meets this turn: cast your votes (U)';
+      // An emergency session has its own notice.
+      return content.entities.resolution[e.agenda[0] ?? '']?.emergency
+        ? undefined
+        : 'The World Congress meets this turn: cast your votes (U)';
+    case 'containment_called': {
+      const kind =
+        { religion: 'religious', diplomatic: 'diplomatic' }[e.victory as string] ?? e.victory;
+      return e.target === ME
+        ? `Emergency: you are ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing you (U)`
+        : `Emergency: ${civName(content, state, e.target)} is ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing them (U)`;
+    }
+    case 'orders_cancelled': {
+      const u = state.units[e.unit];
+      if (!u || u.owner !== ME) return undefined;
+      const name = resolveText(content, content.entities.unit[u.type]?.name ?? u.type);
+      return e.reason === 'explored'
+        ? `Your ${name} has explored everything it can reach`
+        : `Your ${name} can't get through: its move is cancelled`;
+    }
+    case 'unit_alerted': {
+      const u = state.units[e.unit];
+      return e.owner === ME && u
+        ? `Your ${resolveText(content, content.entities.unit[u.type]?.name ?? u.type)} on alert sees an enemy soldier`
+        : undefined;
+    }
+    case 'legacy_earned': {
+      const g = content.entities.government[e.government];
+      return e.player === ME && g
+        ? `Your years under ${resolveText(content, g.name)} left a legacy (${e.count} of ${content.rules.progress.legacy.max}): ${effectLines(content, g.legacy).join('; ')}`
+        : undefined;
+    }
+    case 'containment_ended':
+      return e.player === ME
+        ? 'The World Congress containment on you has ended'
+        : `The containment on ${civName(content, state, e.player)} has ended`;
     case 'resolution_passed': {
       const def = content.entities.resolution[e.resolution];
       const o = def?.options.find((x) => x.id === e.option);
@@ -418,7 +468,15 @@ function noticeFor(
         ? `${civName(content, state, e.from)} offers you a deal (open their name above)`
         : undefined;
     case 'deal_accepted': {
-      const pact = e.alliance ? 'an alliance' : e.friendship ? 'a friendship' : undefined;
+      const pact = e.alliance
+        ? 'an alliance'
+        : e.friendship
+          ? 'a friendship'
+          : e.research
+            ? 'a research agreement'
+            : e.openBorders
+              ? 'open borders'
+              : undefined;
       if (e.from === ME || e.to === ME) {
         const them = civName(content, state, e.from === ME ? e.to : e.from);
         return e.from === ME ? `${them} accepted your deal` : `Deal signed with ${them}`;
@@ -433,14 +491,16 @@ function noticeFor(
       return e.from === ME ? `Your offer to ${civName(content, state, e.to)} expired` : undefined;
     case 'deal_broken':
       return e.by === ME
-        ? `You couldn't pay ${civName(content, state, e.to)}: the deal is broken`
+        ? `You couldn't deliver to ${civName(content, state, e.to)}: the deal is broken`
         : e.to === ME
-          ? `${civName(content, state, e.by)} stopped paying you: the deal is broken`
+          ? `${civName(content, state, e.by)} stopped delivering: the deal is broken`
           : `${civName(content, state, e.by)} broke a deal with ${civName(content, state, e.to)}`;
     case 'pact_ended': {
       const [a, b] = e.players;
       const them = civName(content, state, a === ME ? b : a);
-      return `Your ${e.kind} with ${them} has ended`;
+      if (e.kind === 'research')
+        return `Your research agreement with ${them} is done: a boost for both of you`;
+      return `Your ${e.kind === 'open_borders' ? 'open borders' : e.kind} with ${them} ${e.kind === 'open_borders' ? 'have' : 'has'} ended`;
     }
     case 'trade_route_started':
       return e.owner === ME
@@ -461,6 +521,10 @@ function noticeFor(
     }
     case 'great_person_activated':
       return undefined;
+    case 'resource_shortage': {
+      const r = resolveText(content, content.entities.resource[e.resource]?.name ?? e.resource);
+      return `You've run out of ${r}: units that use it up fight weaker until the stockpile recovers`;
+    }
     case 'pantheon_founded': {
       const b = resolveText(content, content.entities.belief[e.belief]?.name ?? e.belief);
       return e.player === ME
@@ -648,6 +712,46 @@ function targetSide(ctx: EngineContext, state: GameState, p: Preview, viewer: Pl
   return unitSide(ctx, state, t.units[0]!, viewer);
 }
 
+/** Where a resumed game stands for its player: era, research, wars, what's waiting. */
+function resumeSummary(ctx: EngineContext, state: GameState, viewer: PlayerId): string[] {
+  const { content } = ctx;
+  const p = state.players[viewer]!;
+  const t = (text: string) => resolveText(content, text);
+  const lines: string[] = [];
+  const era = playerEra(ctx, p);
+  const ranks = state.playerOrder
+    .filter((id) => state.players[id]!.alive)
+    .map((id) => ({ id, score: scoreOf(ctx, state, id).total }))
+    .sort((a, b) => b.score - a.score);
+  const place = ranks.findIndex((r) => r.id === viewer) + 1;
+  lines.push(
+    `${era ? `${t(era.name)} era` : 'Ancient era'} · score ${ranks[place - 1]?.score ?? 0}, ${place} of ${ranks.length}`,
+  );
+  const tech = p.techs.current ? content.entities.tech[p.techs.current] : undefined;
+  const civic = p.civics.current ? content.entities.civic[p.civics.current] : undefined;
+  lines.push(
+    `Researching ${tech ? t(tech.name) : 'nothing (choose a tech)'} · civic ${civic ? t(civic.name) : 'none (choose one)'}`,
+  );
+  const wars = state.playerOrder.filter(
+    (id) => id !== viewer && state.players[id]!.alive && atWar(state, viewer, id),
+  );
+  lines.push(
+    wars.length > 0
+      ? `At war with ${wars.map((id) => civName(content, state, id)).join(', ')}`
+      : 'At peace with every civilization you know',
+  );
+  const offers = state.diplomacy.proposals.filter((d) => d.to === viewer).length;
+  if (offers > 0) lines.push(`${offers} deal${offers === 1 ? '' : 's'} waiting for your answer`);
+  const mine = Object.values(state.settlements).filter((x) => x.owner === viewer);
+  const idle = mine.filter((x) => x.kind === 'city' && x.queue.length === 0).length;
+  lines.push(
+    `${mine.length} settlement${mine.length === 1 ? '' : 's'}${idle > 0 ? `, ${idle} with nothing to build` : ''}`,
+  );
+  if (state.congress?.session?.turn === state.turn)
+    lines.push('The World Congress is meeting: cast your votes (U)');
+  return lines;
+}
+
 /** A game to start: a new one from a setup, or a saved one from its state. */
 export type GameStart =
   | { id: string; setup: GameSetup }
@@ -703,6 +807,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   const [passTo, setPassTo] = useState<PlayerId | null>(() => (hotseat ? viewer : null));
   const summaries = useRef<Record<PlayerId, string[]>>({});
   const [summary, setSummary] = useState<string[] | null>(null);
+  const [summaryTitle, setSummaryTitle] = useState('Since your last turn');
   const [state, setState] = useState<GameState>(game.state);
   const busyRef = useRef(game.busy);
   const [selection, setSelection] = useState<Selection>(null);
@@ -777,6 +882,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     setPanelMode('citizens');
     const lines = summaries.current[player] ?? [];
     summaries.current[player] = [];
+    setSummaryTitle('Since your last turn');
     setSummary(lines.length > 0 ? lines : null);
     const s = game.state;
     const capital = s.players[player]?.capital;
@@ -905,6 +1011,55 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   );
   const me = state.players[viewer]!;
   const era = playerEra(ctx, me);
+  // A saved game picked up again: where things stand, once.
+  const resumed = useRef('state' in start && !game.online && start.state.turn > 1);
+  useEffect(() => {
+    if (!resumed.current) return;
+    resumed.current = false;
+    setSummaryTitle(`Welcome back: turn ${state.turn}`);
+    setSummary(resumeSummary(ctx, state, viewer));
+    // Once, when the game opens (the ref keeps it from running again).
+  }, [ctx, state, viewer]);
+  // Strategic stockpiles the viewer knows about and has (or gains, or spends).
+  const strategic = useMemo(() => {
+    const stock = stockpileOf(state, viewer);
+    const income = stockpileIncome(ctx, state, viewer);
+    const upkeep = stockpileUpkeep(ctx, state, viewer);
+    const cap = stockpileCap(ctx, state, viewer);
+    const short = state.players[viewer]?.resourcesShort ?? [];
+    return ctx.content.ids.resource
+      .filter((id) => {
+        const def = ctx.content.entities.resource[id]!;
+        if (def.class !== 'strategic' || !isRevealed(ctx, state, viewer, id)) return false;
+        return (stock[id] ?? 0) > 0 || (income[id] ?? 0) !== 0 || (upkeep[id] ?? 0) > 0;
+      })
+      .map((id) => ({
+        id,
+        name: resolveText(ctx.content, ctx.content.entities.resource[id]!.name),
+        have: stock[id] ?? 0,
+        income: income[id] ?? 0,
+        upkeep: upkeep[id] ?? 0,
+        net: (income[id] ?? 0) - (upkeep[id] ?? 0),
+        cap,
+        short: short.includes(id),
+      }));
+  }, [ctx, state, viewer]);
+  // Online: ask once (on a click) whether to notify, then tell the player when their turn comes
+  // while they're in another tab (D118).
+  useEffect(() => {
+    if (!online || !getSettings().turnNotices) return;
+    const ask = () => askTurnNotices();
+    window.addEventListener('pointerdown', ask, { once: true });
+    return () => window.removeEventListener('pointerdown', ask);
+  }, [online]);
+  const noticed = useRef(0);
+  useEffect(() => {
+    if (!online || busy || state.status !== 'playing' || me.turnEnded || !me.alive) return;
+    if (noticed.current === state.turn) return;
+    noticed.current = state.turn;
+    if (getSettings().turnNotices)
+      turnNotice('Your turn', `Civius Maximus: turn ${state.turn} is yours to play`);
+  }, [online, busy, state.turn, state.status, me.turnEnded, me.alive]);
   // The music follows your era and your civ's culture.
   const architecture = ctx.content.entities.civ[me.civ]?.architecture ?? 'mediterranean';
   useEffect(() => {
@@ -1402,9 +1557,13 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     }
   }, [ctx, game, selection, select, act, policiesSeen, openGovernment, viewer, hotseat]);
 
-  /** After a unit is done for the turn: on to the next unit, like Civ's auto-cycling (D32). */
+  /**
+   * After a unit is done for the turn: on to the next unit, like Civ's auto-cycling (D32), unless
+   * that's switched off in Options (then the unit stays selected).
+   */
   const selectNextUnit = useCallback(
     (after: string) => {
+      if (!getSettings().autoCycle) return;
       const n = nextAction(ctx, game.state, viewer, after);
       if (n.kind === 'unit') select({ kind: 'unit', id: n.id }, true);
       else select(null);
@@ -1571,6 +1730,29 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         return;
       }
       if (overlay) return; // the open screen handles its own keys
+      // Quick save (F5) and quick load (F9), in games this tab holds (not online).
+      if ((e.key === 'F5' || e.key === 'F9') && game.saves && !game.online) {
+        e.preventDefault();
+        if (e.key === 'F5') {
+          void storeSave(QUICKSAVE, makeSave(game.state, `Quick save · turn ${game.state.turn}`))
+            .then(() => notify('Quick saved (F9 to load it)'))
+            .catch(() => notify("Couldn't quick save"));
+        } else {
+          void loadSave(QUICKSAVE).then((save) => {
+            if (!save) return notify('No quick save yet (F5 makes one)');
+            const read = readSave(JSON.stringify(save), ctx);
+            if (!read.ok) return notify(read.message);
+            game.load(deepFreeze(read.save.state));
+            notify(`Quick save loaded: turn ${read.save.state.turn}`);
+          });
+        }
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (game.canUndo?.()) game.undo?.();
+        return;
+      }
       if (e.key === 'Enter') doNext();
       else if (e.key === 't') setOverlay({ kind: 'tree', tree: 'tech' });
       else if (e.key === 'c') setOverlay({ kind: 'tree', tree: 'civic' });
@@ -1688,6 +1870,39 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               </span>
             )}
           </li>
+          {strategic.length > 0 && (
+            <li
+              className="stockpiles"
+              title={strategic
+                .map(
+                  (r) =>
+                    `${r.name}: ${r.have} of ${r.cap} stockpiled, ${r.net >= 0 ? '+' : ''}${r.net} a turn (sources and trades ${r.income >= 0 ? '+' : ''}${r.income}, units −${r.upkeep})${r.short ? '. Short: those units fight weaker' : ''}`,
+                )
+                .join('\n')}
+            >
+              {/* The three that matter most (short, then used up, then the most held). */}
+              {[...strategic]
+                .sort(
+                  (a, b) =>
+                    Number(b.short) - Number(a.short) ||
+                    b.upkeep - a.upkeep ||
+                    b.have - a.have ||
+                    (a.id < b.id ? -1 : 1),
+                )
+                .slice(0, 3)
+                .map((r) => (
+                  <span key={r.id} className={`stockpile ${r.short ? 'short' : ''}`}>
+                    <Icon name={r.id} size={18} />
+                    <span className="mono val">{r.have}</span>
+                    <span className="delta mono">
+                      ({r.net >= 0 ? '+' : ''}
+                      {r.net})
+                    </span>
+                  </span>
+                ))}
+              {strategic.length > 3 && <span className="muted">+{strategic.length - 3}</span>}
+            </li>
+          )}
         </ul>
         <div className="topbar-right">
           <nav className="screen-buttons" aria-label="Screens">
@@ -1995,7 +2210,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
               ? content.entities.tech[id]
               : content.entities.civic[id]
             : undefined;
-          const cost = id ? nodeCost(ctx, state, k, id) : 0;
+          const cost = id ? nodeCostFor(ctx, state, viewer, k, id) : 0;
           const progress = id ? (track.progress[id] ?? 0) : 0;
           const perTurnAmount = k === 'tech' ? empire.science : empire.culture;
           const pct = def ? Math.min(100, (progress / cost) * 100) : 0;
@@ -2249,6 +2464,16 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             Not done yet
           </button>
         )}
+        {game.canUndo?.() && !busy && (
+          <button
+            type="button"
+            className="ghost small unend"
+            title="Take back the last move (only moves that revealed nothing new)"
+            onClick={() => game.undo?.()}
+          >
+            ↶ Undo move <kbd>Ctrl Z</kbd>
+          </button>
+        )}
         <Minimap
           ctx={ctx}
           state={state}
@@ -2433,7 +2658,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       {summary && !passTo && (
         <aside className="turn-summary" aria-label="Since your last turn">
           <header>
-            <h3>Since your last turn</h3>
+            <h3>{summaryTitle}</h3>
             <button
               type="button"
               className="close"
@@ -2531,6 +2756,13 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             setGameOverSeen(true);
             setOverlay({ kind: 'replay' });
           }}
+          {...(state.status === 'ended' && me.alive && !game.online
+            ? {
+                onContinue: () => {
+                  if (act({ type: 'keep_playing', player: viewer })) setGameOverSeen(true);
+                },
+              }
+            : {})}
           onClose={() => setGameOverSeen(true)}
         />
       )}

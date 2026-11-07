@@ -1,3 +1,4 @@
+import { isRevealed } from '../resources/strategic';
 import { distance, tilesWithin } from '../map/hex';
 import { foundingProblem, isCoastal, tileOnRiver, tileYields } from '../settlements/rules';
 import type { UnitState } from '../state';
@@ -29,7 +30,7 @@ function tileValue(t: Turn, tile: number): number {
         (y.faith ?? 0)) /
         100,
     );
-    if (t2.resource !== null) {
+    if (t2.resource !== null && isRevealed(t.ctx, t.state, t.player, t2.resource)) {
       const res = t.ctx.content.entities.resource[t2.resource];
       v += res?.class === 'luxury' ? 8 : res?.class === 'strategic' ? 3 : 2;
     }

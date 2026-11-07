@@ -8,7 +8,8 @@ import {
   type TechDef,
 } from '@cx/content';
 import { type EngineContext, type RuleError, unitDef } from '../context';
-import { type Fixed, toFixed } from '../fixed';
+import { decodeBits, getBit } from '../bitset';
+import { type Fixed, percentOf, toFixed } from '../fixed';
 import { tilesWithin } from '../map/hex';
 import { isCoastal, settlementsOf } from '../settlements/rules';
 import type { GameState, PlayerId, PlayerState, Track } from '../state';
@@ -46,15 +47,60 @@ export function nodeCost(
   kind: TreeKind,
   id: string,
 ): Fixed {
-  return scaleCost(ctx, state, toFixed(treeNode(ctx, kind, id)?.cost ?? 0));
+  const node = treeNode(ctx, kind, id);
+  // The late eras cost more than their listed costs (D117).
+  const percent = node ? (ctx.content.rules.progress.eraCostPercent[node.era] ?? 100) : 100;
+  return scaleCost(ctx, state, percentOf(toFixed(node?.cost ?? 0), percent));
+}
+
+/**
+ * What a node costs a player (catch-up research, D119): less for each civ they've met (seen a
+ * settlement of) that already has it, `rules.progress.catchUp.perCiv` percent each, up to `max`.
+ */
+export function nodeCostFor(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  kind: TreeKind,
+  id: string,
+): Fixed {
+  const base = nodeCost(ctx, state, kind, id);
+  const r = ctx.content.rules.progress.catchUp;
+  if (r.perCiv <= 0 || r.max <= 0) return base;
+  const n = civsWith(ctx, state, player, kind, id);
+  return base - percentOf(base, Math.min(r.max, n * r.perCiv));
+}
+
+/** Other civs this player knows (has seen a settlement of) that have finished a node. */
+export function civsWith(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+  kind: TreeKind,
+  id: string,
+): number {
+  const explored = state.players[player]?.explored;
+  if (!explored) return 0;
+  const seen = decodeBits(explored, state.map.tiles.length);
+  const known = new Set<PlayerId>();
+  for (const s of Object.values(state.settlements))
+    if (s.owner !== player && getBit(seen, s.tile)) known.add(s.owner);
+  let n = 0;
+  for (const other of known) {
+    const p = state.players[other];
+    if (p && p.kind !== 'cityState' && p.alive && trackOf(p, kind).done.includes(id)) n++;
+  }
+  return n;
 }
 
 /** Nodes that can be worked on now: not finished, every prerequisite finished. */
 export function availableNodes(ctx: EngineContext, p: PlayerState, kind: TreeKind): string[] {
   const done = new Set(trackOf(p, kind).done);
-  return treeIds(ctx, kind).filter(
-    (id) => !done.has(id) && treeNode(ctx, kind, id)!.requires.every((r) => done.has(r)),
-  );
+  return treeIds(ctx, kind).filter((id) => {
+    const node = treeNode(ctx, kind, id)!;
+    // A repeatable node (Future Tech) stays open once finished.
+    return (!done.has(id) || node.repeatable) && node.requires.every((r) => done.has(r));
+  });
 }
 
 /**
@@ -66,7 +112,9 @@ export function pathTo(ctx: EngineContext, p: PlayerState, kind: TreeKind, id: s
   const out: string[] = [];
   const seen = new Set<string>();
   const visit = (node: string) => {
-    if (done.has(node) || seen.has(node)) return;
+    // A repeatable node (Future Tech) can be chosen again once its prerequisites are done.
+    const again = node === id && treeNode(ctx, kind, node)?.repeatable;
+    if ((done.has(node) && !again) || seen.has(node)) return;
     seen.add(node);
     const def = treeNode(ctx, kind, node);
     if (!def) return;
@@ -112,36 +160,46 @@ export function playerEra(ctx: EngineContext, p: PlayerState): EraDef | undefine
 }
 
 /** What a tech or civic unlocks, found by looking for content that requires it. */
+export type UnlockKind =
+  | 'unit'
+  | 'building'
+  | 'district'
+  | 'wonder'
+  | 'project'
+  | 'improvement'
+  | 'government'
+  | 'policy'
+  | 'resource';
+
+/** Everything a tech or civic opens up (and, for techs, the resources it reveals). */
 export function unlocksOf(
   ctx: EngineContext,
   kind: TreeKind,
   id: string,
-): {
-  kind: 'unit' | 'building' | 'improvement' | 'government' | 'policy';
-  id: string;
-  name: string;
-}[] {
+): { kind: UnlockKind; id: string; name: string }[] {
   const { content } = ctx;
   const key = kind === 'tech' ? 'requiresTech' : 'requiresCivic';
   const out: ReturnType<typeof unlocksOf> = [];
   const scan = (
-    type: 'unit' | 'building' | 'improvement' | 'government' | 'policy',
-    entities: Record<
-      string,
-      { name: string; requiresTech?: string | undefined; requiresCivic?: string | undefined }
-    >,
+    type: UnlockKind,
+    entities: Record<string, { name: string }>,
+    field: string = key,
   ) => {
     for (const eid of Object.keys(entities).sort()) {
       const e = entities[eid]!;
-      if ((e as Record<string, unknown>)[key] === id)
+      if ((e as Record<string, unknown>)[field] === id)
         out.push({ kind: type, id: eid, name: resolveText(content, e.name) });
     }
   };
   scan('unit', content.entities.unit);
   scan('building', content.entities.building);
+  scan('district', content.entities.district);
+  scan('wonder', content.entities.wonder);
+  scan('project', content.entities.project);
   scan('improvement', content.entities.improvement);
   scan('government', content.entities.government);
   scan('policy', content.entities.policy);
+  if (kind === 'tech') scan('resource', content.entities.resource, 'revealedBy');
   return out;
 }
 
@@ -275,6 +333,7 @@ export function isPolicyAvailable(ctx: EngineContext, p: PlayerState, id: string
   if (!pol) return false;
   if (pol.requiresCivic && !p.civics.done.includes(pol.requiresCivic)) return false;
   if (pol.obsoletedBy && p.civics.done.includes(pol.obsoletedBy)) return false;
+  if (pol.requiresAge && p.ages?.age !== pol.requiresAge) return false;
   return true;
 }
 

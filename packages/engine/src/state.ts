@@ -13,6 +13,8 @@ export interface GameState {
   contentHash: string;
   settings: GameSettings;
   status: 'playing' | 'ended';
+  /** Play went on after the game was won ("one more turn"): no further victory ends it. */
+  afterVictory?: boolean;
   /** How the game ended, once it has. */
   result: {
     reason: 'score' | 'conquest' | 'domination' | 'religion' | 'science' | 'culture' | 'diplomatic';
@@ -156,6 +158,22 @@ export interface DiplomacyState {
   proposals: Proposal[];
   /** What every AI remembers for a while: surprise wars, broken deals, razed settlements. */
   incidents: Incident[];
+  /** Open borders (D118): the turn each pair's ends. */
+  openBorders?: Record<string, number>;
+  /** Research agreements (D118): the turn each pair's ends. */
+  research?: Record<string, number>;
+  /** Resources one player sends another every turn, until a turn. */
+  trades?: ResourceTrade[];
+}
+
+export interface ResourceTrade {
+  from: PlayerId;
+  to: PlayerId;
+  resource: string;
+  /** Luxury: copies; strategic: units a turn. */
+  amount: number;
+  /** The last turn it's sent. */
+  until: number;
 }
 
 export interface Payment {
@@ -175,6 +193,8 @@ export interface DealTerms {
   goldPerTurn: number;
   /** Share the map: the other side learns every tile this side has explored. */
   maps: boolean;
+  /** Resources sent every turn of the deal (luxury copies, strategic per turn). */
+  resources?: Record<string, number>;
 }
 
 export interface Proposal {
@@ -192,6 +212,8 @@ export interface Proposal {
   friendship: boolean;
   alliance: boolean;
   peace: boolean;
+  openBorders?: boolean;
+  research?: boolean;
 }
 
 export interface Incident {
@@ -222,6 +244,8 @@ export interface BuildItem {
   id: string;
   /** Where it goes (districts, wonders and projects). */
   tile?: number | undefined;
+  /** Units and repeatable projects: another one starts as soon as this is done. */
+  repeat?: boolean | undefined;
 }
 
 /** Which yield auto-assign favors when picking tiles for citizens. */
@@ -286,6 +310,8 @@ export interface SettlementState {
   captureChoice: boolean;
   /** Being razed: it loses a citizen each turn, and produces nothing, until it's gone. */
   razing?: boolean;
+  /** A captured settlement kept as a puppet: it runs itself until annexed (docs/03). */
+  puppet?: boolean;
   /** Soldiers trained here (some abilities count them). */
   unitsTrained: number;
   /** The religion most of its people follow, if any. */
@@ -304,7 +330,11 @@ export type UnitOrders =
   /** Asleep until woken (or an enemy comes into view, later). */
   | { kind: 'sleep' }
   /** Dug in for a defense bonus that grows over the first turns (`turns` fortified so far). */
-  | { kind: 'fortify'; turns: number };
+  | { kind: 'fortify'; turns: number }
+  /** Asleep until an enemy soldier comes within its sight. */
+  | { kind: 'alert' }
+  /** Head for the nearest edge of the known map every turn, until nothing's left to find. */
+  | { kind: 'explore' };
 
 export interface UnitState {
   id: UnitId;
@@ -343,15 +373,33 @@ export interface Ballot {
   votes: number;
 }
 
+export type VictoryKind = 'science' | 'culture' | 'religion' | 'diplomatic' | 'domination';
+
 export interface CongressState {
   /** The turn the next session meets. */
   nextSession: number;
-  /** The session meeting now (players vote this turn), or null between sessions. */
-  session: { turn: number; agenda: string[] } | null;
+  /**
+   * The session meeting now (players vote this turn), or null between sessions. An emergency
+   * session (D120) votes only on containing one civ close to a victory.
+   */
+  session: {
+    turn: number;
+    agenda: string[];
+    emergency?: { target: PlayerId; victory: VictoryKind };
+  } | null;
   /** This session's ballots, by player. */
   votes: Record<PlayerId, Ballot[]>;
   /** What the last session decided (in force until the next). */
   passed: { resolution: string; option: string; target: PlayerId | null }[];
+  /** The turn each civ was last called to an emergency session, by `player:victory`. */
+  called?: Record<string, number>;
+}
+
+/** An emergency resolution in force against a player (D120), until a turn. */
+export interface Containment {
+  resolution: string;
+  option: string;
+  until: number;
 }
 
 export interface SpyState {
@@ -472,6 +520,16 @@ export interface PlayerState {
   expeditionArrives: number | null;
   /** Faith stored, in hundredths (spent from M13). */
   faith: number;
+  /** Strategic resource stockpiles, whole units (see resources/strategic.ts). */
+  resources?: Record<string, number>;
+  /** A World Congress containment against them (D120). */
+  contained?: Containment;
+  /** Government legacies earned (D113), by government: how many of its `legacy` effects. */
+  legacies?: Record<string, number>;
+  /** Turns in the current government since it last earned a legacy (or was adopted). */
+  legacyClock?: number;
+  /** Resources whose unit upkeep couldn't be covered last turn: those units fight weaker. */
+  resourcesShort?: string[];
   capital: SettlementId | null;
   /** How many settlements this player has founded (picks the next name). */
   settlementsFounded: number;
@@ -557,4 +615,6 @@ export interface Track {
   boosted: string[];
   /** Earned while nothing was chosen; goes to the next choice. */
   stored: number;
+  /** Repeatable nodes (Future Tech): times finished after the first, by id. */
+  repeats?: Record<string, number>;
 }

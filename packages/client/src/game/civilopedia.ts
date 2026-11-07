@@ -1,4 +1,5 @@
 import { type CompiledContent, resolveText } from '@cx/content';
+import { upkeepOf } from '@cx/engine';
 import { ICONS } from '../ui/icons';
 import { CONCEPTS } from './concepts';
 import { effectLines } from './effectText';
@@ -396,7 +397,7 @@ export function buildArticles(content: CompiledContent): Article[] {
                 ? `${u.cost} production`
                 : undefined,
           ],
-          ['Upkeep', u.upkeep ? `${u.upkeep} gold` : undefined],
+          ['Upkeep', u.upkeep ? `${upkeepOf({ content }, u.id)} gold a turn` : undefined],
           ['Uses a citizen', u.populationCost ? `${u.populationCost}` : undefined],
           ['Requires', requires(u)],
           ['Upgrades to', link('unit', u.upgradesTo)],
@@ -667,7 +668,7 @@ export function buildArticles(content: CompiledContent): Article[] {
         ...text(p.description),
         facts([
           ['Requires', requires(p)],
-          ['Replaced by', link('policy', p.obsoletedBy)],
+          ['Obsolete with', link('civic', p.obsoletedBy)],
         ]),
         ...effects('Effects', p.effects),
       ],
@@ -903,6 +904,12 @@ export function buildArticles(content: CompiledContent): Article[] {
           [
             'Stockpile',
             x.stockpilePerTurn ? `+${x.stockpilePerTurn} per turn when improved` : undefined,
+          ],
+          [
+            'Monopoly',
+            x.monopoly.length > 0
+              ? `More than ${content.rules.monopoly.sharePercent}% of the map's ${t(x.name)}, improved in your land (at least ${content.rules.monopoly.minCopies}): ${effectLines(content, x.monopoly).join('; ')}`
+              : undefined,
           ],
         ]),
       ],

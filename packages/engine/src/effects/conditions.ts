@@ -46,6 +46,10 @@ export function tileMatches(ctx: ConditionContext, tile: TileFacts, match: TileM
   if (!anyOrOneOf(tile.wonder ?? null, match.wonder)) return false;
   if (match.cityCenter !== undefined && (tile.center ?? false) !== match.cityCenter) return false;
   if (match.river !== undefined && tile.river !== match.river) return false;
+  if (match.naturalWonder !== undefined) {
+    const nw = tile.feature !== null && !!ctx.content.entities.feature[tile.feature]?.naturalWonder;
+    if (nw !== match.naturalWonder) return false;
+  }
   return true;
 }
 
@@ -127,6 +131,8 @@ export function evaluateCondition(ctx: ConditionContext, c: Condition): boolean 
   }
   if ('settlement_on_river' in c)
     return !!settlement && (settlement.onRiver ?? false) === c.settlement_on_river;
+  if ('settlement_on_home_continent' in c)
+    return !!settlement && (settlement.homeContinent ?? false) === c.settlement_on_home_continent;
   if ('settlement_units_trained_below' in c)
     return !!settlement && (settlement.unitsTrained ?? 0) < c.settlement_units_trained_below;
   if ('tile_city_center' in c) return !!tile && (tile.center ?? false) === c.tile_city_center;

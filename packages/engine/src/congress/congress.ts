@@ -11,6 +11,7 @@ import { playerEra } from '../progress/rules';
 import { scaleCost } from '../speed';
 import type { Ballot, GameState, PlayerId, PlayerState } from '../state';
 import { endGame } from '../victory';
+import { containmentTurn, containmentTurns } from './containment';
 
 /**
  * The World Congress (docs/04-advanced-systems.md, "World Congress"), after Civ VI. It forms
@@ -77,7 +78,7 @@ export function diplomaticPoints(ctx: EngineContext, state: GameState, player: P
 /** Effect sources of the resolutions in force for a player (for `activeSources`). */
 export function congressSources(ctx: EngineContext, p: PlayerState): EffectSource[] {
   const out: EffectSource[] = [];
-  for (const r of p.resolutions ?? []) {
+  for (const r of [...(p.resolutions ?? []), ...(p.contained ? [p.contained] : [])]) {
     const def = ctx.content.entities.resolution[r.resolution];
     const option = def?.options.find((o) => o.id === r.option);
     if (!def || !option || option.effects.length === 0) continue;
@@ -112,6 +113,12 @@ export function votingProblem(
     const def = ctx.content.entities.resolution[b.resolution]!;
     if (!def.options.some((o) => o.id === b.option))
       return { code: 'bad_option', message: 'No such choice' };
+    const emergency = c.session.emergency;
+    if (emergency && b.target !== emergency.target)
+      return {
+        code: 'bad_target',
+        message: `This session is about ${state.players[emergency.target]?.name ?? emergency.target}`,
+      };
     if (def.target === 'player') {
       if (!b.target || !state.playerOrder.includes(b.target) || !state.players[b.target]?.alive)
         return { code: 'bad_target', message: 'Choose a civ for it' };
@@ -130,10 +137,12 @@ export function votingProblem(
 function drawAgenda(draft: Draft<GameState>, ctx: EngineContext): string[] {
   const r = ctx.content.rules.congress;
   const ids = ctx.content.ids.resolution;
-  const always = ids.filter((id) => ctx.content.entities.resolution[id]!.always);
+  // Emergency resolutions only come up in emergency sessions (D120).
+  const regular = ids.filter((id) => !ctx.content.entities.resolution[id]!.emergency);
+  const always = regular.filter((id) => ctx.content.entities.resolution[id]!.always);
   const last = new Set(draft.congress?.passed.map((p) => p.resolution) ?? []);
-  let pool = ids.filter((id) => !always.includes(id) && !last.has(id));
-  if (pool.length < r.resolutionsPerSession) pool = ids.filter((id) => !always.includes(id));
+  let pool = regular.filter((id) => !always.includes(id) && !last.has(id));
+  if (pool.length < r.resolutionsPerSession) pool = regular.filter((id) => !always.includes(id));
   const random = makeRandom(draft.rng as GameState['rng']);
   const drawn = random.shuffle([...pool]).slice(0, r.resolutionsPerSession);
   draft.rng = castDraft(random.state());
@@ -160,9 +169,57 @@ function award(
   });
 }
 
+/**
+ * An emergency session that met this turn (D120): one vote, on containing one civ. What the
+ * last regular session decided stays in force, and the regular schedule doesn't change.
+ */
+function closeEmergency(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
+  const c = draft.congress!;
+  const { target } = c.session!.emergency!;
+  const res = c.session!.agenda[0]!;
+  const def = ctx.content.entities.resolution[res]!;
+  const civs = draft.playerOrder.filter((id) => draft.players[id]!.alive);
+  const tally: Record<string, number> = Object.fromEntries(def.options.map((o) => [o.id, 0]));
+  for (const id of civs) {
+    const b = c.votes[id]?.find((x) => x.resolution === res);
+    if (b) tally[b.option] = (tally[b.option] ?? 0) + b.votes;
+  }
+  // A tie keeps the world as it is.
+  const bane = def.options.find((o) => o.tone === 'bane');
+  const rest = def.options.filter((o) => o !== bane);
+  const contained = !!bane && rest.every((o) => (tally[bane.id] ?? 0) > (tally[o.id] ?? 0));
+  const option = contained ? bane! : (rest[0] ?? def.options[0]!);
+  for (const id of civs) {
+    const p = draft.players[id]!;
+    p.favor = Math.max(0, (p.favor ?? 0) - ballotCost(ctx, c.votes[id] ?? []));
+  }
+  if (contained && draft.players[target]?.alive)
+    draft.players[target]!.contained = {
+      resolution: res,
+      option: option.id,
+      until: draft.turn + containmentTurns(ctx, draft) - 1,
+    };
+  emit({
+    type: 'resolution_passed',
+    resolution: res,
+    option: option.id,
+    target,
+    tally,
+    visibleTo: 'all',
+  });
+  c.votes = {};
+  c.session = null;
+  // A regular session that fell due meanwhile meets as soon as it can.
+  c.nextSession = Math.max(c.nextSession, draft.turn + 1);
+}
+
 /** The session that met this turn: count the votes, and put what passed in force. */
 function closeSession(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   const c = draft.congress!;
+  if (c.session!.emergency) {
+    closeEmergency(draft, ctx, emit);
+    return;
+  }
   const agenda = c.session!.agenda;
   const civs = draft.playerOrder.filter((id) => draft.players[id]!.alive);
   const random = makeRandom(draft.rng as GameState['rng']);
@@ -268,6 +325,7 @@ export function congressTurn(draft: Draft<GameState>, ctx: EngineContext, emit: 
       visibleTo: 'all',
     });
   }
+  containmentTurn(draft, ctx, emit);
   if (!diplomaticOn(draft)) return;
   const after = view(draft);
   const winner = after.playerOrder.find(

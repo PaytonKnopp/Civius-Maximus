@@ -1,9 +1,10 @@
 import type { Draft } from 'immer';
 import { getBit } from '../bitset';
 import type { EngineContext, Emit } from '../context';
-import { areAllies, areFriends } from '../diplomacy/rules';
+import { areAllies, areFriends, haveOpenBorders } from '../diplomacy/rules';
 import { view } from '../draft';
 import { toFixed } from '../fixed';
+import { eraOrderOf } from '../progress/era';
 import type { GameState, PlayerId } from '../state';
 import { tradePartners } from '../trade/rules';
 import { exploredBits } from '../units/vision';
@@ -41,6 +42,8 @@ export function tourismBonus(
     out.push({ label: 'Shared religion', percent: r.religionPercent });
   if (areFriends(state, from, to) || areAllies(state, from, to))
     out.push({ label: 'Friends', percent: r.friendsPercent });
+  if (haveOpenBorders(state, from, to))
+    out.push({ label: 'Open borders', percent: r.openBordersPercent });
   return out.filter((l) => l.percent !== 0);
 }
 
@@ -76,6 +79,10 @@ export function cultureProgress(
 }
 
 export function hasCultureVictory(ctx: EngineContext, state: GameState, player: PlayerId) {
+  // Not before the era the rules ask for (D121).
+  const era = ctx.content.rules.culture.victoryEra;
+  const needed = era ? (ctx.content.entities.era[era]?.order ?? 0) : 0;
+  if (eraOrderOf(ctx, state.players[player]) < needed) return false;
   const progress = cultureProgress(ctx, state, player);
   return progress.length > 0 && progress.every((x) => x.visiting > x.domestic);
 }

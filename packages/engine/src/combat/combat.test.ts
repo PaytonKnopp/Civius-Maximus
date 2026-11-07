@@ -5,6 +5,7 @@ import type { GameEvent } from '../events';
 import { applyAction } from '../game';
 import { neighbors } from '../map/hex';
 import { foundSettlement } from '../settlements/handlers';
+import { annexCost, limitCount, settlementsOf, settlementYields } from '../settlements/rules';
 import type { GameState } from '../state';
 import { act, addUnit, at, ctx, endTurn, testState } from '../testing/world';
 import { damageFor, damageRange, damageTable, MAX_DIFFERENCE } from './damage';
@@ -182,6 +183,43 @@ describe('settlements at war', () => {
     expect(choose('keep')).toBeUndefined();
     // Unanswered, the choice is "keep" at the end of the turn.
     expect(endTurn(r.state).settlements[capital]!.captureChoice).toBe(false);
+  });
+
+  it('can be kept as a puppet: it runs itself, yields less, counts half, and can be annexed', () => {
+    const { s, capital } = siege(true);
+    s.settings.domination = false;
+    s.settlements[capital]!.health = 1;
+    s.settlements[capital]!.population = 5;
+    const a = addUnit(s, 'p1', 'unit_swordsman', at(s, 3, 2));
+    let next = act(s, { type: 'attack', player: 'p1', unit: a.id, tile: at(s, 4, 2) }).state;
+    const kept = settlementYields(ctx, next, next.settlements[capital]!).total;
+    next = act(next, {
+      type: 'capture_choice',
+      player: 'p1',
+      settlement: capital,
+      choice: 'puppet',
+    }).state;
+    const p = next.settlements[capital]!;
+    expect(p).toMatchObject({ puppet: true, captureChoice: false, queue: [] });
+    // Its yields drop by the puppet share, and it counts half toward the limit.
+    const yields = settlementYields(ctx, next, p).total;
+    expect(yields.science ?? 0).toBeLessThan(kept.science ?? 0);
+    expect(limitCount(ctx, next, 'p1')).toBe(settlementsOf(next, 'p1').length - 1);
+    // Its owner can't manage it...
+    expect(err(next, { type: 'set_focus', player: 'p1', settlement: capital, focus: 'food' })).toBe(
+      'puppet',
+    );
+    // ...it picks its own builds...
+    next = endTurn(next);
+    expect(next.settlements[capital]!.queue.length).toBeGreaterThan(0);
+    // ...until it's annexed for gold.
+    expect(err(next, { type: 'annex_puppet', player: 'p1', settlement: capital })).toBe('no_gold');
+    next = structuredClone(next);
+    next.players.p1!.gold = 100_000;
+    const cost = annexCost(ctx, next, next.settlements[capital]!);
+    next = act(next, { type: 'annex_puppet', player: 'p1', settlement: capital }).state;
+    expect(next.settlements[capital]!.puppet).toBe(false);
+    expect(next.players.p1!.gold).toBe(100_000 - cost);
   });
 
   it('holding every rival original capital is a domination victory', () => {

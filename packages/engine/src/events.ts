@@ -27,11 +27,25 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         friendship: boolean;
         alliance: boolean;
         peace: boolean;
+        openBorders?: boolean;
+        research?: boolean;
       }
     | { type: 'deal_declined'; deal: string; from: PlayerId; to: PlayerId }
     | { type: 'deal_expired'; deal: string; from: PlayerId; to: PlayerId }
     | { type: 'deal_broken'; by: PlayerId; to: PlayerId }
-    | { type: 'pact_ended'; kind: 'friendship' | 'alliance'; players: [PlayerId, PlayerId] }
+    | {
+        type: 'pact_ended';
+        kind: 'friendship' | 'alliance' | 'open_borders' | 'research';
+        players: [PlayerId, PlayerId];
+      }
+    | {
+        type: 'containment_called';
+        target: PlayerId;
+        victory: 'science' | 'culture' | 'religion' | 'diplomatic' | 'domination';
+        percent: number;
+      }
+    | { type: 'containment_ended'; player: PlayerId; resolution: string }
+    | { type: 'legacy_earned'; player: PlayerId; government: string; count: number }
     | { type: 'denounced'; by: PlayerId; target: PlayerId }
     | {
         type: 'trade_route_started';
@@ -157,6 +171,8 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         detail?: string;
       }
     | { type: 'pantheon_founded'; player: PlayerId; belief: string }
+    /** A player ran out of a strategic resource its units use up every turn. */
+    | { type: 'resource_shortage'; player: PlayerId; resource: string }
     /** A player found a city-state (and got `envoys` free envoys there for being first). */
     | { type: 'city_state_met'; cityState: PlayerId; player: PlayerId; envoys: number }
     | { type: 'envoy_sent'; player: PlayerId; cityState: PlayerId }
@@ -222,7 +238,8 @@ export type GameEvent = { visibleTo: 'all' | PlayerId[] } &
         /** Why, when it wasn't the player's choice. */
         reason?: 'no_gold';
       }
-    | { type: 'orders_cancelled'; unit: UnitId; reason: 'path_blocked' }
+    | { type: 'orders_cancelled'; unit: UnitId; reason: 'path_blocked' | 'explored' }
+    | { type: 'unit_alerted'; unit: UnitId; owner: PlayerId; tile: number; enemy: number }
     | {
         type: 'settlement_founded';
         settlement: SettlementId;

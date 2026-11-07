@@ -10,6 +10,7 @@ import type { Line } from './rules';
 import { tileFacts } from './rules';
 import { playerEffects } from '../progress/sources';
 import { baseOf, countsAs } from '../uniques';
+import { appealOf } from '../map/appeal';
 import { withArticle } from '../text';
 
 /**
@@ -215,8 +216,9 @@ export function districtYields(
     add(a.yield, `${name}: ${a.label ?? 'adjacency'}`, adjacencyBonus(tctx, a));
   }
   const owner = state.map.tiles[tile]!.owner;
-  const effects = <T extends 'district_neighbor_bonus' | 'extra_adjacency'>(type: T) =>
-    owner !== null && state.players[owner] ? playerEffects(ctx, state, owner, type) : [];
+  const effects = <T extends 'district_neighbor_bonus' | 'extra_adjacency' | 'adjacency_percent'>(
+    type: T,
+  ) => (owner !== null && state.players[owner] ? playerEffects(ctx, state, owner, type) : []);
   // Abilities' extra adjacency rules (a unique counts as the district it replaces).
   const base = baseOf(ctx, 'district', id);
   for (const { source, effect } of effects('extra_adjacency')) {
@@ -235,6 +237,40 @@ export function districtYields(
       effects('district_neighbor_bonus').reduce((sum, e) => sum + e.effect.params.amount, 0);
     add(main, `${name}: neighboring districts`, toFixed(per) * near);
   }
+  // Everything so far past the district's own yields is its adjacency.
+  const adjacency: Record<string, Fixed> = {};
+  for (const [y, ls] of Object.entries(lines))
+    adjacency[y] = ls.reduce((a, l) => a + l.amount, 0) - toFixed(def.yields[y] ?? 0);
+  // Policies that make an adjacency worth more (Civ VI's "+100% Campus adjacency").
+  for (const { source, effect } of effects('adjacency_percent')) {
+    const wanted = effect.params.district;
+    if (!(Array.isArray(wanted) ? wanted : [wanted]).some((w) => w === id || w === base)) continue;
+    for (const y of Object.keys(adjacency).sort())
+      if (adjacency[y]! > 0)
+        add(
+          y,
+          `${source.label} (${effect.params.percent > 0 ? '+' : ''}${effect.params.percent}%)`,
+          percentOf(adjacency[y]!, effect.params.percent),
+        );
+  }
+  // Each building in the district adds a third of its adjacency, rounded down to whole points
+  // (D108), so a well-placed district keeps paying as it grows.
+  const share = ctx.content.rules.settlements.districts.buildingAdjacencyPercent;
+  const s = state.map.tiles[tile]!.settlement;
+  const here = s !== null ? state.settlements[s] : undefined;
+  if (here && share > 0 && def.specialty) {
+    const inside = here.buildings.filter((b) => {
+      const d = ctx.content.entities.building[b]?.district;
+      return d !== undefined && (d === id || d === base || baseOf(ctx, 'district', d) === base);
+    });
+    for (const b of inside) {
+      const label = `${resolveText(ctx.content, ctx.content.entities.building[b]!.name)}: share of the adjacency`;
+      for (const y of Object.keys(adjacency).sort()) {
+        const part = Math.floor(percentOf(adjacency[y]!, share) / 100) * 100;
+        if (part > 0) add(y, label, part);
+      }
+    }
+  }
   const total: Record<string, Fixed> = {};
   for (const [y, ls] of Object.entries(lines)) total[y] = ls.reduce((a, l) => a + l.amount, 0);
   return { total, lines };
@@ -252,4 +288,20 @@ export function specialistSlots(ctx: EngineContext, s: SettlementState): Record<
       out[d.id] = n;
   }
   return out;
+}
+
+/**
+ * Happiness a district gives by the appeal of its tile (the Neighborhood, D111): the first of
+ * its `happinessByAppeal` bands the tile reaches, or 0.
+ */
+export function appealHappiness(
+  ctx: EngineContext,
+  state: GameState,
+  district: string,
+  tile: number,
+): number {
+  const bands = ctx.content.entities.district[district]?.happinessByAppeal ?? [];
+  if (bands.length === 0) return 0;
+  const appeal = appealOf(ctx, state, tile);
+  return bands.find((b) => appeal >= b.minAppeal)?.happiness ?? 0;
 }

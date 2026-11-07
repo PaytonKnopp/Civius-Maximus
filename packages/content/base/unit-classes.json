@@ -123,5 +123,37 @@
     "combat": false,
     "embarks": false,
     "ignoresZoc": true
+  },
+  {
+    "type": "unitClass",
+    "id": "class_support",
+    "name": "Support",
+    "domain": "land",
+    "layer": "support",
+    "combat": false
+  },
+  {
+    "type": "unitClass",
+    "id": "class_naval_commander",
+    "name": "Fleet command",
+    "domain": "sea",
+    "layer": "support",
+    "combat": false,
+    "embarks": false
+  },
+  {
+    "type": "unitClass",
+    "id": "class_anti_air",
+    "name": "Anti-air",
+    "domain": "land",
+    "layer": "military",
+    "combat": true,
+    "bonuses": [
+      {
+        "vs": ["class_air"],
+        "amount": 25,
+        "label": "Against aircraft"
+      }
+    ]
   }
 ]

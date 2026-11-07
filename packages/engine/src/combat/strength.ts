@@ -18,6 +18,7 @@ import { tradePartners } from '../trade/rules';
 import { promotionsOf, unitRange } from '../units/promotions';
 import { lineOfSight, visibleTiles } from '../units/vision';
 import { damageRange } from './damage';
+import { shortages } from '../resources/strategic';
 
 /**
  * Who can attack what, and how strong each side is (docs/03-core-mechanics.md, section 5). Every
@@ -292,6 +293,9 @@ export function settlementStrength(
     amount: s.kind === 'city' ? rules.cityStrengthBonus : rules.townStrengthBonus,
   });
   if (s.walls > 0) lines.push({ label: 'Walls', amount: rules.wallsStrength });
+  const spec = s.specialization ? ctx.content.entities.specialization[s.specialization] : undefined;
+  if (spec?.defense)
+    lines.push({ label: resolveText(ctx.content, spec.name), amount: spec.defense });
   lines.push(...terrainLines(ctx, state, s.tile));
   return strength(lines);
 }
@@ -318,6 +322,7 @@ export function defenseStrength(
   const friends = friendsAround(ctx, state, unit.owner, unit.tile, unit.id);
   if (friends > 0) lines.push({ label: `Support (${friends})`, amount: friends * combat.support });
   lines.push(wounded(ctx, unit));
+  lines.push(...shortageLines(ctx, state, unit));
   lines.push(...classBonuses(ctx, unit, by));
   lines.push(
     ...bonusLines(
@@ -337,6 +342,16 @@ export function defenseStrength(
   return strength(lines);
 }
 
+/** Units whose strategic upkeep their owner couldn't cover fight weaker ("Short of oil"). */
+function shortageLines(ctx: EngineContext, state: GameState, unit: UnitState): StrengthLine[] {
+  const short = shortages(ctx, state, unit);
+  if (short.length === 0) return [];
+  const names = short
+    .map((r) => resolveText(ctx.content, ctx.content.entities.resource[r]?.name ?? r))
+    .join(' and ');
+  return [{ label: `Short of ${names}`, amount: -ctx.content.rules.strategic.shortageStrength }];
+}
+
 /** A unit's strength attacking `target` from `from` (its own tile by default). */
 export function attackStrength(
   ctx: EngineContext,
@@ -353,6 +368,7 @@ export function attackStrength(
     { label: unitName(ctx, unit), amount: mode === 'ranged' ? def.rangedStrength : def.strength },
   ];
   lines.push(wounded(ctx, unit));
+  lines.push(...shortageLines(ctx, state, unit));
   if (target.kind === 'unit') lines.push(...classBonuses(ctx, unit, target.unit));
   if (target.kind === 'settlement') {
     const bonus = unitClassOf(ctx, unit).vsSettlement;
@@ -448,15 +464,42 @@ export function attackTargets(
     .sort((a, b) => a - b);
 }
 
+/**
+ * What the attacker's own support units around it do to walls (D112): the best walls percent
+ * of a battering ram in reach, and whether a siege tower lets the hit skip the walls.
+ */
+export function siegeHelp(
+  ctx: EngineContext,
+  state: GameState,
+  attacker: Pick<UnitState, 'type' | 'owner' | 'tile'>,
+): { wallsPercent: number; bypass: boolean } {
+  const cls = unitDef(ctx, attacker).class;
+  let wallsPercent = 0;
+  let bypass = false;
+  for (const u of Object.values(state.units)) {
+    if (u.owner !== attacker.owner) continue;
+    const help = unitDef(ctx, u).support;
+    if (!help || !help.classes.includes(cls)) continue;
+    if (distance(state.map, u.tile, attacker.tile) > help.radius) continue;
+    wallsPercent = Math.max(wallsPercent, help.wallsPercent ?? 0);
+    bypass ||= help.bypassWalls;
+  }
+  return { wallsPercent, bypass };
+}
+
 /** Damage to a settlement: walls absorb the hit first (and let through only part of it). */
 export function settlementHit(
   ctx: EngineContext,
   s: Pick<SettlementState, 'walls' | 'health'>,
   damage: number,
   attacker: Pick<UnitState, 'type'> | null,
+  help?: { wallsPercent: number; bypass: boolean },
 ): { walls: number; health: number } {
-  if (s.walls <= 0) return { walls: 0, health: Math.min(s.health, damage) };
-  const percent = attacker ? unitClassOf(ctx, attacker).wallsDamagePercent : 100;
+  if (s.walls <= 0 || help?.bypass) return { walls: 0, health: Math.min(s.health, damage) };
+  const percent = Math.max(
+    attacker ? unitClassOf(ctx, attacker).wallsDamagePercent : 100,
+    help?.wallsPercent ?? 0,
+  );
   const through = Math.floor((damage * percent) / 100);
   const walls = Math.min(s.walls, through);
   return { walls, health: Math.min(s.health, through - walls) };
@@ -509,8 +552,9 @@ export function previewAttack(
   const toDefender = damageRange(ctx, diff);
   let split: CombatPreview['split'] = null;
   if (target.kind === 'settlement') {
-    const lo = settlementHit(ctx, target.settlement, toDefender[0], unit);
-    const hi = settlementHit(ctx, target.settlement, toDefender[1], unit);
+    const help = siegeHelp(ctx, state, unit);
+    const lo = settlementHit(ctx, target.settlement, toDefender[0], unit, help);
+    const hi = settlementHit(ctx, target.settlement, toDefender[1], unit, help);
     split = { walls: [lo.walls, hi.walls], health: [lo.health, hi.health] };
   }
   return {
@@ -523,6 +567,17 @@ export function previewAttack(
     captures: mode === 'melee' && target.kind === 'settlement' && unitClassOf(ctx, unit).captures,
     split,
   };
+}
+
+/**
+ * Where a settlement strikes from: its center, and any district with its own ranged strike
+ * (the Encampment), so a well-placed Encampment covers a flank.
+ */
+export function strikeOrigins(ctx: EngineContext, s: SettlementState): number[] {
+  const out = [s.tile];
+  for (const d of s.districts)
+    if (ctx.content.entities.district[d.id]?.rangedStrike) out.push(d.tile);
+  return out;
 }
 
 /** Why a settlement can't strike `tile` now, or undefined. */
@@ -544,7 +599,7 @@ export function strikeProblem(
   if (target?.kind !== 'unit') return { code: 'no_target', message: 'No enemy unit there' };
   if (!atWar(state, s.owner, target.unit.owner))
     return { code: 'not_at_war', message: "You're not at war with them" };
-  if (distance(state.map, s.tile, tile) > range)
+  if (strikeOrigins(ctx, s).every((o) => distance(state.map, o, tile) > range))
     return { code: 'too_far', message: `Out of range (range ${range})` };
   if (!visible[tile]) return { code: 'not_visible', message: "You can't see that tile" };
   return undefined;
@@ -555,9 +610,8 @@ export function strikeTargets(ctx: EngineContext, state: GameState, s: Settlemen
   if (s.struckTurn === state.turn) return [];
   const range = ctx.content.rules.combat.settlement.strikeRange;
   const visible = visibleTiles(ctx, state, s.owner);
-  return tilesWithin(state.map, s.tile, range)
-    .filter((t) => !strikeProblem(ctx, state, s, t, visible))
-    .sort((a, b) => a - b);
+  const tiles = new Set(strikeOrigins(ctx, s).flatMap((o) => tilesWithin(state.map, o, range)));
+  return [...tiles].filter((t) => !strikeProblem(ctx, state, s, t, visible)).sort((a, b) => a - b);
 }
 
 export function previewStrike(

@@ -47,7 +47,36 @@
       }
     ],
     "color": "#8a8076",
-    "model": "mine"
+    "model": "mine",
+    "appeal": -1
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_oil_well",
+    "name": "Oil Well",
+    "icon": "OW",
+    "yields": {
+      "production": 2
+    },
+    "order": 6,
+    "resources": ["oil"],
+    "model": "mine",
+    "requiresTech": "tech_steam_power",
+    "appeal": -1
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_offshore_platform",
+    "name": "Offshore Platform",
+    "icon": "OP",
+    "yields": {
+      "production": 2
+    },
+    "order": 6,
+    "resources": ["oil"],
+    "model": "boats",
+    "requiresTech": "tech_combustion",
+    "appeal": -1
   },
   {
     "type": "improvement",
@@ -58,10 +87,11 @@
       "production": 1
     },
     "order": 5,
-    "resources": ["stone"],
+    "resources": ["stone", "marble", "salt"],
     "color": "#b9b2a4",
     "model": "quarry",
-    "requiresTech": "tech_mining"
+    "requiresTech": "tech_mining",
+    "appeal": -1
   },
   {
     "type": "improvement",
@@ -86,7 +116,7 @@
       "gold": 2
     },
     "order": 5,
-    "resources": ["bananas", "silk", "spices", "wine", "incense"],
+    "resources": ["bananas", "silk", "spices", "wine", "incense", "dyes", "sugar", "tea", "cotton"],
     "color": "#6f9a3c",
     "model": "plantation",
     "requiresTech": "tech_irrigation"
@@ -100,7 +130,7 @@
       "gold": 2
     },
     "order": 5,
-    "resources": ["deer"],
+    "resources": ["deer", "furs", "ivory"],
     "color": "#7a5a3a",
     "model": "camp",
     "requiresTech": "tech_animal_husbandry"
@@ -271,5 +301,50 @@
       }
     ],
     "civ": "civ_inca"
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_national_park",
+    "name": "National Park",
+    "icon": "NP",
+    "yields": {
+      "culture": 1
+    },
+    "yieldsPerAppeal": {
+      "tourism": 1
+    },
+    "appeal": 1,
+    "order": 90,
+    "requiresCivic": "civic_conservation",
+    "sites": [
+      {
+        "terrains": ["grassland", "plains", "desert", "tundra", "snow"],
+        "elevations": ["flat", "hills"],
+        "features": ["woods", "rainforest", "marsh"],
+        "minAppeal": 4
+      }
+    ]
+  },
+  {
+    "type": "improvement",
+    "id": "improvement_seaside_resort",
+    "name": "Seaside Resort",
+    "icon": "SR",
+    "yields": {
+      "gold": 2
+    },
+    "yieldsPerAppeal": {
+      "tourism": 1
+    },
+    "order": 80,
+    "requiresTech": "tech_radio",
+    "sites": [
+      {
+        "terrains": ["grassland", "plains", "desert", "tundra", "snow"],
+        "elevations": ["flat"],
+        "coastal": true,
+        "minAppeal": 4
+      }
+    ]
   }
 ]

@@ -1,10 +1,23 @@
+import { faithUnitCost } from '../religion/rules';
 import type { Effect } from '@cx/content';
+import {
+  isRevealed,
+  resourceUpkeepOf,
+  stockpileIncome,
+  stockpileUpkeep,
+} from '../resources/strategic';
 import { previewStrike, strikeTargets } from '../combat/strength';
-import { unitDef } from '../context';
+import { unitClassOf, unitDef } from '../context';
 import { toFixed } from '../fixed';
 import { distance } from '../map/hex';
-import { districtLimit, districtYields, placementTiles } from '../settlements/districts';
 import {
+  appealHappiness,
+  districtLimit,
+  districtYields,
+  placementTiles,
+} from '../settlements/districts';
+import {
+  annexCost,
   availableItems,
   canBuyWithFaith,
   goldPerTurn,
@@ -12,8 +25,10 @@ import {
   itemCost,
   itemDef,
   itemProblem,
+  limitCount,
   purchasableTiles,
   purchaseCost,
+  settlementIds,
   settlementLimit,
   settlementYields,
   tilePurchaseCost,
@@ -21,19 +36,40 @@ import {
   type YieldScope,
   townUpgradeCost,
 } from '../settlements/rules';
-import type { BuildItem, SettlementState } from '../state';
+import { completionProblem } from '../settlements/handlers';
+import type { BuildItem, PlayerId, SettlementState } from '../state';
 import { routesOf, tradeCapacity } from '../trade/rules';
+import { countsAs } from '../uniques';
 import { obsoletedBy } from '../units/upgrades';
 import { hasSettleSite } from './settle';
 import { wantsNuke } from './nukes';
 import { type Role, type Turn, unitPower, unitRole } from './turn';
 import { effectValue, fixedYieldsValue, happinessWeight, yieldsValue, yieldWeight } from './values';
 
-/** After taking a settlement the AI keeps it (raze and liberate are left to people for now). */
+/**
+ * After taking a settlement the AI keeps it, as a puppet when keeping it outright would push it
+ * over its settlement limit (raze and liberate are left to people). Puppets are annexed again
+ * once there's room under the limit and gold to spare.
+ */
 export function manageCaptures(t: Turn) {
   for (const s of t.mySettlements()) {
-    if (s.captureChoice)
-      t.act({ type: 'capture_choice', player: t.player, settlement: s.id, choice: 'keep' });
+    if (!s.captureChoice) continue;
+    const over = limitCount(t.ctx, t.state, t.player) > settlementLimit(t.ctx, t.state, t.player);
+    t.act({
+      type: 'capture_choice',
+      player: t.player,
+      settlement: s.id,
+      choice: over ? 'puppet' : 'keep',
+    });
+  }
+  const share = t.ctx.content.rules.settlements.puppet.limitPercent;
+  for (const s of t.mySettlements()) {
+    if (!s.puppet) continue;
+    // Annexing adds the rest of a settlement to the count.
+    const after = limitCount(t.ctx, t.state, t.player) + (share < 100 ? 1 : 0);
+    if (after > settlementLimit(t.ctx, t.state, t.player)) continue;
+    if (t.p.gold < annexCost(t.ctx, t.state, s) + reserve(t)) continue;
+    t.act({ type: 'annex_puppet', player: t.player, settlement: s.id });
   }
 }
 
@@ -59,7 +95,7 @@ const reserve = (t: Turn) => toFixed(30 + 10 * t.mySettlements().length);
 export function manageTowns(t: Turn) {
   const towns = t
     .mySettlements()
-    .filter((s) => s.kind === 'town')
+    .filter((s) => s.kind === 'town' && !s.puppet)
     .sort((a, b) => b.population - a.population || (a.id < b.id ? -1 : 1));
   const minPop = t.me.gold >= 8 ? 5 : 3;
   const town = towns.find((s) => s.population >= minPop && !s.captureChoice);
@@ -68,8 +104,8 @@ export function manageTowns(t: Turn) {
   }
   const spec = t.ctx.content.rules.settlements.specialization;
   for (const s of t.mySettlements()) {
-    if (s.kind !== 'town' || s.specialization !== null || s.population < spec.minPopulation)
-      continue;
+    if (s.kind !== 'town' || s.puppet || s.specialization !== null) continue;
+    if (s.population < spec.minPopulation) continue;
     const choice = bestSpecialization(t, s);
     if (choice)
       t.act({
@@ -122,7 +158,7 @@ export const isSoldier = (role: Role) => role === 'melee' || role === 'ranged' |
 /** Production queues: what each city should make next, and what's worth buying. */
 export function manageProduction(t: Turn) {
   for (const s of t.mySettlements()) {
-    if (s.kind !== 'city' || s.captureChoice) continue;
+    if (s.kind !== 'city' || s.captureChoice || s.puppet) continue;
     const head = s.queue[0];
     // Urgent needs go to the front of the queue (progress on the rest is kept).
     const urgent = urgentBuild(t, s);
@@ -139,7 +175,10 @@ export function manageProduction(t: Turn) {
       continue;
     }
     if (head) continue;
-    const choice = bestImprovement(t, s) ?? surplusUnit(t, s);
+    // A Campus and a Library first in a big city; otherwise the best improvement. Nothing worth
+    // building: a district project beats idle production or spare soldiers.
+    const choice =
+      scholars(t, s) ?? bestImprovement(t, s) ?? bestProject(t, s) ?? surplusUnit(t, s);
     if (choice) t.act({ type: 'set_queue', player: t.player, settlement: s.id, queue: [choice] });
   }
   buyThings(t);
@@ -178,15 +217,27 @@ function turnsFor(t: Turn, s: SettlementState, item: BuildItem): number {
   return Math.max(1, Math.ceil(left / production));
 }
 
-/** Units this city can make now. */
+/** Units this city can make now (and whose resource upkeep the empire can carry). */
 function unitItems(t: Turn, s: SettlementState): BuildItem[] {
-  return t.memo(`units:${s.id}`, () =>
-    t.ctx.content.ids.unit
-      // Nuclear weapons only through `urgentBuild`'s deterrent (see ai/nukes.ts).
-      .filter((id) => !t.ctx.content.entities.unit[id]!.nuke)
-      .map((id) => ({ kind: 'unit' as const, id }))
-      .filter((item) => !itemProblem(t.ctx, t.state, s, item)),
-  );
+  return t.memo(`units:${s.id}`, () => {
+    const spare = t.turnMemo('resourceRoom', () => {
+      const income = stockpileIncome(t.ctx, t.state, t.player);
+      const upkeep = stockpileUpkeep(t.ctx, t.state, t.player);
+      const out: Record<string, number> = {};
+      for (const r of new Set([...Object.keys(income), ...Object.keys(upkeep)]))
+        out[r] = (income[r] ?? 0) - (upkeep[r] ?? 0);
+      return out;
+    });
+    const sustainable = (id: string) =>
+      Object.entries(resourceUpkeepOf(t.ctx, id)).every(([r, n]) => (spare[r] ?? 0) >= n);
+    return (
+      t.ctx.content.ids.unit
+        // Nuclear weapons only through `urgentBuild`'s deterrent (see ai/nukes.ts).
+        .filter((id) => !t.ctx.content.entities.unit[id]!.nuke && sustainable(id))
+        .map((id) => ({ kind: 'unit' as const, id }))
+        .filter((item) => !itemProblem(t.ctx, t.state, s, item))
+    );
+  });
 }
 
 /** Something that should be built before anything else here, if anything. */
@@ -208,8 +259,10 @@ function urgentBuild(t: Turn, s: SettlementState): BuildItem | undefined {
   // 2. Settlers while there's room to grow.
   const settler = units.find((i) => role(i) === 'settler');
   if (settler && s.population >= 2 && wantsSettler(t)) return settler;
-  // 3. The army this leader wants.
+  // 3. The army this leader wants, and at war a wall-breaker (a siege tower or a ram) for it.
   if (army.have + armyQueued(t) < army.want) {
+    const breaker = wallBreaker(t, units);
+    if (breaker) return breaker;
     const unit = bestUnit(t, units, nextRoles(t));
     if (unit) return unit;
   }
@@ -259,13 +312,31 @@ function surplusUnit(t: Turn, s: SettlementState): BuildItem | undefined {
   return bestUnit(t, unitItems(t, s), nextRoles(t));
 }
 
+/** The repeatable district project whose yields this leader values most here (or none). */
+function bestProject(t: Turn, s: SettlementState): BuildItem | undefined {
+  let best: { item: BuildItem; score: number } | undefined;
+  for (const raw of availableItems(t.ctx, t.state, s)) {
+    if (raw.kind !== 'project') continue;
+    const def = t.ctx.content.entities.project[raw.id]!;
+    if (!def.repeatable || def.speedsExpedition || def.clears) continue;
+    const item = withTile(t, s, raw);
+    if (!item) continue;
+    let score = 0;
+    for (const [y, percent] of Object.entries(def.costShare))
+      score += percent * yieldWeight(t.me, y);
+    if (def.greatPersonPoints) score += def.greatPersonPoints.percent * 8;
+    if (!best || score > best.score) best = { item, score };
+  }
+  return best?.item;
+}
+
 /** Some city of ours already has this as its current build. */
 function queued(t: Turn, id: string): boolean {
   return t.mySettlements().some((s) => s.queue[0]?.id === id);
 }
 
 function wantsSettler(t: Turn): boolean {
-  const n = t.mySettlements().length;
+  const n = limitCount(t.ctx, t.state, t.player);
   const settlers =
     t.myUnits().filter((u) => unitRole(t.ctx, u) === 'settler').length +
     t.mySettlements().filter((s) => {
@@ -292,14 +363,65 @@ function nextRoles(t: Turn): Role[] {
   return ['melee', 'ranged'];
 }
 
-/** The strongest unit of the first role that has one (ties: cheaper). */
+/**
+ * Unit classes our enemies field in numbers (two or more seen), for counters: anti-cavalry
+ * against horsemen, anti-air against aircraft.
+ */
+function enemyClasses(t: Turn): Set<string> {
+  return t.turnMemo('enemyClasses', () => {
+    const wars = new Set(t.civWars());
+    const seen = t.seen();
+    const counts = new Map<string, number>();
+    for (const u of Object.values(t.state.units)) {
+      if (!wars.has(u.owner) || !seen[u.tile]) continue;
+      const cls = unitDef(t.ctx, u).class;
+      counts.set(cls, (counts.get(cls) ?? 0) + 1);
+    }
+    return new Set([...counts].filter(([, n]) => n >= 2).map(([c]) => c));
+  });
+}
+
+/**
+ * At war with a civ, with a few line soldiers and no support unit that helps them against walls
+ * (D112): the best such unit (a siege tower beats a ram), if one can be built here.
+ */
+function wallBreaker(t: Turn, units: BuildItem[]): BuildItem | undefined {
+  if (t.civWars().length === 0) return undefined;
+  const helps = (type: string) => {
+    const sup = t.ctx.content.entities.unit[type]?.support;
+    return !!sup && (sup.bypassWalls || (sup.wallsPercent ?? 0) > 0);
+  };
+  const mine = t.myUnits();
+  if (mine.some((u) => helps(u.type)) || units.some((i) => queued(t, i.id) && helps(i.id)))
+    return undefined;
+  const line = mine.filter((u) => unitClassOf(t.ctx, u).captures).length;
+  if (line < 3) return undefined;
+  return units
+    .filter((i) => helps(i.id))
+    .sort((a, b) => {
+      const sa = t.ctx.content.entities.unit[a.id]!.support!;
+      const sb = t.ctx.content.entities.unit[b.id]!.support!;
+      return (
+        Number(sb.bypassWalls) - Number(sa.bypassWalls) ||
+        (sb.wallsPercent ?? 0) - (sa.wallsPercent ?? 0) ||
+        (a.id < b.id ? -1 : 1)
+      );
+    })[0];
+}
+
+/** The strongest unit of the first role that has one, counters first (ties: cheaper). */
 function bestUnit(t: Turn, units: BuildItem[], roles: Role[]): BuildItem | undefined {
+  const threats = enemyClasses(t);
   for (const r of roles) {
     let best: { item: BuildItem; power: number; cost: number } | undefined;
     for (const item of units) {
       if (unitRole(t.ctx, { type: item.id }) !== r) continue;
       const def = unitDef(t.ctx, { type: item.id });
-      const power = Math.max(def.strength, def.rangedStrength);
+      // A class bonus against what the enemy fields counts as strength.
+      const counter = (t.ctx.content.entities.unitClass[def.class]?.bonuses ?? [])
+        .filter((b) => b.vs.some((c) => threats.has(c)))
+        .reduce((n, b) => n + b.amount, 0);
+      const power = Math.max(def.strength, def.rangedStrength) + counter;
       if (!best || power > best.power || (power === best.power && def.cost < best.cost))
         best = { item, power, cost: def.cost };
     }
@@ -320,6 +442,9 @@ function improvementValue(t: Turn, s: SettlementState, item: BuildItem): number 
       def.happiness * happy -
       def.maintenance * yieldWeight(me, 'gold');
     for (const effect of [...def.localEffects, ...def.effects]) v += effectValue(t, effect);
+    // Room for great works is what a culture plan builds toward (D121).
+    if (t.plan === 'culture')
+      v += 10 * Object.values(def.slots ?? {}).reduce((n: number, k) => n + (k ?? 0), 0);
     if (def.walls > 0) {
       const exposed = t.threatNear(s.tile, 6) > 0 || t.civWars().length > 0;
       v += exposed ? 30 + me.aggression * 2 : s.capital ? 6 : 2;
@@ -338,16 +463,25 @@ function improvementValue(t: Turn, s: SettlementState, item: BuildItem): number 
     v = Math.floor((v * (5 + me.districts)) / 10);
     // Buildings and specialists to come.
     v += 6 + Math.floor(yieldsValue(me, def.specialistYields) / 2) + def.happiness * happy;
+    // A Neighborhood's happiness depends on where it goes (D111).
+    v += appealHappiness(t.ctx, t.state, item.id, item.tile!) * happy;
     for (const effect of [...def.localEffects, ...def.effects]) v += effectValue(t, effect);
+    // A victory plan's own district: Theater Squares for culture, Holy Sites for religion.
+    const theater = districtFor(t, 'culture');
+    const holy = t.ctx.content.rules.religion.holyDistrict;
+    if (t.plan === 'culture' && theater && countsAs(t.ctx, 'district', item.id, theater)) v += 20;
+    if (t.plan === 'religion' && countsAs(t.ctx, 'district', item.id, holy)) v += 20;
     return v;
   }
   if (item.kind === 'wonder') {
     const def = e.wonder[item.id]!;
     if (queued(t, item.id)) return 0;
-    if (turnsFor(t, s, item) > 20 + me.wonders * 2) return 0;
+    const appetite = wonderAppetite(me.wonders, wonderLead(t));
+    if (turnsFor(t, s, item) > appetite.turns) return 0;
     let v = yieldsValue(me, def.yields) + def.happiness * happy + 10;
     for (const effect of [...def.localEffects, ...def.effects]) v += effectValue(t, effect);
-    return Math.floor((v * (me.wonders + 2)) / 7);
+    v = Math.floor((v * (me.wonders + 2)) / 7);
+    return Math.floor((v * appetite.percent) / 100);
   }
   return 0;
 }
@@ -377,6 +511,91 @@ function bestImprovement(t: Turn, s: SettlementState): BuildItem | undefined {
 
 const e = (t: Turn, id: string) => t.ctx.content.entities.district[id];
 
+/** Cities this big keep a Campus and a Library (D121), whatever the leader's bent. */
+export const SCHOLARS_AT = 6;
+/** Wonders a civ may hold beyond the average civ it has met before it eases off. */
+const WONDER_SHARE = 2;
+
+/**
+ * How keen an AI is on another wonder (D121): the most turns one may take (more for a leader who
+ * loves wonders) and the percent of its value kept. Past a fair share (`WONDER_SHARE` more than
+ * the average civ it has met), each extra wonder makes the next one shorter to wait for and less
+ * tempting, so one builder doesn't take them all.
+ */
+export function wonderAppetite(wonders: number, lead: number): { turns: number; percent: number } {
+  const over = Math.max(0, lead - WONDER_SHARE);
+  return {
+    turns: Math.max(10, 20 + wonders * 2 - 4 * over),
+    percent: over > 0 ? Math.floor(300 / (3 + over)) : 100,
+  };
+}
+
+/** The district whose specialists make a yield (the Campus for science), in content order. */
+function districtFor(t: Turn, y: string): string | undefined {
+  return t.turnMemo(`districtFor:${y}`, () =>
+    t.ctx.content.ids.district.find((id) => {
+      const d = e(t, id)!;
+      return !d.replaces && (d.specialistYields[y] ?? 0) > 0;
+    }),
+  );
+}
+
+/** A district's first building for a yield (the Library in a Campus): cheapest, needing none. */
+function firstBuildingIn(t: Turn, district: string, y: string): string | undefined {
+  return t.turnMemo(`firstIn:${district}:${y}`, () => {
+    const b = t.ctx.content.entities.building;
+    return t.ctx.content.ids.building
+      .filter((id) => {
+        const d = b[id]!;
+        return (
+          d.district === district && !d.replaces && !d.requiresBuilding && (d.yields[y] ?? 0) > 0
+        );
+      })
+      .sort((x, z) => b[x]!.cost - b[z]!.cost || (x < z ? -1 : 1))[0];
+  });
+}
+
+/**
+ * Every AI keeps a Campus and its Library in cities of `SCHOLARS_AT` or more citizens (D121), so
+ * science isn't left to the one leader who loves it: the Campus first, then the Library.
+ */
+export function scholars(t: Turn, s: SettlementState): BuildItem | undefined {
+  if (s.population < SCHOLARS_AT) return undefined;
+  const campus = districtFor(t, 'science');
+  if (!campus) return undefined;
+  const items = availableItems(t.ctx, t.state, s);
+  if (!s.districts.some((d) => countsAs(t.ctx, 'district', d.id, campus))) {
+    const specialty = s.districts.filter((d) => e(t, d.id)?.specialty).length;
+    if (specialty >= districtLimit(t.ctx, s)) return undefined;
+    const item = items.find(
+      (i) => i.kind === 'district' && countsAs(t.ctx, 'district', i.id, campus),
+    );
+    return item ? withTile(t, s, item) : undefined;
+  }
+  const library = firstBuildingIn(t, campus, 'science');
+  if (!library || s.buildings.some((b) => countsAs(t.ctx, 'building', b, library)))
+    return undefined;
+  return items.find((i) => i.kind === 'building' && countsAs(t.ctx, 'building', i.id, library));
+}
+
+/**
+ * How many more wonders we hold than the average civ we've met (finished wonders are announced
+ * to everyone, so this is public knowledge).
+ */
+export function wonderLead(t: Turn): number {
+  return t.turnMemo('wonderLead', () => {
+    const count = (player: PlayerId) =>
+      settlementIds(t.state).reduce((n, id) => {
+        const s = t.state.settlements[id]!;
+        return s.owner === player ? n + s.wonders.length : n;
+      }, 0);
+    const civs = t.metRivals().filter((p) => t.state.players[p]?.kind !== 'cityState');
+    if (civs.length === 0) return 0;
+    const average = Math.floor(civs.reduce((n, p) => n + count(p), 0) / civs.length);
+    return count(t.player) - average;
+  });
+}
+
 const isSpaceProject = (t: Turn, id: string) =>
   t.state.settings.science !== false && t.ctx.content.rules.science.projects.includes(id);
 
@@ -403,7 +622,8 @@ function withTile(t: Turn, s: SettlementState, item: BuildItem): BuildItem | und
   for (const tile of tiles) {
     const score =
       item.kind === 'district'
-        ? fixedYieldsValue(t.me, districtYields(t.ctx, t.state, tile, item.id).total) * 10 -
+        ? fixedYieldsValue(t.me, districtYields(t.ctx, t.state, tile, item.id).total) * 10 +
+          appealHappiness(t.ctx, t.state, item.id, tile) * 40 -
           fixedYieldsValue(t.me, tileYields(t.ctx, t.state, tile, t.player, scope).total)
         : -fixedYieldsValue(t.me, tileYields(t.ctx, t.state, tile, t.player, scope).total);
     if (!best || score > best.score) best = { tile, score };
@@ -415,23 +635,35 @@ function withTile(t: Turn, s: SettlementState, item: BuildItem): BuildItem | und
 function buyThings(t: Turn) {
   const cities = t
     .mySettlements()
-    .filter((s) => s.kind === 'city' && !s.captureChoice)
+    .filter((s) => s.kind === 'city' && !s.captureChoice && !s.puppet)
     .sort((a, b) => b.population - a.population || (a.id < b.id ? -1 : 1));
+  // Only what could be finished now (a unit's resources must be in the stockpile).
+  const buyable = (s: SettlementState, head: BuildItem | undefined): head is BuildItem =>
+    !!head && isBuyable(t.ctx, head) && !completionProblem(t.ctx, t.state, s, head);
   for (const s of cities) {
     const head = s.queue[0];
-    if (!head || !isBuyable(head) || !inDanger(t, s)) continue;
+    if (!buyable(s, head) || !inDanger(t, s)) continue;
     if (head.kind === 'unit' && !isSoldier(unitRole(t.ctx, { type: head.id }))) continue;
     if (t.p.gold >= purchaseCost(t.ctx, t.state, t.player, head, s)) {
       t.act({ type: 'buy_item', player: t.player, settlement: s.id, item: head });
       return;
     }
   }
-  // Faith has no other use yet: spend it where an ability allows.
+  // Spare faith buys buildings where our religion is followed (D114), or what an ability
+  // allows; a founder keeps enough for its religious units.
+  const keepFaith = t.p.religion
+    ? Math.max(
+        0,
+        ...t.ctx.content.ids.unit.map((id) =>
+          faithUnitCost(t.ctx, t.state, t.ctx.content.entities.unit[id]!.faithCost),
+        ),
+      )
+    : 0;
   for (const s of cities) {
     const head = s.queue[0];
-    if (!head || !isBuyable(head) || !canBuyWithFaith(t.ctx, t.state, t.player, head)) continue;
+    if (!buyable(s, head) || !canBuyWithFaith(t.ctx, t.state, t.player, head, s)) continue;
     if (turnsFor(t, s, head) <= 2) continue;
-    if (t.p.faith >= purchaseCost(t.ctx, t.state, t.player, head, s)) {
+    if (t.p.faith >= purchaseCost(t.ctx, t.state, t.player, head, s, 'faith') + keepFaith) {
       t.act({
         type: 'buy_item',
         player: t.player,
@@ -446,7 +678,7 @@ function buyThings(t: Turn) {
   if (buyResourceTile(t, rich)) return;
   for (const s of cities) {
     const head = s.queue[0];
-    if (!head || !isBuyable(head) || !itemDef(t.ctx, head)) continue;
+    if (!buyable(s, head) || !itemDef(t.ctx, head)) continue;
     if (turnsFor(t, s, head) <= 2) continue;
     const cost = purchaseCost(t.ctx, t.state, t.player, head, s);
     if (t.p.gold >= cost + rich) {
@@ -463,9 +695,11 @@ function buyThings(t: Turn) {
 function buyResourceTile(t: Turn, rich: number): boolean {
   let best: { s: string; tile: number; cost: number; luxury: boolean } | undefined;
   for (const s of t.mySettlements()) {
+    if (s.puppet) continue;
     for (const tile of purchasableTiles(t.ctx, t.state, s)) {
       const res = t.state.map.tiles[tile]!.resource;
-      const cls = res ? t.ctx.content.entities.resource[res]?.class : undefined;
+      const known = res !== null && isRevealed(t.ctx, t.state, t.player, res);
+      const cls = known ? t.ctx.content.entities.resource[res]?.class : undefined;
       if (cls !== 'luxury' && cls !== 'strategic') continue;
       const cost = tilePurchaseCost(t.ctx, t.state, s, tile);
       const luxury = cls === 'luxury';

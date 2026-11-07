@@ -56,7 +56,7 @@
     "type": "district",
     "id": "district_holy_site",
     "name": "Holy Site",
-    "description": "Faith. Loves mountains and woods.",
+    "description": "Faith. Loves mountains, natural wonders and woods.",
     "icon": "HS",
     "cost": 54,
     "requiresTech": "tech_astrology",
@@ -68,6 +68,14 @@
           "elevation": "mountain"
         },
         "label": "Mountains"
+      },
+      {
+        "yield": "faith",
+        "amount": 2,
+        "per": {
+          "naturalWonder": true
+        },
+        "label": "Natural wonders"
       },
       {
         "yield": "faith",
@@ -95,7 +103,8 @@
           "scope": "player"
         }
       }
-    ]
+    ],
+    "appeal": 1
   },
   {
     "type": "district",
@@ -139,7 +148,8 @@
           "scope": "player"
         }
       }
-    ]
+    ],
+    "appeal": 1
   },
   {
     "type": "district",
@@ -286,6 +296,14 @@
           "district": "district_aqueduct"
         },
         "label": "Aqueduct"
+      },
+      {
+        "yield": "production",
+        "amount": 2,
+        "per": {
+          "district": "district_dam"
+        },
+        "label": "Dam"
       }
     ],
     "specialistYields": {
@@ -304,13 +322,14 @@
           "scope": "player"
         }
       }
-    ]
+    ],
+    "appeal": -1
   },
   {
     "type": "district",
     "id": "district_encampment",
     "name": "Encampment",
-    "description": "Trains soldiers. Can't be next to the city center.",
+    "description": "Military. Trains soldiers faster with its buildings, strikes at enemies near it like the settlement does, and loves pastures and strategic resources.",
     "icon": "En",
     "cost": 54,
     "requiresTech": "tech_bronze_working",
@@ -338,7 +357,27 @@
           "scope": "player"
         }
       }
-    ]
+    ],
+    "rangedStrike": true,
+    "adjacency": [
+      {
+        "yield": "production",
+        "amount": 1,
+        "per": {
+          "improvement": "improvement_pasture"
+        },
+        "label": "Pastures"
+      },
+      {
+        "yield": "production",
+        "amount": 1,
+        "per": {
+          "resourceClass": "strategic"
+        },
+        "label": "Strategic resources"
+      }
+    ],
+    "appeal": -1
   },
   {
     "type": "district",
@@ -350,7 +389,8 @@
     "requiresCivic": "civic_games_and_recreation",
     "happiness": 1,
     "model": "entertainment",
-    "color": "#9fd36a"
+    "color": "#9fd36a",
+    "appeal": 1
   },
   {
     "type": "district",
@@ -492,6 +532,123 @@
   },
   {
     "type": "district",
+    "id": "district_neighborhood",
+    "name": "Neighborhood",
+    "description": "Homes for a growing city, outside the district limit: +10% growth here, and happiness by the appeal of its tile (+3 breathtaking, +2 charming, +1 average).",
+    "icon": "Nb",
+    "cost": 54,
+    "requiresCivic": "civic_urbanization",
+    "specialty": false,
+    "happinessByAppeal": [
+      {
+        "minAppeal": 4,
+        "happiness": 3
+      },
+      {
+        "minAppeal": 2,
+        "happiness": 2
+      },
+      {
+        "minAppeal": -1,
+        "happiness": 1
+      }
+    ],
+    "localEffects": [
+      {
+        "effect": "modify_growth",
+        "params": {
+          "percent": 10
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "model": "generic",
+    "color": "#c8a07a"
+  },
+  {
+    "type": "district",
+    "id": "district_dam",
+    "name": "Dam",
+    "description": "Across a river on its floodplains, outside the district limit: no more floods on this settlement's land, +2 production here, and +2 production for a neighboring Industrial Zone.",
+    "icon": "Dm",
+    "cost": 54,
+    "requiresTech": "tech_engineering",
+    "specialty": false,
+    "placement": {
+      "features": ["floodplains", "floodplains_grassland", "floodplains_plains"],
+      "self": {
+        "river": true,
+        "feature": ["floodplains", "floodplains_grassland", "floodplains_plains"]
+      },
+      "elevations": ["flat"]
+    },
+    "localEffects": [
+      {
+        "effect": "modify_yield",
+        "params": {
+          "yield": "production",
+          "amount": 2
+        },
+        "target": {
+          "scope": "settlements"
+        }
+      }
+    ],
+    "model": "aqueduct",
+    "color": "#6f9fc8",
+    "appeal": -1
+  },
+  {
+    "type": "district",
+    "id": "district_preserve",
+    "name": "Preserve",
+    "description": "Wild land kept wild, on woods or rainforest, outside the district limit: +2 appeal around it, and +1 culture and +1 faith on each of your tiles next to it.",
+    "icon": "Pv",
+    "cost": 54,
+    "requiresCivic": "civic_mysticism",
+    "specialty": false,
+    "placement": {
+      "features": ["woods", "rainforest"],
+      "self": {
+        "feature": ["woods", "rainforest"]
+      }
+    },
+    "appeal": 2,
+    "effects": [
+      {
+        "effect": "yield_per_adjacent",
+        "params": {
+          "yield": "culture",
+          "amount": 1,
+          "per": {
+            "district": "district_preserve"
+          }
+        },
+        "target": {
+          "scope": "tiles"
+        }
+      },
+      {
+        "effect": "yield_per_adjacent",
+        "params": {
+          "yield": "faith",
+          "amount": 1,
+          "per": {
+            "district": "district_preserve"
+          }
+        },
+        "target": {
+          "scope": "tiles"
+        }
+      }
+    ],
+    "model": "generic",
+    "color": "#5f9a52"
+  },
+  {
+    "type": "district",
     "id": "district_spaceport",
     "name": "Spaceport",
     "description": "Launches the space projects of a science victory. Flat land. Doesn't count toward the district limit.",
@@ -503,6 +660,7 @@
       "elevations": ["flat"]
     },
     "model": "generic",
-    "color": "#9ab0c8"
+    "color": "#9ab0c8",
+    "appeal": -1
   }
 ]

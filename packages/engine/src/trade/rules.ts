@@ -1,3 +1,4 @@
+import { eraOrderOf } from '../progress/era';
 import { decodeBits, getBit } from '../bitset';
 import { atWar, type EngineContext, HOSTILE, type RuleError, unitDef } from '../context';
 import { type Fixed, toFixed } from '../fixed';
@@ -118,10 +119,16 @@ export function routeYields(
     for (const [y, v] of Object.entries(yields)) into[y] = (into[y] ?? 0) + toFixed(v * times);
   };
   const international = to.owner !== owner;
-  if (!international) add(origin, rules.domestic);
-  else {
+  // Routes grow with the game: domestic ones with the destination's districts, international
+  // ones with those and with the era (a caravan of the Atomic era carries more than a mule).
+  const era = eraOrderOf(ctx, state.players[owner]) - 1;
+  if (!international) {
+    add(origin, rules.domestic);
+    add(origin, rules.domesticPerDistrict, to.districts.length);
+  } else {
     add(origin, rules.international);
     add(origin, rules.perDestinationDistrict, to.districts.length);
+    add(origin, rules.internationalPerEra, era);
     add(destination, rules.destination);
   }
   for (const { effect } of playerEffects(ctx, state, owner, 'trade_route_bonus')) {

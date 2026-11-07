@@ -30,6 +30,8 @@
     },
     "purchase": {
       "goldPerProduction": 4,
+      "projectGoldPerProduction": 2,
+      "faithPerProduction": 4,
       "tileBase": 25,
       "tilePerAcquired": 5,
       "tilePerDistance": 10
@@ -38,7 +40,8 @@
       "base": 2,
       "citizensPerUnhappy": 2,
       "perMaintainedBuilding": 1,
-      "perSettlementOverLimit": 2,
+      "maintainedPerUnhappy": 2,
+      "perSettlementOverLimit": 1,
       "thrivingAt": 5,
       "unrestAt": -5,
       "thrivingYieldPercent": 10,
@@ -53,7 +56,8 @@
       "science": 15,
       "culture": 15,
       "faith": 10,
-      "happiness": 10
+      "happiness": 10,
+      "tourism": 8
     },
     "citizenYields": {
       "science": 0.5
@@ -62,7 +66,14 @@
       "base": 1,
       "populationPer": 3,
       "neighborBonus": 0.5,
+      "buildingAdjacencyPercent": 33,
       "costPerProgressPercent": 2
+    },
+    "puppet": {
+      "yieldPercent": -25,
+      "limitPercent": 50,
+      "annexBase": 50,
+      "annexPerCitizen": 15
     },
     "specialization": {
       "minPopulation": 5,
@@ -107,6 +118,13 @@
     "perDestinationDistrict": {
       "gold": 1
     },
+    "domesticPerDistrict": {
+      "food": 0.5,
+      "production": 0.5
+    },
+    "internationalPerEra": {
+      "gold": 1
+    },
     "destination": {
       "gold": 1
     },
@@ -116,6 +134,18 @@
     "seaRange": 20
   },
   "luxuryHappinessRadius": 3,
+  "appeal": {
+    "wonder": 1,
+    "breathtaking": 4,
+    "charming": 2,
+    "uninviting": -2,
+    "disgusting": -4
+  },
+  "strategic": {
+    "stockpileBase": 30,
+    "stockpilePerEra": 15,
+    "shortageStrength": 20
+  },
   "mapgen": {
     "coastTerrain": "coast",
     "oceanTerrain": "ocean",
@@ -183,13 +213,30 @@
     "embarkedSight": 1,
     "freeUpkeep": 3,
     "upgradeGoldPerProduction": 2,
-    "upgradeMinGold": 20
+    "upgradeMinGold": 20,
+    "upkeepByEra": [1, 1, 2, 2, 3, 3, 4, 4, 4]
   },
   "progress": {
     "boostPercent": 40,
     "startingGovernment": "government_chiefdom",
     "policySwapCost": 25,
+    "catchUp": {
+      "perCiv": 5,
+      "max": 25
+    },
+    "eraCostPercent": {
+      "era_renaissance": 110,
+      "era_industrial": 130,
+      "era_modern": 150,
+      "era_atomic": 185,
+      "era_information": 240,
+      "era_future": 300
+    },
     "governmentChangeCost": 100,
+    "legacy": {
+      "everyTurns": 25,
+      "max": 3
+    },
     "celebration": {
       "base": 40,
       "perCelebration": 30,
@@ -300,13 +347,20 @@
       "nearDistance": 6,
       "nearMax": 3,
       "perDeal": 3,
+      "dealsMax": 2,
       "tradeRoute": 3,
+      "tradeRoutesMax": 2,
       "spiedOnUs": -2,
       "nukedUs": -10,
       "nukedOthers": -3
     },
     "friendshipOpinion": 6,
-    "allianceOpinion": 14
+    "allianceOpinion": 14,
+    "openBordersTurns": 30,
+    "openBordersCost": 10,
+    "researchTurns": 20,
+    "researchCost": 30,
+    "researchPercent": 10
   },
   "cityStates": {
     "minDistance": 7,
@@ -340,6 +394,32 @@
     "goldPerPoint": 3,
     "faithPerPoint": 3,
     "unit": "unit_great_person"
+  },
+  "ideology": {
+    "camps": [
+      {
+        "id": "ideology_liberty",
+        "name": "Liberty",
+        "governments": ["government_democracy", "government_digital_republic"]
+      },
+      {
+        "id": "ideology_commonwealth",
+        "name": "Commonwealth",
+        "governments": ["government_collectivism", "government_technocracy"]
+      },
+      {
+        "id": "ideology_dominion",
+        "name": "Dominion",
+        "governments": ["government_militarism", "government_corporate_federation"]
+      }
+    ],
+    "stepPercent": 25,
+    "maxUnhappiness": 5,
+    "sharedHappiness": 1
+  },
+  "monopoly": {
+    "sharePercent": 50,
+    "minCopies": 3
   },
   "camps": {
     "landTilesPerCamp": 120,
@@ -441,7 +521,12 @@
     "perWonder": 10,
     "perDistrict": 2,
     "perEra": 10,
-    "perKill": 1
+    "perKill": 1,
+    "perGreatPerson": 5,
+    "perReligion": 10,
+    "perFollower": 1,
+    "perGreatWork": 2,
+    "perFuture": 5
   },
   "science": {
     "projects": [
@@ -450,14 +535,17 @@
       "project_mars_colony",
       "project_exoplanet_expedition"
     ],
-    "travelTurns": 10
+    "travelTurns": 20
   },
   "culture": {
     "culturePerTourist": 100,
-    "tourismPerTourist": 150,
+    "tourismPerTourist": 50,
     "tradeRoutePercent": 25,
     "religionPercent": 25,
-    "friendsPercent": 25
+    "friendsPercent": 25,
+    "openBordersPercent": 25,
+    "agingPercent": 25,
+    "agingMaxPercent": 100
   },
   "governors": {
     "establishTurns": 5,
@@ -569,13 +657,18 @@
     "sessionEvery": 20,
     "resolutionsPerSession": 2,
     "voteCosts": [10, 30, 60, 100, 150],
-    "victoryPoints": 20,
+    "victoryPoints": 24,
     "agendaPoints": 1,
     "favor": {
       "base": 1,
       "perSuzerain": 2,
       "perAlliance": 1,
       "perFriendship": 1
+    },
+    "containment": {
+      "atPercent": 75,
+      "turns": 20,
+      "cooldown": 30
     }
   },
   "disasters": {

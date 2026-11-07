@@ -1,8 +1,11 @@
 import type { Effect, Personality } from '@cx/content';
 import type { Fixed } from '../fixed';
-import { happinessOf } from '../settlements/rules';
+import { neighbors } from '../map/hex';
+import { conditionHolds } from '../progress/sources';
+import { happinessOf, tileFacts } from '../settlements/rules';
 import type { SettlementState } from '../state';
 import { maxReligions } from '../religion/rules';
+import type { PlannedPersonality } from './plan';
 import type { Turn } from './turn';
 
 const religionRoom = (t: Turn) =>
@@ -25,23 +28,28 @@ const BASE: Record<string, { base: number; trait?: keyof Personality }> = {
   happiness: { base: 8 },
 };
 
-export function yieldWeight(me: Personality, y: string): number {
+export function yieldWeight(me: PlannedPersonality, y: string): number {
   const b = BASE[y] ?? { base: 3 };
   if (!b.trait) return b.base;
   // Food matters to everyone, so expansion only nudges it.
   const trait = b.trait === 'expansion' ? 5 + Math.floor((me.expansion - 5) / 2) : me[b.trait];
-  return Math.max(1, Math.floor((b.base * (5 + trait)) / 10));
+  const weight = Math.max(1, Math.floor((b.base * (5 + trait)) / 10));
+  // A leader playing for culture (ai/plan.ts) wants tourism above all.
+  return y === 'tourism' ? weight * (me.tourismFocus ?? 1) : weight;
 }
 
 /** Points for a set of whole-number yields. */
-export function yieldsValue(me: Personality, yields: Record<string, number | undefined>): number {
+export function yieldsValue(
+  me: PlannedPersonality,
+  yields: Record<string, number | undefined>,
+): number {
   let total = 0;
   for (const [y, v] of Object.entries(yields)) total += (v ?? 0) * yieldWeight(me, y);
   return total;
 }
 
 /** The same for fixed-point (hundredths) yields. */
-export function fixedYieldsValue(me: Personality, yields: Record<string, Fixed>): number {
+export function fixedYieldsValue(me: PlannedPersonality, yields: Record<string, Fixed>): number {
   let total = 0;
   for (const [y, v] of Object.entries(yields)) total += v * yieldWeight(me, y);
   return Math.floor(total / 100);
@@ -56,20 +64,48 @@ export function happinessWeight(t: Turn, s: SettlementState): number {
   return 7;
 }
 
+/** How many of my settlements an effect applies in (its condition, if any, holding there). */
+function settlementsWhere(t: Turn, effect: Effect): number {
+  const mine = t.mySettlements();
+  if (effect.condition === undefined || effect.target.scope === 'tiles')
+    return Math.max(1, mine.length);
+  return t.memo(
+    `where:${JSON.stringify(effect.condition)}`,
+    () => mine.filter((s) => conditionHolds(t.ctx, t.state, t.player, effect.condition, s)).length,
+  );
+}
+
+/** How many of my worked tiles a tile effect applies to (at least 1, for what's to come). */
+function tilesWhere(t: Turn, effect: Effect): number {
+  if (effect.condition === undefined) return Math.max(1, t.mySettlements().length * 3);
+  return t.turnMemo(`tiles:${JSON.stringify(effect.condition)}`, () => {
+    let n = 0;
+    for (const s of t.mySettlements())
+      for (const tile of s.worked) {
+        const facts = tileFacts(t.state, tile);
+        const near = neighbors(t.state.map, tile).map((i) => tileFacts(t.state, i));
+        if (conditionHolds(t.ctx, t.state, t.player, effect.condition, s, facts, near)) n++;
+      }
+    return Math.max(1, n);
+  });
+}
+
 /**
  * Points for an effect (government, policy, wonder...), roughly: what it's worth across the
  * empire per turn. Unknown kinds of effect get a small default, so modded effects aren't ignored.
  */
 export function effectValue(t: Turn, effect: Effect): number {
   const me = t.me;
-  const settlements = Math.max(1, t.mySettlements().length);
+  // Where the effect would apply: settlements whose conditions hold ("+1 in the capital" is one
+  // settlement, not all of them), or worked tiles that match a tile effect.
+  const settlements = settlementsWhere(t, effect);
   switch (effect.effect) {
     case 'modify_yield': {
       const params = effect.params;
       const w = yieldWeight(me, params.yield);
       if ('amount' in params) {
-        const per = effect.target.scope === 'settlements' ? settlements : 1;
-        return params.amount * w * per;
+        const per = effect.target.scope === 'tiles' ? tilesWhere(t, effect) : settlements;
+        return Math.floor(params.amount * w * per);
       }
       // A percentage of roughly 6 of that yield per settlement.
       return Math.floor((params.percent * w * 6 * settlements) / 100);
@@ -102,6 +138,21 @@ export function effectValue(t: Turn, effect: Effect): number {
       if (cls?.foundsReligion && t.p.religion === null && religionRoom(t))
         return effect.params.amount * (20 + me.faith * 6);
       return effect.params.amount * 10;
+    }
+    case 'adjacency_percent': {
+      // Worth the adjacency of the districts it covers (about 3 each), in their main yield.
+      const wanted = effect.params.district;
+      const ids = Array.isArray(wanted) ? wanted : [wanted];
+      let v = 0;
+      for (const s of t.mySettlements())
+        for (const d of s.districts) {
+          const def = t.ctx.content.entities.district[d.id];
+          const base = def?.replaces ?? d.id;
+          if (!def || !(ids.includes(d.id) || ids.includes(base))) continue;
+          const y = def.adjacency[0]?.yield;
+          if (y) v += Math.floor((3 * effect.params.percent * yieldWeight(me, y)) / 100);
+        }
+      return v;
     }
     case 'yield_per_follower':
       return Math.floor(

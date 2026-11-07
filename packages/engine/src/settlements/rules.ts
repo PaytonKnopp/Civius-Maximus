@@ -8,7 +8,7 @@ import {
   type UnitDef,
   type WonderDef,
 } from '@cx/content';
-import { type EngineContext, type RuleError, unitDef } from '../context';
+import { type EngineContext, type RuleError } from '../context';
 import { computeTileYields, type EffectSource, type YieldBreakdown } from '../effects/yields';
 import { type Fixed, percentOf, powFloor, toFixed } from '../fixed';
 import { distance, neighbors, tilesWithin, tileTouchesRiver } from '../map/hex';
@@ -30,6 +30,7 @@ import { routeLines } from '../trade/rules';
 import { baseOf, countsAs, uniqueProblem } from '../uniques';
 import { isWater } from '../units/movement';
 import {
+  appealHappiness,
   districtCost,
   districtYields,
   needsTile,
@@ -40,6 +41,11 @@ import {
 import { scaleCost } from '../speed';
 import { loyaltyPenalty } from '../loyalty/loyalty';
 import { greatWorkYields } from '../greatworks/greatworks';
+import { luxuryLines } from './luxuries';
+import { ideologyLine } from '../culture/ideology';
+import { agingPercent, eraOrderOf, perEra } from '../progress/era';
+import { appealOf, appealWord } from '../map/appeal';
+import { isRevealed, resourceProblem } from '../resources/strategic';
 import { withArticle } from '../text';
 
 /**
@@ -92,10 +98,17 @@ export function tileYields(
     shared = { facts: playerFacts(ctx, p), sources: sourcesFor(ctx, state, pid) };
     scope.set(pid, shared);
   }
+  const facts = tileFacts(state, tile);
+  // A strategic resource gives nothing until its owner knows the tech that reveals it.
+  if (facts.resource !== null && !isRevealed(ctx, state, pid, facts.resource))
+    facts.resource = null;
+  // Appeal only where something on the tile is paid by it (it looks at the neighbors).
+  const imp = facts.improvement ? ctx.content.entities.improvement[facts.improvement] : undefined;
+  if (imp && Object.keys(imp.yieldsPerAppeal).length > 0) facts.appeal = appealOf(ctx, state, tile);
   return computeTileYields(
     {
       content: ctx.content,
-      tile: tileFacts(state, tile),
+      tile: facts,
       neighbors: neighbors(state.map, tile).map((n) => tileFacts(state, n, true)),
       playerId: pid ?? '',
       ...(p ? { player: shared?.facts ?? playerFacts(ctx, p) } : {}),
@@ -264,19 +277,26 @@ export function improvementsFor(
 ): string[] {
   const t = state.map.tiles[tile]!;
   if (t.elevation === 'mountain') return [];
+  // A resource its owner can't see yet is improved like the land under it.
+  const resource =
+    t.resource !== null && player !== undefined && !isRevealed(ctx, state, player, t.resource)
+      ? null
+      : t.resource;
   const fits = (imp: ImprovementDef): 0 | 1 | 2 => {
-    if (t.resource !== null && imp.resources.includes(t.resource)) return 2;
+    if (resource !== null && imp.resources.includes(resource)) return 2;
     const ok = imp.sites.some(
       (site) =>
         (site.terrains === undefined || site.terrains.includes(t.terrain)) &&
         site.elevations.includes(t.elevation) &&
         (t.feature === null ? !site.needsFeature : site.features.includes(t.feature)) &&
         (!site.river || tileOnRiver(state.map, tile)) &&
-        (!site.edge || onEdge(state, tile, player)),
+        (!site.edge || onEdge(state, tile, player)) &&
+        (!site.coastal || nextToWater(ctx, state, tile)) &&
+        (site.minAppeal === undefined || appealOf(ctx, state, tile) >= site.minAppeal),
     );
     return ok ? 1 : 0;
   };
-  return ctx.content.ids.improvement
+  const options = ctx.content.ids.improvement
     .filter((id) => {
       const imp = ctx.content.entities.improvement[id]!;
       if (player === undefined) return imp.civ === undefined;
@@ -285,7 +305,13 @@ export function improvementsFor(
       );
     })
     .map((id) => ({ id, fit: fits(ctx.content.entities.improvement[id]!) }))
-    .filter((x) => x.fit > 0)
+    .filter((x) => x.fit > 0);
+  // A resource takes its own improvement once one is available (Civ VI, VII): nothing else may
+  // cover it. Until then any improvement that fits the land holds the tile, and is replaced by
+  // the resource's own when it unlocks (see `upgradeResourceTiles`).
+  const own = options.some((x) => x.fit === 2);
+  return options
+    .filter((x) => !own || x.fit === 2)
     .sort(
       (a, b) =>
         b.fit - a.fit ||
@@ -294,6 +320,28 @@ export function improvementsFor(
         (a.id < b.id ? -1 : 1),
     )
     .map((x) => x.id);
+}
+
+/** The appeal of a settlement's own tiles (not its center) at least `min` appealing, summed. */
+export function appealSum(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+  min: number,
+): number {
+  let sum = 0;
+  for (const t of tilesWithin(state.map, s.tile, ctx.content.rules.settlements.ownRadius)) {
+    if (t === s.tile || state.map.tiles[t]!.settlement !== s.id) continue;
+    const a = appealOf(ctx, state, t);
+    if (a >= min) sum += a;
+  }
+  return sum;
+}
+
+/** A land tile next to the sea or a lake. */
+function nextToWater(ctx: EngineContext, state: GameState, tile: number): boolean {
+  const water = (t: number) => ctx.content.entities.terrain[state.map.tiles[t]!.terrain]?.water;
+  return !water(tile) && neighbors(state.map, tile).some(water);
 }
 
 /** A tile on the edge of the player's land: next to a land tile that isn't theirs. */
@@ -350,18 +398,28 @@ export function settlementLimit(ctx: EngineContext, state: GameState, player: Pl
   return settlementLimitOf(ctx, state, player);
 }
 
-function improvedLuxuries(ctx: EngineContext, state: GameState, s: SettlementState): Line[] {
-  const out: Line[] = [];
-  for (const t of tilesWithin(state.map, s.tile, ctx.content.rules.settlements.ownRadius)) {
-    const tile = state.map.tiles[t]!;
-    if (tile.settlement !== s.id || tile.resource === null || tile.improvement === null) continue;
-    const res = ctx.content.entities.resource[tile.resource]!;
-    const imp = ctx.content.entities.improvement[tile.improvement]!;
-    if (res.class === 'luxury' && res.happiness > 0 && imp.resources.includes(res.id)) {
-      out.push({ label: resolveText(ctx.content, res.name), amount: res.happiness });
-    }
-  }
-  return out;
+/**
+ * How many settlements count against the limit: puppets count a share
+ * (`rules.settlements.puppet.limitPercent`), rounded down over all of them.
+ */
+export function limitCount(ctx: EngineContext, state: GameState, player: PlayerId): number {
+  const mine = settlementsOf(state, player);
+  const puppets = mine.filter((s) => s.puppet).length;
+  const share = ctx.content.rules.settlements.puppet.limitPercent;
+  return mine.length - puppets + Math.floor((puppets * share) / 100);
+}
+
+/** Gold to annex a puppet (whole gold in hundredths). */
+export function annexCost(ctx: EngineContext, state: GameState, s: SettlementState): Fixed {
+  const p = ctx.content.rules.settlements.puppet;
+  return scaleCost(ctx, state, toFixed(p.annexBase + p.annexPerCitizen * s.population));
+}
+
+/** Why a settlement can't be managed by its owner right now (puppets run themselves). */
+export function puppetProblem(s: SettlementState): RuleError | undefined {
+  return s.puppet
+    ? { code: 'puppet', message: `${s.name} is a puppet and runs itself; annex it first` }
+    : undefined;
 }
 
 /** A settlement's happiness balance and what it does (docs/03, "Happiness"). Whole numbers. */
@@ -377,26 +435,39 @@ export function happinessOf(ctx: EngineContext, state: GameState, s: SettlementS
     const def = ctx.content.entities.district[d.id];
     if (def?.happiness)
       lines.push({ label: resolveText(ctx.content, def.name), amount: def.happiness });
+    const byAppeal = def ? appealHappiness(ctx, state, d.id, d.tile) : 0;
+    if (byAppeal !== 0)
+      lines.push({
+        label: `${resolveText(ctx.content, def!.name)} (${appealWord(ctx, appealOf(ctx, state, d.tile))})`,
+        amount: byAppeal,
+      });
   }
   for (const w of s.wonders) {
     const def = ctx.content.entities.wonder[w];
     if (def?.happiness)
       lines.push({ label: resolveText(ctx.content, def.name), amount: def.happiness });
   }
-  lines.push(...improvedLuxuries(ctx, state, s));
+  lines.push(...luxuryLines(ctx, state, s.id));
   for (const { source, effect } of playerEffects(ctx, state, s.owner, 'modify_happiness', s)) {
     lines.push({ label: source.label, amount: effect.params.amount });
+  }
+  for (const { source, effect } of playerEffects(ctx, state, s.owner, 'yield_per_appeal', s)) {
+    if (effect.params.yield !== 'happiness') continue;
+    const n = Math.floor(appealSum(ctx, state, s, effect.params.minAppeal) / effect.params.per);
+    if (n > 0) lines.push({ label: `${source.label} (appeal)`, amount: n });
   }
   const citizens = Math.floor(s.population / h.citizensPerUnhappy);
   if (citizens > 0) lines.push({ label: 'Citizens', amount: -citizens });
   const weariness = warWeariness(ctx, state, s.owner);
   if (weariness > 0) lines.push({ label: 'War weariness', amount: -weariness });
+  const ideology = ideologyLine(ctx, state, s.owner);
+  if (ideology) lines.push(ideology);
   const maintained = s.buildings.filter(
     (b) => ctx.content.entities.building[b]!.maintenance > 0,
   ).length;
-  if (maintained > 0 && h.perMaintainedBuilding > 0)
-    lines.push({ label: 'Building upkeep', amount: -maintained * h.perMaintainedBuilding });
-  const over = settlementsOf(state, s.owner).length - settlementLimit(ctx, state, s.owner);
+  const upkeep = Math.floor(maintained / h.maintainedPerUnhappy) * h.perMaintainedBuilding;
+  if (upkeep > 0) lines.push({ label: 'Building upkeep', amount: -upkeep });
+  const over = limitCount(ctx, state, s.owner) - settlementLimit(ctx, state, s.owner);
   if (over > 0)
     lines.push({ label: 'Over the settlement limit', amount: -over * h.perSettlementOverLimit });
   const balance = lines.reduce((sum, l) => sum + l.amount, 0);
@@ -479,8 +550,22 @@ function computeSettlementYields(
   }
   for (const w of s.wonders) {
     const def = ctx.content.entities.wonder[w]!;
-    for (const y of Object.keys(def.yields).sort())
-      add(y, resolveText(ctx.content, def.name), toFixed(def.yields[y]!));
+    // Tourism grows as the wonder ages (D115).
+    const aged = agingPercent(
+      ctx,
+      state.players[s.owner],
+      ctx.content.entities.era[def.era]?.order ?? 1,
+    );
+    for (const y of Object.keys(def.yields).sort()) {
+      const base = toFixed(def.yields[y]!);
+      if (y === 'tourism' && aged > 0)
+        add(
+          y,
+          `${resolveText(ctx.content, def.name)} (+${aged}% for its age)`,
+          Math.trunc((base * (100 + aged)) / 100),
+        );
+      else add(y, resolveText(ctx.content, def.name), base);
+    }
   }
   for (const [id, n] of Object.entries(s.specialists).sort()) {
     const def = ctx.content.entities.district[id];
@@ -519,6 +604,14 @@ function computeSettlementYields(
     else percents.push({ y: params.yield, label: source.label, percent: params.percent });
   }
 
+  // Yields from the appeal of the settlement's land (a resort town's tourism).
+  for (const { source, effect } of playerEffects(ctx, state, s.owner, 'yield_per_appeal', s)) {
+    const { yield: y, per, minAppeal } = effect.params;
+    if (y === 'happiness') continue;
+    const n = Math.floor(appealSum(ctx, state, s, minAppeal) / per);
+    add(y, `${source.label} (appeal)`, toFixed(n));
+  }
+
   const happiness = happinessOf(ctx, state, s);
   const total: Record<string, Fixed> = {};
   for (const y of Object.keys(lines)) total[y] = lines[y]!.reduce((sum, l) => sum + l.amount, 0);
@@ -544,6 +637,11 @@ function computeSettlementYields(
   if (disloyal) {
     for (const y of Object.keys(before).sort()) {
       if (y !== 'happiness') applyPercent(y, disloyal.label, disloyal.percent);
+    }
+  }
+  if (s.puppet && rules.puppet.yieldPercent !== 0) {
+    for (const y of Object.keys(before).sort()) {
+      if (y !== 'happiness') applyPercent(y, 'Puppet', rules.puppet.yieldPercent);
     }
   }
   for (const p of percents) applyPercent(p.y, p.label, p.percent);
@@ -774,12 +872,18 @@ export function itemCost(
   item: BuildItem,
   s?: SettlementState,
 ): Fixed {
+  const project = item.kind === 'project' ? ctx.content.entities.project[item.id] : undefined;
+  const raw =
+    item.kind === 'district'
+      ? districtCost(ctx, state, player, item.id)
+      : toFixed(itemDef(ctx, item)?.cost ?? 0);
+  // Projects that keep pace with the game cost more in later eras (chopping, district projects).
   const base = scaleCost(
     ctx,
     state,
-    item.kind === 'district'
-      ? districtCost(ctx, state, player, item.id)
-      : toFixed(itemDef(ctx, item)?.cost ?? 0),
+    project?.perEraPercent
+      ? perEra(raw, project.perEraPercent, eraOrderOf(ctx, state.players[player]))
+      : raw,
   );
   if (!s) return base;
   let percent = 0;
@@ -825,26 +929,45 @@ export function canBuyWithFaith(
   state: GameState,
   player: PlayerId,
   item: BuildItem,
+  s?: SettlementState,
 ): boolean {
+  // D114: buildings in settlements that follow the religion this player founded.
+  const religion = state.players[player]?.religion;
+  if (item.kind === 'building' && s && religion && s.religion === religion) return true;
   return playerEffects(ctx, state, player, 'purchase_with_faith').some(
     (e) => e.effect.params.kind === item.kind,
   );
 }
 
-/** Units and buildings can be bought; districts, wonders and projects can't. */
-export const isBuyable = (item: BuildItem) => item.kind === 'unit' || item.kind === 'building';
+/**
+ * Units and buildings can be bought, and repeatable district projects with gold (D114);
+ * districts, wonders and one-time projects can't.
+ */
+export const isBuyable = (ctx: EngineContext, item: BuildItem) =>
+  item.kind === 'unit' ||
+  item.kind === 'building' ||
+  (item.kind === 'project' && ctx.content.entities.project[item.id]?.repeatable === true);
 
-/** Gold to buy an item outright (policies, and a settlement's own effects, can make it cheaper). */
+/**
+ * Gold (or faith) to buy an item outright (policies, and a settlement's own effects, can make it
+ * cheaper). Repeatable projects cost `projectGoldPerProduction` a point of production.
+ */
 export function purchaseCost(
   ctx: EngineContext,
   state: GameState,
   player: PlayerId,
   item: BuildItem,
   s?: SettlementState,
+  currency: 'gold' | 'faith' = 'gold',
 ): Fixed {
-  const base =
-    itemCost(ctx, state, player, item, s) *
-    ctx.content.rules.settlements.purchase.goldPerProduction;
+  const rates = ctx.content.rules.settlements.purchase;
+  const rate =
+    currency === 'faith'
+      ? rates.faithPerProduction
+      : item.kind === 'project'
+        ? rates.projectGoldPerProduction
+        : rates.goldPerProduction;
+  const base = itemCost(ctx, state, player, item, s) * rate;
   let percent = 0;
   for (const { effect } of playerEffects(ctx, state, player, 'modify_purchase_cost', s))
     percent += effect.params.percent;
@@ -918,6 +1041,8 @@ export function itemProblem(
       };
     if (u.nuke && state.settings.nukes === false)
       return { code: 'off', message: 'Nuclear weapons are off in this game' };
+    const short = resourceProblem(ctx, state, s.owner, u.id, false);
+    if (short) return short;
     const domain = ctx.content.entities.unitClass[u.class]!.domain;
     if (domain === 'sea' && !isCoastal(ctx, state, s.tile))
       return { code: 'needs_coast', message: 'Ships need a settlement on the coast' };
@@ -936,6 +1061,18 @@ export function itemProblem(
     return { code: 'needs_coast', message: 'Needs a settlement on the coast' };
   if (b.cityOnly && s.kind === 'town')
     return { code: 'city_only', message: 'Only cities can have this' };
+  if (b.excludes.length > 0) {
+    // One of each pair (Government Plaza tiers, D110): the other choice is closed for good.
+    const chosen = Object.values(state.settlements)
+      .filter((x) => x.owner === s.owner)
+      .flatMap((x) => x.buildings)
+      .find((x) => b.excludes.includes(x));
+    if (chosen)
+      return {
+        code: 'excluded',
+        message: `You chose the ${resolveText(ctx.content, ctx.content.entities.building[chosen]?.name ?? chosen)} instead`,
+      };
+  }
   if (b.worship) {
     const beliefs = s.religion ? (state.religions[s.religion]?.beliefs ?? []) : [];
     if (!beliefs.some((id) => ctx.content.entities.belief[id]?.building === b.id))
@@ -987,13 +1124,31 @@ export function townUpgradeCost(ctx: EngineContext, state: GameState, player: Pl
 }
 
 /** Gold per turn to keep a player's units, after the free allowance (policies can lower it). */
+/**
+ * Gold a unit costs a turn: its own upkeep, but at least its era's (`rules.units.upkeepByEra`:
+ * a tank costs more to keep than a warrior). Units that cost nothing stay free.
+ */
+export function upkeepOf(ctx: EngineContext, type: string): number {
+  const def = ctx.content.entities.unit[type];
+  if (!def || def.upkeep <= 0) return 0;
+  const era = def.requiresTech
+    ? ctx.content.entities.tech[def.requiresTech]?.era
+    : def.requiresCivic
+      ? ctx.content.entities.civic[def.requiresCivic]?.era
+      : undefined;
+  const order = era ? (ctx.content.entities.era[era]?.order ?? 1) : 1;
+  const byEra = ctx.content.rules.units.upkeepByEra;
+  const min = byEra.length > 0 ? byEra[Math.min(order, byEra.length) - 1]! : 0;
+  return Math.max(def.upkeep, min);
+}
+
 export function unitUpkeep(ctx: EngineContext, state: GameState, player: PlayerId): Fixed {
   let total = 0;
   for (const u of Object.values(state.units)) {
     // Levied soldiers are kept by their city-state.
     if (u.owner !== player || u.levied) continue;
-    total += toFixed(unitDef(ctx, u).upkeep);
-    for (const packed of u.cargo ?? []) total += toFixed(unitDef(ctx, packed).upkeep);
+    total += toFixed(upkeepOf(ctx, u.type));
+    for (const packed of u.cargo ?? []) total += toFixed(upkeepOf(ctx, packed.type));
   }
   total = Math.max(0, total - toFixed(ctx.content.rules.units.freeUpkeep));
   const percent = playerPercent(ctx, state, player, 'modify_unit_upkeep');

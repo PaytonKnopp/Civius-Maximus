@@ -179,10 +179,19 @@ function strike(
   const r = ctx.content.rules.disasters;
   const snap = current(draft);
   const spread = asList(def.spreadFeature);
+  // A settlement with a district that prevents it (a Dam) keeps it off its land (D111).
+  const guards = asList(def.preventedBy) ?? [];
+  const guarded = (i: number) => {
+    const owner = snap.map.tiles[i]!.settlement;
+    const s = owner ? snap.settlements[owner] : undefined;
+    return !!s && s.districts.some((d) => guards.includes(d.id));
+  };
   const tiles = tilesWithin(snap.map, origin, def.radius)
     .filter((i) => !isWater(ctx, snap, i))
     .filter((i) => i === origin || !spread || spread.includes(snap.map.tiles[i]!.feature ?? ''))
+    .filter((i) => guards.length === 0 || !guarded(i))
     .sort((a, b) => a - b);
+  if (tiles.length === 0) return;
   const random = makeRandom(draft.rng as GameState['rng']);
   let pillaged = 0;
   const hit = new Set<string>();

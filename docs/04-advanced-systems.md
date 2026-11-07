@@ -92,19 +92,34 @@ same actions shift **war support** toward your enemy (see
 - **Influence** 🤝: +2 a turn plus influence yields (Government Plaza, Trade Outpost towns).
   Friendship costs 20 and an alliance 50 from each side; denouncing costs 20.
 - **Deals:** gold now, gold per turn (up to 30 turns, enforced: a missed payment breaks the deal
-  and everyone remembers), shared maps, friendship, alliance, peace. Offers wait in the other
-  player's panel for 10 turns; AI rivals answer at once, and the deal screen shows beforehand
-  whether they'd accept and why not.
+  and everyone remembers), shared maps, friendship, alliance, peace, and (D118):
+  - **resources** for the deal's turns: a spare luxury copy (each improved luxury tile is one
+    copy and one always stays home; a copy sent away stops counting at home, spares first, and
+    the one that arrives cheers the other's capital and its 3 nearest settlements), or a
+    strategic resource per turn out of the sender's own income (it moves from their stockpile
+    income into the other's). A sender that can no longer cover it breaks the deal, like a
+    missed payment.
+  - **open borders** (30 turns, 10 influence each): +25% tourism toward each other (D115) and
+    units heal in each other's land as at home. Units can always cross land at peace, so there
+    is no closed-borders rule.
+  - **research agreements** (between declared friends; 20 turns, 30 influence each): +10%
+    science for both while it runs (a "Research agreement with …" line in yields), and each
+    side gets a boost when it ends (toward their current tech if it isn't boosted yet).
+  - War ends every deal between the two: payments, trades, open borders, research agreements.
+  Offers wait in the other player's panel for 10 turns; AI rivals answer at once, and the deal
+  screen shows beforehand whether they'd accept and why not. AIs swap spare luxuries neither
+  side has (one for one, 30 turns), offer open borders to players they like and research
+  agreements to friends, and value a luxury by the happiness it brings them.
 - **Surprise wars:** a war declared without denouncing the target in the last 10 turns. It gives
   the target the war-support head start and is remembered by every AI. A formal war (denounce
   first, then declare) does neither.
 - **AI opinions** with reasons (shown in the rival panel): agenda likes and dislikes, long
   peace, same government, friendship or alliance, common enemies, denouncements, surprise
-  wars, broken deals, razed settlements, settling nearby, running deals. AIs offer friendships
+  wars, broken deals, razed settlements, settling nearby, running deals (payments, trades,
+  open borders and research agreements count, up to 2). AIs offer friendships
   and alliances to players they like, denounce ones they don't, and denounce before declaring
   war when they're diplomatic.
-- Not yet: open borders, endeavors and sanctions, promises, joint wars, research agreements,
-  resource trades (they need trade routes and strategic resources first).
+- Not yet: endeavors and sanctions, promises, joint wars, great works and cities in deals.
 
 ---
 
@@ -136,6 +151,13 @@ same actions shift **war support** toward your enemy (see
   each running deal gives her +1 influence; Mansa Musa's international routes give +1 gold per
   desert tile of the origin; new Roman settlements get a road to the capital.
 - Not yet: plundering routes, sea routes, road building by other means.
+
+### Routes that grow (final gameplay pass)
+
+- A domestic route also gives +0.5 food and +0.5 production per district at its destination; an
+  international one +1 gold per district there (as before) and +1 gold per era past the first
+  (`rules.trade.domesticPerDistrict`, `internationalPerEra`). Before, a route's flat +4 gold or
+  +2/+2 was worth a lot at turn 40 and nothing at turn 300.
 
 ### Plunder and the sea (V1 final, F16)
 
@@ -170,6 +192,20 @@ because each one is unique.
   culture and tourism.
 - **Content:** great people are just data, so a mod can add "Great Engineer Mike: completes 50% of
   any wonder" in about 10 lines of JSON.
+
+### Final gameplay pass (November 2026)
+
+- **69 great people**, in every era for every class: Galileo, Newton, Darwin, Einstein, Turing
+  and Katherine Johnson for science; Brunelleschi, Sinan, Watt, Brunel, Tesla, Goddard and
+  Margaret Hamilton for engineering; Fugger, the Medici, Adam Smith, Helena Rubinstein and
+  Estée Lauder for trade; Joan of Arc, Gustavus Adolphus, Bolívar, Zhukov and Sudirman; Yi
+  Sun-sin, Drake, Nelson, Tōgō and Nimitz. Before, the scientists, engineers, merchants,
+  generals and admirals ran out after the Medieval era and every one of the 41 people was taken
+  by turn ~190.
+- New activations: **finish** (a share of the current build's cost: in full for the kinds
+  named, such as a wonder or a space project, half for anything else) and **envoys**. Lumps of
+  yield scale with the game's speed.
+- The AI walks its builders to a settlement building the right kind of thing.
 
 ### Built so far (V1 part 6)
 
@@ -308,7 +344,13 @@ feel populated and give players something to compete over even when there's no w
   or take (or keep) a suzerainty.
 - The City-states screen (I, or the 🏛 chip) and a card in a city-state's settlement panel;
   a new-game option turns them off. Not yet: levies, luxuries for the suzerain, war support
-  for envoy holders, quests beyond the two.
+  for envoy holders.
+- **More quests** (final gameplay pass, review 8.3): besides its district and a trade route,
+  each city-state asks you to bring your religion there (once any religion exists), to earn a
+  great person of its kind (Scientific: a Great Scientist; Cultural: a Writer; Trade: a
+  Merchant; Religious: a Prophet; Militaristic: a General; Industrial: an Engineer) and, if
+  Militaristic, to field a siege unit (`unitClass`, `greatPersonClass` on its type). Each pays
+  its envoys once.
 
 ### Befriending camps and levies (V1 final, F16)
 
@@ -379,7 +421,9 @@ feel populated and give players something to compete over even when there's no w
 era (its own techs and civics), not when a world era advances. Everything else in the game
 already follows a civ's own era (units, buildings, music, city art), and in simultaneous play it
 never ends an era early for a civ that hasn't reached it. The "first into an era" moment rewards
-whoever gets there first. Legacy goals and dark-age policy cards are still to come.
+whoever gets there first. Legacy goals are still to come. **Dark-age policy cards** (Martial Law,
+Monastic Retreat, Rally the Levies) arrived in the final gameplay pass: wildcard cards with a
+price, open only during a dark age (`requiresAge`), dropped from their slots when it ends.
 
 ### Ages mode (optional, later)
 
@@ -455,11 +499,15 @@ forces new crisis policies. Off by default, for groups that like chaos.
 - **Tourism** is a yield: from wonders (each later wonder has some), Museums, Broadcast
   Centers, Stadiums, a few policies, and Radio (+25%). There are no great works yet.
 - **Domestic tourists:** every 100 culture a civ ever earns. **Visiting tourists:** every 150
-  tourism a civ has sent toward another; tourism goes each turn to every civ whose settlement
-  you've seen, +25% each with a trade route between you, a shared religion (both capitals
+  tourism a civ has sent toward another (50 since the final gameplay pass: with 150, late-game
+  tourism never caught up with a rival's lifetime culture, so no AI could win by culture);
+  tourism goes each turn to every civ whose settlement you've seen, +25% each with a trade route between you, a shared religion (both capitals
   follow it) or a friendship or alliance.
-- **Culture victory:** your visitors from each other civ outnumber its domestic tourists.
-- Not yet: ideologies and their pressure, great works, national parks and seaside resorts.
+- **Culture victory:** your visitors from each other civ outnumber its domestic tourists, once
+  you've reached the Atomic era (`rules.culture.victoryEra`, D121: before that, a civ that took
+  most of the early wonders could win around turn 90 at Online speed while every rival's culture
+  was still small; Civ VII likewise keeps its victories for the last age).
+- Ideologies, great works, national parks and seaside resorts came later (below).
 
 ### Great works (V1 final, F11)
 
@@ -496,6 +544,28 @@ forces new crisis policies. Off by default, for groups that like chaos.
   - A new work is a historic moment (+1, three an era).
 - **AI:** takes its writers, artists and musicians to its nearest settlement with room. In a
   250-turn, four-player test game the AIs made 12 works.
+
+### Tourism that can win (final gameplay pass, D115)
+
+- **Ageing:** a great work's and a wonder's tourism grows by 25% for each era its owner is past
+  the work's maker's era or the wonder's era, up to double (`culture.agingPercent`,
+  `agingMaxPercent`). The yields line says so: "Parthenon (+75% for its age)". Classical works
+  and wonders become a real tourism engine by the Industrial era, as in Civ V's later game.
+- **Open borders** with a civ: +25% tourism toward it (`culture.openBordersPercent`), with the
+  trade route, shared religion and friendship bonuses.
+- National parks and seaside resorts draw tourism from appeal (see
+  [03-core-mechanics.md](03-core-mechanics.md#appeal)).
+- **Ideologies** (D118, light; `rules.ideology`): the six late governments fall into three
+  camps: **Liberty** (Democracy, Digital Republic), **Commonwealth** (Collectivism,
+  Technocracy) and **Dominion** (Militarism, Corporate Federation).
+  - Visitors from civs of other camps unsettle yours: −1 happiness in every settlement for each
+    25% of your domestic tourists they make up together, up to −5 ("Ideological pressure
+    (Rome)").
+  - While a civ of your own camp has at least 25% on you, +1 instead ("Shared ideology").
+  - Civs outside every camp feel nothing, so a culture leader pulls its rivals toward its camp
+    or into unrest: late-game tension between friends, as in Civ V, without its tenets.
+  - The government screen shows each late government's camp and what it would do to your
+    happiness now; the AI weighs the same number when it picks a government.
 
 ---
 
@@ -734,7 +804,8 @@ off. Diplomatic victory has its own toggle.
   - Being the **single** civ that put the most votes behind what passed: +1. Nobody scores on
     a tie.
   - The Statue of Liberty: +4 (the effect `diplomatic_points`).
-  - **20 points win.**
+  - **20 points win** (24 since the final gameplay pass, D117: with 20 a diplomatic win came
+    around turn 230 at Standard, before the other victories could).
   - Why "single": when every backer scored, AIs that agreed all piled up points, and test
     games ended around turn 205. Now they end around turn 285, a late-game win.
 - **On screen:**
@@ -751,6 +822,25 @@ off. Diplomatic victory has its own toggle.
   - It takes the boon on itself. If it's aggressive and trailing, it puts the bane on the
     leader instead.
   - On general resolutions it backs the option its personality likes.
+- **Emergency sessions** (final gameplay pass, D120): when a civ is three quarters of the way
+  to a victory (`containment.atPercent`), the congress meets the next turn to vote on
+  containing it.
+  - How far: science, the share of all techs known or the space projects done of four,
+    whichever is further (so a runaway researcher is called before its launch); culture, each other civ's visitors against
+    its domestic tourists (averaged, each at most 100%); religion, each civ's settlements
+    following against the majority it needs; diplomatic, points of 20; domination, original
+    capitals held.
+  - One resolution per victory, never on a regular agenda: Space Race (−15% science), Cultural
+    Dominance (−15% culture and tourism), Religious Tide (−15% faith), Diplomatic Hegemony (−2
+    favor a turn, −15% influence) and Conqueror (−15% production toward soldiers). "Contain"
+    must beat "Let it be"; a tie leaves things as they are.
+  - It holds for 20 turns (scaled by speed) whatever later sessions decide; the same civ and
+    victory can't be called again for 30 turns after a vote. A regular session that falls due
+    meanwhile meets right after.
+  - The AI: the civ in question and its team vote against with all the favor they have, its
+    allies stay out of it, everyone else votes to contain with what they can spare.
+  - On screen: a notice ("Emergency: Rome is 75% of the way to a science victory"), the ballot
+    with its target fixed, and a Containments list on the World Congress screen.
 
 ---
 
@@ -763,10 +853,10 @@ score victory).
 |---|---|
 | **Domination** | Hold every other player's original capital (the original capital of an eliminated player counts as held if you own it) |
 | **Science** | Complete the space program chain: launch satellite → moon landing → Mars colony → exoplanet expedition traveling to its destination |
-| **Culture** | Your foreign tourists exceed every other civ's domestic tourists |
+| **Culture** | Your foreign tourists exceed every other civ's domestic tourists, from the Atomic era on |
 | **Religious** | Your religion is the majority in more than half of every other civ's cities |
 | **Score** | Highest score at the turn limit |
-| **Diplomatic** | Reach 20 diplomatic victory points through the World Congress (built in V1 final F13) |
+| **Diplomatic** | Reach 24 diplomatic victory points through the World Congress (built in V1 final F13; 20 before the final gameplay pass) |
 | **Custom** | Defined by mods using the effects/conditions system (e.g., "Hold 5 natural wonders for 10 turns") |
 
 **Team victory:** if any member of a team meets a condition, the team wins.
@@ -779,8 +869,13 @@ The end screen names the winner and how, with everyone's score.
 new-game toggle (on by default), and a Victories screen (V) with everyone's progress.
 - **Science:** a Spaceport (after Rocketry, flat land, outside the district limit) and four
   projects done on it in order: Launch a Satellite, Moon Landing, Mars Colony, then the
-  Exoplanet Expedition, which arrives 10 turns later and wins.
+  Exoplanet Expedition, which arrives 20 turns later (10 before the final gameplay pass) and
+  wins. Since the final gameplay pass they need Rocketry, Computers, Robotics and
+  Nanotechnology (see docs/03, "Tech tree").
 - **Culture:** see "Tourism & great works".
+- **One more turn** (final gameplay pass): after a win, the end screen offers to keep playing
+  (games this tab holds, not online). The result stands and nothing else ends the game, the
+  turn limit included.
 
 ### AI and balance (V1 final F18)
 

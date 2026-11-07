@@ -15,6 +15,9 @@ import { cityStatePlayer } from './handlers';
 import { cityStateIds, questsOf } from './rules';
 
 const R = ctx.content.rules.cityStates;
+const MERCHANT = ctx.content.ids.greatPerson.find(
+  (id) => ctx.content.entities.greatPerson[id]!.class === 'gp_merchant',
+)!;
 const FIELD = Array.from({ length: 7 }, () => '.'.repeat(24));
 const err = (s: GameState, a: Action) => {
   const r = applyAction(s, a, ctx);
@@ -149,7 +152,7 @@ describe('city-states', () => {
     const w = world();
     let s = w.s;
     const { p1 } = w;
-    expect(questsOf(ctx, s, 'cs1').map((q) => q.id)).toEqual(['district', 'route']);
+    expect(questsOf(ctx, s, 'cs1').map((q) => q.id)).toEqual(['district', 'route', 'greatPerson']);
     s = produce(s, (d) => {
       d.cityStates.cs1!.met = ['p1'];
       const tile = at(s, 3, 3);
@@ -162,6 +165,13 @@ describe('city-states', () => {
     // Only once.
     s = endTurn(s);
     expect(s.cityStates.cs1!.envoys.p1).toBe(R.questEnvoys);
+    // A Trade city-state also wants you to earn a Great Merchant.
+    s = produce(s, (d) => {
+      d.players.p1!.greatPeople = [MERCHANT];
+    });
+    s = endTurn(s);
+    expect(s.cityStates.cs1!.quests.p1).toEqual(['district', 'greatPerson']);
+    expect(s.cityStates.cs1!.envoys.p1).toBe(2 * R.questEnvoys);
   });
 
   it('cost your envoys when you go to war with them, and take peace at once', () => {

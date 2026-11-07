@@ -1,3 +1,4 @@
+import { resolveText } from '@cx/content';
 import {
   type Action,
   areFriends,
@@ -7,8 +8,15 @@ import {
   dealVerdict,
   type EngineContext,
   type GameState,
+  haveOpenBorders,
+  haveResearchAgreement,
+  isRevealed,
+  luxuryCopies,
   type PlayerId,
   type Proposal,
+  sourceIncome,
+  spareLuxury,
+  tradedBy,
 } from '@cx/engine';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -18,6 +26,30 @@ import { LeaderHead } from '../ui/LeaderCard';
 import { useEscape } from '../ui/Menu';
 
 type Deal = Omit<Proposal, 'id' | 'turn'>;
+type Terms = Required<DealTerms>;
+
+/** What `giver` can send `taker` each turn of a deal: spare luxuries and strategic income. */
+export function tradeableResources(
+  ctx: EngineContext,
+  state: GameState,
+  giver: PlayerId,
+  taker: PlayerId,
+): { id: string; name: string; luxury: boolean; max: number }[] {
+  const out: { id: string; name: string; luxury: boolean; max: number }[] = [];
+  const name = (id: string) => resolveText(ctx.content, ctx.content.entities.resource[id]!.name);
+  for (const id of Object.keys(luxuryCopies(ctx, state, giver)).sort()) {
+    const max = spareLuxury(ctx, state, giver, id);
+    if (max > 0) out.push({ id, name: name(id), luxury: true, max });
+  }
+  const sent = tradedBy(ctx, state, giver, 'from');
+  const income = sourceIncome(ctx, state, giver);
+  for (const id of Object.keys(income).sort()) {
+    const max = (income[id] ?? 0) - (sent[id] ?? 0);
+    if (max > 0 && isRevealed(ctx, state, taker, id))
+      out.push({ id, name: name(id), luxury: false, max });
+  }
+  return out;
+}
 
 interface Props {
   ctx: EngineContext;
@@ -28,28 +60,59 @@ interface Props {
   onClose: () => void;
 }
 
-const NONE: DealTerms = { gold: 0, goldPerTurn: 0, maps: false };
+const NONE: Terms = { gold: 0, goldPerTurn: 0, maps: false, resources: {} };
 
-/** Build a deal with another player: gold, payments, maps, friendship, alliance, peace. */
+/**
+ * Build a deal with another player: gold, payments, maps, resources, friendship, alliance, open
+ * borders, a research agreement, peace.
+ */
 export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
   const rules = ctx.content.rules.diplomacy;
   const war = atWar(state, viewer, other);
   const friends = areFriends(state, viewer, other);
-  const [give, setGive] = useState<DealTerms>(NONE);
-  const [get, setGet] = useState<DealTerms>(NONE);
+  const [give, setGive] = useState<Terms>(NONE);
+  const [get, setGet] = useState<Terms>(NONE);
   const [turns, setTurns] = useState(Math.min(20, rules.maxDealTurns));
   const [friendship, setFriendship] = useState(false);
   const [alliance, setAlliance] = useState(false);
+  const [openBorders, setOpenBorders] = useState(false);
+  const [research, setResearch] = useState(false);
   const [peace, setPeace] = useState(war);
   useEscape(onClose);
 
-  const deal: Deal = { from: viewer, to: other, give, get, turns, friendship, alliance, peace };
+  const deal: Deal = {
+    from: viewer,
+    to: other,
+    give,
+    get,
+    turns,
+    friendship,
+    alliance,
+    peace,
+    openBorders,
+    research,
+  };
   const problem = dealProblem(ctx, state, deal);
   const ai = state.players[other]!.kind === 'ai';
   const verdict = ai && !problem ? dealVerdict(ctx, state, other, deal) : undefined;
   const name = civName(ctx.content, state, other);
   const send = () => {
-    if (act({ type: 'propose_deal', player: viewer, ...deal })) onClose();
+    if (
+      act({
+        type: 'propose_deal',
+        player: viewer,
+        to: other,
+        give,
+        get,
+        turns,
+        friendship,
+        alliance,
+        peace,
+        openBorders,
+        research,
+      })
+    )
+      onClose();
   };
 
   const face = (p: PlayerId, size: number) => (
@@ -63,8 +126,8 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
   const side = (
     who: PlayerId,
     label: string,
-    terms: DealTerms,
-    set: (t: DealTerms) => void,
+    terms: Terms,
+    set: (t: Terms) => void,
     max: number,
   ) => (
     <fieldset className="deal-side">
@@ -112,8 +175,41 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
         />
         <Icon name="lens" size={16} /> Share maps
       </label>
+      {!war &&
+        tradeableResources(ctx, state, who, who === viewer ? other : viewer).map((r) => (
+          <label
+            key={r.id}
+            title={
+              r.luxury
+                ? `A spare copy: it cheers their capital and its nearest settlements while the deal runs`
+                : `Sent from your stockpile income every turn of the deal`
+            }
+          >
+            {r.luxury ? r.name : `${r.name} a turn`}
+            <input
+              type="number"
+              min={0}
+              max={r.max}
+              step={1}
+              value={terms.resources[r.id] ?? 0}
+              aria-label={`${r.name} (${label})`}
+              onChange={(e) => {
+                const n = Math.max(0, Math.min(r.max, Math.floor(+e.target.value || 0)));
+                const resources = { ...terms.resources };
+                if (n > 0) resources[r.id] = n;
+                else delete resources[r.id];
+                set({ ...terms, resources });
+              }}
+            />
+          </label>
+        ))}
     </fieldset>
   );
+  const runsForTurns =
+    give.goldPerTurn > 0 ||
+    get.goldPerTurn > 0 ||
+    Object.keys(give.resources).length > 0 ||
+    Object.keys(get.resources).length > 0;
 
   // A portal: the dialog covers the screen, not the panel that opened it.
   return createPortal(
@@ -161,11 +257,35 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
                 <Icon name="alliance" size={18} /> Form an alliance ({rules.allianceCost} influence
                 each)
               </label>
+              <label
+                className="check"
+                title={`Lasts ${rules.openBordersTurns} turns; your tourism reaches each other further and your units heal in each other's land as at home`}
+              >
+                <input
+                  type="checkbox"
+                  checked={openBorders}
+                  disabled={haveOpenBorders(state, viewer, other)}
+                  onChange={(e) => setOpenBorders(e.target.checked)}
+                />
+                Open borders ({rules.openBordersCost} influence each)
+              </label>
+              <label
+                className="check"
+                title={`Needs a declared friendship. Lasts ${rules.researchTurns} turns: +${rules.researchPercent}% science for both, and a boost each when it ends`}
+              >
+                <input
+                  type="checkbox"
+                  checked={research}
+                  disabled={haveResearchAgreement(state, viewer, other)}
+                  onChange={(e) => setResearch(e.target.checked)}
+                />
+                Research agreement ({rules.researchCost} influence each)
+              </label>
             </>
           )}
-          {(give.goldPerTurn > 0 || get.goldPerTurn > 0) && (
+          {runsForTurns && (
             <label>
-              Payments for
+              Runs for
               <input
                 type="number"
                 min={1}
@@ -207,11 +327,19 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
 
 /** One line describing a deal, from `viewer`'s side ("You give 50 gold · They give friendship"). */
 export function describeDeal(ctx: EngineContext, state: GameState, p: Proposal, viewer: PlayerId) {
+  const resource = (id: string, n: number) => {
+    const res = ctx.content.entities.resource[id];
+    const name = res ? resolveText(ctx.content, res.name) : id;
+    return res?.class === 'luxury'
+      ? `${n > 1 ? `${n} ` : ''}${name} for ${p.turns} turns`
+      : `${n} ${name} a turn for ${p.turns} turns`;
+  };
   const terms = (t: DealTerms) =>
     [
       t.gold > 0 ? `${t.gold} gold` : '',
       t.goldPerTurn > 0 ? `${t.goldPerTurn} gold a turn for ${p.turns} turns` : '',
       t.maps ? 'their maps' : '',
+      ...Object.entries(t.resources ?? {}).map(([id, n]) => resource(id, n)),
     ].filter(Boolean);
   const mine = p.from === viewer ? p.give : p.get;
   const theirs = p.from === viewer ? p.get : p.give;
@@ -219,6 +347,8 @@ export function describeDeal(ctx: EngineContext, state: GameState, p: Proposal, 
     p.peace && 'peace',
     p.friendship && 'friendship',
     p.alliance && 'an alliance',
+    p.openBorders && 'open borders',
+    p.research && 'a research agreement',
   ].filter(Boolean);
   const them = civName(ctx.content, state, p.from === viewer ? p.to : p.from);
   return [

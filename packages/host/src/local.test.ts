@@ -1,6 +1,6 @@
 import { compileFromDirs } from '@cx/content/node';
 import { describe, expect, it } from 'vitest';
-import { stateHash } from '@cx/engine';
+import { encodeBits, type GameState, neighbors, stateHash } from '@cx/engine';
 import { type AiRunner, LocalGame, runTurn, type TurnProgress } from './local';
 import { makeSave, readSave } from './saves';
 
@@ -200,5 +200,61 @@ describe('hotseat', () => {
     game.act({ type: 'end_turn', player: 'p2' });
     expect(game.state.turn).toBe(2);
     expect(game.nextHuman()).toBe('p1');
+  });
+});
+
+describe('undo for moves (D118)', () => {
+  /** A one-human game where p1 already knows the whole map and sees no one else. */
+  function alone(kinds: ('human' | 'ai')[] = ['human', 'ai']) {
+    const game = new LocalGame(setup(kinds), ctx);
+    const s: GameState = structuredClone(game.state);
+    const all = encodeBits(new Uint8Array(Math.ceil(s.map.tiles.length / 8)).fill(255));
+    for (const id of s.playerOrder) s.players[id]!.explored = all;
+    for (const [id, u] of Object.entries(s.units)) if (u.owner !== 'p1') delete s.units[id];
+    for (const [id, x] of Object.entries(s.settlements))
+      if (x.owner !== 'p1') delete s.settlements[id];
+    // No natural wonders to discover (finding one is news).
+    for (const t of s.map.tiles)
+      if (t.feature && ctx.content.entities.feature[t.feature]?.naturalWonder) t.feature = null;
+    game.load(s);
+    const warrior = Object.values(s.units).find(
+      (u) => u.owner === 'p1' && u.type === 'unit_warrior',
+    )!;
+    const to = neighbors(s.map, warrior.tile).find(
+      (t) => game.act({ type: 'move_unit', player: 'p1', unit: warrior.id, to: t }).ok,
+    );
+    return { game, before: s, warrior: warrior.id, to };
+  }
+
+  it('takes back a move that revealed nothing, and only that', () => {
+    const { game, before, warrior, to } = alone();
+    expect(to).toBeDefined();
+    expect(game.state.units[warrior]!.tile).toBe(to);
+    expect(game.canUndo()).toBe(true);
+    expect(game.undo()).toBe(true);
+    expect(stateHash(game.state)).toBe(stateHash(before));
+    expect(game.canUndo()).toBe(false);
+    // Anything other than a move closes the door.
+    game.act({ type: 'move_unit', player: 'p1', unit: warrior, to: to! });
+    expect(game.canUndo()).toBe(true);
+    game.act({ type: 'skip_unit', player: 'p1', unit: warrior });
+    expect(game.canUndo()).toBe(false);
+  });
+
+  it('never in hotseat, nor after a move that explored new land', () => {
+    expect(alone(['human', 'human']).game.canUndo()).toBe(false);
+    const game = new LocalGame(setup(['human', 'ai']), ctx);
+    const s: GameState = structuredClone(game.state);
+    const scout = Object.values(s.units).find((u) => u.owner === 'p1' && u.type === 'unit_scout')!;
+    // p1 knows only the scout's tile and the ring around it: any step shows something new.
+    const known = new Uint8Array(Math.ceil(s.map.tiles.length / 8));
+    for (const t of [scout.tile, ...neighbors(s.map, scout.tile)]) known[t >> 3]! |= 1 << (t & 7);
+    s.players.p1!.explored = encodeBits(known);
+    game.load(s);
+    const moved = neighbors(s.map, scout.tile).some(
+      (t) => game.act({ type: 'move_unit', player: 'p1', unit: scout.id, to: t }).ok,
+    );
+    expect(moved).toBe(true);
+    expect(game.canUndo()).toBe(false);
   });
 });
