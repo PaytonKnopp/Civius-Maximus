@@ -298,18 +298,27 @@ function GameMenu(props: {
   onQuality: (q: Quality) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
     const close = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    // A click anywhere else closes it too.
+    const outside = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
     window.addEventListener('keydown', close);
-    return () => window.removeEventListener('keydown', close);
+    window.addEventListener('pointerdown', outside, true);
+    return () => {
+      window.removeEventListener('keydown', close);
+      window.removeEventListener('pointerdown', outside, true);
+    };
   }, [open]);
   const pick = (fn: () => void) => () => {
     setOpen(false);
     fn();
   };
   return (
-    <div className="game-menu">
+    <div className="game-menu" ref={root}>
       <button
         type="button"
         className="menu-button"
@@ -322,27 +331,24 @@ function GameMenu(props: {
       </button>
       {open && (
         <div className="menu-pop" role="menu">
-          <button type="button" role="menuitem" onClick={pick(props.onNewGame)}>
-            New game…
-          </button>
-          <button type="button" role="menuitem" onClick={pick(props.onSaves)}>
-            Save / Load…
-          </button>
-          <button type="button" role="menuitem" onClick={pick(props.onOptions)}>
-            Options…
-          </button>
-          <button type="button" role="menuitem" onClick={pick(props.onPedia)}>
-            Civilopedia
-          </button>
-          <button type="button" role="menuitem" onClick={pick(props.onAccount)}>
-            Account…
-          </button>
-          <button type="button" role="menuitem" onClick={pick(props.onMapLab)}>
-            Map Lab
-          </button>
-          <button type="button" role="menuitem" onClick={pick(props.onHome)}>
-            Title screen
-          </button>
+          {(
+            [
+              ['next', 'Return to game', () => {}, 'Esc'],
+              ['found', 'New game…', props.onNewGame],
+              ['save', 'Save and load…', props.onSaves],
+              ['settings', 'Options…', props.onOptions],
+              ['pedia', 'Civilopedia', props.onPedia, 'F1'],
+              ['population', 'Account…', props.onAccount],
+              ['lens', 'Map Lab', props.onMapLab],
+              ['palace', 'Title screen', props.onHome],
+            ] as [string, string, () => void, string?][]
+          ).map(([icon, label, fn, key]) => (
+            <button key={label} type="button" role="menuitem" onClick={pick(fn)}>
+              <Icon name={icon} size={20} variant="glyph" />
+              <span>{label}</span>
+              {key && <kbd>{key}</kbd>}
+            </button>
+          ))}
           {props.quality && (
             <div className="menu-section">
               <h4>Graphics</h4>
@@ -382,7 +388,8 @@ function OnlineCode({ code }: { code: string }) {
           .catch(() => {});
       }}
     >
-      {copied ? 'Link copied' : `🌐 ${code}`}
+      <Icon name="globe" size={18} />
+      {copied ? 'Link copied' : code}
     </button>
   );
 }

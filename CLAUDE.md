@@ -40,6 +40,7 @@ help, 2D view, phone size), or with `SAVE=<state.json>` plays on from a saved st
 (title, Options, New game and the leader picker, Civilopedia, Hall of Fame, Load, Play online) at
 desktop and phone size and flags anything wider than the screen; `node packages/client/scripts/screenshot-online.mjs <out-dir>` plays
 an online game between two tabs (`?net=local`): lobby, join, a turn, a friend dropping. The app opens on a home screen over a quick game; `#play` in the URL skips it (the game scripts use it) and `#lab` opens the Map Lab.
+`node packages/client/scripts/screenshot-screens.mjs <save.json> <out-dir>` loads a save made with `cx profile --save` and captures the HUD, city and unit cards, diplomacy, the game menu and every full screen at seven sizes (2560 wide down to a phone), failing on console errors, overflow or a screen that Esc doesn't close (`SIZES`, `SCREENS`, `LARGE=1`).
 `node packages/client/scripts/perf-lategame.mjs early=<save.json> late=<save.json>` loads saves made with `cx profile --save` and compares frame times in a real browser (see its header; it needs the client built and served).
 `pnpm --filter @cx/client build:artifact <file.html>` builds the client as one self-contained
 HTML page for sharing.

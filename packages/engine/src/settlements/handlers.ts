@@ -59,6 +59,7 @@ import {
   townUpgradeCost,
   workableTiles,
 } from './rules';
+import { withArticle } from '../text';
 
 type A<T extends Action['type']> = Extract<Action, { type: T }>;
 
@@ -202,7 +203,7 @@ export function completionProblem(
   if (s.population - def.populationCost < 1) {
     return {
       code: 'needs_population',
-      message: `${s.name} needs ${def.populationCost + 1} citizens to finish a ${resolveText(ctx.content, def.name)}`,
+      message: `${s.name} needs ${def.populationCost + 1} citizens to finish ${withArticle(resolveText(ctx.content, def.name))}`,
     };
   }
   const probe = { id: 'u0', owner: s.owner, type: item.id };

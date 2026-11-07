@@ -35,21 +35,27 @@ import {
   validateAction,
   wallsMax,
 } from '@cx/engine';
+import { useState } from 'react';
 import { Icon, Rich } from '../ui/Icon';
 import { CityStateCard } from './CityStatesScreen';
 import {
   itemIcon,
   itemName,
   settlementSummary,
-  showTurns,
   tileName,
   turnsFor,
+  turnsLabel,
   whole,
   fmt,
   yieldLabel,
 } from './model';
 
 export type PanelMode = 'citizens' | 'buy';
+
+/** The city panel's tabs below the overview: the build list, citizens and tiles, what's built. */
+type CityTab = 'build' | 'citizens' | 'buildings';
+/** The tab last opened, so the next city opens on it too (this session). */
+let lastTab: CityTab = 'build';
 
 /** A district, wonder or project waiting for its tile; `front` builds it next. */
 export interface Placing {
@@ -120,6 +126,13 @@ export function SettlementPanel({
   const { content } = ctx;
   const s = state.settlements[id]!;
   const mine = s.owner === viewer;
+  const [tabState, setTabState] = useState<CityTab>(lastTab);
+  const setTab = (t: CityTab) => {
+    lastTab = t;
+    setTabState(t);
+  };
+  // Placing a district shows the build list (its choices are there); buying tiles, the citizens.
+  const tab: CityTab = placing ? 'build' : mode === 'buy' ? 'citizens' : tabState;
   const sum = settlementSummary(ctx, state, s);
   const happiness = happinessOf(ctx, state, s);
   const holyOf = holyCityOf(state, s.id);
@@ -183,11 +196,13 @@ export function SettlementPanel({
         <div>
           <h3>
             {s.capital && (
-              <span className="capital-star" aria-label="Capital">
-                ★{' '}
+              <span className="capital-star">
+                <Icon name="capital" size={20} title="Capital" />
               </span>
             )}
-            {s.name}
+            <span className="settlement-name" title={s.name}>
+              {s.name}
+            </span>
           </h3>
           <p className="unit-sub">
             {s.razing
@@ -275,13 +290,15 @@ export function SettlementPanel({
         className="defense-line"
         title={`Strength\n${defense.lines.map((l) => `${l.label}: ${l.amount}`).join('\n')}`}
       >
-        <span>🛡 {defense.total}</span>
-        <span className={s.health < maxHealth ? 'hurt' : ''}>
-          ❤ {s.health}/{maxHealth}
+        <span>
+          <Icon name="strength" size={17} /> {defense.total}
+        </span>
+        <span className={s.health < maxHealth ? 'hurt' : ''} title="Health">
+          <Icon name="health" size={17} /> {s.health}/{maxHealth}
         </span>
         {fullWalls > 0 && (
-          <span>
-            🧱 {s.walls}/{fullWalls}
+          <span title="Walls">
+            <Icon name="walls" size={17} /> {s.walls}/{fullWalls}
           </span>
         )}
       </p>
@@ -301,9 +318,10 @@ export function SettlementPanel({
           className={`wide strike ${striking ? 'on' : ''}`}
           onClick={() => onStrike(!striking)}
         >
+          <Icon name="target" size={18} />
           {striking
             ? 'Cancel strike (pick a marked unit)'
-            : `🎯 Ranged strike · ${strikeCount} in range`}
+            : `Ranged strike · ${strikeCount} in range`}
         </button>
       )}
 
@@ -363,8 +381,7 @@ export function SettlementPanel({
                 />
                 <span className="bar-text">
                   {s.queue[0]?.repeat ? '↻ ' : ''}
-                  {sum.head.name} · {showTurns(sum.head.turns)} turn
-                  {sum.head.turns === 1 ? '' : 's'}
+                  {sum.head.name} · {turnsLabel(sum.head.turns)}
                 </span>
               </div>
               {s.queue[0] &&
@@ -400,7 +417,11 @@ export function SettlementPanel({
                   onMouseEnter={() => q.tile !== undefined && onFocusTile(q.tile)}
                 >
                   {itemName(content, q)}
-                  {q.tile !== undefined && <span className="muted"> 📍</span>}
+                  {q.tile !== undefined && (
+                    <span className="queue-pin" title="Placed on the map">
+                      <Icon name="pin" size={14} />
+                    </span>
+                  )}
                   <button
                     type="button"
                     className="link"
@@ -416,7 +437,39 @@ export function SettlementPanel({
         </section>
       )}
 
-      {mine && s.kind === 'town' && (
+      {mine && (
+        <div className="city-tabs" role="tablist" aria-label="City">
+          {(
+            [
+              ['build', s.kind === 'city' ? 'Build or buy' : 'Town'],
+              ['citizens', 'Citizens'],
+              ['buildings', 'Buildings'],
+            ] as [CityTab, string][]
+          ).map(([t, label]) => (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={tab === t}
+              className={tab === t ? 'on' : ''}
+              onClick={() => {
+                if (t !== 'citizens' && mode === 'buy') onMode('citizens');
+                if (t !== 'build' && placing) onPlace(null);
+                setTab(t);
+              }}
+            >
+              {label}
+              {t === 'buildings' && (
+                <span className="tab-count">
+                  {s.buildings.length + s.districts.length + s.wonders.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {mine && tab === 'build' && s.kind === 'town' && (
         <section aria-label="Town">
           <p className="hint">
             Towns turn their production into gold: {icon('gold')} +{fmt(sum.townGold)} a turn.
@@ -475,9 +528,9 @@ export function SettlementPanel({
         </section>
       )}
 
-      {mine && (
+      {mine && tab === 'build' && (
         <section aria-label={s.kind === 'city' ? 'Build or buy' : 'Buy'}>
-          <h4>{s.kind === 'city' ? 'Build or buy' : 'Buy'}</h4>
+          {s.kind === 'town' && <h4>Buy</h4>}
           {placing && (
             <div className="placement" aria-label="Choose a tile">
               <p className="callout place">
@@ -545,23 +598,24 @@ export function SettlementPanel({
                         title={def?.description ? resolveText(content, def.description) : undefined}
                       >
                         <span className="item-name">
-                          <Icon name={itemIcon(content, item)} size={20} />{' '}
-                          {itemName(content, item)}
-                          {s.kind === 'city' && (
-                            <span className="muted mono">
-                              {' '}
-                              {whole(cost)}
-                              <Icon name="production" size={14} /> ·{' '}
-                              {showTurns(
-                                turnsFor(
-                                  cost,
-                                  progress,
-                                  productionToward(ctx, state, s, item, production),
-                                ),
-                              )}
-                              t
-                            </span>
-                          )}
+                          <Icon name={itemIcon(content, item)} size={22} />
+                          <span className="item-text">
+                            <span className="item-title">{itemName(content, item)}</span>
+                            {s.kind === 'city' && (
+                              <span className="item-meta mono">
+                                {whole(cost)}
+                                <Icon name="production" size={13} /> ·{' '}
+                                {turnsLabel(
+                                  turnsFor(
+                                    cost,
+                                    progress,
+                                    productionToward(ctx, state, s, item, production),
+                                  ),
+                                )}
+                                {progress > 0 && ` · ${Math.floor((progress / cost) * 100)}% done`}
+                              </span>
+                            )}
+                          </span>
                         </span>
                         {s.kind === 'city' && (
                           <>
@@ -627,7 +681,10 @@ export function SettlementPanel({
                   return (
                     <li key={u.id}>
                       <span className="item-name">
-                        <Icon name={u.model} size={20} /> {resolveText(content, u.name)}
+                        <Icon name={u.model} size={22} />
+                        <span className="item-text">
+                          <span className="item-title">{resolveText(content, u.name)}</span>
+                        </span>
                       </span>
                       <button
                         type="button"
@@ -646,7 +703,7 @@ export function SettlementPanel({
         </section>
       )}
 
-      {mine && (
+      {mine && tab === 'citizens' && (
         <section className="citizens" aria-label="Citizens">
           <div className="row-inline">
             <label htmlFor="focus">Focus</label>
@@ -693,6 +750,14 @@ export function SettlementPanel({
                 .join(' · ')}
             </p>
           )}
+        </section>
+      )}
+
+      {(!mine || tab === 'buildings') && (
+        <section className="city-built" aria-label="Districts and buildings">
+          {s.districts.length + s.wonders.length + s.buildings.length === 0 && (
+            <p className="hint">Nothing built yet.</p>
+          )}
           {(s.districts.length > 0 || s.wonders.length > 0) && (
             <ul className="districts">
               {s.districts.map((d) => {
@@ -714,7 +779,8 @@ export function SettlementPanel({
               })}
               {s.wonders.map((w) => (
                 <li key={w} className="wonder">
-                  ✦ {resolveText(content, content.entities.wonder[w]?.name ?? w)}
+                  <Icon name="wonder" size={15} />{' '}
+                  {resolveText(content, content.entities.wonder[w]?.name ?? w)}
                 </li>
               ))}
             </ul>

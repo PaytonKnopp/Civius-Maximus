@@ -11,9 +11,10 @@ import {
   spyTargets,
   travelTurns,
 } from '@cx/engine';
-import { useEffect } from 'react';
+
 import { Icon } from '../ui/Icon';
 import { civName } from './model';
+import { useEscape } from '../ui/Menu';
 
 /**
  * Espionage (docs/04-advanced-systems.md, "Espionage"): your spies, where they are and what
@@ -34,11 +35,7 @@ export function EspionageScreen({
 }) {
   const { content } = ctx;
   const t = (text: string) => resolveText(content, text);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const spies = spiesOf(state, viewer);
   const capacity = spyCapacity(ctx, state, viewer);
   const targets = spyTargets(state, viewer);

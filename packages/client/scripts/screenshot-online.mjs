@@ -39,6 +39,10 @@ console.log('code:', code);
 const guest = await context.newPage();
 watch(guest, 'guest');
 await guest.goto(`${base}#join=${code}`, { waitUntil: 'networkidle' });
+// A tab in the background barely draws: bring the one being used to the front first.
+await guest.bringToFront();
+await guest.waitForSelector('#online-name');
+await guest.waitForTimeout(400);
 await guest.fill('#online-name', 'Bo');
 await guest.click('.dialog-actions button:has-text("Join")');
 await guest.waitForSelector('.lobby .seats li:has-text("Bo")');
@@ -51,6 +55,7 @@ console.log(
 );
 
 // Start: both get the game.
+await host.bringToFront();
 await host.click('button:has-text("Start the game")');
 for (const page of [host, guest]) {
   await page.waitForSelector('.online-chip');
@@ -72,6 +77,7 @@ for (const page of [host, guest]) {
     { timeout: 60000 },
   );
   // Each player's leader intro opens the game.
+  await page.bringToFront();
   await page.waitForSelector('.leader-intro');
   await page.click('.leader-intro .primary');
   await page.keyboard.press('Enter');
@@ -80,7 +86,9 @@ for (const page of [host, guest]) {
   await page.waitForSelector('.settlement-panel');
   await page.waitForTimeout(800);
 }
+await host.bringToFront();
 await host.screenshot({ path: `${out}/online-game-host.png` });
+await guest.bringToFront();
 await guest.screenshot({ path: `${out}/online-game-guest.png` });
 for (const page of [guest, host])
   await page.evaluate(() =>
@@ -92,6 +100,7 @@ console.log('turns:', await turn(host), await turn(guest));
 
 // The friend leaves; the host sees it and ends their turn for them.
 await guest.close();
+await host.bringToFront();
 await host.waitForSelector('.online-bar:has-text("Bo is away")');
 await host.screenshot({ path: `${out}/online-away.png` });
 await host.click('.online-bar button:has-text("End their turn")');

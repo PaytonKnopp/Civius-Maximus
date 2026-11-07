@@ -232,14 +232,16 @@ export function UnitPanel({
         <ul className="promotions" aria-label="Promotions">
           {promotionsOf(ctx, unit).map((p) => (
             <li key={p.id} title={resolveText(ctx.content, p.description)}>
-              ★ {resolveText(ctx.content, p.name)}
+              <Icon name="promote" size={16} /> {resolveText(ctx.content, p.name)}
             </li>
           ))}
         </ul>
       )}
       {mine && promotable.length > 0 && (
         <section className="promote" aria-label="Promote">
-          <h4>★ Promotion ready</h4>
+          <h4>
+            <Icon name="promote" size={18} /> Promotion ready
+          </h4>
           <p className="hint">Promoting heals the unit fully and ends its turn.</p>
           <ul className="choices">
             {promotable.map((id) => {

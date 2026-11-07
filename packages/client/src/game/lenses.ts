@@ -68,56 +68,103 @@ export const LENS_NAMES: Record<Lens, string> = {
   wonders: 'Natural wonders',
 };
 
-/** What a lens's colors and labels mean, shown under the picker. */
-export const LENS_LEGENDS: Record<Lens, { color?: string; text: string }[]> = {
-  none: [],
-  yields: [{ text: 'What each explored tile gives when worked (improvements included)' }],
-  settler: [
-    { color: '#f2c14e', text: 'The three best places you know for a settlement' },
-    { text: '★n: further good sites, ranked' },
-  ],
-  districts: [
-    {
-      color: '#7fc4ff',
-      text: 'The specialty district with the best adjacency on each free tile of yours',
-    },
-    {
-      text: 'Cp Campus · HS Holy Site · Th Theater · CH Commercial Hub · Hb Harbor · IZ Industrial Zone',
-    },
-  ],
-  appeal: [
-    { color: '#6fcf7a', text: 'Breathtaking or charming (national parks, resorts, Neighborhoods)' },
-    { color: '#c8c8a0', text: 'Average' },
-    { color: '#e0705a', text: 'Uninviting or disgusting' },
-  ],
-  resources: [
-    { color: '#e8dcb0', text: 'Bonus' },
-    { color: '#d18cf0', text: 'Luxury (happiness; spares can be traded)' },
-    { color: '#f07a5a', text: 'Strategic (stockpiles for units)' },
-  ],
-  empire: [{ text: "Each civilization's land in its color, with its settlements" }],
-  continents: [
-    { text: 'Each landmass you know in its own color (home-continent abilities read them)' },
-  ],
-  military: [
-    { color: '#e0503c', text: "Enemies' zone of control (moving in ends your move)" },
-    { color: '#f0a040', text: 'Units of civs you are not at war with' },
-    { color: '#6fb0f0', text: 'Your soldiers' },
-  ],
-  trade: [{ text: "Trade routes you know of, in their owner's color, with where they lead" }],
-  religion: [{ text: "Each settlement's land in the color of the religion it follows" }],
-  loyalty: [
-    { color: '#9fd36a', text: 'Settlement loyalty rising (◆: steadfast)' },
-    { color: '#e0503c', text: 'Loyalty falling' },
-    { text: 'Tiles: whose people pull hardest there' },
-  ],
-  wonders: [{ color: '#f2c14e', text: 'Natural wonders you have found' }],
+/** What each lens shows, in a line (the picker and its tooltip). */
+export const LENS_ABOUT: Record<Lens, string> = {
+  none: 'The map as it is.',
+  yields: 'What each explored tile gives when worked (improvements included).',
+  settler: 'The best places you know for a new settlement, ranked.',
+  districts: 'The specialty district with the best adjacency on each free tile of yours.',
+  appeal: 'How pleasant each tile is: national parks, resorts and Neighborhoods want it high.',
+  resources: 'Every resource you know of, by kind.',
+  empire: "Each civilization's land in its color, with its settlements.",
+  continents: 'Each landmass you know in its own color.',
+  military: "Enemies' zones of control, other civs' units and your soldiers.",
+  trade: "Trade routes you know of, in their owner's color, with where they lead.",
+  religion: 'Which religion each settlement follows.',
+  loyalty: 'Whose people pull hardest on each tile, and each settlement’s loyalty.',
+  wonders: 'Natural wonders you have found.',
+};
+
+export const LENS_ICONS: Record<Lens, string> = {
+  none: 'lens',
+  yields: 'food',
+  settler: 'settler',
+  districts: 'district_campus',
+  appeal: 'improvement_national_park',
+  resources: 'diamonds',
+  empire: 'capital',
+  continents: 'globe',
+  military: 'war',
+  trade: 'trade',
+  religion: 'religion',
+  loyalty: 'diplomacy',
+  wonders: 'wonder',
 };
 
 const CATEGORICAL = [
   0x3987e5, 0xd95926, 0x199e70, 0xc98500, 0xd55181, 0x008300, 0x9085e9, 0xe66767,
 ];
-const hex = (s: string) => parseInt(s.slice(1), 16);
+const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
+/** A `#rrggbb` color as a number, for map highlights. */
+const fromHex = (s: string) => parseInt(s.slice(1), 16);
+
+/** The legend shown under the minimap while a lens is on. */
+export function lensLegend(
+  state: GameState,
+  lens: Lens,
+): { label: string; color: string; mark?: string }[] {
+  switch (lens) {
+    case 'settler':
+      return [
+        { label: 'Best three', color: hex(BEST_SITE), mark: '1' },
+        { label: 'Good sites', color: '#c9d0d4', mark: '4' },
+      ];
+    case 'districts':
+      return [
+        { label: 'Best adjacency', color: '#7fc4ff' },
+        { label: 'Cp Campus · HS Holy Site · Th Theater', color: '#c9d0d4' },
+        { label: 'CH Commercial Hub · Hb Harbor · IZ Industrial Zone', color: '#c9d0d4' },
+      ];
+    case 'appeal':
+      return [
+        { label: 'Breathtaking or charming', color: '#6fcf7a' },
+        { label: 'Average', color: '#c8c8a0' },
+        { label: 'Uninviting or disgusting', color: '#e0705a' },
+      ];
+    case 'resources':
+      return [
+        { label: 'Bonus', color: hex(RESOURCE_COLORS.bonus) },
+        { label: 'Luxury (happiness; spares trade)', color: hex(RESOURCE_COLORS.luxury) },
+        { label: 'Strategic (stockpiles for units)', color: hex(RESOURCE_COLORS.strategic) },
+      ];
+    case 'military':
+      return [
+        { label: "Enemies' zone of control", color: '#e0503c' },
+        { label: 'Units of civs not at war with you', color: '#f0a040' },
+        { label: 'Your soldiers', color: '#6fb0f0' },
+      ];
+    case 'religion': {
+      const order = Object.keys(state.religions);
+      const known = order.map((id, i) => ({
+        label: state.religions[id]!.name,
+        color: hex(RELIGION_COLORS[i % RELIGION_COLORS.length]!),
+      }));
+      return known.length > 0 ? known : [{ label: 'No religion founded yet', color: '#5b6b7a' }];
+    }
+    case 'loyalty':
+      return [
+        { label: 'Gaining', color: '#9fd36a' },
+        { label: 'Losing', color: '#e0503c' },
+        { label: 'Steadfast', color: '#c9d0d4', mark: '◆' },
+      ];
+    case 'yields':
+      return [{ label: 'Food, production, gold… per worked tile', color: '#5f9b33' }];
+    case 'wonders':
+      return [{ label: 'Natural wonders you have found', color: '#f2c14e' }];
+    default:
+      return [];
+  }
+}
 
 /** Loyalty lens: which side's people pull hardest on each tile, and each settlement's loyalty. */
 function loyaltyLens(
@@ -153,6 +200,11 @@ function loyaltyLens(
 const RELIGION_COLORS = [
   0x3987e5, 0xd95926, 0x199e70, 0xc98500, 0xd55181, 0x008300, 0x9085e9, 0xe66767,
 ];
+/** A religion's color on the map and in the Religion screen (founding order). */
+export function religionColor(state: GameState, id: string): string {
+  const i = Math.max(0, Object.keys(state.religions).indexOf(id));
+  return `#${RELIGION_COLORS[i % RELIGION_COLORS.length]!.toString(16).padStart(6, '0')}`;
+}
 const BEST_SITE = 0xf2c14e;
 /** The same resource colors as the 2D map's resource dots. */
 const RESOURCE_COLORS = { bonus: 0xe8dcb0, luxury: 0xd18cf0, strategic: 0xf07a5a } as const;
@@ -189,7 +241,7 @@ export function lensFor(
       return settleSites(ctx, state, viewer).map((s, i) => ({
         tile: s.tile,
         tone: 'lens',
-        label: `★${i + 1}`,
+        label: `${i + 1}`,
         ...(i < 3 ? { color: BEST_SITE } : {}),
       }));
     case 'resources': {
@@ -322,7 +374,7 @@ export function lensFor(
         out.push({
           tile,
           tone: 'lens',
-          color: hex('#f2c14e'),
+          color: fromHex('#f2c14e'),
           label: resolveText(ctx.content, f.name),
         });
       });

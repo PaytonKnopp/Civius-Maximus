@@ -11,6 +11,7 @@ import { tileFacts } from './rules';
 import { playerEffects } from '../progress/sources';
 import { baseOf, countsAs } from '../uniques';
 import { appealOf } from '../map/appeal';
+import { withArticle } from '../text';
 
 /**
  * Districts, wonders and tile projects (docs/03-core-mechanics.md, section 9): where they can go,
@@ -113,7 +114,7 @@ export function placementProblem(
       if (t.district !== null && countsAs(ctx, 'district', t.district, def.onDistrict))
         return undefined;
       const name = ctx.content.entities.district[def.onDistrict]?.name ?? def.onDistrict;
-      return bad(`Do it on a ${resolveText(ctx.content, name)}`);
+      return bad(`Do it on ${withArticle(resolveText(ctx.content, name))}`);
     }
     if (t.district !== null || t.wonder !== null) return bad('Something is already built there');
     if (t.feature === null || !(def.clears ?? []).includes(t.feature))
@@ -135,7 +136,7 @@ export function placementProblem(
       s.districts.some((d) => same(d.id)) ||
       others.some((q) => q.kind === 'district' && same(q.id))
     )
-      return { code: 'already_built', message: `${s.name} already has a ${name}` };
+      return { code: 'already_built', message: `${s.name} already has ${withArticle(name)}` };
     if (def.onePerEmpire) {
       const elsewhere = Object.values(state.settlements).some(
         (x) =>

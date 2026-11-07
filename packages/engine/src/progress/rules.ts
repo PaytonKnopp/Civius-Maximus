@@ -15,6 +15,7 @@ import { isCoastal, settlementsOf } from '../settlements/rules';
 import type { GameState, PlayerId, PlayerState, Track } from '../state';
 import { policySlots, SLOT_KINDS } from './sources';
 import { scaleCost } from '../speed';
+import { withArticle } from '../text';
 
 /**
  * The tech and civics trees, boosts, governments and policy cards
@@ -381,7 +382,7 @@ export function policyProblem(
       if (kind !== 'wildcard' && pol.slot !== kind && pol.slot !== 'wildcard') {
         return {
           code: 'wrong_slot',
-          message: `${resolveText(ctx.content, pol.name)} goes in a ${pol.slot} or wildcard slot`,
+          message: `${resolveText(ctx.content, pol.name)} goes in ${withArticle(pol.slot)} or wildcard slot`,
         };
       }
       if (kind !== 'wildcard' && pol.slot === 'wildcard') {

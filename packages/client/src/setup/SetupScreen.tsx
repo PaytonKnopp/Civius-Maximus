@@ -1,6 +1,7 @@
 import { type CompiledContent, resolveText } from '@cx/content';
 import { useMemo, useState } from 'react';
 import { Emblem } from '../ui/Emblem';
+import { Icon } from '../ui/Icon';
 import { LeaderDetail, LeaderPicker } from '../ui/LeaderPicker';
 import { LeaderHead, leaderArt } from '../ui/LeaderCard';
 import { Choice, MenuScreen, Row, Section, Switch } from '../ui/Menu';
@@ -440,7 +441,7 @@ export function SetupScreen({ content, initial, onCancel, onStart }: Props) {
           )}
           <div className="mx-preview-tools">
             <button type="button" onClick={() => setO({ ...o, seed: randomSeed() })}>
-              <span aria-hidden="true">↻</span> New world
+              <Icon name="refresh" size={18} variant="glyph" /> New world
             </button>
             <input
               aria-label="Map seed"

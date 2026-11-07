@@ -892,7 +892,14 @@ export const ICONS: Record<string, IconDef> = {
   gp_scientist: { bg: C.science, glyph: FLASK },
   gp_engineer: { bg: C.production, glyph: GEAR },
   gp_merchant: { bg: C.gold, glyph: COIN },
-  gp_prophet: { bg: C.faith, glyph: FLAME },
+  gp_prophet: {
+    bg: C.faith,
+    glyph: [
+      s(ellipse(12, 4.9, 3.9, 1.5) + ellipse(12, 4.9, 2.6, 0.7), true),
+      s(circle(12, 9.4, 2.7)),
+      s('M6.2 19.8c0-3.9 2.6-7 5.8-7s5.8 3.1 5.8 7Z'),
+    ],
+  },
   gp_general: { bg: C.military, glyph: SWORDS },
   gp_writer: { bg: C.culture, glyph: SCROLL },
   gp_admiral: { bg: C.naval, glyph: ANCHOR },
@@ -953,7 +960,7 @@ export const ICONS: Record<string, IconDef> = {
   civic: { bg: C.culture, glyph: SCROLL },
   government: { bg: C.brass, glyph: COLUMNS },
   greatPeople: { bg: C.brass, glyph: [s(star(12, 12, 7.6, 3.4, 5))] },
-  religion: { bg: C.faith, glyph: FLAME },
+  religion: { bg: C.faith, glyph: [s(star(12, 12, 8.8, 4.6, 8) + circle(12, 12, 2.6), true)] },
   cityStates: {
     bg: '#4c6b8a',
     glyph: [s(rect(6.6, 4.2, 1.4, 15.6)), s('M8 5h10.4l-2.4 3.4 2.4 3.4H8Z')],
@@ -1201,6 +1208,131 @@ export const ICONS: Record<string, IconDef> = {
     ],
   },
   check: { bg: '#4f8f5a', glyph: CHECK },
+  // Relations and status (the civs' chips, diplomacy, online).
+  alliance: {
+    bg: '#3d7f8a',
+    glyph: [s(ring(9.2, 12, 4.9, 3.3), true), s(ring(14.8, 12, 4.9, 3.3), true)],
+  },
+  friends: {
+    bg: '#4f8f5a',
+    glyph: [
+      s(circle(8.7, 8.3, 2.5)),
+      s('M3.9 18.6c0-3 2.1-5.3 4.8-5.3s4.8 2.3 4.8 5.3Z'),
+      s(circle(15.3, 8.3, 2.5)),
+      s('M10.5 18.6c0-3 2.1-5.3 4.8-5.3s4.8 2.3 4.8 5.3Z'),
+    ],
+  },
+  letter: {
+    bg: C.influence,
+    glyph: [
+      s(
+        rect(4.4, 6.8, 15.2, 10.6, 1.4) +
+          poly(5.6, 8, 12, 12.7, 18.4, 8, 18.4, 9.7, 12, 14.4, 5.6, 9.7),
+        true,
+      ),
+    ],
+  },
+  away: {
+    bg: C.civilian,
+    glyph: [s(rect(7.8, 6.4, 3, 11.2, 0.9) + rect(13.2, 6.4, 3, 11.2, 0.9))],
+  },
+  timer: {
+    bg: C.ui,
+    glyph: [
+      s(ring(12, 13, 7, 5.4), true),
+      s(bar(12, 13.4, 12, 9, 1.5)),
+      s(bar(12, 13.4, 14.8, 15, 1.5)),
+      s(rect(10.2, 3.6, 3.6, 1.8, 0.7)),
+    ],
+  },
+  pin: {
+    bg: C.military,
+    glyph: [
+      s(
+        'M12 20.2c-3.4-4.4-5.6-7.2-5.6-10.2a5.6 5.6 0 0 1 11.2 0c0 3-2.2 5.8-5.6 10.2Z' +
+          circle(12, 9.8, 2.1),
+        true,
+      ),
+    ],
+  },
+  lock: {
+    bg: C.ui,
+    glyph: [
+      s(rect(6.2, 10.6, 11.6, 8.6, 1.4) + circle(12, 14.4, 1.4), true),
+      s('M8.4 10.8V8.6a3.6 3.6 0 0 1 7.2 0v2.2h-1.8V8.6a1.8 1.8 0 0 0-3.6 0v2.2Z'),
+    ],
+  },
+  boost: {
+    bg: '#c08a1e',
+    glyph: [s(poly(13.6, 3.6, 6.6, 13.4, 11.2, 13.4, 9.8, 20.4, 17.4, 10.2, 12.6, 10.2))],
+  },
+  globe: {
+    bg: '#2f6f9a',
+    glyph: [
+      s(
+        ring(12, 12, 7.6, 6.2) +
+          ellipse(12, 12, 3.2, 6.9) +
+          ellipse(12, 12, 1.8, 5.6) +
+          rect(4.8, 11.3, 14.4, 1.4),
+        true,
+      ),
+    ],
+  },
+  cloud: {
+    bg: '#3f6f94',
+    glyph: [s('M7.6 17.6a3.6 3.6 0 0 1-.4-7.2a5 5 0 0 1 9.6-1a3.9 3.9 0 0 1 .4 8.2Z')],
+  },
+  target: {
+    bg: C.military,
+    glyph: [
+      s(ring(12, 12, 7, 5.5) + ring(12, 12, 3.4, 1.9), true),
+      s(
+        rect(11.2, 3, 1.6, 4.2) +
+          rect(11.2, 16.8, 1.6, 4.2) +
+          rect(3, 11.2, 4.2, 1.6) +
+          rect(16.8, 11.2, 4.2, 1.6),
+      ),
+    ],
+  },
+  relic: {
+    bg: '#7b5a8c',
+    glyph: [
+      s(
+        'M9 4.6h6v1.6h-.9c0 1.3.9 2 1.9 3 1.4 1.4 2.4 3 2.4 5.3 0 3.4-2.6 5.4-6.4 5.4s-6.4-2-6.4-5.4c0-2.3 1-3.9 2.4-5.3 1-1 1.9-1.7 1.9-3H9Z',
+      ),
+      dark(rect(7.2, 12.6, 9.6, 1.6, 0.4)),
+    ],
+  },
+  refresh: {
+    bg: C.ui,
+    glyph: [s('M17.4 9.2a6.2 6.2 0 1 0 .8 4.4h-2.2a4.1 4.1 0 1 1-.8-3.2l-2 2h5.4V7Z')],
+  },
+  nuke: {
+    bg: '#8a7a1e',
+    glyph: [
+      s(
+        circle(12, 12, 2.1) +
+          [-90, 30, 150]
+            .map((c) => {
+              const p = (r: number, a: number) =>
+                `${(12 + r * Math.cos((a * Math.PI) / 180)).toFixed(2)} ${(12 + r * Math.sin((a * Math.PI) / 180)).toFixed(2)}`;
+              return `M${p(8.2, c - 30)}A8.2 8.2 0 0 1 ${p(8.2, c + 30)}L${p(3.4, c + 30)}A3.4 3.4 0 0 0 ${p(3.4, c - 30)}Z`;
+            })
+            .join(''),
+      ),
+    ],
+  },
+  fullscreen: {
+    bg: C.ui,
+    glyph: [
+      s(
+        'M4.6 4.6h5.2v2.2H6.8v3H4.6Z' +
+          'M19.4 4.6h-5.2v2.2h3v3h2.2Z' +
+          'M4.6 19.4h5.2v-2.2H6.8v-3H4.6Z' +
+          'M19.4 19.4h-5.2v-2.2h3v-3h2.2Z',
+      ),
+    ],
+  },
   trophy: { bg: C.brass, glyph: [] },
   water_drop: { bg: '#3f88a8', glyph: DROP },
 };
@@ -1230,6 +1362,20 @@ export const EMOJI_ICONS: Record<string, string> = {
   '★': 'greatPeople',
   '❤': 'health',
   '🛡': 'strength',
+  '🎯': 'target',
+  '📌': 'pin',
+  '📍': 'pin',
+  '☢': 'nuke',
+  '⏱': 'timer',
+  '🌐': 'globe',
+  '☁': 'cloud',
+  '🧱': 'walls',
+  '🏺': 'relic',
+  '⚡': 'boost',
+  '☮': 'peace',
+  '🙂': 'friends',
+  '✉': 'letter',
+  '⏸': 'away',
 };
 
 /** The icon for a building, by what it is or the district it belongs to. */

@@ -121,14 +121,17 @@ for (let guard = 0; guard < TURNS * 15 && (await turn(page)) < startTurn + TURNS
     await page.keyboard.press('Escape');
   } else if (next === 'Choose policies') {
     await page.keyboard.press('Enter');
-    await page.waitForSelector('.card-pool');
-    const cards = await page.$$('.card-pool .policy-card');
-    for (const c of cards.slice(0, 2)) await c.click();
+    await page.waitForSelector('.gv-cards');
+    // Each click slots the first card still in the catalog that has room.
+    for (let i = 0; i < 2; i++) {
+      const card = await page.$('.gv-cards .policy-card:not(.no-room)');
+      if (card) await card.click();
+    }
     if (!shots.has('gov')) {
       await page.screenshot({ path: `${out}/game-government.png` });
       shots.add('gov');
     }
-    const confirm = await page.$('.gov-confirm .primary:not([disabled])');
+    const confirm = await page.$('.gv-confirm .primary:not([disabled])');
     if (confirm) await confirm.click();
     console.log(
       'policies:',
@@ -143,11 +146,11 @@ for (let guard = 0; guard < TURNS * 15 && (await turn(page)) < startTurn + TURNS
     await page.click('.dedication-card');
     await page.click('.dedication-choice .primary');
     await page.keyboard.press('Escape');
-  } else if (/^(Rivals are moving|The world is turning)/.test(next ?? '')) {
+  } else if (/^(Rivals (are )?moving|The world is turning)/.test(next ?? '')) {
     // The AI plays in a background worker: wait for it (it doesn't count as a step).
     await page.waitForFunction(
       () =>
-        !/^(Rivals are moving|The world is turning)/.test(
+        !/^(Rivals (are )?moving|The world is turning)/.test(
           document.querySelector('.next-label')?.textContent ?? '',
         ),
       null,

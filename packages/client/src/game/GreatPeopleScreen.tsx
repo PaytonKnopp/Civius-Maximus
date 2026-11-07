@@ -14,10 +14,11 @@ import {
   recruitCost,
   validateAction,
 } from '@cx/engine';
-import { useEffect } from 'react';
+
 import { civName, whole } from './model';
 import { Icon } from '../ui/Icon';
 import { EMOJI_ICONS, ICONS } from '../ui/icons';
+import { useEscape } from '../ui/Menu';
 
 /** A class's icon: its own if the set has one (gp_scientist...), else by its emoji. */
 export function classIcon(cls: string, emoji: string | undefined): string {
@@ -36,11 +37,7 @@ interface Props {
 export function GreatPeopleScreen({ ctx, state, viewer, act, onClose }: Props) {
   const { content } = ctx;
   const t = (text: string) => resolveText(content, text);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const rates = greatPersonRates(ctx, state, viewer);
   const mine = state.players[viewer]!.greatPeople.map((id) => content.entities.greatPerson[id]!);
 

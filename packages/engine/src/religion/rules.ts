@@ -8,6 +8,7 @@ import { countsAs } from '../uniques';
 import { ownedUnit } from '../units/handlers';
 import { teamOf } from '../victory';
 import { scaleCost } from '../speed';
+import { withArticle } from '../text';
 
 /**
  * Religion (docs/04-advanced-systems.md, "Religion"): a pantheon belief for some faith; a great
@@ -242,7 +243,7 @@ export function religionFoundingProblem(
     const name = resolveText(ctx.content, ctx.content.entities.district[holy]?.name ?? holy);
     return {
       code: 'needs_holy_site',
-      message: `Found it in one of your settlements with a ${name}`,
+      message: `Found it in one of your settlements with ${withArticle(name)}`,
     };
   }
   return undefined;

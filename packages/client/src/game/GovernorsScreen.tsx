@@ -8,9 +8,10 @@ import {
   titlesAvailable,
   titlesEarned,
 } from '@cx/engine';
-import { useEffect } from 'react';
+
 import { Icon } from '../ui/Icon';
 import { Portrait } from '../ui/Portrait';
+import { useEscape } from '../ui/Menu';
 
 /**
  * Governors (docs/04-advanced-systems.md, "Governors"): seven of them, each with an ability and
@@ -36,11 +37,7 @@ export function GovernorsScreen({
   const titles = titlesAvailable(ctx, p);
   const mine = settlementsOf(state, viewer);
   const establish = content.rules.governors.establishTurns;
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
   const nextTitle = content.rules.governors.titleCivics.find((c) => !p.civics.done.includes(c));
 
   return (

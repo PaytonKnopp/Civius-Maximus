@@ -34,6 +34,8 @@ import {
   settlementYields,
   toFixed,
   unitClassOf,
+  unitUpkeep,
+  celebrationThreshold,
   unitDef,
   unitIds,
   unitsNeedingOrders,
@@ -236,6 +238,13 @@ export function turnsFor(cost: number, progress: number, perTurn: number): numbe
 
 export const showTurns = (n: number) => (Number.isFinite(n) ? String(n) : '—');
 
+/** "1 turn", "6 turns", or "—" when it never finishes. */
+export const turnsLabel = (n: number) =>
+  Number.isFinite(n) ? `${n} turn${n === 1 ? '' : 's'}` : '—';
+
+/** The word after a turn count: "turn" for one, "turns" otherwise. */
+export const turnWord = (n: number) => (n === 1 ? 'turn' : 'turns');
+
 export interface SettlementSummary {
   yields: SettlementYields;
   /** Food added per turn after mood (hundredths). */
@@ -371,6 +380,104 @@ export function empireSummary(
     faithPerTurn: sum.faith,
     influence: p.influence,
     influencePerTurn: influencePerTurn(ctx, state, player),
+  };
+}
+
+/**
+ * The "why?" behind each number in the top bar, as tooltip lines (first line the title):
+ * the biggest settlements first, then upkeep and the rest. Mirrors the engine's own sums
+ * (`goldPerTurn`, `influencePerTurn`, the celebration store) and shows any difference as "Other".
+ */
+export function empireBreakdown(
+  ctx: EngineContext,
+  state: GameState,
+  player: PlayerId,
+): Record<'science' | 'culture' | 'gold' | 'faith' | 'influence' | 'happiness', string> {
+  const { content } = ctx;
+  const p = state.players[player]!;
+  const mine = settlementsOf(state, player);
+  const ys = mine.map((s) => ({ s, y: settlementYields(ctx, state, s) }));
+  const top = (key: string, icon: string) => {
+    const rows = ys
+      .map(({ s, y }) => ({ name: s.name, v: y.total[key] ?? 0 }))
+      .filter((r) => r.v !== 0)
+      .sort((a, b) => b.v - a.v || a.name.localeCompare(b.name));
+    const shown = rows.slice(0, 6).map((r) => `${r.name}: ${perTurn(r.v)}${icon}`);
+    const rest = rows.slice(6).reduce((n, r) => n + r.v, 0);
+    if (rows.length > 6) shown.push(`${rows.length - 6} more settlements: ${perTurn(rest)}${icon}`);
+    return { lines: shown, sum: rows.reduce((n, r) => n + r.v, 0) };
+  };
+  const science = top('science', '🔬');
+  const culture = top('culture', '🎭');
+  const faith = top('faith', '🙏');
+  // Gold: what settlements make, what towns sell, minus upkeep.
+  let made = 0;
+  let sold = 0;
+  let buildings = 0;
+  for (const { s, y } of ys) {
+    made += y.total.gold ?? 0;
+    if (s.kind === 'town')
+      sold += percentOf(y.total.production ?? 0, content.rules.settlements.townGoldPercent);
+    for (const b of s.buildings)
+      buildings += toFixed(content.entities.building[b]?.maintenance ?? 0);
+  }
+  const units = unitUpkeep(ctx, state, player);
+  const goldNet = goldPerTurn(ctx, state, player);
+  const goldOther = goldNet - (made + sold - units - buildings);
+  const influenceNet = influencePerTurn(ctx, state, player);
+  const influenceBase = toFixed(content.rules.diplomacy.baseInfluence);
+  const influenceTowns = ys.reduce((n, { y }) => n + (y.total.influence ?? 0), 0);
+  const influenceOther = influenceNet - influenceBase - influenceTowns;
+  const surplus = ys.reduce((n, { y }) => n + y.happiness.balance, 0);
+  const needed = celebrationThreshold(ctx, p);
+  const unhappy = ys.filter(({ y }) => y.happiness.balance < 0).map(({ s }) => s.name);
+  const line = (label: string, v: number, icon: string) =>
+    v === 0 ? [] : [`${label}: ${perTurn(v)}${icon}`];
+  return {
+    science: [
+      `Science ${perTurn(science.sum)} a turn (T)`,
+      ...science.lines,
+      'Pays for research; opens the tech tree.',
+    ].join('\n'),
+    culture: [
+      `Culture ${perTurn(culture.sum)} a turn (C)`,
+      ...culture.lines,
+      'Pays for civics; opens the civics tree.',
+    ].join('\n'),
+    gold: [
+      `Gold ${whole(p.gold)}, ${perTurn(goldNet)} a turn`,
+      ...line('Settlements', made, '💰'),
+      ...line('Towns selling their production', sold, '💰'),
+      ...line('Unit upkeep', -units, '💰'),
+      ...line('Building upkeep', -buildings, '💰'),
+      ...line('Other', goldOther, '💰'),
+    ].join('\n'),
+    faith: [
+      `Faith ${whole(p.faith)}, ${perTurn(faith.sum)} a turn (R)`,
+      ...faith.lines,
+      'Spent on a pantheon, religious units and great people.',
+    ].join('\n'),
+    influence: [
+      `Influence ${whole(p.influence)}, ${perTurn(influenceNet)} a turn`,
+      ...line('Every civilization', influenceBase, '🤝'),
+      ...line('Settlements', influenceTowns, '🤝'),
+      ...line('Deals and abilities', influenceOther, '🤝'),
+      'Spent on envoys, friendships, alliances and denouncing.',
+    ].join('\n'),
+    happiness:
+      p.celebration.turnsLeft > 0
+        ? [
+            `Celebrating: ${turnsLabel(p.celebration.turnsLeft)} left`,
+            'A bonus wildcard policy slot and +10% production while it lasts.',
+          ].join('\n')
+        : [
+            `Celebration ${p.celebration.store}/${needed}`,
+            `Happiness surplus ${surplus >= 0 ? '+' : ''}${surplus} a turn${surplus > 0 ? `: about ${turnsLabel(Math.ceil((needed - p.celebration.store) / surplus))} to go` : ''}`,
+            ...(unhappy.length > 0
+              ? [`Unhappy: ${unhappy.slice(0, 4).join(', ')}${unhappy.length > 4 ? '…' : ''}`]
+              : []),
+            'A celebration gives a bonus wildcard policy slot and +10% production.',
+          ].join('\n'),
   };
 }
 

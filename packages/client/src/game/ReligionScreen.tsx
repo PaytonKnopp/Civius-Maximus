@@ -5,17 +5,24 @@ import {
   followersOf,
   freeBeliefs,
   type GameState,
+  greatPersonCost,
+  greatPersonRates,
   maxReligions,
+  nextGreatPerson,
   pantheonOf,
   type PlayerId,
+  pointsOf,
   religionsOf,
   religiousProgress,
   validateAction,
 } from '@cx/engine';
-import { useEffect, useState } from 'react';
-import { civName, whole } from './model';
+import { useState } from 'react';
+import { civName, empireSummary, perTurn, whole } from './model';
+import { religionColor } from './lenses';
 import { Icon, Rich } from '../ui/Icon';
+import { LeaderHead } from '../ui/LeaderCard';
 import { Meter } from '../ui/Meter';
+import { useEscape } from '../ui/Menu';
 
 interface Props {
   ctx: EngineContext;
@@ -34,19 +41,63 @@ const following = (n: number) =>
 export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Props) {
   const { content } = ctx;
   const t = (text: string) => resolveText(content, text);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !(e.target instanceof HTMLInputElement)) onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  // Escape leaves the religion's name field first, then closes the screen.
+  useEscape(() => {
+    const field = document.activeElement;
+    if (field instanceof HTMLInputElement) field.blur();
+    else onClose();
+  });
   const me = state.players[viewer]!;
   const rules = content.rules.religion;
   const pantheon = pantheonOf(ctx, state, viewer);
   const mine = me.religion ? state.religions[me.religion] : undefined;
   const religions = religionsOf(state);
   const belief = (id: string) => content.entities.belief[id];
+  const holy = t(content.entities.district[rules.holyDistrict]?.name ?? 'Holy Site');
+  const faithRate = empireSummary(ctx, state, viewer).faithPerTurn;
+  const room = maxReligions(ctx, state);
+  const prophetClass = content.ids.greatPersonClass.find(
+    (c) => content.entities.greatPersonClass[c]?.foundsReligion,
+  );
+  const prophetCost = prophetClass ? greatPersonCost(ctx, state, prophetClass) : 0;
+  const prophetPoints = prophetClass ? pointsOf(state, viewer, prophetClass) : 0;
+  const prophetRate = prophetClass ? (greatPersonRates(ctx, state, viewer)[prophetClass] ?? 0) : 0;
+  const prophetsLeft = prophetClass ? !!nextGreatPerson(ctx, state, prophetClass) : false;
+  const holdsProphet = Object.values(state.units).some((u) => {
+    const person =
+      u.owner === viewer && u.person ? content.entities.greatPerson[u.person] : undefined;
+    return !!person && !!content.entities.greatPersonClass[person.class]?.foundsReligion;
+  });
+  const myFollowers = mine ? followersOf(state, mine.id).length : 0;
+  const step = mine ? 4 : holdsProphet ? 3 : pantheon ? 2 : 1;
+  const steps = [
+    {
+      title: 'Pantheon',
+      text: pantheon ? t(pantheon.name) : `Take a belief for ${rules.pantheonFaith} faith.`,
+    },
+    {
+      title: 'Great Prophet',
+      text: mine
+        ? 'Your prophet founded it.'
+        : holdsProphet
+          ? 'Ready: use it in a settlement with a ' + holy + '.'
+          : `Earn one with a ${holy}, or recruit one.`,
+    },
+    {
+      title: 'Religion',
+      text: mine
+        ? mine.name
+        : religions.length >= room
+          ? 'Every religion this world has room for is founded.'
+          : 'Name it and choose its beliefs.',
+    },
+    {
+      title: 'Spread it',
+      text: mine
+        ? `${myFollowers} settlement${myFollowers === 1 ? '' : 's'} follow it.`
+        : 'Missionaries, trade routes and nearby followers convert settlements.',
+    },
+  ];
 
   return (
     <div className="screen" role="dialog" aria-label="Religion">
@@ -56,16 +107,95 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
           Religion
         </h2>
         <p className="screen-sub">
-          <Icon name="faith" /> {whole(me.faith)} faith. A pantheon costs {rules.pantheonFaith}{' '}
-          faith. A Great Prophet used in a settlement with a{' '}
-          {t(content.entities.district[rules.holyDistrict]?.name ?? '')} founds a religion (
-          {religions.length} of {maxReligions(ctx, state)} founded).
+          A pantheon, then a religion of your own, then the world. {religions.length} of {room}{' '}
+          religions founded.
         </p>
         <button type="button" className="close" onClick={onClose} aria-label="Close">
           ✕
         </button>
       </header>
-      <div className="religion-body">
+      <div className="screen-scroll">
+        <div className="screen-band">
+          <div
+            className="band-stat"
+            title="Faith: spent on a pantheon, religious units and great people"
+          >
+            <Icon name="faith" size={34} />
+            <b>{whole(me.faith)}</b>
+            <span>Faith · {perTurn(faithRate)} a turn</span>
+          </div>
+          <div className="band-stat">
+            <Icon name="religion" size={34} />
+            <b
+              className={
+                (mine ? mine.name : pantheon ? t(pantheon.name) : '').length > 13 ? 'long' : ''
+              }
+            >
+              {mine ? mine.name : pantheon ? t(pantheon.name) : 'None yet'}
+            </b>
+            <span>
+              {mine
+                ? `Founded on turn ${mine.founded}`
+                : pantheon
+                  ? 'Your pantheon'
+                  : 'No pantheon'}
+            </span>
+          </div>
+          {prophetClass && !mine && (
+            <div
+              className="band-stat"
+              title={`Great Prophet points: ${prophetPoints} of ${prophetCost}, +${prophetRate} a turn`}
+            >
+              <Icon name="gp_prophet" size={34} />
+              <b>
+                {prophetsLeft
+                  ? `${Math.min(prophetPoints, prophetCost)}/${prophetCost}`
+                  : 'None left'}
+              </b>
+              <span>
+                Great Prophet
+                {prophetsLeft && prophetRate > 0
+                  ? ` · ${Math.max(0, Math.ceil((prophetCost - prophetPoints) / prophetRate))} turns`
+                  : prophetsLeft
+                    ? ` · build a ${holy}`
+                    : ''}
+              </span>
+            </div>
+          )}
+          <div className="band-stat">
+            <Icon name="population" size={34} />
+            <b>{myFollowers}</b>
+            <span>Settlements following you</span>
+          </div>
+        </div>
+
+        <ol className="rel-steps" aria-label="The way to a religion">
+          {steps.map((x, i) => (
+            <li
+              key={x.title}
+              className={
+                i + 1 < step || (i + 1 === step && step === 4)
+                  ? 'done'
+                  : i + 1 === step
+                    ? 'now'
+                    : ''
+              }
+            >
+              <span className="rel-step-n">
+                {i + 1 < step || (i + 1 === step && step === 4) ? (
+                  <Icon name="check" size={22} />
+                ) : (
+                  i + 1
+                )}
+              </span>
+              <span className="rel-step-text">
+                <strong>{x.title}</strong>
+                <small>{x.text}</small>
+              </span>
+            </li>
+          ))}
+        </ol>
+
         {prophet && !mine && (
           <FoundReligion ctx={ctx} state={state} viewer={viewer} unit={prophet} act={act} />
         )}
@@ -74,32 +204,36 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
           <h3>Pantheon</h3>
           {pantheon ? (
             <div className="belief-grid">
-              <div className="belief-card chosen">
-                <span className="belief-kind">Pantheon</span>
-                <strong>{t(pantheon.name)}</strong>
-                <span>{t(pantheon.description)}</span>
-              </div>
+              <BeliefCard
+                kind="Pantheon"
+                name={t(pantheon.name)}
+                text={t(pantheon.description)}
+                chosen
+              />
             </div>
           ) : (
             <>
-              <p className="hint">Pick one belief for your people. Each can be taken only once.</p>
+              <p className="hint">
+                Pick one belief for your people; each can be taken by only one civilization.
+                {me.faith < rules.pantheonFaith * 100 &&
+                  ` You have ${whole(me.faith)} of the ${rules.pantheonFaith} faith it costs.`}
+              </p>
               <div className="belief-grid">
                 {freeBeliefs(ctx, state, 'pantheon').map((b) => {
                   const action: Action = { type: 'found_pantheon', player: viewer, belief: b.id };
                   const why = validateAction(state, action, ctx)?.message;
                   return (
-                    <div className="belief-card" key={b.id}>
-                      <strong>{t(b.name)}</strong>
-                      <span>{t(b.description)}</span>
+                    <BeliefCard key={b.id} kind="Pantheon" name={t(b.name)} text={t(b.description)}>
                       <button
                         type="button"
+                        className={why ? '' : 'primary'}
                         disabled={!!why}
                         title={why}
                         onClick={() => act(action)}
                       >
-                        <Rich text={`Take for 🙏 ${rules.pantheonFaith}`} />
+                        <Rich text={`Take · 🙏 ${rules.pantheonFaith}`} />
                       </button>
-                    </div>
+                    </BeliefCard>
                   );
                 })}
               </div>
@@ -111,18 +245,29 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
           <h3>Your religion</h3>
           {mine ? (
             <>
-              <p>
-                <strong>{mine.name}</strong>, founded on turn {mine.founded} in{' '}
-                {state.settlements[mine.holyCity]?.name ?? 'a lost city'}.{' '}
-                {following(followersOf(state, mine.id).length)}.
-              </p>
+              <div
+                className="rel-mine"
+                style={{ '--rel': religionColor(state, mine.id) } as React.CSSProperties}
+              >
+                <span className="rel-dot" aria-hidden="true" />
+                <div>
+                  <strong>{mine.name}</strong>
+                  <small>
+                    Founded on turn {mine.founded} in{' '}
+                    {state.settlements[mine.holyCity]?.name ?? 'a lost city'} (its holy city) ·{' '}
+                    {following(myFollowers)}
+                  </small>
+                </div>
+              </div>
               <div className="belief-grid">
                 {mine.beliefs.map((id) => (
-                  <div className="belief-card chosen" key={id}>
-                    <span className="belief-kind">{belief(id)?.kind}</span>
-                    <strong>{t(belief(id)?.name ?? id)}</strong>
-                    <span>{t(belief(id)?.description ?? '')}</span>
-                  </div>
+                  <BeliefCard
+                    key={id}
+                    kind={belief(id)?.kind ?? ''}
+                    name={t(belief(id)?.name ?? id)}
+                    text={t(belief(id)?.description ?? '')}
+                    chosen
+                  />
                 ))}
               </div>
               <p className="hint">
@@ -131,10 +276,15 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
               </p>
             </>
           ) : (
-            <p className="hint">
-              None yet. Build a {t(content.entities.district[rules.holyDistrict]?.name ?? '')} to
-              earn Great Prophet points (open Great People with P).
-            </p>
+            <div className="screen-empty rel-empty">
+              <Icon name="gp_prophet" size={40} />
+              <strong>No religion yet</strong>
+              <p>
+                {religions.length >= room
+                  ? 'Every religion this world has room for is founded; your people can still follow one of theirs.'
+                  : `Build a ${holy} to earn Great Prophet points (Great People, P). Use the prophet in a settlement with a ${holy} to found your religion.`}
+              </p>
+            </div>
           )}
         </section>
 
@@ -143,49 +293,68 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
           {religions.length === 0 ? (
             <p className="hint">No religion has been founded yet.</p>
           ) : (
-            <table className="religion-table">
-              <thead>
-                <tr>
-                  <th>Religion</th>
-                  <th>Founder</th>
-                  <th>Following</th>
-                  <th>Victory</th>
-                </tr>
-              </thead>
-              <tbody>
-                {religions.map((r) => {
-                  const progress = religiousProgress(state, r.id);
-                  const won = progress.filter((x) => x.following >= x.needed).length;
-                  return (
-                    <tr key={r.id} className={r.id === me.religion ? 'mine' : ''}>
-                      <td>
+            <div className="rel-world">
+              {religions.map((r) => {
+                const progress = religiousProgress(state, r.id);
+                const won = progress.filter((x) => x.following >= x.needed).length;
+                const founder = state.players[r.founder];
+                return (
+                  <article
+                    key={r.id}
+                    className={`rel-card ${r.id === me.religion ? 'mine' : ''}`}
+                    style={{ '--rel': religionColor(state, r.id) } as React.CSSProperties}
+                  >
+                    <header>
+                      <span className="rel-dot" aria-hidden="true" />
+                      <div>
                         <strong>{r.name}</strong>
-                        <div className="muted">
-                          {r.beliefs.map((id) => t(belief(id)?.name ?? id)).join(', ')}
-                        </div>
-                      </td>
-                      <td>{civName(content, state, r.founder)}</td>
-                      <td className="score-cell">{followersOf(state, r.id).length}</td>
-                      <td
-                        title={progress
-                          .map(
-                            (x) =>
-                              `${civName(content, state, x.player)}: ${x.following} of ${x.total} (needs ${x.needed})`,
-                          )
-                          .join('\n')}
-                      >
-                        <Meter
-                          value={won}
-                          max={progress.length}
-                          tone="#5fd0c0"
-                          label={`${won}/${progress.length} civs`}
+                        <small>
+                          {civName(content, state, r.founder)} · holy city{' '}
+                          {state.settlements[r.holyCity]?.name ?? 'lost'}
+                        </small>
+                      </div>
+                      {founder && (
+                        <LeaderHead
+                          content={content}
+                          leader={founder.leader}
+                          civ={founder.civ}
+                          size={34}
                         />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      )}
+                    </header>
+                    <div className="rel-card-stats">
+                      <span>
+                        <b>{followersOf(state, r.id).length}</b> settlements follow it
+                      </span>
+                      {state.settings.religion !== false && (
+                        <span
+                          title={progress
+                            .map(
+                              (x) =>
+                                `${civName(content, state, x.player)}: ${x.following} of ${x.total} (needs ${x.needed})`,
+                            )
+                            .join('\n')}
+                        >
+                          <Meter
+                            value={won}
+                            max={progress.length}
+                            tone="#5fd0c0"
+                            label={`${won}/${progress.length} civs won over`}
+                          />
+                        </span>
+                      )}
+                    </div>
+                    <ul className="rel-beliefs">
+                      {r.beliefs.map((id) => (
+                        <li key={id} title={t(belief(id)?.description ?? '')}>
+                          {t(belief(id)?.name ?? id)}
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                );
+              })}
+            </div>
           )}
           {state.settings.religion !== false && (
             <p className="hint">
@@ -195,6 +364,33 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
           )}
         </section>
       </div>
+    </div>
+  );
+}
+
+/** A belief: its kind, name and what it does, with an action under it when it can be taken. */
+function BeliefCard({
+  kind,
+  name,
+  text,
+  chosen = false,
+  children,
+}: {
+  kind: string;
+  name: string;
+  text: string;
+  chosen?: boolean;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className={`belief-card ${chosen ? 'chosen' : ''}`}>
+      <span className="belief-top">
+        <Icon name="faith" size={22} />
+        <span className="belief-kind">{kind}</span>
+      </span>
+      <strong>{name}</strong>
+      <span className="belief-text">{text}</span>
+      {children}
     </div>
   );
 }
