@@ -17,6 +17,9 @@ merge to main ─► "Deploy to GitHub Pages" (≈2 min) ─► the website has 
 - **Game updates** (rules, art, UI, fixes: everything in `packages/`) arrive in the app the next
   time it starts. An app or tab left open shows **A new version is out · Reload** on the title
   screen; an open game is never interrupted.
+- **The version number** on the title screen (1.0, then 1.01, 1.02 …) goes up 0.01 for every
+  merge into `main`. The build counts the merges itself (`packages/client/src/version.ts`), so
+  the deploy workflows check out the full history; nothing needs bumping by hand.
 - **Installing again** is only needed if the app *itself* changes (its window, icon or the
   Tauri shell), which is rare; this guide says so when it happens. If the app doesn't change, the
   installers from the first run keep working forever.
