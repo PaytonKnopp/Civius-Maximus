@@ -1486,7 +1486,10 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   const act = useCallback(
     (action: Action) => {
       const r = game.act(action);
-      if (!r.ok) notify(r.error.message);
+      if (!r.ok) {
+        play('error');
+        notify(r.error.message);
+      }
       return r.ok;
     },
     [game, notify],
