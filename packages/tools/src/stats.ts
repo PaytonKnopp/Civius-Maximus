@@ -146,7 +146,8 @@ const YIELDS = [
   'tourism',
 ];
 
-function setupFor(content: CompiledContent, o: StatsOptions): GameSetup {
+/** The game setup for these options (shared with `cx soak`). */
+export function setupFor(content: CompiledContent, o: StatsOptions): GameSetup {
   const size =
     o.size ??
     (o.players <= 2

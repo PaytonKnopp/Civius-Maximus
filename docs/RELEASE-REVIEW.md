@@ -82,3 +82,16 @@ Found and fixed so far (each re-screenshotted after the fix):
   brings another".
 - Scripts: the screenshot scripts turned hints off with a storage key the game no longer reads,
   so every in-game screenshot had a hint card over the map.
+- **Gold per turn left things out.** Checking what the top bar promises against what a turn then
+  gives (the soak below does it for every civ every turn) showed the gold figure missed deals
+  that pay gold a turn, cities with nothing to build selling their production, and counted in
+  full the production a Mining town sends to its city. The engine now has `goldForecast` (the
+  turn's own sums, line by line; a test checks it against a real turn) for the top bar, its
+  tooltip (new lines: Deals, Cities with nothing to build) and the economic advisor. The plain
+  `goldPerTurn` the AI and the deal rules reason with is untouched, so games play out the same
+  (state hash unchanged). Science, culture, faith and influence were already what the rules give
+  (89 to 97% of civ-turns exactly, the rest a settlement growing in the same turn).
+
+The session was interrupted twice by the machine restarting (running servers and background
+games are lost each time, files are not), so work is committed in smaller parts than one per
+phase, and `cx soak --out` carries on from the games already played.

@@ -130,6 +130,8 @@ export {
   borderThreshold,
   developCandidates,
   foundingProblem,
+  type GoldForecast,
+  goldForecast,
   goldPerTurn,
   growthPerTurn,
   growthThreshold,

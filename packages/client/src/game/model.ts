@@ -7,7 +7,7 @@ import {
   type BuildItem,
   districtYields,
   type EngineContext,
-  goldPerTurn,
+  goldForecast,
   hasRoad,
   influencePerTurn,
   FREE,
@@ -34,7 +34,6 @@ import {
   settlementYields,
   toFixed,
   unitClassOf,
-  unitUpkeep,
   celebrationThreshold,
   unitDef,
   unitIds,
@@ -373,7 +372,9 @@ export function empireSummary(
   const p = state.players[player]!;
   return {
     gold: p.gold,
-    goldPerTurn: goldPerTurn(ctx, state, player),
+    // What the turn will do to the treasury (deals and idle cities included), not the plain
+    // income the AI reasons with.
+    goldPerTurn: goldForecast(ctx, state, player).total,
     science: sum.science,
     culture: sum.culture,
     faith: p.faith,
@@ -386,7 +387,7 @@ export function empireSummary(
 /**
  * The "why?" behind each number in the top bar, as tooltip lines (first line the title):
  * the biggest settlements first, then upkeep and the rest. Mirrors the engine's own sums
- * (`goldPerTurn`, `influencePerTurn`, the celebration store) and shows any difference as "Other".
+ * (`goldForecast`, `influencePerTurn`, the celebration store).
  */
 export function empireBreakdown(
   ctx: EngineContext,
@@ -410,20 +411,8 @@ export function empireBreakdown(
   const science = top('science', '🔬');
   const culture = top('culture', '🎭');
   const faith = top('faith', '🙏');
-  // Gold: what settlements make, what towns sell, minus upkeep.
-  let made = 0;
-  let sold = 0;
-  let buildings = 0;
-  for (const { s, y } of ys) {
-    made += y.total.gold ?? 0;
-    if (s.kind === 'town')
-      sold += percentOf(y.total.production ?? 0, content.rules.settlements.townGoldPercent);
-    for (const b of s.buildings)
-      buildings += toFixed(content.entities.building[b]?.maintenance ?? 0);
-  }
-  const units = unitUpkeep(ctx, state, player);
-  const goldNet = goldPerTurn(ctx, state, player);
-  const goldOther = goldNet - (made + sold - units - buildings);
+  // Gold: the engine's own forecast of the turn, line by line.
+  const gold = goldForecast(ctx, state, player);
   const influenceNet = influencePerTurn(ctx, state, player);
   const influenceBase = toFixed(content.rules.diplomacy.baseInfluence);
   const influenceTowns = ys.reduce((n, { y }) => n + (y.total.influence ?? 0), 0);
@@ -445,12 +434,13 @@ export function empireBreakdown(
       'Pays for civics; opens the civics tree.',
     ].join('\n'),
     gold: [
-      `Gold ${whole(p.gold)}, ${perTurn(goldNet)} a turn`,
-      ...line('Settlements', made, '💰'),
-      ...line('Towns selling their production', sold, '💰'),
-      ...line('Unit upkeep', -units, '💰'),
-      ...line('Building upkeep', -buildings, '💰'),
-      ...line('Other', goldOther, '💰'),
+      `Gold ${whole(p.gold)}, ${perTurn(gold.total)} a turn`,
+      ...line('Settlements', gold.settlements, '💰'),
+      ...line('Towns selling their production', gold.towns, '💰'),
+      ...line('Cities with nothing to build, selling theirs', gold.idle, '💰'),
+      ...line('Deals', gold.deals, '💰'),
+      ...line('Unit upkeep', gold.units, '💰'),
+      ...line('Building upkeep', gold.buildings, '💰'),
     ].join('\n'),
     faith: [
       `Faith ${whole(p.faith)}, ${perTurn(faith.sum)} a turn (R)`,

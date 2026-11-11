@@ -401,10 +401,10 @@ export function checkInvariants(ctx: EngineContext, state: GameState): string[] 
   }
   for (const [id, c] of Object.entries(state.camps)) {
     if (!isTile(c.tile)) bad(`camp ${id} is off the map`);
+    // A camp forgets its dead raiders when it next acts, so an id may outlive its unit.
     for (const u of c.units) {
       const unit = state.units[u];
-      if (!unit) bad(`camp ${id} counts raider ${u}, which is gone`);
-      else if (unit.owner !== HOSTILE)
+      if (unit && unit.owner !== HOSTILE)
         bad(`camp ${id} counts ${u}, which belongs to ${unit.owner}`);
     }
   }
