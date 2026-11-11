@@ -419,12 +419,12 @@ export function checkInvariants(ctx: EngineContext, state: GameState): string[] 
       num(v, `${who}'s ${c} points`, 0);
     }
   }
+  // A work whose building is gone (a lost Palace) is stored, not displayed: only its
+  // settlement has to exist, and that only until the turn's end (razed settlements' works go
+  // then), so a missing one is not checked here.
   for (const [id, w] of Object.entries(state.greatWorks ?? {})) {
-    const s = state.settlements[w.settlement];
-    if (!s) bad(`great work ${id} hangs in ${w.settlement}, which is gone`);
-    else if (!s.buildings.includes(w.holder) && !s.wonders.includes(w.holder))
-      bad(`great work ${id} hangs in ${w.holder}, which ${s.id} does not have`);
     if (!isPlayer(w.by)) bad(`great work ${id} was made for no player`);
+    if (!e.greatPerson[w.creator]) bad(`great work ${id} was made by no such person ${w.creator}`);
   }
   for (const [id, spy] of Object.entries(state.espionage?.spies ?? {})) {
     if (!isPlayer(spy.owner)) bad(`spy ${id} belongs to no player`);

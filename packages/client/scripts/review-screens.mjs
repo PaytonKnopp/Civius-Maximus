@@ -19,7 +19,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
-import { auditPage, summarize } from './audit.mjs';
+import { auditPage, quiet, summarize } from './audit.mjs';
 
 const [saveArg, out] = process.argv.slice(2);
 if (!saveArg || !out) throw new Error('Usage: review-screens.mjs <state.json> <out-dir>');
@@ -137,6 +137,7 @@ for (const size of sizes) {
 
   const shot = async (name, { audit = true } = {}) => {
     const label = `${tag}-${size}-${name}`;
+    await quiet(page);
     await page.screenshot({ path: `${out}/${label}.png` });
     if (audit) findings.push(...(await auditPage(page, label, { touch })));
   };

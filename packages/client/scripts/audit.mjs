@@ -368,6 +368,29 @@ export function auditInPage(opts) {
   return out;
 }
 
+/**
+ * Waits until the page has stopped moving: every animation and transition that ends has ended
+ * (a screen's fade-in, a panel sliding in), then two more frames. A screenshot taken right
+ * after a click on a slow machine otherwise shows the frame before the click took effect.
+ */
+export async function quiet(page, timeout = 6000) {
+  await page
+    .waitForFunction(
+      () =>
+        document.getAnimations().every((a) => {
+          const timing = a.effect?.getComputedTiming();
+          return a.playState !== 'running' || timing?.iterations === Infinity;
+        }),
+      null,
+      { timeout },
+    )
+    .catch(() => {});
+  await page.evaluate(
+    () =>
+      new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(() => done(null)))),
+  );
+}
+
 /** Audits what the page shows now. `name` labels the findings; `touch` adds target sizes. */
 export async function auditPage(page, name, { touch = false, root } = {}) {
   const found = await page.evaluate(auditInPage, { touch, root });

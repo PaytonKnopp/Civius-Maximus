@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import type { Action } from '../actions';
 import { toFixed } from '../fixed';
 import { applyAction, createGame, type GameSetup } from '../game';
+import { checkInvariants } from '../invariants';
+import { distance } from '../map/hex';
 import { foundSettlement } from '../settlements/handlers';
 import { unitUpkeep } from '../settlements/rules';
 import type { GameState } from '../state';
@@ -60,6 +62,23 @@ describe('befriending camps', () => {
     expect(home.tile).toBe(w.tile);
   });
 
+  it("can't make a city-state of a camp inside someone's land or beside a settlement", () => {
+    const w = world();
+    // Borders that grew around the camp: the tile is p2's.
+    const p2Town = Object.values(w.s.settlements).find((x) => x.owner === 'p2')!;
+    const owned = produce(w.s, (d) => {
+      d.map.tiles[w.tile]!.owner = 'p2';
+      d.map.tiles[w.tile]!.settlement = p2Town.id;
+    });
+    expect(err(owned, befriend('p1'))).toBe('no_site');
+    // A camp within the distance settlements must keep from each other.
+    const near = produce(w.s, (d) => {
+      d.camps.c1!.tile = at(w.s, 4, 3);
+    });
+    expect(err(near, befriend('p1'))).toBe('no_site');
+    expect(err(w.s, befriend('p1'))).toBeUndefined();
+  });
+
   it('needs the camp found, the influence, and city-states in the game', () => {
     const w = world();
     const poor = produce(w.s, (d) => {
@@ -111,11 +130,38 @@ describe('levies', () => {
     // They go back when the levy runs out.
     const back = produce(s, (d) => {
       d.turn += R.levyTurns;
-      leviesTurn(d, () => {});
+      leviesTurn(d, ctx, () => {});
     });
     expect(levied.every((u) => back.units[u.id]!.owner === id && !back.units[u.id]!.levied)).toBe(
       true,
     );
+  });
+
+  it("send the soldiers home when they end, out of the suzerain's land and stacks", () => {
+    const { s: start, id } = suzerain();
+    let s = produce(start, (d) => {
+      d.players.p1!.gold = toFixed(1000);
+    });
+    s = act(s, { type: 'levy_military', player: 'p1', cityState: id }).state;
+    const soldier = Object.values(s.units).find((u) => u.levied)!;
+    const capital = s.settlements[s.players.p1!.capital!]!;
+    const home = Object.values(s.settlements).find((x) => x.owner === id)!;
+    // The hired soldier garrisons p1's capital, beside one of p1's own civilians.
+    s = structuredClone(s) as GameState;
+    s.units[soldier.id]!.tile = capital.tile;
+    addUnit(s, 'p1', 'unit_settler', capital.tile);
+    expect(checkInvariants(ctx, s)).toEqual([]);
+    const back = produce(s, (d) => {
+      d.turn += R.levyTurns;
+      leviesTurn(d, ctx, () => {});
+    });
+    const u = back.units[soldier.id]!;
+    expect(u.owner).toBe(id);
+    expect(u.levied).toBeUndefined();
+    // Home: at the city-state's settlement or right beside it, and never sharing a tile with
+    // another owner's units (it used to stay in p1's capital, on top of p1's settler).
+    expect(distance(back.map, u.tile, home.tile)).toBeLessThanOrEqual(1);
+    expect(checkInvariants(ctx, back)).toEqual([]);
   });
 
   it('end early if the suzerain loses the city-state', () => {
@@ -126,7 +172,7 @@ describe('levies', () => {
     s = act(s, { type: 'levy_military', player: 'p1', cityState: id }).state;
     const lost = produce(s, (d) => {
       d.cityStates[id]!.suzerain = null;
-      leviesTurn(d, () => {});
+      leviesTurn(d, ctx, () => {});
     });
     expect(Object.values(lost.units).some((u) => u.levied)).toBe(false);
   });

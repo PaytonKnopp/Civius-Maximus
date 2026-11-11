@@ -95,3 +95,33 @@ Found and fixed so far (each re-screenshotted after the fix):
 The session was interrupted twice by the machine restarting (running servers and background
 games are lost each time, files are not), so work is committed in smaller parts than one per
 phase, and `cx soak --out` carries on from the games already played.
+
+## Phase 2: Reliability — in progress (started early: the soak ran beside the screen review)
+
+`pnpm cx soak` (new, `packages/tools/src/soak.ts`) plays all-AI games to the end and, after every
+turn, runs the engine's new `checkInvariants` (every id points at something that exists; units
+and settlements stand where the rules let them; tiles and settlements agree on ownership; no
+two owners' units share a tile; nothing that can't go below zero has; a score equals its
+lines), saves and loads the game and plays both copies on (the hashes must match), and compares
+what the top bar promised each civ with what the turn gave.
+
+Rules bugs the invariants found in the first three games, all fixed with tests:
+
+- **Levied soldiers stayed where they stood when the levy ended.** A city-state's soldier a
+  civ had hired went back to the city-state on the spot: on top of that civ's own settler or
+  great person, or inside its city (whose own soldiers then could not enter it). The notice
+  already said they "have gone home"; now they do, to the city-state's settlement or beside
+  it, and one packed in a commander steps out to go.
+- **A camp could become a city-state inside a civ's borders or next to a settlement.** The
+  check that a city-state could grow on the camp's tile always stopped at "clear the camp
+  first" and never reached "not in someone's territory" or "not too close"; the new city-state
+  took the tile from the settlement that owned it. The site is now judged without the camp.
+- **More policy cards than slots.** A civ kept every card after losing a slot later in the same
+  turn's processing (a city-state changing suzerain, a settlement with a slot-giving wonder
+  changing sides) or to a capture, for a whole turn or more. Cards are now fitted to slots at
+  the end of every turn and when a settlement is captured.
+- **A captured settlement kept its old owner's governor listed until the turn ended.** Released
+  at once now, as when a settlement changes sides by loyalty.
+
+Not bugs (the checks were too strict): a camp lists a dead raider until its next turn; a great
+work whose building is gone (a captured Palace) is "stored" by design.
