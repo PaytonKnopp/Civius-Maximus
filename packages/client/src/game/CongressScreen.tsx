@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { LeaderHead } from '../ui/LeaderCard';
 import { Meter } from '../ui/Meter';
-import { civName } from './model';
+import { agree, civName } from './model';
 import { useEscape } from '../ui/Menu';
 
 /**
@@ -165,10 +165,12 @@ export function CongressScreen({
                 <h3>Your ballot{cast ? ' (cast; you can change it this turn)' : ''}</h3>
                 {emergency && (
                   <p className="hint">
-                    Emergency session: {civName(content, state, emergency.target)}
-                    {emergency.target === viewer ? ' (you)' : ''} is close to a{' '}
-                    {emergency.victory === 'religion' ? 'religious' : emergency.victory} victory. A
-                    tie leaves things as they are.
+                    Emergency session:{' '}
+                    {emergency.target === viewer
+                      ? 'you are'
+                      : `${civName(content, state, emergency.target)} ${agree(civName(content, state, emergency.target), 'is')}`}{' '}
+                    close to a {emergency.victory === 'religion' ? 'religious' : emergency.victory}{' '}
+                    victory. A tie leaves things as they are.
                   </p>
                 )}
                 {ballots.map((b, i) => {

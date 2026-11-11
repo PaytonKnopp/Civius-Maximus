@@ -81,6 +81,7 @@ import { cloudAutosave } from '../cloud/autosave';
 import { getSettings, useSettings } from '../settings';
 import { AUTOSAVE, loadSave, ONLINE_AUTOSAVE, QUICKSAVE, storeSave } from './storage';
 import {
+  agree,
   civName,
   cssColor,
   empireBreakdown,
@@ -127,6 +128,7 @@ import { Minimap } from './Minimap';
 import { music, play, type Sfx } from '../audio';
 import { LeaderCard, LeaderHead } from '../ui/LeaderCard';
 import { escapeOpen } from '../ui/Menu';
+import { useFit } from '../ui/fit';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -320,7 +322,7 @@ function noticeFor(
       const name = age ? resolveText(content, age.name) : e.age;
       return e.player === ME
         ? `${withArticle(name).replace(/^a/, 'A')} begins! (${e.score} era score last era) Choose your dedication.`
-        : `${civName(content, state, e.player)} enters ${withArticle(name)}`;
+        : `${civName(content, state, e.player)} ${agree(civName(content, state, e.player), 'enters')} ${withArticle(name)}`;
     }
     case 'disaster': {
       const def = content.entities.disaster[e.disaster];
@@ -358,7 +360,7 @@ function noticeFor(
         : undefined;
     }
     case 'congress_founded':
-      return `The World Congress has formed (${civName(content, state, e.by)} was first into the age). Diplomatic favor comes in every turn (U)`;
+      return `The World Congress has formed (${civName(content, state, e.by)} ${agree(civName(content, state, e.by), 'was')} first into the age). Diplomatic favor comes in every turn (U)`;
     case 'congress_session':
       // An emergency session has its own notice.
       return content.entities.resolution[e.agenda[0] ?? '']?.emergency
@@ -369,7 +371,7 @@ function noticeFor(
         { religion: 'religious', diplomatic: 'diplomatic' }[e.victory as string] ?? e.victory;
       return e.target === ME
         ? `Emergency: you are ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing you (U)`
-        : `Emergency: ${civName(content, state, e.target)} is ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing them (U)`;
+        : `Emergency: ${civName(content, state, e.target)} ${agree(civName(content, state, e.target), 'is')} ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing them (U)`;
     }
     case 'orders_cancelled': {
       const u = state.units[e.unit];
@@ -406,7 +408,7 @@ function noticeFor(
       return e.player === ME
         ? `+${e.amount} diplomatic victory point${e.amount === 1 ? '' : 's'}: ${e.reason} (${e.total} now)`
         : e.reason.startsWith('Name a World Leader') || e.amount >= 2
-          ? `${civName(content, state, e.player)} gains ${e.amount} diplomatic victory points (${e.total})`
+          ? `${civName(content, state, e.player)} ${agree(civName(content, state, e.player), 'gains')} ${e.amount} diplomatic victory points (${e.total})`
           : undefined;
     case 'spy_recruited':
       return e.player === ME ? `A new spy, ${e.name}, is ready (Y)` : undefined;
@@ -461,11 +463,11 @@ function noticeFor(
           : `${civName(content, state, e.by)} declared war on ${civName(content, state, e.target)}`;
     case 'peace_offered':
       return e.to === ME
-        ? `${civName(content, state, e.from)} offers peace (open their name above to accept)`
+        ? `${civName(content, state, e.from)} ${agree(civName(content, state, e.from), 'offers')} peace (open their name above to accept)`
         : `You offered peace to ${civName(content, state, e.to)}`;
     case 'deal_proposed':
       return e.to === ME
-        ? `${civName(content, state, e.from)} offers you a deal (open their name above)`
+        ? `${civName(content, state, e.from)} ${agree(civName(content, state, e.from), 'offers')} you a deal (open their name above)`
         : undefined;
     case 'deal_accepted': {
       const pact = e.alliance
@@ -679,7 +681,7 @@ function noticeFor(
     case 'player_defeated':
       return e.player === ME
         ? 'Your civilization has fallen'
-        : `${civName(content, state, e.player)} has been defeated`;
+        : `${civName(content, state, e.player)} ${agree(civName(content, state, e.player), 'has')} been defeated`;
     default:
       return undefined;
   }
@@ -1044,6 +1046,25 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         short: short.includes(id),
       }));
   }, [ctx, state, viewer]);
+  // The top bar's yields drop detail until they fit (ui/fit.ts): refit when a number changes.
+  const yieldsRef = useRef<HTMLUListElement>(null);
+  useFit(
+    yieldsRef,
+    5,
+    [
+      empire.science,
+      empire.culture,
+      empire.gold,
+      empire.goldPerTurn,
+      empire.faith,
+      empire.faithPerTurn,
+      empire.influence,
+      empire.influencePerTurn,
+      me.celebration.turnsLeft,
+      me.celebration.store,
+      ...strategic.map((r) => `${r.id}:${r.have}:${r.net}:${r.short}`),
+    ].join('|'),
+  );
   // Online: ask once (on a click) whether to notify, then tell the player when their turn comes
   // while they're in another tab (D118).
   useEffect(() => {
@@ -1806,8 +1827,13 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     openGovernment,
     placing,
     striking,
+    nuking,
     viewer,
     passTo,
+    game,
+    ctx,
+    state,
+    notify,
   ]);
 
   const inspected = selection?.kind === 'settlement' ? undefined : (pathTarget ?? inspect);
@@ -1821,7 +1847,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       />
 
       <header className="topbar">
-        <ul className="empire-yields" aria-label="Your empire">
+        <ul className="empire-yields" aria-label="Your empire" ref={yieldsRef}>
           <li title={breakdown.science}>
             <Icon name="science" size={22} />
             <span className="mono val science">{perTurn(empire.science)}</span>
@@ -1830,19 +1856,19 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             <Icon name="culture" size={22} />
             <span className="mono val culture">{perTurn(empire.culture)}</span>
           </li>
-          <li title={breakdown.gold}>
+          <li title={breakdown.gold} className={empire.goldPerTurn < 0 ? 'losing' : ''}>
             <Icon name="gold" size={22} />
             <span className="mono val gold">{whole(empire.gold)}</span>
             <span className={`delta mono ${empire.goldPerTurn < 0 ? 'neg' : ''}`}>
               {perTurn(empire.goldPerTurn)}
             </span>
           </li>
-          <li title={breakdown.faith}>
+          <li title={breakdown.faith} className="minor">
             <Icon name="faith" size={22} />
             <span className="mono val faith">{whole(empire.faith)}</span>
             <span className="delta mono">{perTurn(empire.faithPerTurn)}</span>
           </li>
-          <li title={breakdown.influence}>
+          <li title={breakdown.influence} className="minor">
             <Icon name="influence" size={22} />
             <span className="mono val">{whole(empire.influence)}</span>
             <span className="delta mono">{perTurn(empire.influencePerTurn)}</span>
@@ -1855,6 +1881,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             {me.celebration.turnsLeft > 0 ? (
               <span className="mono val">
                 <span className="celebrating-label">Celebrating</span> {me.celebration.turnsLeft}
+                <small className="celebrating-turns"> {turnWord(me.celebration.turnsLeft)}</small>
               </span>
             ) : (
               <span
@@ -1903,7 +1930,13 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
                     </span>
                   </span>
                 ))}
-              {strategic.length > 3 && <span className="muted">+{strategic.length - 3}</span>}
+              {strategic.length > 3 && (
+                <span className="muted more-wide">+{strategic.length - 3}</span>
+              )}
+              {/* When the bar is short of room, only the first shows (ui/fit.ts, level 4). */}
+              {strategic.length > 1 && (
+                <span className="muted more-tight">+{strategic.length - 1}</span>
+              )}
             </li>
           )}
         </ul>
@@ -2030,7 +2063,15 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             type="button"
             className="turn-pill"
             aria-live="polite"
-            title="Eras and ages (E): era score, dedications, timeline"
+            title={[
+              `Turn ${state.turn}${era ? ` · ${resolveText(content, era.name)} era` : ''}`,
+              me.ages
+                ? `${resolveText(content, content.entities.age[me.ages.age]?.name ?? '')} · era score ${me.ages.score}`
+                : '',
+              'Eras and ages (E): era score, dedications, timeline',
+            ]
+              .filter(Boolean)
+              .join('\n')}
             onClick={() => setOverlay({ kind: 'ages' })}
           >
             <span className="turn-label">Turn</span>
@@ -2687,9 +2728,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           }
           title={
             !me.alive && (!state.result?.winner || state.status !== 'ended')
-              ? `${civName(content, state, viewer)} has fallen`
+              ? `${civName(content, state, viewer)} ${agree(civName(content, state, viewer), 'has')} fallen`
               : state.result?.winner
-                ? `${civName(content, state, state.result.winner)} wins`
+                ? `${civName(content, state, state.result.winner)} ${agree(civName(content, state, state.result.winner), 'wins')}`
                 : 'Game over'
           }
           text={(() => {

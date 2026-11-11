@@ -207,7 +207,7 @@ export function SettlementPanel({
           <p className="unit-sub">
             {s.razing
               ? `Being razed: gone in ${s.population} turn${s.population === 1 ? '' : 's'}`
-              : `${s.puppet ? 'Puppet ' : ''}${s.kind === 'city' ? 'city' : 'town'} · ${growthText}`}
+              : `${s.puppet ? `Puppet ${s.kind}` : s.kind === 'city' ? 'City' : 'Town'} · ${growthText}`}
           </p>
           {s.puppet && mine && (
             <p className="unit-sub puppet-line">

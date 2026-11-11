@@ -229,8 +229,12 @@ export function buildArticles(content: CompiledContent): Article[] {
       .filter(([, v]) => v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0))
       .map(([k, v]) => [k, Array.isArray(v) ? v : [String(v)]]),
   });
-  const effects = (title: string, list: Parameters<typeof effectLines>[1]): Block[] => {
-    const lines = effectLines(content, list);
+  const effects = (
+    title: string,
+    list: Parameters<typeof effectLines>[1],
+    local = false,
+  ): Block[] => {
+    const lines = effectLines(content, list, { local });
     return lines.length ? [{ kind: 'list', title, items: lines.map((l) => [l]) }] : [];
   };
   const push = (a: Omit<Article, 'kind'> & { kind: string }) => out.push(a);
@@ -476,7 +480,7 @@ export function buildArticles(content: CompiledContent): Article[] {
           ['Replaces', link('building', b.replaces)],
         ]),
         ...effects('Effects', b.effects),
-        ...effects('In this settlement', b.localEffects),
+        ...effects('In this settlement', b.localEffects, true),
       ],
     });
   }
@@ -518,7 +522,7 @@ export function buildArticles(content: CompiledContent): Article[] {
           ],
         ]),
         ...effects('Effects', d.effects),
-        ...effects('In this settlement', d.localEffects),
+        ...effects('In this settlement', d.localEffects, true),
       ],
     });
   }
@@ -972,7 +976,13 @@ export function buildArticles(content: CompiledContent): Article[] {
         title: t(x.name),
         subtitle: x.title ? t(x.title) : undefined,
         group,
-        blocks: [...text(x.description), ...effects('Effects', x.effects)],
+        blocks: [
+          ...text(x.description),
+          // A governor and a town's specialization work in the one settlement they are in.
+          ...(kind === 'governor' || kind === 'specialization'
+            ? effects('In its settlement', x.effects, true)
+            : effects('Effects', x.effects)),
+        ],
       });
     }
   };

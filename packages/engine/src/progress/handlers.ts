@@ -1,4 +1,3 @@
-import { scaleCost } from '../speed';
 import type { Draft } from 'immer';
 import type { Action } from '../actions';
 import { type ActionHandler, type EngineContext, type Emit, type RuleError } from '../context';
@@ -14,6 +13,7 @@ import {
   goalMet,
   governmentChangeCost,
   isPolicyAvailable,
+  legacyTurns,
   nodeCostFor,
   pathTo,
   policyChangeCost,
@@ -328,7 +328,7 @@ export function empireTurn(
   const gov = ctx.content.entities.government[p.government];
   if (gov && gov.legacy.length > 0 && (p.legacies?.[p.government] ?? 0) < legacy.max) {
     p.legacyClock = (p.legacyClock ?? 0) + 1;
-    if (p.legacyClock >= Math.max(1, scaleCost(ctx, draft, legacy.everyTurns))) {
+    if (p.legacyClock >= legacyTurns(ctx, draft)) {
       p.legacyClock = 0;
       const count = (p.legacies?.[p.government] ?? 0) + 1;
       p.legacies = { ...p.legacies, [p.government]: count };

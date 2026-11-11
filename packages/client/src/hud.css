@@ -102,8 +102,9 @@ button:disabled {
   margin: 0;
   padding: 0;
   list-style: none;
-  overflow-x: auto;
-  scrollbar-width: none;
+  /* Never scrolled: what doesn't fit is left out by level (ui/fit.ts, finish.css). */
+  overflow: hidden;
+  min-width: 0;
 }
 
 .empire-yields li {
@@ -619,14 +620,6 @@ button:disabled {
   .empire-yields .stockpile > svg.icon {
     width: 19px;
     height: 19px;
-  }
-}
-
-/* Until there's room for everything, the bar keeps to the essentials. */
-@media (min-width: 641px) and (max-width: 1800px) {
-  .empire-yields .delta,
-  .empire-yields .long {
-    display: none;
   }
 }
 

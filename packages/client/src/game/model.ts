@@ -571,11 +571,26 @@ export function fmt(n: number): string {
   return Number.isInteger(r) ? String(r) : r.toFixed(1);
 }
 
-/** A per-turn amount with a sign, e.g. +3 or -1.5. */
+/**
+ * A per-turn amount with a sign, e.g. +3 or −1.5: one decimal at most, whole from 100 up (like
+ * `fmt`), and a true minus sign.
+ */
 export function perTurn(n: number): string {
-  const v = n / 100;
-  const text = Number.isInteger(v) ? String(v) : v.toFixed(1);
-  return n >= 0 ? `+${text}` : text;
+  const text = fmt(Math.abs(n));
+  return n < 0 && text !== '0' ? `−${text}` : `+${text}`;
+}
+
+/** A civ named as a people ("Franks", "Mongols") takes a plural verb; "United States" doesn't. */
+export const isPluralCiv = (name: string) => /[^su]s$/.test(name) && !/States$/.test(name);
+
+/**
+ * A verb that agrees with a civ's name: `agree('Rome', 'offers')` is "offers",
+ * `agree('Franks', 'offers')` is "offer" ("Franks offer you a deal").
+ */
+export function agree(name: string, verb: string): string {
+  if (!isPluralCiv(name)) return verb;
+  const irregular: Record<string, string> = { has: 'have', is: 'are', was: 'were' };
+  return irregular[verb] ?? verb.replace(/s$/, '');
 }
 
 /** The name of the religion a player founded ("their religion" if none). */

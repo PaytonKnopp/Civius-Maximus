@@ -42,10 +42,13 @@ interface Props {
   onClose: () => void;
 }
 
-/** "Needs A, B", or "Needs A +2" when the names wouldn't fit on one line. */
+/**
+ * "Needs A, B", or "Needs A +2" when the names wouldn't fit on the card's one line (about 28
+ * letters in its spaced capitals, "Needs" included); the tooltip and the lit path name them all.
+ */
 function needsText(names: string[]): string {
   const all = names.join(', ');
-  return `Needs ${all.length <= 30 || names.length === 1 ? all : `${names[0]} +${names.length - 1}`}`;
+  return `Needs ${all.length <= 22 || names.length === 1 ? all : `${names[0]} +${names.length - 1}`}`;
 }
 
 /** The tech tree or the civics tree: a zoomable-by-scroll graph of cards with their prerequisites. */
@@ -336,6 +339,9 @@ export function TreeScreen({ ctx, state, viewer, kind, perTurn, act, onKind, onC
                   title={[
                     name(id),
                     node.description ? resolveText(content, node.description) : '',
+                    !isDone && !available && order < 0 && missing.length > 0
+                      ? `Needs: ${missing.map((r) => name(r)).join(', ')}`
+                      : '',
                     node.boost
                       ? `Boost (${content.rules.progress.boostPercent}%): ${resolveText(content, node.boost.text)}`
                       : '',

@@ -8,6 +8,7 @@ import {
   type GameState,
   governmentChangeCost,
   ideologyHappinessUnder,
+  legacyTurns,
   type PlayerId,
   policyChangeCost,
   policyProblem,
@@ -17,7 +18,7 @@ import {
 } from '@cx/engine';
 import { type DragEvent, useEffect, useState } from 'react';
 import { effectLines } from './effectText';
-import { whole } from './model';
+import { turnsLabel, whole } from './model';
 import { Icon, Rich } from '../ui/Icon';
 import { useEscape } from '../ui/Menu';
 
@@ -180,14 +181,14 @@ export function GovernmentScreen({ ctx, state, viewer, act, onClose }: Props) {
               {g.legacy.length > 0 && (
                 <p
                   className="hint"
-                  title={`Every ${content.rules.progress.legacy.everyTurns} turns in it (scaled by speed) earns one, kept after you switch, up to ${content.rules.progress.legacy.max}`}
+                  title={`Every ${legacyTurns(ctx, state)} turns in this government earn its legacy once more (up to ${content.rules.progress.legacy.max} times), and it stays after you change government`}
                 >
                   Legacy: {effectLines(content, g.legacy).join('; ')}
                   {(p.legacies?.[g.id] ?? 0) > 0
                     ? ` · earned ${p.legacies![g.id]} of ${content.rules.progress.legacy.max}`
                     : ''}
                   {current && (p.legacies?.[g.id] ?? 0) < content.rules.progress.legacy.max
-                    ? ` · next in ${Math.max(0, content.rules.progress.legacy.everyTurns - (p.legacyClock ?? 0))} turns`
+                    ? ` · next in ${turnsLabel(Math.max(1, legacyTurns(ctx, state) - (p.legacyClock ?? 0)))}`
                     : ''}
                 </p>
               )}

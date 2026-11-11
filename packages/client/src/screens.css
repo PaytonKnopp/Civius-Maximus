@@ -583,6 +583,15 @@
   }
 }
 
+/* Beside the age, the timeline takes the height the screen has (it stopped at 340px, with the
+   lower half of a tall screen left empty). */
+@media (min-width: 761px) {
+  .screen .ages-body .moments {
+    max-height: max(240px, calc(100vh - 300px));
+    max-height: max(240px, calc(100dvh - 300px));
+  }
+}
+
 .screen .governor-head h3,
 .screen .spy-card h3 {
   font-size: 19px;

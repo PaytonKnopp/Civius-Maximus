@@ -27,7 +27,7 @@ import { useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { LeaderCard, LeaderHead } from '../ui/LeaderCard';
 import { DealDialog, describeDeal } from './DealDialog';
-import { civName, type Colors, cssColor } from './model';
+import { agree, civName, type Colors, cssColor } from './model';
 import { useEscape } from '../ui/Menu';
 
 interface PlayerProps {
@@ -224,7 +224,10 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
               {incoming.map((x) => (
                 <div className="callout" key={x.id}>
                   <p>
-                    <strong>{name} offers:</strong> {describeDeal(ctx, state, x, viewer)}
+                    <strong>
+                      {name} {agree(name, 'offers')}:
+                    </strong>{' '}
+                    {describeDeal(ctx, state, x, viewer)}
                   </p>
                   <div className="row-inline">
                     <button
@@ -301,7 +304,7 @@ export function PlayerPanel({ ctx, state, viewer, other, colors, act, onClose }:
                   ))}
                 {theyOffer && (
                   <div className="callout">
-                    {name} offers peace.{' '}
+                    {name} {agree(name, 'offers')} peace.{' '}
                     <button
                       type="button"
                       className="primary"

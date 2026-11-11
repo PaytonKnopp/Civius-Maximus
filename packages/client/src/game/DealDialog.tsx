@@ -20,7 +20,7 @@ import {
 } from '@cx/engine';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { civName } from './model';
+import { agree, civName, turnsLabel } from './model';
 import { Icon } from '../ui/Icon';
 import { LeaderHead } from '../ui/LeaderCard';
 import { useEscape } from '../ui/Menu';
@@ -185,7 +185,9 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
                 : `Sent from your stockpile income every turn of the deal`
             }
           >
-            {r.luxury ? r.name : `${r.name} a turn`}
+            <span>
+              <Icon name={r.id} size={16} /> {r.luxury ? r.name : `${r.name} a turn`}
+            </span>
             <input
               type="number"
               min={0}
@@ -222,7 +224,13 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
         </header>
         <div className="deal-sides">
           {side(viewer, 'You give', give, setGive, Math.floor(state.players[viewer]!.gold / 100))}
-          {side(other, `${name} gives`, get, setGet, Math.floor(state.players[other]!.gold / 100))}
+          {side(
+            other,
+            `${name} ${agree(name, 'gives')}`,
+            get,
+            setGet,
+            Math.floor(state.players[other]!.gold / 100),
+          )}
         </div>
         <div className="deal-shared">
           {war ? (
@@ -267,7 +275,8 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
                   disabled={haveOpenBorders(state, viewer, other)}
                   onChange={(e) => setOpenBorders(e.target.checked)}
                 />
-                Open borders ({rules.openBordersCost} influence each)
+                <Icon name="globe" size={18} /> Open borders ({rules.openBordersCost} influence
+                each)
               </label>
               <label
                 className="check"
@@ -279,7 +288,8 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
                   disabled={haveResearchAgreement(state, viewer, other)}
                   onChange={(e) => setResearch(e.target.checked)}
                 />
-                Research agreement ({rules.researchCost} influence each)
+                <Icon name="research" size={18} /> Research agreement ({rules.researchCost}{' '}
+                influence each)
               </label>
             </>
           )}
@@ -297,7 +307,7 @@ export function DealDialog({ ctx, state, viewer, other, act, onClose }: Props) {
                   )
                 }
               />
-              turns
+              {turns === 1 ? 'turn' : 'turns'}
             </label>
           )}
         </div>
@@ -331,13 +341,13 @@ export function describeDeal(ctx: EngineContext, state: GameState, p: Proposal, 
     const res = ctx.content.entities.resource[id];
     const name = res ? resolveText(ctx.content, res.name) : id;
     return res?.class === 'luxury'
-      ? `${n > 1 ? `${n} ` : ''}${name} for ${p.turns} turns`
-      : `${n} ${name} a turn for ${p.turns} turns`;
+      ? `${n > 1 ? `${n} ` : ''}${name} for ${turnsLabel(p.turns)}`
+      : `${n} ${name} a turn for ${turnsLabel(p.turns)}`;
   };
   const terms = (t: DealTerms) =>
     [
       t.gold > 0 ? `${t.gold} gold` : '',
-      t.goldPerTurn > 0 ? `${t.goldPerTurn} gold a turn for ${p.turns} turns` : '',
+      t.goldPerTurn > 0 ? `${t.goldPerTurn} gold a turn for ${turnsLabel(p.turns)}` : '',
       t.maps ? 'their maps' : '',
       ...Object.entries(t.resources ?? {}).map(([id, n]) => resource(id, n)),
     ].filter(Boolean);
@@ -356,7 +366,7 @@ export function describeDeal(ctx: EngineContext, state: GameState, p: Proposal, 
     terms(mine).length
       ? `You give ${terms(mine).join(', ').replace('their maps', 'your maps')}`
       : '',
-    terms(theirs).length ? `${them} gives ${terms(theirs).join(', ')}` : '',
+    terms(theirs).length ? `${them} ${agree(them, 'gives')} ${terms(theirs).join(', ')}` : '',
   ]
     .filter(Boolean)
     .join(' · ');

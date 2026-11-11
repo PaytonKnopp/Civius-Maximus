@@ -57,6 +57,7 @@ export {
   validateAction,
 } from './game';
 export { stateHash } from './hash';
+export { checkInvariants } from './invariants';
 export {
   checkVictory,
   decodeOwners,
@@ -207,6 +208,7 @@ export {
   goalProgress,
   governmentChangeCost,
   isPolicyAvailable,
+  legacyTurns,
   nodeCost,
   nodeCostFor,
   civsWith,

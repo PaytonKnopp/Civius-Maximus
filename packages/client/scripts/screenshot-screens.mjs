@@ -113,7 +113,7 @@ for (const size of sizes) {
           'cx.settings',
           JSON.stringify({ view: v, showFps: true, largeText: large }),
         );
-        localStorage.setItem('cx.hints', JSON.stringify({ on: false }));
+        localStorage.setItem('cx.hints.off', '1');
       } catch {
         // No storage: the defaults apply.
       }

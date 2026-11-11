@@ -158,7 +158,8 @@ sizes, and fixed where it looked or worked worse than it should.
 **Final design pass (November 2026):** the last full pass over every screen, built on UI pass 2
 (nothing it added was undone). Its styles are in `packages/client/src/finish.css`, loaded last.
 - *Top bar:* every yield shows its change per turn at every width from 1180 px up (gold turns red
-  when it falls), and every number has a breakdown on hover: science, culture and faith by
+  when it falls; since the release pass, below: wherever it fits), and every number has a
+  breakdown on hover: science, culture and faith by
   settlement (the six biggest, then the rest), gold by settlements, towns selling production,
   unit and building upkeep, influence by source, and the celebration's progress with the
   happiness surplus and the turns to go (a thin bar under the number). Small laptops (1001 to
@@ -278,6 +279,28 @@ sizes, and fixed where it looked or worked worse than it should.
   a deal, a captured city and an elimination. `scripts/screenshot-screens.mjs` repeats the in-game
   part from any save; every bundled screenshot script passes with no console errors and nothing
   wider than the screen.
+
+**Release pass (November 2026):** the first look at every screen after the gameplay pass and
+the design pass were merged ([RELEASE-REVIEW.md](RELEASE-REVIEW.md) has the full list).
+- *Top bar:* the yields never clip and never scroll. When they don't all fit beside the screen
+  buttons (a celebration, strategic stockpiles, a late game's big numbers), the bar leaves out
+  detail level by level, least important first (`ui/fit.ts`, the levels in `finish.css`):
+  "Celebrating 9" becomes "9 turns" and stockpiles lose their change per turn; then faith and
+  influence lose theirs; then gold (a shrinking treasury turns red instead); then one stockpile
+  with "+N"; every tooltip keeps everything. This replaces the design pass's "every change per
+  turn at every width", which the stockpiles left no room for. The screen buttons keep their
+  compact size up to 1700 px and the two-row bar runs to 1240 px. The turn pill's tooltip gives
+  the turn, era, age and era score.
+- *Lenses:* the list is two columns ("No lens" across the top), never taller than the room
+  between the top bar and its button, and above the rest of the HUD while open; one scrolling
+  column on phones.
+- *"What it does" lines* (Civilopedia, legacies, city-state tiers, monopolies) come from the
+  rules through `game/effectText.ts`, which now writes every effect and condition of the base
+  game as a sentence in the game's words; a test reads them all for raw values.
+- *Explore* is on the cards of soldiers and ships only (D127). The unit card stops under the
+  research and civic cards on a short screen and scrolls. The Victories table fits a tablet.
+- A civ named as a people takes a plural verb ("Franks offer you a deal", `agree` in
+  `game/model.ts`).
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top

@@ -161,3 +161,12 @@ From the design pass merged alongside the gameplay pass; numbered D106–D110 th
 | D124 | **City panel tabs** | Overview and production queue always shown, then tabs: Build or buy, Citizens, Buildings (remembered between cities) | One long scrolling column with everything | Final design pass | Open (default built) |
 | D125 | **Government screen layout** | Two tabs: Policies (slots beside the card catalog, drag or click) and Governments (all of them as cards) | The government list always beside the slots, with the cards below them | Final design pass | Open (default built) |
 | D126 | **City banner size in 3D** | A constant size on screen (about 4% of the view's height for a one-line banner, a little smaller right up close and far out), like the Civ games' banners | Banners in the world, larger at the near edge of the tilted view (the previous look) | Final design pass | Open (default built) |
+
+### Release pass (November 2026)
+
+Taste calls met during the last pass before playtesting ([RELEASE-REVIEW.md](RELEASE-REVIEW.md)).
+Each has its recommended default built; say the word to switch.
+
+| # | Decision | Recommended default | Alternatives | Blocks | Status |
+|---|---|---|---|---|---|
+| D127 | **Which units can Explore** | Soldiers and ships only: the Explore order is on the cards of units that fight (scouts, warriors, ships...), not on settlers, traders, religious units, great people, commanders or aircraft, which would wander off unescorted (the rules still accept the order for any unit) | Every unit with moves left, as first built (a settler's card showed Explore on turn 1) | Release pass | Open (default built) |
