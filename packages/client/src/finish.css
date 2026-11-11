@@ -2799,3 +2799,17 @@ button.close:hover:not(:disabled) {
   margin-left: auto;
   margin-right: auto;
 }
+
+/* --- Release pass: second lines on lit rows ------------------------------------------------ */
+
+/* On a lit row (the chosen seat, leader or search result, an autosave) the muted gray falls
+   under 3:1 against the gold wash: the second line takes the lighter secondary color there. */
+.mx-seat.on small,
+.mx-seat:hover small,
+.mx-tile.on small,
+.mx-tile.focus small,
+.pedia-row.on small,
+.pedia-row:hover small,
+.mx-save-list li.auto small {
+  color: var(--text-2);
+}

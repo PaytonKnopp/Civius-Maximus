@@ -1098,8 +1098,18 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   }, [state.turn]);
   // A hint counts as seen when it first shows, and stays up until dismissed or the turn ends.
   const [hintNow, setHintNow] = useState<{ id: string; turn: number } | null>(null);
+  // Not while the title screen or a menu covers the game, nor under the leader's introduction:
+  // a hint counts as seen when it first shows, and the quick game behind the title screen used
+  // to use up the first one before anyone had started a game.
+  const introOpen = state.turn <= 1 && me.alive && !introSeen.has(viewer);
   const hintsFree =
-    hintsEnabled && !busy && !passTo && overlay === null && state.status === 'playing';
+    hintsEnabled &&
+    !covered &&
+    !introOpen &&
+    !busy &&
+    !passTo &&
+    overlay === null &&
+    state.status === 'playing';
   const nextHint =
     hintsFree && hintNow === null ? hintFor({ ctx, state, viewer, next }, hintsSeen) : undefined;
   useEffect(() => {

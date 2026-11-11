@@ -125,3 +125,27 @@ Rules bugs the invariants found in the first three games, all fixed with tests:
 
 Not bugs (the checks were too strict): a camp lists a dead raider until its next turn; a great
 work whose building is gone (a captured Palace) is "stored" by design.
+
+## Phase 6: Writing, content and originality — in progress (started while screens were captured)
+
+- **"How to play" was written before the gameplay pass** and mentioned none of it. All 22
+  articles are checked against `rules.json` and rewritten where the rules moved (happiness is
+  now 1 per 2 buildings with upkeep, unrest numbers, the settlement limit), and they now cover
+  strategic stockpiles and shortages, luxuries reaching the nearest settlements, monopolies,
+  the district limit and what is outside it (Neighborhood, Dam, Preserve), buildings sharing
+  adjacency, regional buildings, Government Plaza pairs, catch-up research, future techs,
+  legacies, ideologies, puppets, support units, war support, fleet commanders, open borders,
+  research agreements and resource trades, faith purchases, works that age, emergency sessions
+  of the Congress, the culture victory's era, playing on after a win, and the turn's orders
+  (Explore, Alert, Repeat, undo, quick save). Two new articles: "Resources, stockpiles and
+  monopolies" and "Appeal, parks and resorts". Every number is read from the rules.
+- **Unit articles** now show the strategic resources a unit costs and uses up, what a support
+  unit does (Battering Ram, Siege Tower, Medic: nothing in the game said), a commander's
+  capacity, radius and strength, and "ignores zones of control". **Improvement articles** show
+  where the improvement can go and what it yields by appeal (national parks, seaside resorts).
+  **Government articles** show the ideology and the legacy bonus.
+- **First hint lost.** The quick game behind the title screen showed (and so used up) the
+  first hint before anyone had started a game; a player who went through New game never saw
+  it. Hints now wait until nothing covers the game and the leader's introduction is closed.
+- Menu rows that are lit (the chosen seat, leader or search result, an autosave) had their
+  second line under 3:1 contrast; it takes the lighter secondary color there.
