@@ -680,7 +680,7 @@ Payton approved every recommended default (D106–D120), the four groups of know
 - **1.9 (D106)** Eight more luxuries (Dyes, Furs, Ivory, Marble, Salt, Sugar, Tea, Cotton), 15
   in all, each with its own map icon.
 - The flat pantheons became conditional (Hearth Goddess: Granaries; Harvest Rites: Wheat, Rice
-  and Cattle; God of the Forge: Mines).
+  and Cattle; The Smith God: Mines).
 
 ### 2D, part 1
 

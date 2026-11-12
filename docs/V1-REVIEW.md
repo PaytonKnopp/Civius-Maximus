@@ -197,7 +197,7 @@ don't answer stays as it is.
   soldiers on and next to it (up to 4), move it, then **Unpack** to put them down around it,
   ready to fight if the commander still has moves.
 - Soldiers within 1 tile get +2 strength; the commander earns XP from their fights and has its
-  own promotions (Assault, Bastion, Logistics, Field Medicine, Leadership).
+  own promotions (Onslaught, Stand Fast, Baggage Train, Camp Surgeons, Standard Bearers).
 - Caught by an enemy, it falls back to your nearest settlement for 5 turns instead of dying.
 - The AI builds one once its army is big (or at war) and keeps it with its front line.
 

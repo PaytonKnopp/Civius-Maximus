@@ -252,7 +252,7 @@ because each one is unique.
   game. Its effects apply to the player like a policy's.
 - **Founding:** a Great Prophet in your settlement with a Holy Site founds a religion: you name
   it and pick a **founder belief** (yields in the holy city for each settlement following it,
-  e.g. Tithe: +2 gold per follower) and a **follower belief** (applies in every settlement
+  e.g. Temple Dues: +2 gold per follower) and a **follower belief** (applies in every settlement
   that follows it, whoever owns it, e.g. Almsgiving). At most players ÷ 2 + 1 religions; one
   per player; each belief once. The settlement becomes the holy city and follows it at once.
   Worship and enhancer beliefs come later.
@@ -421,7 +421,7 @@ feel populated and give players something to compete over even when there's no w
 era (its own techs and civics), not when a world era advances. Everything else in the game
 already follows a civ's own era (units, buildings, music, city art), and in simultaneous play it
 never ends an era early for a civ that hasn't reached it. The "first into an era" moment rewards
-whoever gets there first. Legacy goals are still to come. **Dark-age policy cards** (Martial Law,
+whoever gets there first. Legacy goals are still to come. **Dark-age policy cards** (Rule by Decree,
 Monastic Retreat, Rally the Levies) arrived in the final gameplay pass: wildcard cards with a
 price, open only during a dark age (`requiresAge`), dropped from their slots when it ends.
 
@@ -452,7 +452,7 @@ forces new crisis policies. Off by default, for groups that like chaos.
 - **Seven governors** (`governor` content), each with a base ability and four promotions. Two
   promotions are open at once; each unlocks one more.
   - Aurelia the Architect builds: production toward buildings, districts and wonders.
-  - Bram the Steward grows: growth, food and happiness.
+  - Bram the Reeve grows: growth, food and happiness.
   - Celestine the Envoy speaks abroad: influence, culture and happiness.
   - Daven the Warden defends: soldiers, walls and strength for every unit.
   - Elowen the Scholar studies: science, culture and great scientist and writer points.

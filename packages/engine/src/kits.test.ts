@@ -143,7 +143,7 @@ describe('leader and civ abilities', () => {
     expect(labels(vsHurt.attacker.lines)['The Demon King']).toBe(5);
   });
 
-  it('The First Emperor: the first soldier in each city is free', () => {
+  it('All Under Heaven: the first soldier in each city is free', () => {
     let s = as(testState(FIELD), 'p1', 'civ_china', 'leader_qin');
     const { s: after, id } = settle(s, 'p1', at(s, 4, 2));
     s = after;

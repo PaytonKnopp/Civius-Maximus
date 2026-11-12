@@ -4,6 +4,23 @@ The log of the final release pass: what was checked, how, what was found, what w
 what was left. Written phase by phase as the work went. **A session that picks this up again
 should read this file first and continue from the first phase without a "Done" mark.**
 
+## Where this stands
+
+Updated with every commit, so this table is always the current position.
+
+| Phase | State | What is left |
+|---|---|---|
+| 0 Baseline | Done | |
+| 1 Every screen | Most of it done | One more capture of every screen on the final build at every size; the special states (game over, incoming deal, capture dialog, promotion, hotseat pass) |
+| 2 Reliability | Done, soak still running | The soak's totals on the final code |
+| 3 Online | Done | What only real devices can show is in "Could not verify" |
+| 4 Performance and compatibility | Started | Bundle, browser fallbacks, workflows, update flow |
+| 5 Audio | Not started | Offline analysis of levels and cue coverage |
+| 6 Writing and originality | Most of it done | Credits and licenses, hard-coded strings, the Help screen against the real keys |
+| 7 First hour and defaults | Started | The first 30 turns played through; accessibility checks |
+| 8 Release hygiene | Not started | README, guides, changelog, CLAUDE.md, PLAYTEST.md |
+| Finish | Not started | Final re-run of everything, the summary |
+
 Where it ran: one cloud machine (4 cores, no sound card, no graphics card: the headless browser
 draws 3D in software), one browser engine (Chromium). Anything about how the game sounds, how it
 feels on a real device, or how it behaves in Safari or Firefox is in "Could not verify" at the
@@ -258,6 +275,56 @@ games change: their AIs settle and explore more. Test: `packages/engine/src/ai/r
   it. Hints now wait until nothing covers the game and the leader's introduction is closed.
 - Menu rows that are lit (the chosen seat, leader or search result, an autosave) had their
   second line under 3:1 contrast; it takes the lighter secondary color there.
+
+### Originality sweep (6.3)
+
+Every name and text in `packages/content/base` (3,107 strings) was checked against the names
+Civilization V, VI and VII give their abilities, promotions, beliefs, policy cards, governors,
+dedications and spy missions (from memory: there is no list to check against by machine, so a
+miss is possible), and every list of names was then read by eye. Almost all of it is the
+game's own. **27 names coincided with a Civilization ability name**, several with the same
+effect, which the working agreement rules out ("no ability names from Civilization games").
+They are renamed (display text only: ids and effects are untouched, so saves keep loading;
+D129, open: default built):
+
+| Was | Now | What it is |
+|---|---|---|
+| The First Emperor | All Under Heaven | Qin Shi Huang's ability (the same name as his in Civilization VI) |
+| The Long Count | Calendar Keepers | The Maya's ability (their ability's name in Civilization V) |
+| Aksumite Legacy | Keepers of the Ark | Ethiopia's ability (same name and nearly the same effect as in Civilization VI) |
+| The Magnanimous | The Scholar Emperor | Pedro II's ability ("Magnanimous" in Civilization VI) |
+| Woodsman | Woodcraft | Melee promotion |
+| Pursuit | Harrier | Light cavalry promotion |
+| Charge, Barding, Breakthrough | Couched Lance, Armored Mounts, Hammer Blow | Heavy cavalry promotions (three of Civilization VI's heavy cavalry promotions) |
+| Ambush | Waylay | Recon promotion |
+| Helmsman | Steersman | Naval promotion (same name and effect) |
+| Assault, Bastion, Logistics, Leadership, Field Medicine | Onslaught, Stand Fast, Baggage Train, Standard Bearers, Camp Surgeons | Commander promotions (four are the names of Civilization VII's commander trees) |
+| God of the Forge, Stone Circles | The Smith God, Standing Stones | Pantheons |
+| Tithe, Pilgrimage | Temple Dues, Offerings from Afar | Founder beliefs (same names and effects) |
+| Choral Music, Fertility Rites | Sacred Song, Blessing of Children | Follower beliefs (same names and effects) |
+| Press Gangs, Drill Manuals, Grand Opera, Martial Law | Shipwrights' Guilds, Conscript Rolls, Opera Seasons, Rule by Decree | Policy cards |
+| Bram the Steward | Bram the Reeve | Governor title (Magnus is "the Steward" in Civilization VI) |
+
+Not changed, and yours to decide (D130): the vocabulary of the systems themselves, which the
+game shares with Civilization VI (the district names, the four ages and "era score",
+"diplomatic favor", the World Congress and its emergencies).
+
+Clean: unit, building, wonder, great person and city names are history's own; leader quotes,
+introductions, Civilopedia articles, dedications, spy missions, congress resolutions and
+governors' names are original; no text from a Civilization game was found.
+
+### Dependencies and secrets (6.5, 6.6)
+
+- `pnpm audit --prod`: no known vulnerabilities in what ships. `pnpm audit`: one moderate
+  advisory in `minimatch`, used only by ESLint on the developer's machine; left as it is.
+- No secret is tracked in the repository (one test string that looks like one), and the built
+  files hold none. The deploy workflows take the database address and key from repository
+  **variables** (public by design: the key in a browser game is the public one).
+- **A secret key could still have reached a build.** If the secret (`service_role`) key were
+  put in `VITE_SUPABASE_ANON_KEY` by mistake, the game refused to use it, but Vite had already
+  written it into the JavaScript every player downloads. The build now stops with a plain
+  message instead (`packages/client/vite.config.ts`; tried with both kinds of secret key and
+  with a public one).
 
 ## Phase 7: First hour, defaults and accessibility — in progress
 

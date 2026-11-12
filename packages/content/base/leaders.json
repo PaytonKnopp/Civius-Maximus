@@ -618,7 +618,7 @@
     "title": "First Emperor of China",
     "civ": "civ_china",
     "ability": {
-      "name": "The First Emperor",
+      "name": "All Under Heaven",
       "description": "The first military unit each city trains is free. +15% production toward Ancient and Classical wonders.",
       "effects": [
         {
@@ -2144,7 +2144,7 @@
     "title": "Queen of Castile",
     "ability": {
       "name": "Patron of Explorers",
-      "description": "Naval melee units start with Helmsman (+1 movement). International trade routes +3 gold.",
+      "description": "Naval melee units start with Steersman (+1 movement). International trade routes +3 gold.",
       "effects": [
         {
           "effect": "grant_promotion",
@@ -2488,7 +2488,7 @@
     "name": "Pedro II",
     "title": "Emperor of Brazil",
     "ability": {
-      "name": "The Magnanimous",
+      "name": "The Scholar Emperor",
       "description": "+20% great scientist, engineer, merchant, writer, artist and musician points.",
       "effects": [
         {

@@ -1,6 +1,8 @@
 import react from '@vitejs/plugin-react';
 import { execSync } from 'node:child_process';
-import { defineConfig, type Plugin } from 'vite';
+import { fileURLToPath } from 'node:url';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
+import { keyProblem } from './src/cloud/cloud';
 import { formatVersion } from './src/version';
 
 // ARTIFACT=1 builds one self-contained page (no code splitting) that scripts/build-artifact.mjs
@@ -38,22 +40,41 @@ const versionFile = (): Plugin => ({
   },
 });
 
-export default defineConfig({
-  plugins: [react(), versionFile()],
-  define: {
-    'import.meta.env.VITE_BUILD_ID': JSON.stringify(build.id),
-    'import.meta.env.VITE_BUILD_AT': JSON.stringify(build.at),
-    'import.meta.env.VITE_VERSION': JSON.stringify(build.version),
-  },
-  // Relative asset paths, so the build works at a sub-path (GitHub Pages serves the game at
-  // /<repo>/) as well as at the root.
-  base: './',
-  build: artifact
-    ? {
-        outDir: 'dist-artifact',
-        assetsInlineLimit: 100_000_000,
-        chunkSizeWarningLimit: 4000,
-        rollupOptions: { output: { inlineDynamicImports: true } },
-      }
-    : { chunkSizeWarningLimit: 1500 },
+/**
+ * Whatever is in VITE_SUPABASE_ANON_KEY is written into the JavaScript every player downloads,
+ * so it must be the public key. The secret one (sb_secret_…, or a legacy key whose role is
+ * service_role) skips every database rule: stop the build rather than publish it. (The game
+ * also refuses to use such a key, but by then it would already be in the file.)
+ */
+function refuseSecretKey(mode: string) {
+  const env = loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), 'VITE_');
+  const key = env.VITE_SUPABASE_ANON_KEY?.trim();
+  const problem = key ? keyProblem(key) : undefined;
+  if (problem)
+    throw new Error(
+      `VITE_SUPABASE_ANON_KEY can't go in a build. ${problem} If a build with it was ever published, replace that key in the Supabase dashboard.`,
+    );
+}
+
+export default defineConfig(({ mode }) => {
+  refuseSecretKey(mode);
+  return {
+    plugins: [react(), versionFile()],
+    define: {
+      'import.meta.env.VITE_BUILD_ID': JSON.stringify(build.id),
+      'import.meta.env.VITE_BUILD_AT': JSON.stringify(build.at),
+      'import.meta.env.VITE_VERSION': JSON.stringify(build.version),
+    },
+    // Relative asset paths, so the build works at a sub-path (GitHub Pages serves the game at
+    // /<repo>/) as well as at the root.
+    base: './',
+    build: artifact
+      ? {
+          outDir: 'dist-artifact',
+          assetsInlineLimit: 100_000_000,
+          chunkSizeWarningLimit: 4000,
+          rollupOptions: { output: { inlineDynamicImports: true } },
+        }
+      : { chunkSizeWarningLimit: 1500 },
+  };
 });
