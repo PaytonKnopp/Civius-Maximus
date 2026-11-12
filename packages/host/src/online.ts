@@ -354,6 +354,9 @@ export class OnlineHost {
   }
 
   private receive(peer: string, m: ClientMessage) {
+    // A client can send anything (the type above is what an honest one sends): what isn't a
+    // message is dropped, and every field is checked where it's used.
+    if (!m || typeof m !== 'object') return;
     if (m.t === 'hello') this.join(peer, m);
     else if (m.t === 'act') this.clientAct(peer, m.id, m.action);
     else if (!this.peers.has(peer)) return;
@@ -385,8 +388,17 @@ export class OnlineHost {
         peer,
         `The host plays with different game content (a newer or older version, or other mods): ${update}`,
       );
-    const name = m.name.trim().slice(0, 24) || 'Friend';
+    const name = (typeof m.name === 'string' ? m.name : '').trim().slice(0, 24) || 'Friend';
     const game = this.game;
+    // Saying hello twice changes nothing: one device holds one seat (it used to take another
+    // lobby seat each time, so one visitor could fill a public lobby).
+    if (this.peers.has(peer)) {
+      if (game && this.peers.get(peer)) {
+        this.sent.delete(peer);
+        this.sendView(peer, []);
+      }
+      return;
+    }
     if (!game) {
       if (this.lobby.length >= this.openSeats) return this.refuse(peer, 'The game is full.');
       this.lobby.push({ name, peer, leader: null, color: null });
@@ -467,7 +479,7 @@ export class OnlineHost {
     const parsed = parseAction(input);
     if (!parsed.ok) return reply('bad_action', parsed.message);
     if (parsed.action.player !== player) return reply('not_your_seat', 'That is not your civ');
-    this.acked.set(peer, id);
+    if (typeof id === 'number' && Number.isFinite(id)) this.acked.set(peer, id);
     const r = game.act(parsed.action);
     this.net.send(peer, { t: 'result', id, error: r.ok ? null : r.error });
   }

@@ -149,9 +149,12 @@ export function OnlineDialog(props: Props) {
   const [listPublicly, setListPublicly] = useState(false);
   const [publicGames, setPublicGames] = useState<PublicLobby[] | null>(null);
   const listed = useRef<string | null>(null);
+  /** What the public list says about this lobby, to keep its open seats up to date. */
+  const listing = useRef<{ who: string; seats: number; open: number; info: object } | null>(null);
   const unlist = () => {
     if (listed.current && remoteCloud) void remoteCloud.closeLobby(listed.current).catch(() => {});
     listed.current = null;
+    listing.current = null;
   };
   useEffect(() => {
     if (mode !== 'join' || !remoteCloud) return;
@@ -175,7 +178,18 @@ export function OnlineDialog(props: Props) {
     const session = host ?? remote?.online;
     if (!session) return;
     const update = () => {
-      setSeats(session.seats());
+      const now = session.seats();
+      setSeats(now);
+      // A listed lobby says how many seats are still free (it used to say the first number
+      // until the game started, so strangers were sent to full lobbies).
+      const list = listing.current;
+      const open = list ? Math.max(0, list.seats - (now.length - 1)) : 0;
+      if (host && list && listed.current && open !== list.open) {
+        list.open = open;
+        void remoteCloud
+          ?.announceLobby(listed.current, list.who, open, list.info as Record<string, unknown>)
+          .catch(() => {});
+      }
       if (remote?.ended) setError(remote.ended);
       else if (remote?.ready && !opened.current) {
         opened.current = true;
@@ -184,7 +198,7 @@ export function OnlineDialog(props: Props) {
     };
     update();
     return session.onChange(update);
-  }, [host, remote, onGame]);
+  }, [host, remote, onGame, remoteCloud]);
 
   const who = name.trim() || 'Host';
   const openLobby = async () => {
@@ -211,9 +225,13 @@ export function OnlineDialog(props: Props) {
       } else {
         setHost(h);
         if (listPublicly && remoteCloud?.signedIn) {
+          const info = { size: o.size, script: o.script, rivals: o.rivals };
           await remoteCloud
-            .announceLobby(c, who, friends, { size: o.size, script: o.script, rivals: o.rivals })
-            .then(() => (listed.current = c))
+            .announceLobby(c, who, friends, info)
+            .then(() => {
+              listed.current = c;
+              listing.current = { who, seats: friends, open: friends, info };
+            })
             .catch(() => setError('The lobby is open, but listing it publicly failed.'));
         }
       }
@@ -272,6 +290,14 @@ export function OnlineDialog(props: Props) {
     );
   };
   const total = friends + 1 + o.rivals;
+  /** A listed game's map in words. What a host lists is theirs to write: only known maps show. */
+  const lobbyMap = (g: PublicLobby) => {
+    const named = (table: Record<string, { name: string }>, id: unknown) =>
+      typeof id === 'string' && Object.hasOwn(table, id) ? t(table[id]!.name) : '';
+    return [named(e.mapSize, g.info.size), named(e.mapScript, g.info.script)]
+      .filter(Boolean)
+      .join(' · ');
+  };
   const title = lobby
     ? 'Lobby'
     : resume
@@ -543,9 +569,7 @@ export function OnlineDialog(props: Props) {
                             <span>
                               {g.openSeats} seat{g.openSeats === 1 ? '' : 's'} open
                             </span>
-                            <small>
-                              {String(g.info.size ?? '')} {String(g.info.script ?? '')}
-                            </small>
+                            <small>{lobbyMap(g)}</small>
                           </div>
                           <div className="mx-save-actions">
                             <button type="button" onClick={() => setCode(g.code)}>

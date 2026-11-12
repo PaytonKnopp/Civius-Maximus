@@ -48,6 +48,8 @@ export class Turn {
   private once = new Map<string, unknown>();
   /** Actions the engine accepted this turn. */
   done = 0;
+  /** `reach` by unit type, each for the explored tiles it was worked out from. */
+  private reached = new Map<string, { explored: string; labels: Int32Array }>();
 
   constructor(
     readonly ctx: EngineContext,
@@ -200,6 +202,60 @@ export class Turn {
       }
       return area;
     });
+  }
+
+  /**
+   * Which stretch of explored map each tile is in, for a unit of this type (-1: it can't stand
+   * there, or the player hasn't explored it). Two tiles in the same stretch are joined by
+   * explored tiles the unit can cross, which is what a path needs (`findPath` never goes
+   * through the unknown): a site seen across a strait or over a mountain range is not a place
+   * to send anyone yet. Other units in the way are not counted, so a path can still fail.
+   *
+   * Worked out again only when the player's explored tiles change (or it learns to embark).
+   */
+  private reach(unit: Pick<UnitState, 'type'>): Int32Array {
+    const explored = this.p.explored;
+    const key = `${unit.type}:${this.p.canEmbark ? 1 : 0}`;
+    const kept = this.reached.get(key);
+    if (kept && kept.explored === explored) return kept.labels;
+    const map = this.state.map;
+    const bits = this.explored();
+    const probe = { id: '', owner: this.player, type: unit.type };
+    const labels = new Int32Array(map.tiles.length).fill(-2);
+    const open = (tile: number) =>
+      getBit(bits, tile) && canTraverse(this.ctx, this.state, probe, tile);
+    let next = 0;
+    for (let start = 0; start < map.tiles.length; start++) {
+      if (labels[start] !== -2) continue;
+      if (!open(start)) {
+        labels[start] = -1;
+        continue;
+      }
+      const label = next++;
+      labels[start] = label;
+      const stack = [start];
+      while (stack.length > 0) {
+        const at = stack.pop()!;
+        for (const n of neighbors(map, at)) {
+          if (labels[n] !== -2) continue;
+          labels[n] = open(n) ? label : -1;
+          if (labels[n] === label) stack.push(n);
+        }
+      }
+    }
+    this.reached.set(key, { explored, labels });
+    return labels;
+  }
+
+  /**
+   * Whether the unit could walk (or sail) to the tile over what the player has explored. Where
+   * the unit stands outside its own kind of tile (a land unit carried over deep water), nothing
+   * is ruled out here: the rules decide.
+   */
+  canReach(unit: Pick<UnitState, 'type' | 'tile'>, tile: number): boolean {
+    const labels = this.reach(unit);
+    const from = labels[unit.tile]!;
+    return from < 0 || labels[tile] === from;
   }
 
   power(player: PlayerId): number {

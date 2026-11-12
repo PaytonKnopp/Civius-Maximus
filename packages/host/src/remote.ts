@@ -198,7 +198,7 @@ export class RemoteGame implements GameHandle {
     if (this.busy)
       return { ok: false, error: { code: 'busy', message: 'Your rivals are still moving' } };
     const id = this.nextId++;
-    const guess = NOT_PREDICTED.has(action.type) ? null : applyAction(this.state, action, this.ctx);
+    const guess = NOT_PREDICTED.has(action.type) ? null : this.playAhead(this.state, action);
     const events = guess?.ok ? guess.events : [];
     this.pending.push({ id, action, events: [...events] });
     this.net.send({ t: 'act', id, action });
@@ -283,10 +283,24 @@ export class RemoteGame implements GameHandle {
     let s = this.confirmed!;
     for (const p of this.pending) {
       if (NOT_PREDICTED.has(p.action.type)) continue;
-      const r = applyAction(s, p.action, this.ctx);
-      if (r.ok) s = r.state;
+      const r = this.playAhead(s, p.action);
+      if (r?.ok) s = r.state;
     }
     this.state = s;
+  }
+
+  /**
+   * Plays an action on this player's view to show it at once. A view leaves out what the
+   * player can't see, so the rules may trip on it where the host's real game would not: then
+   * nothing is shown ahead and the host's answer decides, as for the actions never played
+   * ahead. (Unguarded, the action was never sent at all.)
+   */
+  private playAhead(state: GameState, action: Action): ActionResult | null {
+    try {
+      return applyAction(state, action, this.ctx);
+    } catch {
+      return null;
+    }
   }
 
   private alreadyShown(e: GameEvent): boolean {

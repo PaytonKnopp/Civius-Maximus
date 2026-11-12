@@ -135,8 +135,21 @@ function openSites(t: Turn, except?: UnitState): number[] {
 const unitIsSettler = (t: Turn, u: UnitState) =>
   t.ctx.content.entities.unit[u.type]?.actions.includes('found_settlement') ?? false;
 
+/**
+ * Whether a settler would have somewhere to go: an open site it could get to from one of our
+ * settlements over explored tiles (so no settlers are trained for the island across the water
+ * before anyone can cross it).
+ */
 export function hasSettleSite(t: Turn): boolean {
-  return openSites(t).length > 0;
+  const sites = openSites(t);
+  const homes = t.mySettlements();
+  const type = t.turnMemo('settlerType', () =>
+    t.ctx.content.ids.unit.find((id) =>
+      t.ctx.content.entities.unit[id]!.actions.includes('found_settlement'),
+    ),
+  );
+  if (sites.length === 0 || homes.length === 0 || !type) return sites.length > 0;
+  return sites.some((tile) => homes.some((h) => t.canReach({ type, tile: h.tile }, tile)));
 }
 
 /** Score of a site for a settler standing at `from`: the land, minus travel and sprawl. */
@@ -163,7 +176,10 @@ export function moveSettler(t: Turn, u: UnitState) {
     t.act({ type: 'found_settlement', player: t.player, unit: u.id });
     return;
   }
+  // Only sites it can get to over explored land (or water, once it can embark): the best
+  // sites of an island map are often on the next island, in sight and out of reach.
   const sites = openSites(t, u)
+    .filter((tile) => tile === u.tile || t.canReach(u, tile))
     .map((tile) => ({ tile, score: placeScore(t, u.tile, tile) }))
     .sort((a, b) => b.score - a.score || a.tile - b.tile);
   const best = sites[0];

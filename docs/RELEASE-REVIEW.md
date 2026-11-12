@@ -175,6 +175,66 @@ No turn has thrown in any soak game so far. If one ever does, the game used to s
 
 Tests: `packages/host/src/local.test.ts`, "when the rules themselves fail".
 
+### The AI's refused moves (2.4)
+
+The soak counts what the rules refuse the AI: `move_unit:no_path` was by far the most, 337 to
+4,181 a game. A trace of who asks (three routines: settlers heading for a site, scouts and
+idle soldiers exploring, soldiers gathering) showed it was not noise. The AI ranked every
+explored tile, asked for a path to its best three or four, and stood still when those were
+refused; paths never cross unexplored tiles, so anything seen across water or mountains was a
+dead end it tried again every turn. On a 6-civ Archipelago game, 160 turns: **3,844 refused
+moves against 2,111 accepted, and 1,440 unit-turns in which a unit did nothing else**
+(settlers 558 of them, while cities trained more settlers for the same unreachable sites).
+
+Fixed in the AI, not the rules (`Turn.canReach`: which stretch of explored, crossable map a
+tile is in; worked out again only when the explored tiles change): settlers, scouts and
+gathering soldiers rank only what they can reach, and a settler is wanted only if one could
+reach a site.
+
+| 6 civs, Small, Online speed | refused moves | unit-turns with only refusals |
+|---|---|---|
+| Archipelago, 160 turns, before | 3,844 | 1,440 |
+| Archipelago, 160 turns, after | 73 | 15 |
+| Continents, 200 turns, before | 1,307 | 252 |
+| Continents, to its end (194), after | 283 | 37 |
+
+What is left is a path blocked by someone else's units, which the old "try the next one" still
+handles. Games in which no unit was ever stuck play out exactly as before: both reference
+games keep their final state hash (`88d2a5c6416ba64589a6a5627b` and, for CI's
+`cx profile 8 120 1 standard --check`, `ecb41782fb8e700ebc9927a6f4`, which passes). Island
+games change: their AIs settle and explore more. Test: `packages/engine/src/ai/reach.test.ts`.
+
+## Phase 3: Online and multiplayer — in progress
+
+- **Fuzz through the real host and protocol** (`packages/host/src/online.fuzz.test.ts`, runs
+  with `pnpm test`): a seated client sends 34 hand-made hostile messages and 3,000 random
+  ones (not messages at all, other seats' actions, ids like `constructor`, a 200,000-character
+  chat line, pings off the map, a second hello). Nothing but its own legal moves changes the
+  game, an honest client still holds exactly its view, and the game goes on. Found and fixed:
+  - **A hello with a name that isn't text threw inside the host.** Every field of a client's
+    message is now checked where it is used.
+  - **One device could take every lobby seat** by saying hello again and again (a stranger
+    could fill a public lobby alone, and the seats it left behind had no player). One device
+    now holds one seat; a second hello changes nothing.
+  - **A client's play-ahead was unguarded.** Actions are played at once on the client's view
+    before the host answers; if the rules tripped over a view (it leaves out what the player
+    can't see), the action was never sent. It now goes to the host, which decides.
+- **Soak through the real host and protocol:** a game played from three devices (the host and
+  two clients) plus an AI seat, each seat's actions sent one at a time like clicks, with a drop
+  and a rejoin by seat key halfway. After every seat's turn each client must hold exactly its
+  view of the host's game and the game must pass the invariants: 12 turns in `pnpm test`, and
+  70 turns run by hand (`CX_ONLINE_TURNS=70`), both clean.
+- **Public games list:** it showed the map as raw ids ("small island_plates") and whatever
+  else a host put there; it now shows the map's names, and only for maps this game knows. The
+  open seats it showed never changed after the lobby opened, so strangers were sent to full
+  lobbies; a listed lobby now updates its count as friends join and leave.
+- **Database review** (`packages/backend/supabase/migrations`, read line by line; nothing here
+  can run them, see "Could not verify"): row-level security is on for all three tables; saves
+  are readable and writable only by their owner, capped at 8 MB each and 30 a player, and can't
+  change hands; lobbies can be listed, changed and closed only by their host, one per host, and
+  expire by the server's clock; the trigger functions can't be called through the API; the
+  game refuses to hold a secret (`service_role`) key. Nothing to fix.
+
 ## Phase 6: Writing, content and originality — in progress (started while screens were captured)
 
 - **"How to play" was written before the gameplay pass** and mentioned none of it. All 22
