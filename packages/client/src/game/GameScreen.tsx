@@ -79,7 +79,7 @@ import { CombatPreview, type Side } from './CombatPreview';
 import { CaptureDialog, GameOver, PlayerPanel, WarPrompt } from './Diplomacy';
 import { cloudAutosave } from '../cloud/autosave';
 import { getSettings, useSettings } from '../settings';
-import { AUTOSAVE, loadSave, ONLINE_AUTOSAVE, QUICKSAVE, storeSave } from './storage';
+import { AUTOSAVE, downloadSave, loadSave, ONLINE_AUTOSAVE, QUICKSAVE, storeSave } from './storage';
 import {
   agree,
   civName,
@@ -940,6 +940,12 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     setTimeout(() => setNotices((n) => n.filter((x) => x.id !== id)), 2600);
   }, []);
 
+  // A failure inside the game (a turn that couldn't be played, an AI seat that failed and
+  // passed): it stays on screen until dismissed, with the save to send along with a report.
+  const [problem, setProblem] = useState<string | null>(() => game.takeProblem?.() ?? null);
+  // An autosave that fails (storage blocked or full) is said once, not every turn.
+  const autosaveFailed = useRef(false);
+
   // Online: who's connected, refusals from the host, and a lost connection.
   const online = game.online;
   const [seats, setSeats] = useState<SeatInfo[]>(() => online?.seats() ?? []);
@@ -1186,6 +1192,11 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
 
   useEffect(() => {
     const off = game.subscribe((s, events) => {
+      const trouble = game.takeProblem?.();
+      if (trouble) {
+        setProblem(trouble);
+        console.error('The game hit a problem:', trouble);
+      }
       pendingMoves.current.push(
         ...events.flatMap((e) =>
           e.type === 'unit_moved' &&
@@ -1218,7 +1229,16 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             s,
             `${game.online ? 'Online autosave' : 'Autosave'} · turn ${s.turn}`,
           );
-          void storeSave(id, save).catch(() => {});
+          void storeSave(id, save).then(
+            () => {
+              autosaveFailed.current = false;
+            },
+            () => {
+              if (autosaveFailed.current) return;
+              autosaveFailed.current = true;
+              notify("Couldn't autosave: this browser's storage is blocked or full");
+            },
+          );
           cloudAutosave(id, save);
         }
       }
@@ -1849,7 +1869,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   const inspected = selection?.kind === 'settlement' ? undefined : (pathTarget ?? inspect);
 
   return (
-    <div className="game">
+    // `data-drawn`: the map has drawn a frame (what the screenshot scripts wait for; the frame
+    // rate counter they used to read is off by default).
+    <div className="game" data-drawn={fps > 0 ? 'yes' : 'no'}>
       <div
         className="lab-canvas"
         ref={hostRef}
@@ -2193,6 +2215,26 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           online={online}
           colorOf={(p) => (p && colors[p] ? cssColor(colors[p]!.main) : undefined)}
         />
+      )}
+      {problem && (
+        <div className="online-bar problem-bar" role="alert">
+          <span>The game hit a problem: {problem}. Your game is still here.</span>
+          {game.saves && (
+            <button
+              type="button"
+              className="small"
+              title="Downloads this game as a file, to send with a bug report"
+              onClick={() =>
+                downloadSave(makeSave(game.state, `Problem report · turn ${game.state.turn}`))
+              }
+            >
+              Save a copy to send
+            </button>
+          )}
+          <button type="button" className="ghost small" onClick={() => setProblem(null)}>
+            Dismiss
+          </button>
+        </div>
       )}
       {online && (away.length > 0 || cutOff || reconnecting) && (
         <div className="online-bar" role="status">

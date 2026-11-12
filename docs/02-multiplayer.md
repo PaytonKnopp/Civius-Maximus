@@ -281,6 +281,20 @@ Simultaneous turns are played live, so notifications are mostly about getting ev
   (`missingContent` in `packages/host/src/saves.ts` checks every content id in it). A save that
   needs content this version lacks (a mod that's off, a unit removed since) is refused and says
   what's missing.
+- **Damaged saves are refused with a reason** (release pass, November 2026): a file that was
+  cut short, edited by hand or isn't a save at all never reaches the game screen. `readSave`
+  checks the parts everything stands on (the map's size, the players, units and settlements
+  being on the map, research, treaties), then lets the rules read the whole state once
+  (`checkInvariants`; only a failure to read counts, never what it finds, so old saves keep
+  loading), and answers "That save is damaged and can't be loaded (a unit is off the map)".
+  A file over 64 MB is refused without being read. A fuzz test breaks a real save 400 ways
+  (`saves.fuzz.test.ts`).
+- **A failure inside the rules never stops the game** (release pass): if a turn throws,
+  `LocalGame` puts the game back where it was and keeps the reason for the game screen, which
+  shows it with a button to download the save for a bug report. An AI seat whose code fails
+  passes the rest of its turn and the game goes on (the same on the page, in the worker and on
+  an online host, so the result is still deterministic). An action that makes the rules throw
+  is refused (`game_error`), whoever sent it.
 - **Cloud autosave** (October 2026): signed in, the autosave at the start of every turn also goes
   to the player's account (single player, hotseat, and the online game they host), one upload
   at a time with only the newest waiting. **Continue** and **Host your online game again** take

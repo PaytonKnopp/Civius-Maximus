@@ -25,7 +25,7 @@ scope.onmessage = (e) => {
     const done = runTurn(ctx, deepFreeze(state), action, (progress) =>
       scope.postMessage({ id, progress }),
     );
-    scope.postMessage({ id, state: done.state, events: done.events });
+    scope.postMessage({ id, ...done });
   } catch (err) {
     scope.postMessage({ id, error: err instanceof Error ? err.message : String(err) });
   }

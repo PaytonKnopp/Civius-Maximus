@@ -348,6 +348,9 @@ export function freeCitiesTurn(draft: Draft<GameState>, ctx: EngineContext, emit
     chooseBuild(draft, ctx, id, ctx.content.rules.loyalty.freeCityUnits, true);
     processSettlement(draft, ctx, id, emit);
   }
+  // Free cities keep no accounts: a big city's building upkeep used to run their shared
+  // treasury ever further below zero.
+  if (free.gold < 0) free.gold = 0;
   for (const id of unitIds(draft)) {
     const u = draft.units[id]!;
     if (u.owner === FREE && u.orders?.kind !== 'fortify') u.orders = { kind: 'fortify', turns: 0 };

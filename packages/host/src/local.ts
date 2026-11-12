@@ -22,7 +22,12 @@ export type GameListener = (state: GameState, events: GameEvent[]) => void;
 export interface TurnWork {
   state: GameState;
   events: GameEvent[];
+  /** Seats whose AI failed and passed its turn instead, in words (a bug to report). */
+  problems?: string[];
 }
+
+/** An error's message, for a line the player can read and send on. */
+const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e)) || 'unknown error';
 
 /**
  * How far a turn's slow part has got, for a progress line: first the world takes its turn (the
@@ -58,6 +63,7 @@ export function runTurn(
 ): TurnWork {
   let state = start;
   const events: GameEvent[] = [];
+  const problems: string[] = [];
   const apply = (a: Action) => {
     const r = applyAction(state, a, ctx);
     if (!r.ok) return undefined;
@@ -69,27 +75,50 @@ export function runTurn(
     onProgress?.({ phase: 'world', done: 0, total: 0 });
     apply(action);
   }
+  /**
+   * One AI seat's part. If its code fails (a bug), the game must not stop with it: what it had
+   * done so far stands (every action is applied whole), it passes the rest of its turn, and the
+   * player is told so they can report it. Deterministic like the rest: the same state fails the
+   * same way on the page, in the worker and on a host.
+   */
+  const seat = (player: PlayerId, what: string, play: () => GameState) => {
+    try {
+      state = play();
+    } catch (e) {
+      const name = state.players[player]?.name ?? player;
+      problems.push(`${name} couldn't ${what} (${errorText(e)})`);
+      return false;
+    }
+    return true;
+  };
   // AI seats answer deals offered to them right away (the same verdict the deal screen shows).
   const waiting = [
     ...new Set(
       state.diplomacy.proposals.map((p) => p.to).filter((to) => state.players[to]?.kind === 'ai'),
     ),
   ].sort();
-  for (const ai of waiting) state = answerProposals(ctx, state, ai, apply);
+  for (const ai of waiting) seat(ai, 'answer a deal', () => answerProposals(ctx, state, ai, apply));
   // AI seats play as soon as their turn starts (more than once if a turn ends meanwhile).
+  const failed = new Set<PlayerId>();
   for (let guard = 0; guard < 4 && state.status === 'playing'; guard++) {
     // Seats act in the turn's rotating order, so no AI always gets first pick.
     const ais = turnOrder(state).filter((id) => {
       const p = state.players[id]!;
-      return p.alive && p.kind === 'ai' && !p.turnEnded;
+      return p.alive && p.kind === 'ai' && !p.turnEnded && !failed.has(id);
     });
     if (ais.length === 0) break;
     for (const [i, player] of ais.entries()) {
       onProgress?.({ phase: 'rivals', done: i, total: ais.length });
-      state = playAiTurn(ctx, state, player, apply);
+      if (seat(player, 'play its turn', () => playAiTurn(ctx, state, player, apply))) continue;
+      // It passes. If even that fails or is refused, it's left alone for the rest of this call.
+      const passed = seat(player, 'end its turn', () => {
+        if (!state.players[player]?.turnEnded) apply({ type: 'end_turn', player });
+        return state;
+      });
+      if (!passed || !state.players[player]?.turnEnded) failed.add(player);
     }
   }
-  return { state, events };
+  return problems.length > 0 ? { state, events, problems } : { state, events };
 }
 
 const aiWaiting = (state: GameState) =>
@@ -112,6 +141,8 @@ export class LocalGame implements GameHandle {
   busy = false;
   /** While `busy`: how far along the turn's work is (null until the runner says). */
   progress: TurnProgress | null = null;
+  /** Something inside the game failed (a bug): what, until `takeProblem` reads it. */
+  private problem: string | null = null;
   private listeners = new Set<GameListener>();
   /**
    * Undo for moves (D118): the states before the last few moves that taught the player nothing
@@ -128,7 +159,31 @@ export class LocalGame implements GameHandle {
     // A loaded save is frozen like every engine state, so Immer can share its untouched parts.
     this.state = 'stateVersion' in start ? deepFreeze(start) : createGame(start, ctx);
     if (runner && aiWaiting(this.state)) this.work(null);
-    else this.state = runTurn(ctx, this.state, null).state;
+    else this.finish(runTurn(ctx, this.state, null));
+  }
+
+  /**
+   * What went wrong inside the game since this was last asked, if anything: a turn that
+   * couldn't be played, or an AI seat that failed and passed. The game is still there and can
+   * be saved; the game screen shows this and offers the save to send with a bug report.
+   */
+  takeProblem(): string | null {
+    const problem = this.problem;
+    this.problem = null;
+    return problem;
+  }
+
+  /** Takes a turn's work as the game's new state. */
+  private finish(work: TurnWork) {
+    this.state = work.state;
+    if (work.problems?.length) this.problem = work.problems.join('. ');
+  }
+
+  /** A failure inside the rules: the game stays as it was, and the player hears of it. */
+  private failed(what: string, e: unknown): ActionResult {
+    this.problem = `${what} (${errorText(e)})`;
+    this.tell([]);
+    return { ok: false, error: { code: 'game_error', message: 'The game hit a problem' } };
   }
 
   /** Human players still in the game, in turn order. */
@@ -186,11 +241,18 @@ export class LocalGame implements GameHandle {
       return { ok: true, state: this.state, events: [] };
     }
     const before = this.state;
-    const result = applyAction(this.state, action, this.ctx);
-    if (!result.ok) return result;
-    const work = runTurn(this.ctx, result.state, null);
-    this.state = work.state;
-    const events = [...result.events, ...work.events];
+    let events: GameEvent[];
+    try {
+      const result = applyAction(this.state, action, this.ctx);
+      if (!result.ok) return result;
+      const work = runTurn(this.ctx, result.state, null);
+      this.finish(work);
+      events = [...result.events, ...work.events];
+    } catch (e) {
+      // A bug in the rules must not take the game (or an online host) down with it.
+      this.state = before;
+      return this.failed("That couldn't be done", e);
+    }
     if (
       action.type === 'move_unit' &&
       this.humans().length === 1 &&
@@ -215,12 +277,22 @@ export class LocalGame implements GameHandle {
     };
     void this.runner!(from, action, onProgress)
       .catch(() => runTurn(this.ctx, from, action, onProgress))
-      .then((done) => {
-        this.state = deepFreeze(done.state);
-        this.busy = false;
-        this.progress = null;
-        this.tell(done.events);
-      });
+      .then(
+        (done) => {
+          this.finish({ ...done, state: deepFreeze(done.state) });
+          this.busy = false;
+          this.progress = null;
+          this.tell(done.events);
+        },
+        (e: unknown) => {
+          // The turn failed on the page too (a bug in the rules). Never leave the game waiting
+          // for rivals that will not come: it goes back to where it was, playable and savable.
+          this.state = from;
+          this.busy = false;
+          this.progress = null;
+          this.failed("This turn couldn't be played", e);
+        },
+      );
   }
 
   private tell(events: GameEvent[]) {

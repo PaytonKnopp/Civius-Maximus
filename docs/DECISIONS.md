@@ -170,3 +170,4 @@ Each has its recommended default built; say the word to switch.
 | # | Decision | Recommended default | Alternatives | Blocks | Status |
 |---|---|---|---|---|---|
 | D127 | **Which units can Explore** | Soldiers and ships only: the Explore order is on the cards of units that fight (scouts, warriors, ships...), not on settlers, traders, religious units, great people, commanders or aircraft, which would wander off unescorted (the rules still accept the order for any unit) | Every unit with moves left, as first built (a settler's card showed Explore on turn 1) | Release pass | Open (default built) |
+| D128 | **Frame rate counter** | Off for new players (it was on); Options › Graphics turns it on. Players who had already changed a setting keep what they had | On by default, as before (useful while tuning graphics on a new machine) | Release pass | Open (default built) |

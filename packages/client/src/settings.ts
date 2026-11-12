@@ -36,7 +36,7 @@ export const DEFAULT_SETTINGS: Settings = {
   quality: 'medium',
   view: '3d',
   reduceMotion: false,
-  showFps: true,
+  showFps: false,
   tooltips: true,
   largeText: false,
   muteInBackground: true,

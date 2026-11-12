@@ -2663,6 +2663,25 @@ html[data-text='large']
   gap: 8px;
 }
 
+/* A failure inside the game (GameScreen's `problem`): above everything on the map, and below
+   the online bar when both show. Long error text wraps instead of running off a phone. */
+.online-bar.problem-bar {
+  z-index: 30;
+  width: max-content;
+  border-color: rgba(240, 140, 120, 0.7);
+}
+
+.online-bar.problem-bar span {
+  display: inline;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.online-bar.problem-bar ~ .online-bar {
+  top: calc(var(--topbar-h) + 124px);
+}
+
 /* --- Hotseat: the next player's leader, in their color, before the device changes hands ---- */
 
 .pass-card {

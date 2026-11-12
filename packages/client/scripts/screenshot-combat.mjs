@@ -16,9 +16,7 @@ page.on('pageerror', (e) => errors.push(`pageerror: ${e.stack ?? e.message}`));
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 await page.goto(url, { waitUntil: 'networkidle' });
 await page.waitForSelector('canvas');
-await page.waitForFunction(
-  () => !/^0 fps/.test(document.querySelector('.fps')?.textContent ?? '0 fps'),
-);
+await page.waitForFunction(() => document.querySelector('.game')?.dataset.drawn === 'yes');
 // The leader's intro opens the game.
 await page.waitForSelector('.leader-intro .primary', { timeout: 15000 }).catch(() => {});
 if (await page.$('.leader-intro .primary')) await page.click('.leader-intro .primary');

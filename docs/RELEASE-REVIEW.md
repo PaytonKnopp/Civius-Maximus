@@ -126,6 +126,55 @@ Rules bugs the invariants found in the first three games, all fixed with tests:
 Not bugs (the checks were too strict): a camp lists a dead raider until its next turn; a great
 work whose building is gone (a captured Palace) is "stored" by design.
 
+- **Treasuries below zero for free cities and city-states.** The "free cities" side and a
+  city-state pay upkeep like anyone and have no way to sell units, so their gold could sink
+  without limit (-393 in one game). Nothing reads it, but it broke the rule that gold never
+  goes below zero; both now stop at zero.
+
+### Fuzzing (2.3)
+
+- **Actions** (`packages/engine/src/fuzz.test.ts`, runs with `pnpm test`): actions are generated
+  from the action schema itself, so a new action type is fuzzed the day it is added. 6,000
+  malformed inputs and 6,000 well-formed random actions against a game at turn 1, turn 11 and
+  turn 43: each is refused with a reason (and changes nothing) or applied (and the invariants
+  hold after). **One crash found and fixed:** an id that names something every JavaScript object
+  has (`{"type":"set_civic","civic":"constructor"}`, also `toString`, `__proto__`) passed the
+  "is this a civic" lookup and the engine threw. A friend in an online game could have stopped
+  the host's game with one message. Every id in an action is now refused at the door if it is
+  such a name (`actions.ts`).
+- **Saves** (`packages/host/src/saves.fuzz.test.ts`): a save loaded from its own text plays on
+  to the same hash; 13 kinds of not-a-save (empty, cut in half, cut by one character, wrong
+  format, newer and older versions, trailing rubbish) each get the right message; a 65 MB file
+  is refused without being read; and 400 copies of a real save with one to three random breaks
+  (a field removed, replaced by rubbish, an array emptied, a number made NaN or negative) are
+  each refused with a reason or load and then play. Before this pass `readSave` checked the
+  format, the versions and the content ids and nothing else: a save with its map cut short
+  loaded and took the game screen down. It now checks the parts everything stands on (map
+  size, players, units and settlements on the map, research, treaties) and that the rules can
+  read the whole state, and says "That save is damaged and can't be loaded (a unit is off the
+  map)". All 20 review saves (0.6 to 2.0 MB) still load, in 9 to 960 ms on this machine. The
+  file picker also refuses anything over 64 MB before reading it.
+
+### When the rules themselves fail (2.6)
+
+No turn has thrown in any soak game so far. If one ever does, the game used to stop for good:
+
+- **A turn that failed in the background worker left "Rivals are moving" up for ever.** The
+  page tried the turn itself, failed the same way, and nothing cleared the wait. Now the game
+  goes back to where it was (playable, savable), and a bar says "The game hit a problem: This
+  turn couldn't be played (...)" with a button that downloads the save to send with a report.
+- **One AI seat failing stopped everyone's turn.** It now passes the rest of its turn, the game
+  goes on, and the same bar says which civ and why. The result is the same on the page, in the
+  worker and on an online host, so games stay in step.
+- **An action that makes the rules throw** (from this player or, online, from a friend's
+  device) is refused like any other; the host carries on.
+- **An autosave that fails** (storage blocked or full) was silent every turn; it is now said
+  once ("Couldn't autosave: this browser's storage is blocked or full").
+- The crash screen said "This game couldn't start" even at turn 200; it now says the game
+  couldn't go on, and that the autosave from the start of the turn is under Load game.
+
+Tests: `packages/host/src/local.test.ts`, "when the rules themselves fail".
+
 ## Phase 6: Writing, content and originality — in progress (started while screens were captured)
 
 - **"How to play" was written before the gameplay pass** and mentioned none of it. All 22
@@ -149,3 +198,11 @@ work whose building is gone (a captured Palace) is "stored" by design.
   it. Hints now wait until nothing covers the game and the leader's introduction is closed.
 - Menu rows that are lit (the chosen seat, leader or search result, an autosave) had their
   second line under 3:1 contrast; it takes the lighter secondary color there.
+
+## Phase 7: First hour, defaults and accessibility — in progress
+
+- **The frame rate counter was on by default** (bottom corner of every screenshot and of every
+  new player's first game). It is off now, like the developer aid it is; Options still has it
+  (D128, open: default built). The screenshot scripts used its number to know the first frame
+  had been drawn; they read a mark on the game screen instead (`data-drawn`).
+

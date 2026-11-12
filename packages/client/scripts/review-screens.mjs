@@ -106,10 +106,7 @@ for (const size of sizes) {
   await context.addInitScript(
     ([v, large, hints]) => {
       try {
-        localStorage.setItem(
-          'cx.settings',
-          JSON.stringify({ view: v, showFps: true, largeText: large }),
-        );
+        localStorage.setItem('cx.settings', JSON.stringify({ view: v, largeText: large }));
         // First-game hints are off unless asked for (HINTS=1): they cover what's under review.
         if (!hints) localStorage.setItem('cx.hints.off', '1');
       } catch {
@@ -126,11 +123,9 @@ for (const size of sizes) {
   await page.waitForSelector('.mx-saves');
   await page.setInputFiles('.mx-saves input[type=file]', savePath);
   await page.waitForSelector('canvas', { timeout: 120000 });
-  await page.waitForFunction(
-    () => !/^0 fps/.test(document.querySelector('.fps')?.textContent ?? '0 fps'),
-    null,
-    { timeout: 180000 },
-  );
+  await page.waitForFunction(() => document.querySelector('.game')?.dataset.drawn === 'yes', null, {
+    timeout: 180000,
+  });
   const intro = await page.$('.leader-intro .primary');
   if (intro) await intro.click();
   await page.waitForTimeout(view === '3d' ? 5000 : 1500);

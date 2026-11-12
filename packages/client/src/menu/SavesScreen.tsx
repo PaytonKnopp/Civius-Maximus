@@ -127,9 +127,15 @@ export function SavesScreen({
     }
   };
   const importFile = async (f: File) => {
-    const read = readSave(await f.text(), ctx);
-    if (!read.ok) setMessage(read.message);
-    else onLoad(read.save.state);
+    // Checked before the file is read: a huge file would freeze the page just being opened.
+    if (f.size > 64 * 1024 * 1024) return setMessage('That file is too big to be a saved game');
+    try {
+      const read = readSave(await f.text(), ctx);
+      if (!read.ok) setMessage(read.message);
+      else onLoad(read.save.state);
+    } catch {
+      setMessage("That file couldn't be read");
+    }
   };
 
   const shown = useMemo(() => {

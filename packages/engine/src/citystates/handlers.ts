@@ -218,6 +218,8 @@ export function cityStatesTurn(draft: Draft<GameState>, ctx: EngineContext, emit
       chooseBuild(draft, ctx, sid);
       processSettlement(draft, ctx, sid, emit);
     }
+    // A city-state never runs a debt (it has no units to disband for one).
+    if (draft.players[id]!.gold < 0) draft.players[id]!.gold = 0;
     meet(draft, ctx, id, explored, emit);
     quests(draft, ctx, id, emit);
     updateSuzerain(draft, ctx, id, emit);

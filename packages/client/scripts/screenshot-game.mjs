@@ -21,11 +21,9 @@ const watch = (page, tag) => {
   page.on('console', (m) => m.type() === 'error' && errors.push(`${tag}: ${m.text()}`));
 };
 const rendering = (page) =>
-  page.waitForFunction(
-    () => !/^0 fps/.test(document.querySelector('.fps')?.textContent ?? '0 fps'),
-    null,
-    { timeout: 30000 },
-  );
+  page.waitForFunction(() => document.querySelector('.game')?.dataset.drawn === 'yes', null, {
+    timeout: 30000,
+  });
 const turn = async (page) => Number(await page.textContent('.turn-number'));
 const label = (page) => page.textContent('.next-label');
 

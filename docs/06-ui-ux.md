@@ -301,6 +301,12 @@ the design pass were merged ([RELEASE-REVIEW.md](RELEASE-REVIEW.md) has the full
   research and civic cards on a short screen and scrolls. The Victories table fits a tablet.
 - A civ named as a people takes a plural verb ("Franks offer you a deal", `agree` in
   `game/model.ts`).
+- *When something goes wrong:* a failure inside the game (a turn that couldn't be played, an AI
+  seat that failed and passed) shows as a bar under the top bar that stays until dismissed:
+  what happened, "Your game is still here", and **Save a copy to send** (the save, as a file,
+  for a bug report). An autosave that fails says so once. The crash screen (a failure drawing
+  the game) says the game couldn't go on and where the autosave is.
+- *The frame rate counter is off by default* (D128); Options still has it.
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
