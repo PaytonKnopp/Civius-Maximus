@@ -95,7 +95,10 @@ for (const c of CASES) {
   });
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   const errors = [];
-  page.on('pageerror', (e) => errors.push(String(e).slice(0, 200)));
+  // (The broken worker's own error is the point of that case, not a fault of the game.)
+  page.on('pageerror', (e) => {
+    if (!String(e).includes('no modules here')) errors.push(String(e).slice(0, 200));
+  });
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(`console: ${m.text().slice(0, 200)}`);
   });

@@ -9,13 +9,16 @@
 //
 // Prints a table and exits 1 if anything would clip (a peak at or over 0 dBFS after the
 // compressor) or a cue makes no sound. It cannot say whether anything sounds good.
-// Env: BASE_URL, MUSIC_SECONDS (how long each era is listened to, default 20).
+// Env: BASE_URL, MUSIC_SECONDS (how long each era is listened to, default 20), ONLY (comma list
+// of cues, music, stack, stall).
 import { writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 
 const out = process.argv[2];
 const base = process.env.BASE_URL ?? 'http://localhost:4173/';
 const MUSIC_SECONDS = Number(process.env.MUSIC_SECONDS ?? 20);
+const only = process.env.ONLY?.split(',');
+const want = (part) => !only || only.includes(part);
 
 const CUES = [
   'click',
@@ -141,94 +144,111 @@ const fmt = (v) => `${db(v) >= 0 ? '+' : ''}${db(v).toFixed(1)}`.padStart(6);
 const wait = (ms) => page.waitForTimeout(ms);
 const read = () => page.evaluate(() => window.__readMeters());
 const reset = () => page.evaluate(() => window.__resetMeters());
-/** Waits until the bus is quiet (below -66 dBFS) or `max` ms; returns how long it took. */
+/**
+ * Waits until the bus has been quiet (below -66 dBFS) for 0.7 s, or `max` ms; returns how long
+ * the sound lasted. (A cue may pause: an arrow's flight, then its thud.)
+ */
 async function untilQuiet(max) {
   const started = Date.now();
+  let quietSince = null;
   await wait(250);
   while (Date.now() - started < max) {
     const r = await read();
-    if (r.pre.last < 0.0005) break;
+    if (r.pre.last >= 0.0005) quietSince = null;
+    else quietSince ??= Date.now();
+    if (quietSince !== null && Date.now() - quietSince >= 700) break;
     await wait(100);
   }
-  return Date.now() - started;
+  return (quietSince ?? Date.now()) - started;
 }
 
 const report = { cues: [], music: [], stack: null, stall: null, clock: null };
 
 // The audio clock must run in real time for any of this to mean something.
 {
-  const t0 = await page.evaluate(() => window.cxAudio.audio.ctx.currentTime);
-  await wait(1000);
-  const t1 = await page.evaluate(() => window.cxAudio.audio.ctx.currentTime);
-  report.clock = t1 - t0;
-  console.log(`audio clock: ${(t1 - t0).toFixed(2)} s in 1.00 s of real time`);
+  await wait(1500);
+  const now = () =>
+    page.evaluate(() => [window.cxAudio.audio.ctx.currentTime, performance.now() / 1000]);
+  const [a0, r0] = await now();
+  await wait(2000);
+  const [a1, r1] = await now();
+  report.clock = (a1 - a0) / (r1 - r0);
+  console.log(`audio clock: ${report.clock.toFixed(2)} s for each second of real time`);
 }
 
 // --- Each cue alone, at the default volumes, with the music and ambience silenced -------------
-await page.evaluate(() => {
-  const { audio, music } = window.cxAudio;
-  music.stop();
-  audio.set({ music: 0, ambience: 0 });
-});
-await wait(4000);
-await untilQuiet(8000);
-console.log('\nEffect cues alone (dBFS; effects 70%, master 80%: the defaults)');
-console.log('cue               peak in  peak out   rms    length');
-for (const cue of CUES) {
-  await reset();
-  await page.evaluate((c) => window.cxAudio.play(c), cue);
-  const ms = await untilQuiet(9000);
-  const r = await read();
-  report.cues.push({ cue, pre: r.pre.peak, post: r.post.peak, rms: r.pre.rms, ms });
-  console.log(
-    `${cue.padEnd(17)} ${fmt(r.pre.peak)}   ${fmt(r.post.peak)}  ${fmt(r.pre.rms)}  ${(ms / 1000).toFixed(1)} s`,
-  );
-  await wait(150);
+if (want('cues')) {
+  await page.evaluate(() => {
+    const { audio, music } = window.cxAudio;
+    music.stop();
+    audio.set({ music: 0, ambience: 0 });
+  });
+  await wait(4000);
+  await untilQuiet(8000);
+  console.log('\nEffect cues alone (dBFS; effects 70%, master 80%: the defaults)');
+  console.log('cue               peak in  peak out   rms    length');
+  for (const cue of CUES) {
+    await reset();
+    await page.evaluate((c) => window.cxAudio.play(c), cue);
+    const ms = await untilQuiet(9000);
+    const r = await read();
+    report.cues.push({ cue, pre: r.pre.peak, post: r.post.peak, rms: r.pre.rms, ms });
+    console.log(
+      `${cue.padEnd(17)} ${fmt(r.pre.peak)}   ${fmt(r.post.peak)}  ${fmt(r.pre.rms)}  ${(ms / 1000).toFixed(1)} s`,
+    );
+    await wait(150);
+  }
 }
 
 // --- Music by era -------------------------------------------------------------------------------
-console.log(`\nMusic by era (${MUSIC_SECONDS} s each; music 45%, ambience 35%: the defaults)`);
-console.log('era  culture         peak in  peak out   rms');
 await page.evaluate(() => {
   const { audio, music } = window.cxAudio;
   audio.set({ music: 0.45, ambience: 0.35 });
   music.start();
 });
-// A piece only changes with the era, so each entry is a different era from the one before.
-// Eras past the sixth share its style; the early eras take a color from the civ's culture.
-const ERAS = [
-  [2, 'mediterranean'],
-  [1, 'east_asian'],
-  [2, 'middle_eastern'],
-  [3, 'northern'],
-  [4, 'mediterranean'],
-  [5, 'mediterranean'],
-  [6, 'mediterranean'],
-  [1, 'mediterranean'],
-  [3, 'mediterranean'],
-];
-for (const [era, arch] of ERAS) {
-  await page.evaluate(([e, a]) => window.cxAudio.music.setEra(e, a), [era, arch]);
-  // A new era starts its piece after a breath of about three seconds.
-  await wait(4500);
-  await reset();
-  await wait(MUSIC_SECONDS * 1000);
-  const r = await read();
-  report.music.push({ era, arch, pre: r.pre.peak, post: r.post.peak, rms: r.pre.rms });
-  console.log(
-    `${String(era).padEnd(4)} ${arch.padEnd(15)} ${fmt(r.pre.peak)}   ${fmt(r.post.peak)}  ${fmt(r.pre.rms)}`,
-  );
+if (want('music')) {
+  console.log(`\nMusic by era (${MUSIC_SECONDS} s each; music 45%, ambience 35%: the defaults)`);
+  console.log('era  culture         peak in  peak out   rms');
+  // A piece only changes with the era, so each entry is a different era from the one before.
+  // Eras past the sixth share its style; the early eras take a color from the civ's culture.
+  const ERAS = [
+    [2, 'mediterranean'],
+    [1, 'east_asian'],
+    [2, 'middle_eastern'],
+    [3, 'northern'],
+    [4, 'mediterranean'],
+    [5, 'mediterranean'],
+    [6, 'mediterranean'],
+    [1, 'mediterranean'],
+    [3, 'mediterranean'],
+  ];
+  for (const [era, arch] of ERAS) {
+    await page.evaluate(([e, a]) => window.cxAudio.music.setEra(e, a), [era, arch]);
+    // A new era starts its piece after a breath of about three seconds.
+    await wait(4500);
+    await reset();
+    await wait(MUSIC_SECONDS * 1000);
+    const r = await read();
+    report.music.push({ era, arch, pre: r.pre.peak, post: r.post.peak, rms: r.pre.rms });
+    console.log(
+      `${String(era).padEnd(4)} ${arch.padEnd(15)} ${fmt(r.pre.peak)}   ${fmt(r.post.peak)}  ${fmt(r.pre.rms)}`,
+    );
+  }
+} else {
+  // Something must be playing for the tests below.
+  await page.evaluate(() => window.cxAudio.music.setEra(2, 'mediterranean'));
+  await wait(6000);
 }
 
 // --- The loudest moment: music playing and the big cues at once -------------------------------
-await reset();
-await page.evaluate(() => {
-  const { play } = window.cxAudio;
-  for (const c of ['wonder', 'victory', 'cannon', 'war', 'era', 'great_person', 'captured'])
-    play(c);
-});
-await wait(6000);
-{
+if (want('stack')) {
+  await reset();
+  await page.evaluate(() => {
+    const { play } = window.cxAudio;
+    for (const c of ['wonder', 'victory', 'cannon', 'war', 'era', 'great_person', 'captured'])
+      play(c);
+  });
+  await wait(6000);
   const r = await read();
   report.stack = { pre: r.pre.peak, post: r.post.peak, rms: r.pre.rms };
   console.log(
@@ -237,17 +257,17 @@ await wait(6000);
 }
 
 // --- A stalled page: the music must carry on from now, not play what it missed all at once ----
-await untilQuiet(1);
-await reset();
-await wait(8000);
-const normal = await read();
-await page.evaluate(() => {
-  const end = performance.now() + 9000;
-  while (performance.now() < end);
-});
-await reset();
-await wait(5000);
-{
+if (want('stall')) {
+  await wait(1000);
+  await reset();
+  await wait(8000);
+  const normal = await read();
+  await page.evaluate(() => {
+    const end = performance.now() + 9000;
+    while (performance.now() < end);
+  });
+  await reset();
+  await wait(5000);
   const r = await read();
   report.stall = { normalPeak: normal.post.peak, afterPeak: r.post.peak, afterIn: r.pre.peak };
   console.log(
@@ -265,8 +285,8 @@ for (const c of report.cues) {
   if (c.post >= 1) problems.push(`cue ${c.cue} clips alone`);
 }
 for (const m of report.music) if (m.post >= 1) problems.push(`era ${m.era} music clips`);
-if (report.stack.post >= 1) problems.push('the big cues together clip');
-if (report.stall.afterPeak >= 1) problems.push('the music clips after a stall');
+if (report.stack && report.stack.post >= 1) problems.push('the big cues together clip');
+if (report.stall && report.stall.afterPeak >= 1) problems.push('the music clips after a stall');
 for (const e of errors) problems.push(`page error: ${e}`);
 console.log(problems.length ? `\nPROBLEMS:\n- ${problems.join('\n- ')}` : '\nNo clipping found.');
 process.exit(problems.length ? 1 : 0);

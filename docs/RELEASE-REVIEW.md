@@ -14,11 +14,11 @@ Updated with every commit, so this table is always the current position.
 | 1 Every screen | Most of it done | One more capture of every screen on the final build at every size; the special states (game over, incoming deal, capture dialog, promotion, hotseat pass) |
 | 2 Reliability | Done, soak still running | The soak's totals on the final code |
 | 3 Online | Done | What only real devices can show is in "Could not verify" |
-| 4 Performance and compatibility | Started | Bundle, browser fallbacks, workflows, update flow |
-| 5 Audio | Not started | Offline analysis of levels and cue coverage |
-| 6 Writing and originality | Most of it done | Credits and licenses, hard-coded strings, the Help screen against the real keys |
+| 4 Performance and compatibility | Most of it done | Workflows and the update flow read through |
+| 5 Audio | Done | How it sounds needs ears (checklist in PLAYTEST.md) |
+| 6 Writing and originality | Done | |
 | 7 First hour and defaults | Started | The first 30 turns played through; accessibility checks |
-| 8 Release hygiene | Not started | README, guides, changelog, CLAUDE.md, PLAYTEST.md |
+| 8 Release hygiene | Most of it done | Dead code, the one slow test |
 | Finish | Not started | Final re-run of everything, the summary |
 
 Where it ran: one cloud machine (4 cores, no sound card, no graphics card: the headless browser
@@ -313,6 +313,21 @@ Clean: unit, building, wonder, great person and city names are history's own; le
 introductions, Civilopedia articles, dedications, spy missions, congress resolutions and
 governors' names are original; no text from a Civilization game was found.
 
+### Credits and licenses (6.4)
+
+- **The game shipped none of the notices its libraries ask for.** It is built on seven MIT
+  libraries (React, React DOM, PixiJS, Three.js, PeerJS, Immer, Zod) and two typefaces under
+  the SIL Open Font License (Cinzel, Source Sans 3); both licenses ask that their text travels
+  with every copy, and the built files carried none. The build now writes `licenses.txt`
+  beside the game, read from the packages themselves so it can't go stale; Options › About
+  links to it, and the single-file build carries it inside the file.
+- **Options › About said "no sound or image files".** Since the design pass the game does
+  ship 15 photographs (ground, surface grain, a canvas weave), all CC0 from Poly Haven and all
+  listed in `docs/ART-CREDITS.md`, which matches the files in the repository one for one. The
+  sentence now says so.
+- **Help** listed every key but the map's own (arrows or W A S D to move it, + and - to zoom);
+  it lists them now. Every key Help names is handled, and no handled key is missing.
+
 ### Dependencies and secrets (6.5, 6.6)
 
 - `pnpm audit --prod`: no known vulnerabilities in what ships. `pnpm audit`: one moderate
@@ -325,6 +340,83 @@ governors' names are original; no text from a Civilization game was found.
   written it into the JavaScript every player downloads. The build now stops with a plain
   message instead (`packages/client/vite.config.ts`; tried with both kinds of secret key and
   with a public one).
+
+## Phase 4: Performance and compatibility — in progress
+
+- `pnpm cx profile 8 120 1 standard --check` (the check CI runs): passes. At turn 121 on this
+  machine: 1.2 s of turn processing, 0.55 s for all eight AIs, a 1.0 MB save (45 KB gzipped),
+  173 MB of heap, level through the game. Big maps are slower in proportion (12 civs on a Huge
+  map: about 2 s a turn late on); `docs/01-architecture.md`, "Performance targets", has the
+  history and why closing that gap is its own piece of work. The turn runs in a worker, so the
+  page does not freeze while it is worked out.
+- **What the game does when the browser takes something away**
+  (`packages/client/scripts/compat-check.mjs`, new): the game is opened, a city founded and a
+  turn played with each of these missing. All seven play the turn with no error:
+
+  | Taken away | What happens |
+  |---|---|
+  | Nothing | The baseline |
+  | Storage (`localStorage` and IndexedDB refuse everything, as in some private modes) | Plays on its defaults; says once that it can't autosave |
+  | Web Workers | The AI plays on the page |
+  | Workers that fail to load (a browser without module workers) | The turn falls back to the page |
+  | WebGL altogether | The 2D map, drawn without it |
+  | The 2D map's graphics context, lost and restored mid-game | Draws again |
+  | The 3D map's graphics context, lost and restored mid-game | Draws again |
+
+- **Browser features the styles lean on** (read through, not run: only Chromium was here):
+  `:has()`, `dvh` units and `color-mix()` need Safari 16.2 or later and Firefox 121 or later;
+  the scripts use nothing newer than `structuredClone` and `Object.hasOwn` (Safari 15.4).
+  Anything older than those shows the game with some layout rules missing. That and how it
+  behaves in Safari and Firefox themselves are in "Could not verify".
+- **Bundle:** `index.js` is 2.67 MB (752 KB gzipped), one file; PeerJS loads only when Play
+  online is opened. Splitting the 3D view or the Civilopedia out of the first load is possible
+  but touches how the title screen starts a game behind itself; left as it is.
+- The build warns that `vite.config.ts` imports `./src/version` without a file extension (a
+  future Vite default will want it). Harmless today; fixing it needs a TypeScript option
+  changed for the whole client, so it is left.
+
+## Phase 5: Audio — Done (what can be measured)
+
+All sound is synthesized, so the real thing can be measured without a sound card:
+`packages/client/scripts/audio-check.mjs` (new) runs the built game in a headless browser and
+reads its master bus sample by sample, before the output compressor and after an identical
+one. It cannot say whether anything sounds good.
+
+- **Nothing clips.** Each of the 39 cues alone peaks between -34 and -6 dBFS; each era's music
+  between -21 and -14 dBFS (about -33 dBFS on average); the worst pile-up tried (wonder,
+  victory, cannon, war, new era, great person and capture at the same instant, over the
+  music) peaks at **-0.9 dBFS** after the compressor. That is under full scale but with
+  little to spare: if you ever hear distortion on a very busy turn, a limiter after the
+  compressor is the fix.
+- **For your ears** (levels as measured, at the default volumes):
+
+  | Loudest cues | Peak | Quietest cues | Peak |
+  |---|---|---|---|
+  | Religion or pantheon founded | -5.8 dBFS | Footsteps (a unit moves) | -34.1 dBFS |
+  | Cannon | -7.9 | Button click | -33.4 |
+  | War declared | -8.4 | A ship moves | -31.3 |
+  | Victory | -8.8 | Notification | -24.9 |
+  | Civic completed | -9.2 | New turn | -24.1 |
+
+  The three quietest peak at or under the music's average level, so they are probably not
+  heard while music plays. Founding a pantheon is louder than winning the game, and a civic
+  is 3 dB louder than a technology. None of this was changed: it is balance, and yours to
+  judge by ear.
+- **Cue coverage:** 37 of the 39 cues are played by something. `close` and `border` are
+  defined and never played (closing a screen is silent; `border_grew` is mapped to silence on
+  purpose). Every event a player can see has a cue or is deliberately silent.
+- **Fixed:**
+  - *The wrong movement sound.* The cue was chosen by matching words in the unit's id: six
+    ships (the Dromon, the Quadrireme, the fleet commander, both submarines, the missile
+    cruiser) marched on foot and five kinds of cavalry (the Mamluk, the Cossack, the Courser,
+    the Essedarius, the Scara) had no hooves. It now goes by the unit's class and model.
+  - *Music piling up after a stall.* Bars are scheduled a little ahead by a timer; when the
+    page was busy or asleep for longer than a bar, every bar it had missed was scheduled in
+    the past and sounded at once. Measured after a 9 s freeze: the peak jumped 4.3 dB before
+    the fix and not at all after it.
+  - *A leak.* Stopping the music left the wind's slow oscillator running, one more each time.
+- Not checked, because it needs ears: whether it sounds good, the balance between music and
+  effects, each slider by ear, real speakers. Checklist in [PLAYTEST.md](PLAYTEST.md).
 
 ## Phase 7: First hour, defaults and accessibility — in progress
 
