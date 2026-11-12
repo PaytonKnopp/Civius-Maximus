@@ -15,6 +15,9 @@ Built from the ground up to be modded: leaders, civs, units and rules are all da
 > [V1 review](docs/V1-REVIEW.md) covers the first build). The UI and art polish pass before the
 > first playtest: [polish review](docs/POLISH-REVIEW.md). Safe online play, cloud saves and a
 > desktop app that updates itself, set up step by step: [setup review](docs/SETUP-REVIEW.md).
+> The last pass before playtesting (what was checked, fixed, and what only a person with a
+> device can check): [release review](docs/RELEASE-REVIEW.md). What to try and how to report:
+> [playtest kit](docs/PLAYTEST.md). What changed: [changelog](CHANGELOG.md).
 
 ## Design docs
 
@@ -49,10 +52,15 @@ Requires Node 22+ and pnpm 10+.
 pnpm install
 pnpm lint        # ESLint, including determinism rules for the engine
 pnpm typecheck   # TypeScript, all packages
-pnpm test        # Vitest, all packages
+pnpm test        # Vitest, all packages (fuzz tests for actions, saves and online play included)
 pnpm dev         # client dev server
+pnpm build       # the production build (packages/client/dist)
 pnpm cx validate mods/my-mod   # check a mod (see mods/README.md)
+pnpm cx soak smoke             # play all-AI games to the end with the rules checked every turn
 ```
+
+[CLAUDE.md](CLAUDE.md) lists every command and check script (screenshots at every screen size,
+the sound and compatibility checks, profiling).
 
 ## Legal note
 

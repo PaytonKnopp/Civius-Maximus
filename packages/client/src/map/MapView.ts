@@ -96,6 +96,11 @@ export class MapView implements MapRenderer {
   private selectedUnit: string | null = null;
   private pathLayer = new Graphics();
   private pathLabels = new Container();
+  /**
+   * Settlement banners, above the unit tokens (their towns stay beneath them): a soldier
+   * standing below a city used to cover what the city was making.
+   */
+  private banners = new Container();
   private pathOrigin = 0;
   private settlementData: { views: SettlementView[]; territory: TerritoryView } | undefined;
   /** Settlement badges and choice highlights, each with its unwrapped x. */
@@ -125,7 +130,7 @@ export class MapView implements MapRenderer {
     }
     this.host.appendChild(this.app.canvas);
     this.app.stage.addChild(this.world);
-    this.overlay.addChild(this.pathLayer, this.pathLabels);
+    this.overlay.addChild(this.pathLayer, this.pathLabels, this.banners);
     this.bindInput(this.app.canvas);
     let frames = 0;
     let last = performance.now();
@@ -305,15 +310,18 @@ export class MapView implements MapRenderer {
       pop.position.set(left + 13, top + bh / 2 + 0.5);
       label.anchor.set(0, 0.5);
       label.position.set(left + 27 + star, top + (status ? 10 : bh / 2));
-      node.addChild(g, bg, medal, pop, label);
+      // The town goes under the units on its tile; its banner goes over every unit.
+      const banner = new Container();
+      node.addChild(g);
+      banner.addChild(bg, medal, pop, label);
       if (view.capital)
-        node.addChild(
+        banner.addChild(
           new Graphics().star(left + 32, top + (status ? 10 : bh / 2), 5, 5, 2.2).fill(0xd4a94e),
         );
       if (status) {
         status.anchor.set(0, 0.5);
         status.position.set(left + 27, top + 23);
-        node.addChild(status);
+        banner.addChild(status);
       }
       if (view.health < view.maxHealth || view.wallsMax > 0) {
         const bars = new Graphics();
@@ -326,12 +334,15 @@ export class MapView implements MapRenderer {
           .fill(hp > 0.6 ? 0x7fc35a : hp > 0.3 ? 0xe0b040 : 0xe0503c);
         if (view.wallsMax > 0)
           bars.rect(-w / 2 + 1, y + 1, ((w - 2) * view.walls) / view.wallsMax, 3).fill(0x8fa8c0);
-        node.addChild(bars);
+        banner.addChild(bars);
       }
-      if (fog === 1) node.alpha = 0.6;
-      node.position.set(cx, cy);
+      for (const part of [node, banner]) {
+        if (fog === 1) part.alpha = 0.6;
+        part.position.set(cx, cy);
+        this.markers.push({ node: part, baseX: cx });
+      }
       this.overlay.addChildAt(node, 0);
-      this.markers.push({ node, baseX: cx });
+      this.banners.addChild(banner);
     }
     if (this.overlay.parent !== this.world) this.world.addChild(this.overlay);
   }
@@ -1007,6 +1018,8 @@ export class MapView implements MapRenderer {
     this.pathLabels.x = this.pathLayer.x;
     if (this.overlay.parent === this.world)
       this.world.setChildIndex(this.overlay, this.world.children.length - 1);
+    // Units and highlights are added on top as they change; the banners stay above them.
+    this.overlay.setChildIndex(this.banners, this.overlay.children.length - 1);
   }
 
   private zoomAt(sx: number, sy: number, factor: number) {

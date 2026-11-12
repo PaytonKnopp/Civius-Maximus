@@ -147,8 +147,11 @@ function toPathView(steps: ReturnType<typeof findPath>): PathView | null {
 }
 
 /** A notification for the viewer, or undefined if the event isn't worth one. */
+/** Unit models that ride (content: `unit.model`): their moves sound of hooves. */
+const MOUNTED = new Set(['horseman', 'knight', 'cavalry', 'chariot']);
+
 /** The sound for an event, as the viewer hears it (docs/06-ui-ux.md, "Music and sound"). */
-function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
+function soundFor(content: CompiledContent, e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
   switch (e.type) {
     case 'settlement_founded':
       return e.owner === me ? 'found' : null;
@@ -241,12 +244,12 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
       return e.player === me ? 'notify' : null;
     case 'unit_moved': {
       if (e.owner !== me) return null;
-      const type = s.units[e.unit]?.type ?? '';
-      if (/galley|caravel|frigate|privateer|ironclad|destroyer|ship|boat/.test(type))
-        return 'move_ship';
-      if (/horse|cavalry|knight|chariot|keshig|companion|mandekalu|rough_rider/.test(type))
-        return 'move_horse';
-      return 'move';
+      // By what the unit is, not by its name: names missed six ships (the Dromon, the
+      // Quadrireme, submarines...) and five kinds of cavalry (the Mamluk, the Cossack...).
+      const def = content.entities.unit[s.units[e.unit]?.type ?? ''];
+      if (!def) return 'move';
+      if (content.entities.unitClass[def.class]?.domain === 'sea') return 'move_ship';
+      return MOUNTED.has(def.model ?? '') ? 'move_horse' : 'move';
     }
     case 'settlement_razing':
       return 'burning';
@@ -1246,7 +1249,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         if (e.visibleTo !== 'all' && !e.visibleTo.includes(viewer)) continue;
         const text = noticeFor(content, s, e, viewerRef.current);
         if (text) notify(text);
-        const cue = soundFor(e, viewer, s);
+        const cue = soundFor(content, e, viewer, s);
         if (cue) play(cue);
         if (cue === 'wonder' || cue === 'victory' || cue === 'defeat' || cue === 'era')
           music.duck(4);

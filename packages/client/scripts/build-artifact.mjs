@@ -33,6 +33,10 @@ const head = html.match(/<head>([\s\S]*)<\/head>/)[1];
 const fonts = head.match(/<link[^>]+fonts\.googleapis\.com\/css2[^>]+>/)?.[0] ?? '';
 const title = head.match(/<title>.*<\/title>/)[0];
 
+// The licenses of the libraries and fonts inside travel with the file (vite.config.ts writes
+// them as licenses.txt; a single page has no second file, so they go in a comment).
+const licenses = readFileSync(join(dist, 'licenses.txt'), 'utf8').replaceAll('--', '- -');
+
 const page = [
   '<meta charset="utf-8">',
   title,
@@ -50,6 +54,7 @@ const page = [
       ]
     : []),
   `<script type="module">\n${script}\n</script>`,
+  `<!--\n${licenses}\n-->`,
   '',
 ].join('\n');
 writeFileSync(out, page);

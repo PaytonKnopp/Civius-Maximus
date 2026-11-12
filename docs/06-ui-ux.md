@@ -307,6 +307,14 @@ the design pass were merged ([RELEASE-REVIEW.md](RELEASE-REVIEW.md) has the full
   for a bug report). An autosave that fails says so once. The crash screen (a failure drawing
   the game) says the game couldn't go on and where the autosave is.
 - *The frame rate counter is off by default* (D128); Options still has it.
+- *2D view:* settlement banners draw above unit markers (the town itself stays under them), so
+  a soldier standing below a city no longer hides what the city is making.
+- *Help* lists the map's own keys (arrows or W A S D to move it, + and − to zoom).
+- *Touch:* where the pointer is a finger, the smallest controls (the build queue's remove
+  button, the 3D / 2D switch, Disband, the cards' close buttons) are at least 32 px.
+- *About* (Options) says what the game is built with and links to the licenses that ship with
+  it; it no longer says the game has no image files (it uses public-domain photographs for
+  ground and surface detail, listed in ART-CREDITS.md).
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
@@ -475,6 +483,13 @@ a gesture).
 - **Ambience:** wind, plus birdsong before the Industrial era.
 - The ☰ menu has volume sliders for master, music, effects and ambience, and a mute switch. Music
   ducks under big moments.
+- **Release pass (November 2026):** a unit's move sounds by what the unit is (a ship by its
+  class, a rider by its model), not by its name, which had six ships marching and five kinds of
+  cavalry on foot. After a stall (a long turn worked out on the page, a tab asleep) the music
+  carries on from now: the bars it missed used to sound all at once. Stopping the music no
+  longer leaves an oscillator running. `scripts/audio-check.mjs` measures every cue, each era's
+  music and the loudest pile-up on the master bus in a headless browser; how it sounds still
+  needs ears.
 
 The playlist of recorded public-domain pieces stays the plan for when recordings can be bundled
 or streamed. Mods will be able to add tracks.

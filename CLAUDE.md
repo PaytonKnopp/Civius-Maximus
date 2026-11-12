@@ -47,8 +47,11 @@ desktop and phone size and flags anything wider than the screen; `node packages/
 an online game between two tabs (`?net=local`): lobby, join, a turn, a friend dropping. The app opens on a home screen over a quick game; `#play` in the URL skips it (the game scripts use it) and `#lab` opens the Map Lab.
 `node packages/client/scripts/screenshot-screens.mjs <save.json> <out-dir>` loads a save made with `cx profile --save` and captures the HUD, city and unit cards, diplomacy, the game menu and every full screen at seven sizes (2560 wide down to a phone), failing on console errors, overflow or a screen that Esc doesn't close (`SIZES`, `SCREENS`, `LARGE=1`).
 `node packages/client/scripts/perf-lategame.mjs early=<save.json> late=<save.json>` loads saves made with `cx profile --save` and compares frame times in a real browser (see its header; it needs the client built and served).
+`node packages/client/scripts/review-screens.mjs <save.json> <out-dir>` and `node packages/client/scripts/review-menus.mjs <out-dir> [save.json]` are the release review: every state of the game screen and of the screens before a game, at six or seven sizes, each screenshotted and run through `scripts/audit.mjs` (clipped or cut text, raw ids, emoji, text off the screen, covered buttons, low contrast, small touch targets); the findings go to `<out-dir>/*-findings.txt`. They take 5 to 10 minutes a size; run one at a time (`SIZES`, `STEPS`, `ONLY`).
+`node packages/client/scripts/audio-check.mjs [out.json]` measures the sound without ears: every cue alone, each era's music, the loudest pile-up and a stalled page, read off the master bus in a headless browser; it fails on clipping or a silent cue.
+`node packages/client/scripts/compat-check.mjs <out-dir>` takes things away from the browser (storage, workers, WebGL, a lost graphics context) and checks the game still opens and plays a turn.
 `pnpm --filter @cx/client build:artifact <file.html>` builds the client as one self-contained
-HTML page for sharing.
+HTML page for sharing. The build writes `licenses.txt` (the licenses of the libraries and fonts the game ships with, read from `node_modules`) and refuses a secret database key in `VITE_SUPABASE_ANON_KEY`.
 
 The golden replay test uses `packages/engine/test-fixtures/frozen-content`; only re-copy it from
 base and update the hash when the engine's rules change on purpose.

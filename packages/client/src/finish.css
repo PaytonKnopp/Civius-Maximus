@@ -2832,3 +2832,52 @@ button.close:hover:not(:disabled) {
 .mx-save-list li.auto small {
   color: var(--text-2);
 }
+
+/* --- Release pass: finger-sized targets on touch screens ----------------------------------- */
+
+/* On a phone the build queue's remove button was 18 x 17 px, the 3D / 2D switch 30 x 23 and
+   Disband 57 x 23: under the 24 px minimum (WCAG 2.2, 2.5.8) and far under a fingertip. Only
+   where the pointer is a finger, so nothing moves for a mouse. */
+@media (pointer: coarse) {
+  .queue li {
+    align-items: center;
+  }
+
+  .queue li button.link {
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .game-bar .segmented button,
+  .game-bar .segmented.compact button {
+    min-width: 36px;
+    min-height: 32px;
+  }
+
+  .unit-head .disband {
+    min-height: 32px;
+    padding-inline: 10px;
+  }
+
+  .settlement-panel .items li > button {
+    min-width: 34px;
+    min-height: 34px;
+  }
+
+  .settlement-panel .row-inline > button {
+    min-height: 32px;
+  }
+
+  .settlement-head .close,
+  .tile-head .close,
+  .player-panel-head .close,
+  .turn-summary header .close {
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  details.opinion > summary,
+  details.kit > summary {
+    padding-block: 7px;
+  }
+}
