@@ -6,6 +6,7 @@ import {
   atWar,
   type EngineContext,
   type Emit,
+  HOSTILE,
   type RuleError,
   unitClassOf,
   unitIds,
@@ -115,7 +116,8 @@ function becomeCityState(
 ) {
   const camp = draft.camps[campId]!;
   const tile = camp.tile;
-  for (const u of camp.units) delete draft.units[u];
+  // Its raiders disband; a unit that has since changed sides is no raider of this camp.
+  for (const u of camp.units) if (draft.units[u]?.owner === HOSTILE) delete draft.units[u];
   delete draft.camps[campId];
   const free = freeCityStateDefs(ctx, view(draft));
   const [i, rng] = nextRange(draft.rng as GameState['rng'], 0, free.length - 1);

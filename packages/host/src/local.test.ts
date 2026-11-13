@@ -1,7 +1,7 @@
 import { compileFromDirs } from '@cx/content/node';
 import { describe, expect, it } from 'vitest';
 import { encodeBits, type GameState, neighbors, stateHash } from '@cx/engine';
-import { type AiRunner, LocalGame, runTurn, type TurnProgress } from './local';
+import { type AiRunner, LocalGame, runTurn, summarize, type TurnProgress } from './local';
 import { makeSave, readSave } from './saves';
 
 const ctx = { content: compileFromDirs().content! };
@@ -219,6 +219,17 @@ describe('when the rules themselves fail (a bug)', () => {
     const fine = new LocalGame(setup(['human', 'ai']), ctx);
     fine.act({ type: 'end_turn', player: 'p1' });
     expect(fine.takeProblem()).toBeNull();
+  });
+
+  it('says it once when several seats fail the same way', () => {
+    const slots = "couldn't play its turn (Cannot read properties of undefined (reading 'slots'))";
+    expect(summarize([`Rome ${slots}`])).toBe(`Rome ${slots}`);
+    expect(summarize([`Rome ${slots}`, `Spain ${slots}`, `Mali ${slots}`])).toBe(
+      "Rome, Spain and Mali couldn't play their turn (Cannot read properties of undefined (reading 'slots'))",
+    );
+    expect(summarize([`Rome ${slots}`, "Spain couldn't answer a deal (x)", `Mali ${slots}`])).toBe(
+      "Rome and Mali couldn't play their turn (Cannot read properties of undefined (reading 'slots')). Spain couldn't answer a deal (x)",
+    );
   });
 });
 

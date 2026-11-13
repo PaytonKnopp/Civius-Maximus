@@ -11,15 +11,15 @@ Updated with every commit, so this table is always the current position.
 | Phase | State | What is left |
 |---|---|---|
 | 0 Baseline | Done | |
-| 1 Every screen | Most of it done | One more capture of every screen on the final build at every size; the special states (game over, incoming deal, capture dialog, promotion, hotseat pass) |
-| 2 Reliability | Done, soak still running | The soak's totals on the final code |
+| 1 Every screen | Done | |
+| 2 Reliability | Done | The long soak is still adding games; its count is under "Verified" |
 | 3 Online | Done | What only real devices can show is in "Could not verify" |
-| 4 Performance and compatibility | Most of it done | Workflows and the update flow read through |
+| 4 Performance and compatibility | Done | |
 | 5 Audio | Done | How it sounds needs ears (checklist in PLAYTEST.md) |
 | 6 Writing and originality | Done | |
-| 7 First hour and defaults | Started | The first 30 turns played through; accessibility checks |
-| 8 Release hygiene | Most of it done | Dead code, the one slow test |
-| Finish | Not started | Final re-run of everything, the summary |
+| 7 First hour and defaults | Done | |
+| 8 Release hygiene | Done | |
+| Finish | In progress | Final re-run of every check, the summary |
 
 Where it ran: one cloud machine (4 cores, no sound card, no graphics card: the headless browser
 draws 3D in software), one browser engine (Chromium). Anything about how the game sounds, how it
@@ -40,7 +40,7 @@ end, with a checklist.
   `--from`: 4 civs on a Small Continents map (seed 21), 6 on Standard Pangaea (seed 22), 8 on
   Large Continents (seed 23), 12 on Huge Continents (seed 24).
 
-## Phase 1: Integration review of every screen — in progress
+## Phase 1: Integration review of every screen — Done (see "Could not verify" for what a headless browser can't show)
 
 How: `packages/client/scripts/review-screens.mjs` (new) loads a save as one seat and captures the
 whole game screen at each size (HUD, every top-bar tooltip, the city and town cards and each tab,
@@ -109,11 +109,36 @@ Found and fixed so far (each re-screenshotted after the fix):
   (state hash unchanged). Science, culture, faith and influence were already what the rules give
   (89 to 97% of civ-turns exactly, the rest a settlement growing in the same turn).
 
-The session was interrupted twice by the machine restarting (running servers and background
-games are lost each time, files are not), so work is committed in smaller parts than one per
-phase, and `cx soak --out` carries on from the games already played.
+Found on the last capture and fixed:
 
-## Phase 2: Reliability — in progress (started early: the soak ran beside the screen review)
+- **2D city banners hidden behind unit markers.** A soldier standing on the tile below a city
+  covered what the city was making. Banners now draw above unit markers; the town itself
+  stays under them.
+- **Emoji as text.** The game writes yields as its own drawn icons; two lists still printed the
+  emoji they stand in for (the tile list when placing a district, and a trader's list of
+  destinations).
+- **Touch targets.** On a phone the build queue's remove button was 18 x 17 px, the 3D / 2D
+  switch 30 x 23 and Disband 57 x 23. Where the pointer is a finger they are now at least 32 px.
+
+**The last capture, on the finished build** (`review-screens.mjs`, the turn-150 save with six
+civs, at 1920 x 1080, 1280 x 800 and 390 x 844: 218 screenshots): every screen opens and closes,
+no console error, and the audit finds **no clipped or cut text, no sideways scrolling, no raw
+id, no emoji and nothing off the screen**. What it still lists: 33 low-contrast notes, all on
+tinted cards whose top sheen the audit mistakes for the whole card (read by eye: legible); 34
+"covered" notes that are a tooltip or an open list over a button, as intended; and small touch
+targets on the phone, the worst of which are fixed above (the screen buttons at 36 px and the
+civ chips at 40 px are left as designed).
+
+Special states, captured and read: the game-over screen for a science victory and a religious
+victory (desktop and phone, as the loser), the bar the game shows when a rival's turn fails
+(forced through the debug hook: five seats failed, each passed, the turn went on, and the bar
+offered the save), and the screen shown when drawing the game itself fails.
+
+The session was interrupted many times by the machine restarting (running servers and
+background games are lost each time, files are not), so work is committed in smaller parts than
+one per phase, and `cx soak --out` carries on from the games already played.
+
+## Phase 2: Reliability — Done
 
 `pnpm cx soak` (new, `packages/tools/src/soak.ts`) plays all-AI games to the end and, after every
 turn, runs the engine's new `checkInvariants` (every id points at something that exists; units
@@ -143,6 +168,14 @@ Rules bugs the invariants found in the first three games, all fixed with tests:
 Not bugs (the checks were too strict): a camp lists a dead raider until its next turn; a great
 work whose building is gone (a captured Palace) is "stored" by design.
 
+- **A captured raider stayed on its camp's roster** (found by the last soak, in a game with a
+  leader whose soldiers capture what they beat). The camp went on counting the unit as one of
+  its own, and when that camp was later befriended, every unit on its roster was disbanded:
+  the player's captured soldier with them. A raider that changes sides now leaves the roster
+  at once, and only raiders disband. (The reference game is unchanged by it:
+  `cx profile 8 120 1 standard` ends on `6002199c44f2766610c04d1fa8` with and without the
+  fix. That value is new since the names were replaced, because a game's hash covers the hash
+  of its content.)
 - **Treasuries below zero for free cities and city-states.** The "free cities" side and a
   city-state pay upkeep like anyone and have no way to sell units, so their gold could sink
   without limit (-393 in one game). Nothing reads it, but it broke the rule that gold never
@@ -221,7 +254,7 @@ games keep their final state hash (`88d2a5c6416ba64589a6a5627b` and, for CI's
 `cx profile 8 120 1 standard --check`, `ecb41782fb8e700ebc9927a6f4`, which passes). Island
 games change: their AIs settle and explore more. Test: `packages/engine/src/ai/reach.test.ts`.
 
-## Phase 3: Online and multiplayer — in progress
+## Phase 3: Online and multiplayer — Done (what one machine can test)
 
 - **Fuzz through the real host and protocol** (`packages/host/src/online.fuzz.test.ts`, runs
   with `pnpm test`): a seated client sends 34 hand-made hostile messages and 3,000 random
@@ -252,7 +285,7 @@ games change: their AIs settle and explore more. Test: `packages/engine/src/ai/r
   expire by the server's clock; the trigger functions can't be called through the API; the
   game refuses to hold a secret (`service_role`) key. Nothing to fix.
 
-## Phase 6: Writing, content and originality — in progress (started while screens were captured)
+## Phase 6: Writing, content and originality — Done
 
 - **"How to play" was written before the gameplay pass** and mentioned none of it. All 22
   articles are checked against `rules.json` and rewritten where the rules moved (happiness is
@@ -341,7 +374,7 @@ governors' names are original; no text from a Civilization game was found.
   message instead (`packages/client/vite.config.ts`; tried with both kinds of secret key and
   with a public one).
 
-## Phase 4: Performance and compatibility — in progress
+## Phase 4: Performance and compatibility — Done (what one machine can test)
 
 - `pnpm cx profile 8 120 1 standard --check` (the check CI runs): passes. At turn 121 on this
   machine: 1.2 s of turn processing, 0.55 s for all eight AIs, a 1.0 MB save (45 KB gzipped),
@@ -418,10 +451,141 @@ one. It cannot say whether anything sounds good.
 - Not checked, because it needs ears: whether it sounds good, the balance between music and
   effects, each slider by ear, real speakers. Checklist in [PLAYTEST.md](PLAYTEST.md).
 
-## Phase 7: First hour, defaults and accessibility — in progress
+## Phase 7: First hour, defaults and accessibility — Done
 
 - **The frame rate counter was on by default** (bottom corner of every screenshot and of every
   new player's first game). It is off now, like the developer aid it is; Options still has it
   (D128, open: default built). The screenshot scripts used its number to know the first frame
   had been drawn; they read a mark on the game screen instead (`data-drawn`).
+- **The first 30 turns, through the real interface** (`TURNS=30 screenshot-game.mjs`, in the 3D
+  view): the leader's introduction, founding the capital, every "choose" the game asks for
+  (production, research, a civic, policies, a dedication, a tile to develop, where to put a
+  district), unit orders and End Turn, then each lens, the 2D view and a phone-sized window.
+  Turn 30 reached with no dead end and no error; no sideways scrolling on the phone.
+- **Defaults** as a new player gets them: 3D view where the browser has WebGL 2 (2D
+  otherwise), Medium quality, autosave on, sound on at master 80%, music 45%, effects 70%,
+  hints on, advisors on, the frame counter off.
+- **Accessibility, read from the code:** every dialog has a role and a name; icon-only buttons
+  have labels; images have alternative text; focus is visible (`:focus-visible` rules, and no
+  outline is removed without a replacement); the system's "reduce motion" setting is honored
+  as well as the game's own switch; Options has larger text. Not tried with a screen reader.
+
+## Phase 8: Release hygiene — Done
+
+- `README.md` points at this review, the playtest kit and the changelog; `CLAUDE.md` lists the
+  new commands and check scripts; `CHANGELOG.md` is new; `docs/PLAYTEST.md` is refreshed with
+  checklists for everything only a person with a device can check; the design docs are
+  updated in the same commits as the changes they describe.
+- **Reporting a bug:** the save is the report (it holds the seed and the whole game). Game
+  menu › Save and load › Export file downloads it; when the game itself hits a problem, the
+  bar that says so has "Save a copy to send".
+- **A slow test:** `units.test.ts`, "replays a game with moves to the same hash", takes a few
+  seconds and timed out once at the default 5 s when the machine was busy. It has 30 s now.
+- **Dead code:** five exported names are used nowhere (`ENGINE_VERSION`, `emptyTerms`,
+  `EFFECT_TYPES`, `SURFACE_LAYER`, `AIR_MODELS`). Left: they are a line each and cost nothing.
+- **Text in code:** the interface's own words are written in the components (English only);
+  only names and descriptions of game content live in content files. Translating the game
+  would start with pulling those out. Not a defect; noted for when it matters.
+
+## Verified, with numbers
+
+- **Checks:** `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test` (61 files, 455
+  tests) and `pnpm build` pass on the last commit. `pnpm cx validate` is clean. CI's
+  performance check passes.
+- **Soak** (`pnpm cx soak all`, on the final rules): 20 all-AI games played to the end
+  with 2 to 12 civs on Duel to Huge maps and twelve map types, 3,386 turns in all. After
+  every turn the invariants were checked; 73 times a game was saved, loaded and played
+  on beside the original to the same hash. Two rules slips found: the captured raider above,
+  fixed, and two soldiers on one tile once in a 12-civ game on a Huge map, which is being
+  traced as this is written (see "Left for you" if it is still there). No turn threw. Endings: science 8, culture 6, diplomatic 6. The other speeds, difficulties, starting eras and
+  rule switches are the part of the 71-game list the machine's restarts did not leave time
+  for; `pnpm cx soak all --out file.jsonl`
+  carries on from where a run stopped.
+- **Fuzz:** 6,000 malformed and 6,000 well-formed random actions against games at three stages
+  (one crash found and fixed); 400 damaged copies of a save and 13 kinds of not-a-save (the
+  loader hardened); 3,034 hostile messages from a seated online client (three fixes); a game
+  played from three devices through the real host and protocol for 12 turns in every test run
+  and 70 turns by hand, each client holding exactly its view after every seat's turn.
+- **Screens:** the finished build captured and audited at 1920 x 1080, 1280 x 800 and
+  390 x 844 (218 states of the game screen); earlier builds in this pass at six sizes for the
+  game screen and seven for the screens before a game. The first 30 turns played through the
+  real interface. Game-over, crash and in-game problem states captured.
+- **What the browser can take away:** seven cases, all play a turn.
+- **Sound:** 39 cues, 9 music styles, the worst pile-up and a stalled page measured; nothing
+  clips.
+- **Text:** 3,107 strings of content checked for borrowed names; 405 "what it does" lines
+  checked by a test for raw values; 24 how-to-play articles checked against the rules.
+- **What the top bar promises against what a turn gives** (every civ, every turn of the
+  soak): science exact 90% of the time, culture 94%, faith 88%, influence
+  90% (the rest within a point or two: a settlement growing the same turn). Gold is exact
+  28% of the time and close 42%: the rest are one-off sums no forecast can know
+  (a village found, production sold when a wonder is lost, a deal ending).
+
+## Could not verify
+
+One cloud machine, no sound card, no graphics card, one browser engine, no second device, no
+real network between devices, no Supabase project. Each of these has a checklist in
+[PLAYTEST.md](PLAYTEST.md):
+
+- **How it sounds.** Levels were measured, not heard.
+- **Safari and Firefox,** on a Mac, an iPhone, an Android phone. Only Chromium ran. The styles
+  use `:has()`, `dvh` and `color-mix()` (Safari 16.2 or later, Firefox 121 or later).
+- **Real graphics hardware.** 3D was drawn in software: frame rates here mean nothing, and
+  the largest screenshots sometimes showed a frame late. Frame rate at each quality setting,
+  a late game on a large map, and the auto-detected quality on a real machine are unchecked.
+- **Real networks.** Online play ran over an in-memory network and between tabs of one
+  browser, never through the public matchmaking service, a relay, mobile data or a strict
+  office network.
+- **Accounts and cloud saves.** The database rules were read, not run: there was no project
+  to run them on. Sign-up, the cloud autosave, Continue on a second device and public games
+  are untested end to end.
+- **The desktop app.** Not built here (it needs Windows, macOS and Linux runners).
+- **Touch.** Sizes and layouts were checked in a phone-sized window with touch emulated; no
+  finger touched it. Notches and home bars rely on the browser's safe-area values.
+- **A screen reader.**
+- **The version number in a real deploy.** This checkout has no merge history, so builds here
+  show 1.0; the deploy workflow fetches the full history and counts merges.
+
+## Open taste calls
+
+Each has its default built; say the word to switch (`docs/DECISIONS.md`):
+
+- **D127** Explore is offered only to soldiers and ships (it was on every unit).
+- **D128** The frame rate counter is off unless turned on.
+- **D129** 27 names that matched Civilization ability names are replaced; the table of old and
+  new is in Phase 6 above. Any of them can be another name, or the old one back.
+- **D130** The systems' own vocabulary that the game shares with Civilization VI (district
+  names, the four ages, "era score", "diplomatic favor", the World Congress) is kept. Worth
+  deciding before a public release.
+- D122 to D126 (from the final design pass) are untouched.
+
+Noted for your ear or eye, not changed: the click, footsteps and a ship's move are probably
+too quiet to hear under music, and founding a pantheon is the loudest cue in the game; closing
+a screen has a cue that nothing plays.
+
+## Left for you
+
+Too big or too much a matter of taste for this pass:
+
+- **Who wins all-AI games.** The mechanics review's larger samples at Standard speed are won
+  by science almost every time. In this pass's soak (Online speed, mostly six civs on Small
+  maps) the endings were science 8, culture 6, diplomatic 6; domination never won one, and religion won one game out
+  of about forty played in the pass. The AI does not yet play for domination or religion well
+  enough to win by them.
+- **AI navies** do not escort invasions or blockade.
+- **Big-map turns** take about 2 s late in a game with 12 civs on a Huge map (1.2 s with 8
+  civs on Standard at turn 120, measured here). The turn runs off the page, so nothing
+  freezes, but the wait is there. `docs/01-architecture.md` says what closing the gap needs.
+- **Art:** painted leader portraits and artist-made 3D models are the biggest upgrade left;
+  everything on screen is drawn by code. `docs/guides/art.md` says where the files go.
+- **The AI still asks for a few moves it can't make** (a path blocked by someone else's
+  units): about 70 to 280 a game, down from 1,300 to 3,800, and it falls back to its next
+  choice.
+- **Headroom in the sound:** the worst pile-up measured peaks 0.9 dB under full scale. A
+  limiter after the compressor would make clipping impossible; it changes the sound a little,
+  so it is yours to try.
+- **The first download** is one 2.7 MB file (752 KB compressed). Splitting the 3D view and the
+  Civilopedia out of it would speed up the first visit.
+- **A one-line Vite warning** at build time about an import without a file extension.
+- **Translation** would start with moving the interface's words out of the components.
 

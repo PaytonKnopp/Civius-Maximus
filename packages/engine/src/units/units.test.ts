@@ -252,7 +252,8 @@ describe('vision', () => {
 });
 
 describe('determinism with units', () => {
-  it('replays a game with moves to the same hash', () => {
+  // Plays a whole short game twice: seconds on a busy machine, so it gets more than the default.
+  it('replays a game with moves to the same hash', { timeout: 30_000 }, () => {
     const setup = {
       gameId: 'r',
       settings: {

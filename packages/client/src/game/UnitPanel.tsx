@@ -34,7 +34,7 @@ import {
   upgradeTarget,
   validateAction,
 } from '@cx/engine';
-import { Icon } from '../ui/Icon';
+import { Icon, Rich } from '../ui/Icon';
 import { ICONS } from '../ui/icons';
 import { useState } from 'react';
 import { civName, type Colors, cssColor, whole } from './model';
@@ -452,10 +452,14 @@ export function UnitPanel({
                         ` (${civName(ctx.content, state, d.settlement.owner)})`}
                       <span className="muted mono">
                         {' '}
-                        {Object.entries(d.yields.origin)
-                          .filter(([, v]) => v > 0)
-                          .map(([y, v]) => `+${v / 100}${ctx.content.entities.yield[y]?.icon ?? y}`)
-                          .join(' ')}
+                        <Rich
+                          text={Object.entries(d.yields.origin)
+                            .filter(([, v]) => v > 0)
+                            .map(
+                              ([y, v]) => `+${v / 100}${ctx.content.entities.yield[y]?.icon ?? y}`,
+                            )
+                            .join(' ')}
+                        />
                       </span>
                     </span>
                     <button

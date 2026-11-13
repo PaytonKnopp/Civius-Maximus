@@ -13,6 +13,8 @@ import { act, addUnit, at, ctx, testState } from '../testing/world';
 import { leviesTurn, levyCost } from './befriend';
 
 const FIELD = Array.from({ length: 7 }, () => '.'.repeat(24));
+/** The base content with every civ's and leader's abilities (the shared test content has none). */
+const full = { content: compileFromDirs().content! };
 const R = ctx.content.rules.cityStates;
 const err = (s: GameState, a: Action) => {
   const r = applyAction(s, a, ctx);
@@ -77,6 +79,40 @@ describe('befriending camps', () => {
     });
     expect(err(near, befriend('p1'))).toBe('no_site');
     expect(err(w.s, befriend('p1'))).toBeUndefined();
+  });
+
+  it('keeps a raider that changed sides: it leaves the roster when captured', () => {
+    // Montezuma's soldiers capture what they beat; here every time.
+    const content = structuredClone(full.content);
+    const capture = content.entities.leader.leader_montezuma!.ability.effects.find(
+      (e) => e.effect === 'capture_on_kill',
+    )!;
+    (capture.params as { percent: number }).percent = 100;
+    const kit = { content };
+    const w = world();
+    const s0 = structuredClone(w.s) as GameState;
+    s0.players.p1!.leader = 'leader_montezuma';
+    // Raiders are a side of their own in a real game.
+    s0.players.hostile = {
+      ...structuredClone(s0.players.p2!),
+      id: 'hostile',
+      kind: 'hostile',
+      capital: null,
+    };
+    s0.units[w.raider]!.health = 1;
+    const mine = addUnit(s0, 'p1', 'unit_warrior', at(s0, 11, 3)).id;
+    const r = act(s0, { type: 'attack', player: 'p1', unit: mine, tile: w.tile }, kit);
+    expect(r.state.units[w.raider]).toMatchObject({ owner: 'p1' });
+    expect(r.state.camps.c1!.units).toEqual([]);
+    expect(checkInvariants(kit, r.state)).toEqual([]);
+    // The camp is befriended later: its raiders disband, the captured soldier stays.
+    let s = r.state;
+    for (let i = 0; i < R.befriendTurns; i++) {
+      s = act(s, befriend('p1'), kit).state;
+      s = nextTurn(s);
+    }
+    expect(s.camps.c1).toBeUndefined();
+    expect(s.units[w.raider]).toMatchObject({ owner: 'p1' });
   });
 
   it('needs the camp found, the influence, and city-states in the game', () => {
@@ -179,7 +215,6 @@ describe('levies', () => {
 });
 
 describe('tribal villages', () => {
-  const full = { content: compileFromDirs().content! };
   const setup = (huts?: boolean): GameSetup => ({
     gameId: 'huts',
     settings: {

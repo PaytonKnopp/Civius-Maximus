@@ -176,7 +176,7 @@ export class LocalGame implements GameHandle {
   /** Takes a turn's work as the game's new state. */
   private finish(work: TurnWork) {
     this.state = work.state;
-    if (work.problems?.length) this.problem = work.problems.join('. ');
+    if (work.problems?.length) this.problem = summarize(work.problems);
   }
 
   /** A failure inside the rules: the game stays as it was, and the player hears of it. */
@@ -298,6 +298,26 @@ export class LocalGame implements GameHandle {
   private tell(events: GameEvent[]) {
     for (const fn of this.listeners) fn(this.state, events);
   }
+}
+
+/**
+ * Several seats failing the same way (one bug meets every rival) read as one line: "AI 2, AI 3
+ * and AI 4 couldn't play their turn (…)" rather than the same reason three times over.
+ */
+export function summarize(problems: string[]): string {
+  const groups = new Map<string, string[]>();
+  const other: string[] = [];
+  for (const p of problems) {
+    const m = /^(.+?) couldn't (.+)$/s.exec(p);
+    if (!m) other.push(p);
+    else groups.set(m[2]!, [...(groups.get(m[2]!) ?? []), m[1]!]);
+  }
+  const lines = [...groups].map(([what, who]) => {
+    if (who.length === 1) return `${who[0]} couldn't ${what}`;
+    const names = `${who.slice(0, -1).join(', ')} and ${who.at(-1)}`;
+    return `${names} couldn't ${what.replace(/^(play|end) its turn/, '$1 their turn')}`;
+  });
+  return [...lines, ...other].join('. ');
 }
 
 /** How many moves can be taken back in a row. */

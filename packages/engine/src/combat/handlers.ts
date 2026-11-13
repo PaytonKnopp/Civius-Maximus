@@ -150,6 +150,11 @@ function takeOver(
   if (roll > chance) return false;
   const from = d.owner;
   d.owner = killer.owner;
+  // A raider that changes sides leaves its camp's roster: the camp would otherwise go on
+  // counting it, and take it along when the camp is befriended and its raiders disband.
+  if (from === HOSTILE)
+    for (const camp of Object.values(draft.camps))
+      if (camp.units.includes(id)) camp.units = camp.units.filter((u) => u !== id);
   d.health = Math.floor(ctx.content.rules.combat.maxHealth / 2);
   d.moves = 0;
   d.orders = null;

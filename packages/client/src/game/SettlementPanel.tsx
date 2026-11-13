@@ -548,7 +548,9 @@ export function SettlementPanel({
                       onClick={() => onChoose(c.tile)}
                     >
                       <span>{tileName(content, state.map.tiles[c.tile]!)}</span>
-                      <span className="mono">{c.label}</span>
+                      <span className="mono">
+                        <Rich text={c.label} />
+                      </span>
                     </button>
                   </li>
                 ))}

@@ -192,7 +192,8 @@ export function raidersTurn(draft: Draft<GameState>, ctx: EngineContext, emit: E
   const types = raiderTypes(ctx, draft as GameState);
   for (const id of campIds(draft)) {
     const camp = draft.camps[id]!;
-    camp.units = camp.units.filter((u) => draft.units[u]);
+    // Raiders that are gone, or no longer raiders, are off the roster.
+    camp.units = camp.units.filter((u) => draft.units[u]?.owner === HOSTILE);
     if (draft.turn < camp.nextUnit || camp.units.length >= rules.maxUnits) continue;
     camp.nextUnit = draft.turn + rules.unitEvery;
     const type = random.pick(types);

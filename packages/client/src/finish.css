@@ -2880,4 +2880,8 @@ button.close:hover:not(:disabled) {
   details.kit > summary {
     padding-block: 7px;
   }
+
+  .online-bar button {
+    min-height: 32px;
+  }
 }
