@@ -1,4 +1,3 @@
-import { scaleCost } from '../speed';
 import type { Draft } from 'immer';
 import type { Action } from '../actions';
 import { type ActionHandler, type EngineContext, type Emit, type RuleError } from '../context';
@@ -14,6 +13,7 @@ import {
   goalMet,
   governmentChangeCost,
   isPolicyAvailable,
+  legacyTurns,
   nodeCostFor,
   pathTo,
   policyChangeCost,
@@ -38,19 +38,37 @@ const noGold = (cost: number): RuleError => ({
   message: `Not enough gold (needs ${Math.ceil(cost / 100)})`,
 });
 
-/** Keeps derived player fields in step after progress changes: slots that vanished, embarking. */
-function refreshPlayer(draft: Draft<GameState>, ctx: EngineContext, player: PlayerId) {
+/**
+ * Cards that went obsolete (or whose age ended) come out of their slots, and so do the last
+ * cards of a kind with fewer slots than before (a celebration over, a wonder or a city-state
+ * with a slot lost).
+ */
+export function keepPoliciesInSlots(draft: Draft<GameState>, ctx: EngineContext, player: PlayerId) {
   const p = draft.players[player]!;
   const slots = policySlots(ctx, view(draft), player);
   const snap = view(draft).players[player]!;
   for (const kind of SLOT_KINDS) {
-    // Cards that went obsolete (or whose age ended) come out of their slots.
     const still = p.policies[kind].filter((id) => isPolicyAvailable(ctx, snap, id));
     if (still.length !== p.policies[kind].length) p.policies[kind] = still;
     if (p.policies[kind].length > slots[kind])
       p.policies[kind] = p.policies[kind].slice(0, slots[kind]);
   }
-  p.canEmbark = canEmbarkNow(ctx, view(draft), player);
+}
+
+/**
+ * Turn step, after everything that can take a slot away (city-states changing suzerain,
+ * settlements changing sides, the Congress): every civ's cards fit its slots when the next
+ * turn begins. Each civ's own turn already did this once, but before those later steps.
+ */
+export function policySlotsTurn(draft: Draft<GameState>, ctx: EngineContext) {
+  for (const id of draft.playerOrder)
+    if (draft.players[id]!.alive) keepPoliciesInSlots(draft, ctx, id);
+}
+
+/** Keeps derived player fields in step after progress changes: slots that vanished, embarking. */
+function refreshPlayer(draft: Draft<GameState>, ctx: EngineContext, player: PlayerId) {
+  keepPoliciesInSlots(draft, ctx, player);
+  draft.players[player]!.canEmbark = canEmbarkNow(ctx, view(draft), player);
 }
 
 /** Starts working toward a node (and the path of prerequisites to it). */
@@ -328,7 +346,7 @@ export function empireTurn(
   const gov = ctx.content.entities.government[p.government];
   if (gov && gov.legacy.length > 0 && (p.legacies?.[p.government] ?? 0) < legacy.max) {
     p.legacyClock = (p.legacyClock ?? 0) + 1;
-    if (p.legacyClock >= Math.max(1, scaleCost(ctx, draft, legacy.everyTurns))) {
+    if (p.legacyClock >= legacyTurns(ctx, draft)) {
       p.legacyClock = 0;
       const count = (p.legacies?.[p.government] ?? 0) + 1;
       p.legacies = { ...p.legacies, [p.government]: count };

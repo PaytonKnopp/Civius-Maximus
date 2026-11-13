@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest';
 import type { Action } from '../actions';
 import type { GameEvent } from '../events';
 import { applyAction } from '../game';
+import { checkInvariants } from '../invariants';
 import { neighbors } from '../map/hex';
+import { availablePolicies } from '../progress/rules';
+import { policySlots } from '../progress/sources';
 import { foundSettlement } from '../settlements/handlers';
 import { annexCost, limitCount, settlementsOf, settlementYields } from '../settlements/rules';
 import type { GameState } from '../state';
@@ -183,6 +186,51 @@ describe('settlements at war', () => {
     expect(choose('keep')).toBeUndefined();
     // Unanswered, the choice is "keep" at the end of the turn.
     expect(endTurn(r.state).settlements[capital]!.captureChoice).toBe(false);
+  });
+
+  it('take the captor in only if there is room: never two soldiers on one tile', () => {
+    // A p1 soldier already stands in p2's capital (it was there before the war began).
+    const { s, capital } = siege();
+    const c = s.settlements[capital]!;
+    c.health = 1;
+    const inside = addUnit(s, 'p1', 'unit_warrior', c.tile);
+    const a = addUnit(s, 'p1', 'unit_swordsman', at(s, 3, 2));
+    const r = act(s, { type: 'attack', player: 'p1', unit: a.id, tile: c.tile });
+    expect(r.state.settlements[capital]!.owner).toBe('p1');
+    // The taker stays where it fought from; the soldier inside holds the city.
+    expect(r.state.units[a.id]!.tile).toBe(at(s, 3, 2));
+    expect(r.state.units[inside.id]!.tile).toBe(c.tile);
+    expect(checkInvariants(ctx, r.state).filter((p) => /military units/.test(p))).toEqual([]);
+  });
+
+  it('send their governor home and drop policy cards whose slot fell with them', () => {
+    const { s, capital } = siege(true);
+    s.settings.domination = false;
+    s.settlements[capital]!.health = 1;
+    const governor = ctx.content.ids.governor[0]!;
+    s.players.p2!.governors = {
+      [governor]: { promotions: [], settlement: capital, activeOn: 1, established: true },
+    };
+    // A military card more than p2's government has slots for, as if the capital's wonder
+    // had held the extra slot.
+    const military = policySlots(ctx, s, 'p2').military;
+    s.players.p2!.civics.done = ctx.content.ids.civic.filter(
+      (id) => ctx.content.entities.civic[id]!.era === 'era_ancient',
+    );
+    const cards = availablePolicies(ctx, s.players.p2!)
+      .filter((id) => ctx.content.entities.policy[id]!.slot === 'military')
+      .slice(0, military + 1);
+    expect(cards.length).toBe(military + 1);
+    s.players.p2!.policies.military = cards;
+    const a = addUnit(s, 'p1', 'unit_swordsman', at(s, 3, 2));
+    const r = act(s, { type: 'attack', player: 'p1', unit: a.id, tile: at(s, 4, 2) });
+    expect(r.state.settlements[capital]!.owner).toBe('p1');
+    expect(r.state.players.p2!.governors![governor]).toMatchObject({
+      settlement: null,
+      established: false,
+    });
+    expect(r.state.players.p2!.policies.military).toEqual(cards.slice(0, military));
+    expect(checkInvariants(ctx, r.state)).toEqual([]);
   });
 
   it('can be kept as a puppet: it runs itself, yields less, counts half, and can be annexed', () => {

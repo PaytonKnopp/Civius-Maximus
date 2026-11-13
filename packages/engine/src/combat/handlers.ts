@@ -18,7 +18,7 @@ import { endDealsBetween, forgetPlayer } from '../diplomacy/handlers';
 import { endRoutesBetween } from '../trade/handlers';
 import { haveOpenBorders, isSurpriseWar, warBlock } from '../diplomacy/rules';
 import { toFixed } from '../fixed';
-import { grantBoost } from '../progress/handlers';
+import { grantBoost, keepPoliciesInSlots } from '../progress/handlers';
 import { playerEffects } from '../progress/sources';
 import type { Combatant } from '../events';
 import { refreshCitizens, refreshExplored } from '../settlements/handlers';
@@ -150,6 +150,11 @@ function takeOver(
   if (roll > chance) return false;
   const from = d.owner;
   d.owner = killer.owner;
+  // A raider that changes sides leaves its camp's roster: the camp would otherwise go on
+  // counting it, and take it along when the camp is befriended and its raiders disband.
+  if (from === HOSTILE)
+    for (const camp of Object.values(draft.camps))
+      if (camp.units.includes(id)) camp.units = camp.units.filter((u) => u !== id);
   d.health = Math.floor(ctx.content.rules.combat.maxHealth / 2);
   d.moves = 0;
   d.orders = null;
@@ -283,7 +288,11 @@ export function captureSettlement(
     if (u.owner !== captor && unitClassOf(ctx, u).combat) killUnit(draft, ctx, u.id, captor, emit);
   }
   captureCivilians(draft, ctx, s.tile, captor, emit);
-  advance(draft, ctx, unitId, s.tile, emit);
+  // The unit that took it marches in, unless one of its own side's soldiers already stands
+  // there (two would share the tile).
+  const taker = current(draft).units[unitId];
+  if (taker && hasRoom(ctx, current(draft), taker, s.tile))
+    advance(draft, ctx, unitId, s.tile, emit);
 
   const loss = ctx.content.rules.combat.settlement.capturePopulationLoss;
   s.owner = captor;
@@ -309,6 +318,13 @@ export function captureSettlement(
     const palace = ctx.content.rules.settlements.capitalBuilding;
     s.buildings = s.buildings.filter((b) => b !== palace);
   }
+  // The governor who served there comes home (as when a settlement changes sides by loyalty).
+  for (const g of Object.values(draft.players[from]?.governors ?? {})) {
+    if (g.settlement === id) {
+      g.settlement = null;
+      g.established = false;
+    }
+  }
   refreshCitizens(draft, ctx, id);
   refreshExplored(draft, ctx, captor);
   emit({
@@ -323,6 +339,9 @@ export function captureSettlement(
   addWarSupport(draft, ctx, captor, from, ctx.content.rules.combat.warSupport.capture);
   captureRewards(draft, ctx, captor, id, emit);
   if (wasCapital) relocateCapital(draft, ctx, from, emit);
+  // A wonder or building lost with it may have held a policy slot.
+  if (draft.players[from]?.alive && draft.playerOrder.includes(from))
+    keepPoliciesInSlots(draft, ctx, from);
   checkDefeat(draft, from, captor, emit);
   checkVictory(draft, emit);
 }

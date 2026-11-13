@@ -12,7 +12,7 @@ import {
   spaceProgress,
 } from '@cx/engine';
 
-import { civName, perTurn } from './model';
+import { agree, civName, perTurn, turnsLabel } from './model';
 import { Icon } from '../ui/Icon';
 import { LeaderHead } from '../ui/LeaderCard';
 import { Meter } from '../ui/Meter';
@@ -70,7 +70,7 @@ export function VictoriesScreen({ ctx, state, viewer, onGraphs, onClose }: Props
           value: d.held,
           max: d.needed,
           label: `${d.held}/${d.needed}`,
-          title: `${name(p)} holds ${d.held} of ${d.needed} rival capitals`,
+          title: `${name(p)} ${agree(name(p), 'holds')} ${d.held} of ${d.needed} rival capitals`,
         };
       }),
     });
@@ -138,7 +138,7 @@ export function VictoriesScreen({ ctx, state, viewer, onGraphs, onClose }: Props
                     `${name(x.player)}: ${x.following}/${x.total} settlements (needs ${x.needed})`,
                 ),
               ].join('\n')
-            : `${name(p)} has not founded a religion`,
+            : `${name(p)} ${agree(name(p), 'has')} not founded a religion`,
         };
       }),
     });
@@ -168,7 +168,7 @@ export function VictoriesScreen({ ctx, state, viewer, onGraphs, onClose }: Props
     tone: '#d2ac5c',
     how:
       s.turnLimit !== null
-        ? `At turn ${s.turnLimit} the highest score wins (${Math.max(0, s.turnLimit - state.turn)} turns left).`
+        ? `At turn ${s.turnLimit} the highest score wins (${turnsLabel(Math.max(0, s.turnLimit - state.turn))} left).`
         : 'No turn limit: the score only decides a game that has one.',
     standings: scores.map((x) => ({
       player: x.player,

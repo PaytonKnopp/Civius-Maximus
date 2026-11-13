@@ -364,9 +364,22 @@ function AboutTab() {
         </Row>
         <Row
           label="Sound and art"
-          hint="Everything you hear is synthesized live and everything you see is drawn in code: no sound or image files, nothing copied from another game."
+          hint="Everything you hear is synthesized live. The world, its people and the portraits are drawn in code, over a few public-domain photographs of ground, stone and cloth (Poly Haven, CC0). Nothing is copied from another game."
         >
           <span className="mx-chip gold">Made from scratch</span>
+        </Row>
+        <Row
+          label="Built with"
+          hint="React, PixiJS, Three.js, PeerJS, Immer and Zod; the Cinzel and Source Sans 3 typefaces."
+        >
+          {/* A single-page copy of the game (build:artifact) carries them inside the file. */}
+          {import.meta.env.VITE_SINGLE_FILE ? (
+            <span className="mx-chip">Open source</span>
+          ) : (
+            <a className="mx-chip" href="licenses.txt" target="_blank" rel="noreferrer">
+              Their licenses
+            </a>
+          )}
         </Row>
       </Section>
     </div>

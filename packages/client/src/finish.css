@@ -200,6 +200,62 @@
   text-transform: uppercase;
 }
 
+/* When the yields don't fit beside the screen buttons (a celebration, strategic stockpiles, the
+   big numbers of a late game), the bar leaves out detail level by level, least important
+   first, instead of clipping a number (ui/fit.ts sets data-fit; every tooltip keeps it all). */
+.empire-yields .celebrating-turns,
+.empire-yields .more-tight {
+  display: none;
+}
+
+/* 1: "Celebrating 9" becomes "9 turns"; stockpiles lose their change per turn. */
+.empire-yields:not([data-fit='0']) .celebrating-label,
+.empire-yields:not([data-fit='0']) .stockpile .delta.mono {
+  display: none;
+}
+
+.empire-yields:not([data-fit='0']) .celebrating-turns {
+  display: inline;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* 2: faith and influence lose their change per turn. */
+.empire-yields:not([data-fit='0'], [data-fit='1']) li.minor .delta.mono {
+  display: none;
+}
+
+/* 3: gold loses it too; a treasury that is shrinking turns red instead. */
+.empire-yields:not([data-fit='0'], [data-fit='1'], [data-fit='2']) .delta.mono {
+  display: none;
+}
+
+.empire-yields:not([data-fit='0'], [data-fit='1'], [data-fit='2']) li.losing .val.gold {
+  color: #ff9a85;
+}
+
+/* 4: one stockpile (the one that matters most) and how many more. */
+.empire-yields:is([data-fit='4'], [data-fit='5']) .stockpile ~ .stockpile,
+.empire-yields:is([data-fit='4'], [data-fit='5']) .more-wide {
+  display: none;
+}
+
+.empire-yields:is([data-fit='4'], [data-fit='5']) .more-tight {
+  display: inline;
+}
+
+/* 5: closer together. */
+.empire-yields[data-fit='5'] li {
+  padding: 0 4px;
+  gap: 3px;
+  font-size: 13px;
+}
+
+.empire-yields[data-fit='5'] .icon {
+  width: 17px;
+  height: 17px;
+}
+
 /* Celebration progress: the number over a thin bar. */
 .yield-meter {
   display: inline-flex;
@@ -241,9 +297,36 @@
   }
 }
 
+/* The yields come first: until the screen is wide enough for both, the screen buttons keep
+   their compact size and the turn pill leaves out the age (the Eras screen and the pill's
+   tooltip have it), so a celebration and the strategic stockpiles fit beside them. */
+@media (min-width: 1241px) and (max-width: 1700px) {
+  .screen-buttons {
+    gap: 1px;
+  }
+
+  .screen-button {
+    width: 29px;
+    height: 29px;
+  }
+
+  .screen-button .icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .screen-sep {
+    margin: 0 2px;
+  }
+
+  .turn-pill .age-chip {
+    display: none;
+  }
+}
+
 /* Small laptops: like tablets, the yields and the screen buttons take a row each (theme.css has
    the same layout up to 1000px), so no number is clipped. */
-@media (min-width: 1001px) and (max-width: 1180px) {
+@media (min-width: 1001px) and (max-width: 1240px) {
   :root {
     --topbar-h: 94px;
   }
@@ -588,6 +671,18 @@
   }
 }
 
+/* --- Unit card: on a short screen it stops under the research and civic cards -------------- */
+
+/* A great person's card (or a unit with promotions to choose) is taller than a 640px window has
+   room for: it scrolls inside itself instead of growing over the trackers. */
+@media (min-width: 641px) {
+  .unit-panel {
+    max-height: calc(100% - var(--stack-top) - 16px - env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
 /* --- City panel: the overview on top, then tabs ------------------------------------------- */
 
 .settlement-head h3 {
@@ -746,9 +841,15 @@
 
 /* --- Lenses: a picker under the minimap, with a legend for the lens in use ---------------- */
 
-/* The lens list opens over the Next button, so the minimap sits above it. */
+/* The lens list opens over the Next button, so the minimap sits above it; while the list is
+   open it sits above the whole HUD (the civ chips and the top bar are in its way on a short
+   screen). */
 .corner .minimap {
   z-index: 3;
+}
+
+.corner .minimap:has(.lens-menu) {
+  z-index: 20;
 }
 
 .lens-picker {
@@ -784,7 +885,17 @@
   right: 0;
   bottom: calc(100% + 6px);
   z-index: 12;
-  width: min(300px, calc(100vw - 24px));
+  /* Thirteen lenses: two columns, and never taller than the room between the top bar and the
+     button (it scrolls if a very short window leaves less). */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 6px;
+  align-content: start;
+  width: min(580px, calc(100vw - 24px));
+  max-height: calc(100vh - var(--topbar-h) - 120px);
+  max-height: calc(100dvh - var(--topbar-h) - 120px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   margin: 0;
   padding: 6px;
   list-style: none;
@@ -793,6 +904,20 @@
   background: var(--grain), linear-gradient(180deg, var(--lacquer-1), var(--lacquer-2));
   box-shadow: var(--shadow-panel);
   animation: notice-in 160ms var(--ease);
+}
+
+/* "No lens" has the first row to itself, so the lenses below read in two even columns. */
+.lens-menu li:first-child {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .lens-menu {
+    grid-template-columns: minmax(0, 1fr);
+    width: min(300px, calc(100vw - 24px));
+    max-height: calc(100vh - var(--topbar-h) - 190px);
+    max-height: calc(100dvh - var(--topbar-h) - 190px);
+  }
 }
 
 .lens-menu button {
@@ -891,9 +1016,16 @@
     display: none;
   }
 
+  /* The picker's box is as wide as its legend, which reaches over the Next button beside it:
+     only the lens button and its list take taps, so Next stays reachable under the box. */
   .corner .lens-picker {
     align-items: flex-end;
     margin: 0;
+    pointer-events: none;
+  }
+
+  .corner .lens-picker > :is(.lens-button, .lens-menu) {
+    pointer-events: auto;
   }
 
   .corner .lens-button {
@@ -1136,6 +1268,40 @@
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+}
+
+/* Tablets and small laptops: the meters and headings narrow so all six columns fit (the table
+   used to scroll sideways there, with Diplomatic and Score out of sight). */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .victory-table {
+    width: 100%;
+  }
+
+  .victory-table th,
+  .victory-table td {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  .victory-table .meter {
+    display: flex;
+    min-width: 0;
+    gap: 5px;
+  }
+
+  .victory-table .meter-bar {
+    min-width: 24px;
+  }
+
+  .victory-table .vic-th {
+    gap: 4px;
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+  }
+
+  .victory-table .civ-cell small {
+    display: none;
+  }
 }
 
 @media (max-width: 760px) {
@@ -2497,6 +2663,25 @@ html[data-text='large']
   gap: 8px;
 }
 
+/* A failure inside the game (GameScreen's `problem`): above everything on the map, and below
+   the online bar when both show. Long error text wraps instead of running off a phone. */
+.online-bar.problem-bar {
+  z-index: 30;
+  width: max-content;
+  border-color: rgba(240, 140, 120, 0.7);
+}
+
+.online-bar.problem-bar span {
+  display: inline;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.online-bar.problem-bar ~ .online-bar {
+  top: calc(var(--topbar-h) + 124px);
+}
+
 /* --- Hotseat: the next player's leader, in their color, before the device changes hands ---- */
 
 .pass-card {
@@ -2632,4 +2817,71 @@ button.close:hover:not(:disabled) {
 .screen-scroll > :is(h3, h4) {
   margin-left: auto;
   margin-right: auto;
+}
+
+/* --- Release pass: second lines on lit rows ------------------------------------------------ */
+
+/* On a lit row (the chosen seat, leader or search result, an autosave) the muted gray falls
+   under 3:1 against the gold wash: the second line takes the lighter secondary color there. */
+.mx-seat.on small,
+.mx-seat:hover small,
+.mx-tile.on small,
+.mx-tile.focus small,
+.pedia-row.on small,
+.pedia-row:hover small,
+.mx-save-list li.auto small {
+  color: var(--text-2);
+}
+
+/* --- Release pass: finger-sized targets on touch screens ----------------------------------- */
+
+/* On a phone the build queue's remove button was 18 x 17 px, the 3D / 2D switch 30 x 23 and
+   Disband 57 x 23: under the 24 px minimum (WCAG 2.2, 2.5.8) and far under a fingertip. Only
+   where the pointer is a finger, so nothing moves for a mouse. */
+@media (pointer: coarse) {
+  .queue li {
+    align-items: center;
+  }
+
+  .queue li button.link {
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .game-bar .segmented button,
+  .game-bar .segmented.compact button {
+    min-width: 36px;
+    min-height: 32px;
+  }
+
+  .unit-head .disband {
+    min-height: 32px;
+    padding-inline: 10px;
+  }
+
+  .settlement-panel .items li > button {
+    min-width: 34px;
+    min-height: 34px;
+  }
+
+  .settlement-panel .row-inline > button {
+    min-height: 32px;
+  }
+
+  .settlement-head .close,
+  .tile-head .close,
+  .player-panel-head .close,
+  .turn-summary header .close {
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  details.opinion > summary,
+  details.kit > summary {
+    padding-block: 7px;
+  }
+
+  .online-bar button {
+    min-height: 32px;
+  }
 }

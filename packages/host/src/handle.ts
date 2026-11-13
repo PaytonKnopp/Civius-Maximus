@@ -25,6 +25,11 @@ export interface GameHandle {
   /** Single player: whether the last move can be taken back, and taking it back (D118). */
   canUndo?(): boolean;
   undo?(): boolean;
+  /**
+   * What went wrong inside the game since this was last asked (a turn that couldn't be played,
+   * an AI seat that failed and passed), or null. Only a game run in this tab can tell.
+   */
+  takeProblem?(): string | null;
   /** Whether this tab holds the real game, so it can be saved (an online client can't). */
   readonly saves: boolean;
   /** Online games: who's in and who's connected. */

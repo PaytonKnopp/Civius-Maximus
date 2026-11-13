@@ -15,7 +15,7 @@ import {
   validateAction,
 } from '@cx/engine';
 
-import { civName, whole } from './model';
+import { civName, turnsLabel, whole } from './model';
 import { Icon } from '../ui/Icon';
 import { EMOJI_ICONS, ICONS } from '../ui/icons';
 import { useEscape } from '../ui/Menu';
@@ -112,7 +112,7 @@ export function GreatPeopleScreen({ ctx, state, viewer, act, onClose }: Props) {
                     {out
                       ? 'You founded a religion: you\u2019re out of this race.'
                       : rate > 0
-                        ? `+${rate} a turn${turns !== null ? ` · about ${turns} turns` : ''}`
+                        ? `+${rate} a turn${turns !== null ? ` · about ${turnsLabel(turns)}` : ''}`
                         : 'No points yet: build the district that earns them.'}
                   </p>
                 </div>

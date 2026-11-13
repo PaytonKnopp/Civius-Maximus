@@ -3,7 +3,7 @@ import {
   distance,
   type EngineContext,
   type GameState,
-  goldPerTurn,
+  goldForecast,
   happinessOf,
   loyaltyOf,
   loyaltyOn,
@@ -71,7 +71,7 @@ export function adviceFor(ctx: EngineContext, state: GameState, viewer: PlayerId
     });
 
   // Economy: losing gold, or sitting on a pile of it.
-  const gpt = goldPerTurn(ctx, state, viewer);
+  const gpt = goldForecast(ctx, state, viewer).total;
   if (gpt < 0)
     add({
       id: 'losing-gold',

@@ -25,10 +25,12 @@ export class GameErrorBoundary extends Component<
       <div className="mx mx-crash" role="alertdialog" aria-label="The game couldn't continue">
         <div className="mx-panel">
           <span className="home-kicker">Something went wrong</span>
-          <h2>This game couldn’t start</h2>
+          <h2>This game couldn’t go on</h2>
           <p>{error.message || String(error)}</p>
           <p className="mx-section-hint">
-            Your saved games are safe. Go back to the title screen and try another setup or save.
+            Your saved games are safe, and so is the autosave from the start of this turn: Load game
+            on the title screen has them. If it happens again with the same save, an earlier save or
+            another setup will get you playing.
           </p>
           <button
             type="button"

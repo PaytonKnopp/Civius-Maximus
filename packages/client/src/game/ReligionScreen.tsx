@@ -17,7 +17,7 @@ import {
   validateAction,
 } from '@cx/engine';
 import { useState } from 'react';
-import { civName, empireSummary, perTurn, whole } from './model';
+import { civName, empireSummary, perTurn, turnsLabel, whole } from './model';
 import { religionColor } from './lenses';
 import { Icon, Rich } from '../ui/Icon';
 import { LeaderHead } from '../ui/LeaderCard';
@@ -148,17 +148,21 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
             >
               <Icon name="gp_prophet" size={34} />
               <b>
-                {prophetsLeft
-                  ? `${Math.min(prophetPoints, prophetCost)}/${prophetCost}`
-                  : 'None left'}
+                {holdsProphet
+                  ? 'Ready'
+                  : prophetsLeft
+                    ? `${Math.min(prophetPoints, prophetCost)}/${prophetCost}`
+                    : 'None left'}
               </b>
               <span>
                 Great Prophet
-                {prophetsLeft && prophetRate > 0
-                  ? ` · ${Math.max(0, Math.ceil((prophetCost - prophetPoints) / prophetRate))} turns`
-                  : prophetsLeft
-                    ? ` · build a ${holy}`
-                    : ''}
+                {holdsProphet
+                  ? ' · found your religion'
+                  : prophetsLeft && prophetRate > 0
+                    ? ` · ${turnsLabel(Math.max(1, Math.ceil((prophetCost - prophetPoints) / prophetRate)))}`
+                    : prophetsLeft
+                      ? ` · build a ${holy}`
+                      : ''}
               </span>
             </div>
           )}
@@ -282,7 +286,9 @@ export function ReligionScreen({ ctx, state, viewer, act, onClose, prophet }: Pr
               <p>
                 {religions.length >= room
                   ? 'Every religion this world has room for is founded; your people can still follow one of theirs.'
-                  : `Build a ${holy} to earn Great Prophet points (Great People, P). Use the prophet in a settlement with a ${holy} to found your religion.`}
+                  : holdsProphet
+                    ? `Your Great Prophet is ready. Move them into a settlement of yours with a ${holy}, then choose Found a religion on their card.`
+                    : `Build a ${holy} to earn Great Prophet points (Great People, P). Use the prophet in a settlement with a ${holy} to found your religion.`}
               </p>
             </div>
           )}

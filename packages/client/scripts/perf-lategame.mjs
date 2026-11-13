@@ -145,7 +145,7 @@ for (const view of views) {
     await page.setInputFiles('.mx-saves input[type=file]', path);
     await page.waitForSelector('canvas', { timeout: 60000 });
     await page.waitForFunction(
-      () => !/^0 fps/.test(document.querySelector('.fps')?.textContent ?? '0 fps'),
+      () => document.querySelector('.game')?.dataset.drawn === 'yes',
       null,
       { timeout: 60000 },
     );

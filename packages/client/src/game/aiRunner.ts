@@ -39,7 +39,12 @@ export function createAiRunner(): AiRunner | undefined {
     }
     waiting.delete(e.data.id);
     if (e.data.error || !e.data.state) job.reject(new Error(e.data.error ?? 'No state'));
-    else job.resolve({ state: e.data.state, events: e.data.events ?? [] });
+    else
+      job.resolve({
+        state: e.data.state,
+        events: e.data.events ?? [],
+        ...(e.data.problems ? { problems: e.data.problems } : {}),
+      });
   };
   worker.onerror = () => {
     dead = true;

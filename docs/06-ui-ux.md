@@ -158,7 +158,8 @@ sizes, and fixed where it looked or worked worse than it should.
 **Final design pass (November 2026):** the last full pass over every screen, built on UI pass 2
 (nothing it added was undone). Its styles are in `packages/client/src/finish.css`, loaded last.
 - *Top bar:* every yield shows its change per turn at every width from 1180 px up (gold turns red
-  when it falls), and every number has a breakdown on hover: science, culture and faith by
+  when it falls; since the release pass, below: wherever it fits), and every number has a
+  breakdown on hover: science, culture and faith by
   settlement (the six biggest, then the rest), gold by settlements, towns selling production,
   unit and building upkeep, influence by source, and the celebration's progress with the
   happiness surplus and the turns to go (a thin bar under the number). Small laptops (1001 to
@@ -278,6 +279,42 @@ sizes, and fixed where it looked or worked worse than it should.
   a deal, a captured city and an elimination. `scripts/screenshot-screens.mjs` repeats the in-game
   part from any save; every bundled screenshot script passes with no console errors and nothing
   wider than the screen.
+
+**Release pass (November 2026):** the first look at every screen after the gameplay pass and
+the design pass were merged ([RELEASE-REVIEW.md](RELEASE-REVIEW.md) has the full list).
+- *Top bar:* the yields never clip and never scroll. When they don't all fit beside the screen
+  buttons (a celebration, strategic stockpiles, a late game's big numbers), the bar leaves out
+  detail level by level, least important first (`ui/fit.ts`, the levels in `finish.css`):
+  "Celebrating 9" becomes "9 turns" and stockpiles lose their change per turn; then faith and
+  influence lose theirs; then gold (a shrinking treasury turns red instead); then one stockpile
+  with "+N"; every tooltip keeps everything. This replaces the design pass's "every change per
+  turn at every width", which the stockpiles left no room for. The screen buttons keep their
+  compact size up to 1700 px and the two-row bar runs to 1240 px. The turn pill's tooltip gives
+  the turn, era, age and era score.
+- *Lenses:* the list is two columns ("No lens" across the top), never taller than the room
+  between the top bar and its button, and above the rest of the HUD while open; one scrolling
+  column on phones.
+- *"What it does" lines* (Civilopedia, legacies, city-state tiers, monopolies) come from the
+  rules through `game/effectText.ts`, which now writes every effect and condition of the base
+  game as a sentence in the game's words; a test reads them all for raw values.
+- *Explore* is on the cards of soldiers and ships only (D127). The unit card stops under the
+  research and civic cards on a short screen and scrolls. The Victories table fits a tablet.
+- A civ named as a people takes a plural verb ("Franks offer you a deal", `agree` in
+  `game/model.ts`).
+- *When something goes wrong:* a failure inside the game (a turn that couldn't be played, an AI
+  seat that failed and passed) shows as a bar under the top bar that stays until dismissed:
+  what happened, "Your game is still here", and **Save a copy to send** (the save, as a file,
+  for a bug report). An autosave that fails says so once. The crash screen (a failure drawing
+  the game) says the game couldn't go on and where the autosave is.
+- *The frame rate counter is off by default* (D128); Options still has it.
+- *2D view:* settlement banners draw above unit markers (the town itself stays under them), so
+  a soldier standing below a city no longer hides what the city is making.
+- *Help* lists the map's own keys (arrows or W A S D to move it, + and − to zoom).
+- *Touch:* where the pointer is a finger, the smallest controls (the build queue's remove
+  button, the 3D / 2D switch, Disband, the cards' close buttons) are at least 32 px.
+- *About* (Options) says what the game is built with and links to the licenses that ship with
+  it; it no longer says the game has no image files (it uses public-domain photographs for
+  ground and surface detail, listed in ART-CREDITS.md).
 
 **Leaders on screen (V1 final, F4):** a game opens on your leader's intro (portrait, emblem, a
 few lines on who they were, the leader and civ abilities and uniques). The civ chips at the top
@@ -446,6 +483,13 @@ a gesture).
 - **Ambience:** wind, plus birdsong before the Industrial era.
 - The ☰ menu has volume sliders for master, music, effects and ambience, and a mute switch. Music
   ducks under big moments.
+- **Release pass (November 2026):** a unit's move sounds by what the unit is (a ship by its
+  class, a rider by its model), not by its name, which had six ships marching and five kinds of
+  cavalry on foot. After a stall (a long turn worked out on the page, a tab asleep) the music
+  carries on from now: the bars it missed used to sound all at once. Stopping the music no
+  longer leaves an oscillator running. `scripts/audio-check.mjs` measures every cue, each era's
+  music and the loudest pile-up on the master bus in a headless browser; how it sounds still
+  needs ears.
 
 The playlist of recorded public-domain pieces stays the plan for when recordings can be bundled
 or streamed. Mods will be able to add tracks.

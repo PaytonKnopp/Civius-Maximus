@@ -147,6 +147,14 @@ whole view is about 600 KB, mostly tiles. Clients play their own actions ahead o
 host's next view replaces the guess. The host autosaves the real game; hosting it again later
 gives the same seats back to friends who rejoin. A test in
 `packages/host/src/online.test.ts` checks that every client holds exactly its own view.
+**Release pass (November 2026):** `online.fuzz.test.ts` throws 3,000 malformed and lying
+messages at a host from a seated client (nothing but its own legal moves changes anything, and
+the host never trips), and plays a stretch of a game from three devices through the real host
+and protocol, checking after every seat's turn that each client holds exactly its view. What
+that found: a "hello" whose name wasn't text threw inside the host; a device could say hello
+again and again and fill a lobby by itself (one device now holds one seat); and a client's
+play-ahead was unguarded, so if the rules tripped over a view the action was never sent (it
+now goes to the host, which decides).
 V1 final added chat, map pings, un-end turn, turn timers and an AI taking over an absent seat
 (F20), and accounts, cloud saves and public lobbies (F21, switched on by configuration). Before the first game night (October 2026): **seat keys**
 (only the friend who played a seat gets it back; the host can free it for a new device),
@@ -247,6 +255,13 @@ Realtime messages per month, 5 GB egress, and 2 active projects.
   and host handoff need nothing extra, and the same state always gets the same moves.
 - What it can know: tiles it sees now, tiles it has explored, settlements on explored tiles, and
   every player's **army strength** (public, like a score screen; the rival panel shows it).
+- It only sends units where they can get to over explored tiles (`Turn.canReach`, release pass,
+  November 2026). Paths never cross the unknown, so a site or a gathering point seen across a
+  strait or a mountain range is out of reach until the way there is explored (or its people can
+  embark). Before, the AI asked the rules for a path to its best few choices and stood still
+  when they were refused: on an island map, settlers idled for hundreds of unit-turns and
+  cities kept training more. Settlers, scouts and gathering soldiers now rank only what they
+  can reach, and settlers are trained only when one could reach a site.
 - Code: `packages/engine/src/ai/` (`playAiTurn`). Try it with `pnpm cx simulate`.
 
 ## Testing strategy

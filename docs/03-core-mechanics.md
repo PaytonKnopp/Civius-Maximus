@@ -441,14 +441,14 @@ when there's room.
 - **Command radius** (1 tile, more with promotions): units in it get the commander's bonuses
   (e.g., +2 strength, +1 movement, healing).
 - Commanders gain XP when units in their radius fight, and have their own promotion tree
-  (Assault, Logistics, Maneuver, Leadership, Bastion).
+  (attack, defense, capacity and movement, healing, radius).
 - If a commander is defeated, it retreats to your nearest settlement and is out of action for a
   few turns rather than dying. Units packed inside are unpacked first.
 - **Built (V1 part 4):** the Army Commander (Military Tradition, 90 production): packs up to 4
   soldiers on or next to it, radius 1, +2 strength in the radius, 2 XP per fight in its radius,
-  retreats for 5 turns when caught (packed units it can't put down are lost). Its tree: Assault /
-  Bastion (+2 attacking / defending), then Logistics (+2 capacity, +1 movement) / Field Medicine
-  (+10 healing), then Leadership (+1 radius). Unpacked units can act at once if the commander
+  retreats for 5 turns when caught (packed units it can't put down are lost). Its tree: Onslaught /
+  Stand Fast (+2 attacking / defending), then Baggage Train (+2 capacity, +1 movement) / Camp
+  Surgeons (+10 healing), then Standard Bearers (+1 radius). Unpacked units can act at once if the commander
   still has moves. The Fleet Commander came in the final gameplay pass (D112); the AI doesn't
   use it yet.
 
@@ -545,7 +545,11 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   get around this.
 - Cities and encampments get a **ranged strike** each turn (strength based on the best unit you
   can build).
-- A city is captured when its HP hits 0 and a **melee** unit moves in.
+- A city is captured when its HP hits 0 and a **melee** unit moves in. A unit can't walk into
+  (or through) the settlement of a civ it is at war with, even an empty one: it has to be
+  attacked (release pass, November 2026: a unit could stand inside an undefended enemy city,
+  which stayed its owner's). If one of the captor's own soldiers already stands in the city
+  (it was there before the war), the taker stays where it attacked from.
 
 ### Healing
 
@@ -671,7 +675,7 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
     science), and others need a building (Festival Calendar: Arenas).
     Early cards go **obsolete** when their later version arrives (Militia Drills, Bowyers'
     Workshops, Remount Herds and Siege Engineers at Nationalism...) and leave their slots.
-    Three **dark-age cards** (Martial Law, Monastic Retreat, Rally the Levies) are strong with
+    Three **dark-age cards** (Rule by Decree, Monastic Retreat, Rally the Levies) are strong with
     a price and only open during a dark age. New cards for the civics that had none (Border
     Forts, Air Doctrine, Self-Determination, Space Program, Green Energy, World Forum) and a
     fourth diplomatic one (Trade Delegations).

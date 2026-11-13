@@ -12,7 +12,7 @@ import { emptyDiplomacy } from './diplomacy/rules';
 import { emptyBits, encodeBits } from './bitset';
 import { createRng } from './rng';
 import { historyTurn, scoreVictory } from './victory';
-import { checkBoosts, progressHandlers } from './progress/handlers';
+import { checkBoosts, policySlotsTurn, progressHandlers } from './progress/handlers';
 import { newProgress } from './progress/sources';
 import { settlementHandlers, settlementsTurn } from './settlements/handlers';
 import { commanderHandlers } from './units/commanders';
@@ -283,7 +283,7 @@ const turnSteps: TurnStep[] = [
   { id: 'settlements', order: 100, run: settlementsTurn },
   { id: 'cityStates', order: 105, run: cityStatesTurn },
   { id: 'freeCities', order: 106, run: freeCitiesTurn },
-  { id: 'levies', order: 107, run: (draft, _ctx, emit) => leviesTurn(draft, emit) },
+  { id: 'levies', order: 107, run: leviesTurn },
   { id: 'diplomacy', order: 110, run: diplomacyTurn },
   { id: 'trade', order: 120, run: tradeTurn },
   { id: 'greatPeople', order: 115, run: greatPeopleTurn },
@@ -299,6 +299,7 @@ const turnSteps: TurnStep[] = [
   { id: 'loyalty', order: 137, run: loyaltyTurn },
   { id: 'espionage', order: 138, run: espionageTurn },
   { id: 'congress', order: 139, run: congressTurn },
+  { id: 'policySlots', order: 139, run: (draft, ctx) => policySlotsTurn(draft, ctx) },
   { id: 'history', order: 140, run: (draft, ctx) => historyTurn(draft, ctx) },
 ];
 

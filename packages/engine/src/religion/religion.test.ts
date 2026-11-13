@@ -236,7 +236,7 @@ describe('beliefs', () => {
     });
     // Almsgiving: +2 gold in p2's settlement, which follows p1's religion.
     expect(goldIn(s, near)).toBe(nearBefore + toFixed(2));
-    // Tithe: +2 gold in the holy city for each settlement following (now 2).
+    // Temple Dues: +2 gold in the holy city for each settlement following (now 2).
     expect(goldIn(s, holy)).toBe(holyBefore + toFixed(2));
   });
 });

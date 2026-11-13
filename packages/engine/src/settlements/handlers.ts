@@ -16,7 +16,7 @@ import { eraOrderOf, perEra } from '../progress/era';
 import { scaleCost } from '../speed';
 import { placementTiles } from './districts';
 import { payResources, resourceProblem, strategicTurn } from '../resources/strategic';
-import { distance, tilesWithin } from '../map/hex';
+import { tilesWithin } from '../map/hex';
 import type { BuildItem, GameState, PlayerId, SettlementState } from '../state';
 import { view } from '../draft';
 import { empireTurn } from '../progress/handlers';
@@ -45,6 +45,7 @@ import {
   itemKey,
   itemProblem,
   lockedReason,
+  nearestCity,
   nextBorderTile,
   productionToward,
   purchasableTiles,
@@ -865,19 +866,6 @@ export const settlementHandlers = {
 };
 
 // --- Turn processing -------------------------------------------------------------------------
-
-/** The owner's nearest city within the send range of a specialized town (ties: oldest first). */
-function nearestCity(ctx: EngineContext, state: GameState, s: SettlementState): string | undefined {
-  const range = ctx.content.rules.settlements.specialization.sendRange;
-  let best: { id: string; d: number } | undefined;
-  for (const id of settlementIds(state)) {
-    const c = state.settlements[id]!;
-    if (c.owner !== s.owner || c.kind !== 'city' || c.id === s.id) continue;
-    const d = distance(state.map, s.tile, c.tile);
-    if (d <= range && (!best || d < best.d)) best = { id, d };
-  }
-  return best?.id;
-}
 
 /** What a settlement's turn adds to its owner's empire-wide totals. */
 interface SettlementTurn {

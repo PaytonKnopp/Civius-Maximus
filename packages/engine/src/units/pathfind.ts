@@ -2,7 +2,7 @@ import { getBit } from '../bitset';
 import type { EngineContext } from '../context';
 import { neighbors } from '../map/hex';
 import type { GameState, UnitState } from '../state';
-import { fullMoves, hasForeignUnit, hasRoom, stepMoves } from './movement';
+import { fullMoves, hasForeignUnit, hasRoom, isEnemySettlement, stepMoves } from './movement';
 import { exploredBits } from './vision';
 
 export interface PathStep {
@@ -64,7 +64,8 @@ class Queue {
 /**
  * The best path for a unit to a tile: fewest turns, then most moves left. Only explored tiles are
  * used (so paths never leak what's under the fog). A unit may pass through tiles holding its own
- * player's units but may not stop on one that's full, including where a turn ends mid-path.
+ * player's units but may not stop on one that's full, including where a turn ends mid-path. It
+ * never enters the settlement of someone it is at war with (that takes an attack).
  * Returns the steps after the start tile, or null if the target can't be reached.
  */
 export function findPath(
@@ -77,6 +78,7 @@ export function findPath(
   if (target === unit.tile) return null;
   const explored = exploredBits(state, unit.owner);
   if (!getBit(explored, target) || hasForeignUnit(state, unit, target)) return null;
+  if (isEnemySettlement(state, unit, target)) return null;
   if (!hasRoom(ctx, state, unit, target)) return null;
   const full = fullMoves(ctx, unit);
   if (full <= 0) return null;
@@ -99,6 +101,8 @@ export function findPath(
     if (startTurn > maxTurns) continue;
     for (const next of neighbors(state.map, tile)) {
       if (!getBit(explored, next) || hasForeignUnit(state, unit, next)) continue;
+      // An enemy's settlement is attacked, not walked through.
+      if (isEnemySettlement(state, unit, next)) continue;
       const left = stepMoves(ctx, state, unit, tile, next, startMoves);
       if (left === null) continue;
       // Ending a turn on a full tile isn't allowed (passing through is).

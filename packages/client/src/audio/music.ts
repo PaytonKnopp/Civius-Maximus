@@ -543,8 +543,12 @@ class MusicPlayer {
   private bar = 0;
   private nextBarAt = 0;
   private restUntil = 0;
-  private wind: { src: AudioBufferSourceNode; filter: BiquadFilterNode; gain: GainNode } | null =
-    null;
+  private wind: {
+    src: AudioBufferSourceNode;
+    lfo: OscillatorNode;
+    filter: BiquadFilterNode;
+    gain: GainNode;
+  } | null = null;
   private nextBird = 0;
   /** The theme played last, so the same tune doesn't come round twice in a row. */
   private lastTheme = '';
@@ -567,6 +571,9 @@ class MusicPlayer {
     if (this.wind) {
       this.wind.gain.gain.setTargetAtTime(0, audio.ctx!.currentTime, 0.5);
       this.wind.src.stop(audio.ctx!.currentTime + 2);
+      // The gusts' slow oscillator too: a running oscillator is never collected, so each
+      // stop and start used to leave one behind.
+      this.wind.lfo.stop(audio.ctx!.currentTime + 2);
       this.wind = null;
     }
   }
@@ -601,6 +608,9 @@ class MusicPlayer {
     if (!ctx || ctx.state !== 'running') return;
     this.ambience(ctx.currentTime);
     while (this.nextBarAt < ctx.currentTime + 0.7) {
+      // After a stall (a long turn worked out on the page, a sleeping tab) the bars that were
+      // missed are skipped: scheduled in the past they would all sound at once.
+      if (this.nextBarAt < ctx.currentTime) this.nextBarAt = ctx.currentTime + 0.05;
       if (!this.piece) {
         if (ctx.currentTime < this.restUntil) {
           this.nextBarAt = Math.max(this.nextBarAt, this.restUntil);
@@ -753,7 +763,7 @@ class MusicPlayer {
     gain.gain.value = 0.12;
     src.connect(filter).connect(gain).connect(audio.ambience);
     src.start();
-    this.wind = { src, filter, gain };
+    this.wind = { src, lfo, filter, gain };
   }
 }
 

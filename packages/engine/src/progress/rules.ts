@@ -431,3 +431,8 @@ export function celebrationThreshold(ctx: EngineContext, p: PlayerState): number
   const c = ctx.content.rules.progress.celebration;
   return c.base + c.perCelebration * p.celebration.count;
 }
+
+/** Turns in one government that earn a legacy bonus (D113), at this game's speed. */
+export function legacyTurns(ctx: EngineContext, state: Pick<GameState, 'settings'>): number {
+  return Math.max(1, scaleCost(ctx, state, ctx.content.rules.progress.legacy.everyTurns));
+}

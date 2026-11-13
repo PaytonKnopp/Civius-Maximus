@@ -1,7 +1,7 @@
 import { compileFromDirs } from '@cx/content/node';
 import { describe, expect, it } from 'vitest';
 import { encodeBits, type GameState, neighbors, stateHash } from '@cx/engine';
-import { type AiRunner, LocalGame, runTurn, type TurnProgress } from './local';
+import { type AiRunner, LocalGame, runTurn, summarize, type TurnProgress } from './local';
 import { makeSave, readSave } from './saves';
 
 const ctx = { content: compileFromDirs().content! };
@@ -129,6 +129,107 @@ describe('LocalGame', () => {
     const r = game.act({ type: 'end_turn', player: 'p9' });
     expect(r.ok).toBe(false);
     expect(game.state).toBe(before);
+  });
+});
+
+describe('when the rules themselves fail (a bug)', () => {
+  /** A few turns in, with one thing broken that the engine doesn't expect. */
+  const broken = (damage: (s: GameState) => void) => {
+    const game = new LocalGame(setup(['human', 'ai', 'ai']), ctx);
+    for (let i = 0; i < 6; i++) game.act({ type: 'end_turn', player: 'p1' });
+    const state = structuredClone(game.state) as GameState;
+    damage(state);
+    return state;
+  };
+  /** The world can't take its turn: research has nothing to read. */
+  const noResearch = (s: GameState) => {
+    (s.players.p1 as unknown as Record<string, unknown>).techs = null;
+  };
+  /** Only p2's AI trips over this: it looks up a government that doesn't exist. */
+  const lostGovernment = (s: GameState) => {
+    s.players.p2!.government = 'government_gone';
+  };
+
+  it('refuses the action, keeps the game as it was and says what happened', () => {
+    const game = new LocalGame(broken(noResearch), ctx);
+    const before = game.state;
+    const told: number[] = [];
+    game.subscribe(() => told.push(game.state.turn));
+    const r = game.act({ type: 'end_turn', player: 'p1' });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error.code).toBe('game_error');
+    expect(game.state).toBe(before);
+    expect(game.busy).toBe(false);
+    expect(told.length).toBeGreaterThan(0);
+    expect(game.takeProblem()).toMatch(/^That couldn't be done \(.+\)$/);
+    // Asked once: the screen shows it until dismissed.
+    expect(game.takeProblem()).toBeNull();
+    // The game is still there: it can be saved to send with a report, and the rules still
+    // answer other actions in the normal way.
+    expect(JSON.stringify(makeSave(game.state, 'report')).length).toBeGreaterThan(1000);
+    const other = game.act({ type: 'move_unit', player: 'p1', unit: 'u999999', to: 0 });
+    expect(!other.ok && other.error.code).not.toBe('game_error');
+    expect(game.takeProblem()).toBeNull();
+  });
+
+  it('never leaves the game waiting for rivals when the runner and the page both fail', async () => {
+    const start = broken(noResearch);
+    let calls = 0;
+    // Like the worker: it reports the engine's error, and the page then fails the same way.
+    const runner: AiRunner = async () => {
+      calls++;
+      await new Promise((r) => setTimeout(r, 0));
+      throw new Error('the worker says no');
+    };
+    const game = new LocalGame(start, ctx, runner);
+    const before = game.state;
+    const r = game.act({ type: 'end_turn', player: 'p1' });
+    // Handed to the runner: accepted for now, and the game is busy.
+    expect(r.ok).toBe(true);
+    expect(game.busy).toBe(true);
+    await new Promise<void>((done) => {
+      const off = game.subscribe(() => {
+        if (game.busy) return;
+        off();
+        done();
+      });
+    });
+    expect(calls).toBe(1);
+    expect(game.busy).toBe(false);
+    expect(game.progress).toBeNull();
+    expect(game.state).toBe(before);
+    expect(game.takeProblem()).toMatch(/^This turn couldn't be played \(.+\)$/);
+  });
+
+  it('lets an AI seat that fails pass its turn, and the game goes on', () => {
+    const start = broken(lostGovernment);
+    const work = runTurn(ctx, start, { type: 'end_turn', player: 'p1' });
+    expect(work.state.turn).toBe(start.turn + 1);
+    expect(work.problems).toHaveLength(1);
+    expect(work.problems![0]).toMatch(/^P2 couldn't play its turn \(.+\)$/);
+    // The same on the page and in a worker: both end on the same state.
+    const again = runTurn(ctx, structuredClone(start), { type: 'end_turn', player: 'p1' });
+    expect(stateHash(again.state)).toBe(stateHash(work.state));
+    // Through the game: the turn advances and the player is told once.
+    const game = new LocalGame(start, ctx);
+    expect(game.act({ type: 'end_turn', player: 'p1' }).ok).toBe(true);
+    expect(game.state.turn).toBe(start.turn + 1);
+    expect(game.takeProblem()).toMatch(/P2 couldn't play its turn/);
+    // A healthy game has nothing to report.
+    const fine = new LocalGame(setup(['human', 'ai']), ctx);
+    fine.act({ type: 'end_turn', player: 'p1' });
+    expect(fine.takeProblem()).toBeNull();
+  });
+
+  it('says it once when several seats fail the same way', () => {
+    const slots = "couldn't play its turn (Cannot read properties of undefined (reading 'slots'))";
+    expect(summarize([`Rome ${slots}`])).toBe(`Rome ${slots}`);
+    expect(summarize([`Rome ${slots}`, `Spain ${slots}`, `Mali ${slots}`])).toBe(
+      "Rome, Spain and Mali couldn't play their turn (Cannot read properties of undefined (reading 'slots'))",
+    );
+    expect(summarize([`Rome ${slots}`, "Spain couldn't answer a deal (x)", `Mali ${slots}`])).toBe(
+      "Rome and Mali couldn't play their turn (Cannot read properties of undefined (reading 'slots')). Spain couldn't answer a deal (x)",
+    );
   });
 });
 

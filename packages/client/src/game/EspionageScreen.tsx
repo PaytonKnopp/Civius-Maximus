@@ -13,7 +13,7 @@ import {
 } from '@cx/engine';
 
 import { Icon } from '../ui/Icon';
-import { civName } from './model';
+import { civName, turnsLabel } from './model';
 import { useEscape } from '../ui/Menu';
 
 /**
@@ -53,7 +53,7 @@ export function EspionageScreen({
         <p className="screen-sub">
           {spies.length} {spies.length === 1 ? 'spy' : 'spies'} (room for {capacity}).{' '}
           {nextCivic
-            ? `${t(content.entities.civic[nextCivic]?.name ?? nextCivic)} brings another.`
+            ? `${t(content.entities.civic[nextCivic]?.name ?? nextCivic)} brings ${capacity === 0 ? 'your first' : 'another'}.`
             : 'You have every spy you can.'}
         </p>
         <button type="button" className="close" onClick={onClose} aria-label="Close">
@@ -139,7 +139,7 @@ export function EspionageScreen({
                           <small>
                             {mission.turns === 0
                               ? 'Ongoing'
-                              : `${mission.turns} turns · ${chance}% chance`}
+                              : `${turnsLabel(mission.turns)} · ${chance}% chance`}
                             {problem ? ` · ${problem.message}` : ''}
                           </small>
                         </div>

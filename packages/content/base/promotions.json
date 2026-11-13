@@ -51,7 +51,7 @@
   {
     "type": "promotion",
     "id": "promo_woodsman",
-    "name": "Woodsman",
+    "name": "Woodcraft",
     "description": "+5 strength fighting in woods or rainforest.",
     "classes": ["class_melee"],
     "tier": 2,
@@ -248,7 +248,7 @@
   {
     "type": "promotion",
     "id": "promo_pursuit",
-    "name": "Pursuit",
+    "name": "Harrier",
     "description": "+7 strength against ranged and siege units.",
     "classes": ["class_light_cavalry"],
     "tier": 2,
@@ -280,7 +280,7 @@
   {
     "type": "promotion",
     "id": "promo_charge",
-    "name": "Charge",
+    "name": "Couched Lance",
     "description": "+5 strength when attacking.",
     "classes": ["class_heavy_cavalry"],
     "tier": 1,
@@ -294,7 +294,7 @@
   {
     "type": "promotion",
     "id": "promo_barding",
-    "name": "Barding",
+    "name": "Armored Mounts",
     "description": "+5 strength when defending.",
     "classes": ["class_heavy_cavalry"],
     "tier": 1,
@@ -308,7 +308,7 @@
   {
     "type": "promotion",
     "id": "promo_breakthrough",
-    "name": "Breakthrough",
+    "name": "Hammer Blow",
     "description": "+7 strength against melee and ranged units.",
     "classes": ["class_heavy_cavalry"],
     "tier": 2,
@@ -411,7 +411,7 @@
   {
     "type": "promotion",
     "id": "promo_ambush",
-    "name": "Ambush",
+    "name": "Waylay",
     "description": "+10 strength fighting in woods or rainforest.",
     "classes": ["class_recon"],
     "tier": 2,
@@ -456,7 +456,7 @@
   {
     "type": "promotion",
     "id": "promo_helmsman",
-    "name": "Helmsman",
+    "name": "Steersman",
     "description": "+1 movement.",
     "classes": ["class_naval_melee"],
     "tier": 2,
@@ -496,7 +496,7 @@
   {
     "type": "promotion",
     "id": "promo_cmd_assault",
-    "name": "Assault",
+    "name": "Onslaught",
     "description": "Units in the radius +2 strength when attacking.",
     "classes": ["class_commander"],
     "tier": 1,
@@ -507,7 +507,7 @@
   {
     "type": "promotion",
     "id": "promo_cmd_bastion",
-    "name": "Bastion",
+    "name": "Stand Fast",
     "description": "Units in the radius +2 strength when defending.",
     "classes": ["class_commander"],
     "tier": 1,
@@ -518,7 +518,7 @@
   {
     "type": "promotion",
     "id": "promo_cmd_logistics",
-    "name": "Logistics",
+    "name": "Baggage Train",
     "description": "+2 units packed, +1 movement.",
     "classes": ["class_commander"],
     "tier": 2,
@@ -531,7 +531,7 @@
   {
     "type": "promotion",
     "id": "promo_cmd_field_medicine",
-    "name": "Field Medicine",
+    "name": "Camp Surgeons",
     "description": "Units in the radius heal 10 more each turn.",
     "classes": ["class_commander"],
     "tier": 2,
@@ -543,7 +543,7 @@
   {
     "type": "promotion",
     "id": "promo_cmd_leadership",
-    "name": "Leadership",
+    "name": "Standard Bearers",
     "description": "+1 command radius.",
     "classes": ["class_commander"],
     "tier": 3,

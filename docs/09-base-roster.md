@@ -117,7 +117,7 @@ Alexander's "war support never decays" is dropped (war support doesn't decay).
 - **Personality:** diplomacy high, culture high, aggression low (but responds hard when attacked).
 
 ### 8. Qin Shi Huang — China
-- **Leader: *The First Emperor.*** The first military unit trained in each city is free
+- **Leader: *All Under Heaven.*** The first military unit trained in each city is free
   (the "Terracotta Legion"). +15% production toward Ancient and Classical wonders.
 - **Civ: *Mandate of Heaven.*** Tech and civic boosts give 50% instead of 40%.
 - **Unique unit: Fire Lance Cart** (replaces Crossbowman). Early gunpowder: high ranged strength, short range.
@@ -275,7 +275,7 @@ noted.
 - **Agenda: *Purple-Born Politics.*** Admires a full treasury, distrusts surprise wars.
 
 ### 25. Isabella — Spain
-- **Leader: *Patron of Explorers.*** Naval melee units start with Helmsman (+1 movement);
+- **Leader: *Patron of Explorers.*** Naval melee units start with Steersman (+1 movement);
   international routes +3 gold (treasure fleets).
 - **Civ: *Missions of the Frontier.*** Settlements with a Holy Site +1 science and +1 faith
   (in place of "boosts on other continents").
@@ -294,7 +294,7 @@ noted.
 ### 27. Lady Six Sky — Maya
 - **Leader: *Warrior Queen of Sa'aal.*** Farms +0.5 science; units +3 strength in rainforest
   or woods.
-- **Civ: *The Long Count.*** Campuses +1 science per two neighboring farms ("a tight empire
+- **Civ: *Calendar Keepers.*** Campuses +1 science per two neighboring farms ("a tight empire
   around the capital" is left out).
 - **Holkan** (replaces Spearman): 27 strength, cheaper. **E-Group** (replaces Library): +1
   faith.
@@ -309,7 +309,7 @@ noted.
 - **Agenda: *Code of Laws.*** Hates surprise wars, likes peacekeepers.
 
 ### 29. Pedro II — Brazil
-- **Leader: *The Magnanimous.*** +20% great scientist, engineer, merchant, writer, artist and
+- **Leader: *The Scholar Emperor.*** +20% great scientist, engineer, merchant, writer, artist and
   musician points (in place of refunds).
 - **Civ: *Riches of the Rainforest.*** Rainforest +1 production; Campuses +1 science and
   Theater Squares +1 culture per neighboring rainforest.
@@ -319,7 +319,7 @@ noted.
 
 ### 30. Menelik II — Ethiopia
 - **Leader: *Victor of Adwa.*** Units +4 strength on hills; hills +1 faith.
-- **Civ: *Aksumite Legacy.*** Tiles with a resource +1 faith.
+- **Civ: *Keepers of the Ark.*** Tiles with a resource +1 faith.
 - **Mehal Sefari** (replaces Line Infantry): 68 strength. **Gebbi** (replaces Castle): +2
   faith, +1 culture.
 - **Agenda: *Never Colonized.*** Hates conquerors, likes peaceful neighbors.

@@ -1155,6 +1155,92 @@ export function unitUpkeep(ctx: EngineContext, state: GameState, player: PlayerI
   return Math.max(0, total + percentOf(total, percent));
 }
 
+/** The owner's nearest city within the send range of a specialized town (ties: oldest first). */
+export function nearestCity(
+  ctx: EngineContext,
+  state: GameState,
+  s: SettlementState,
+): string | undefined {
+  const range = ctx.content.rules.settlements.specialization.sendRange;
+  let best: { id: string; d: number } | undefined;
+  for (const id of settlementIds(state)) {
+    const c = state.settlements[id]!;
+    if (c.owner !== s.owner || c.kind !== 'city' || c.id === s.id) continue;
+    const d = distance(state.map, s.tile, c.tile);
+    if (d <= range && (!best || d < best.d)) best = { id, d };
+  }
+  return best?.id;
+}
+
+/** What the next turn does to a player's treasury, line by line (hundredths). */
+export interface GoldForecast {
+  /** Gold the settlements yield. */
+  settlements: Fixed;
+  /** Towns selling their production (less what a specialized town sends to its city). */
+  towns: Fixed;
+  /** Cities with nothing to build selling theirs. */
+  idle: Fixed;
+  /** Building upkeep (negative). */
+  buildings: Fixed;
+  /** Unit upkeep (negative). */
+  units: Fixed;
+  /** Gold a turn from deals, less what the player pays. */
+  deals: Fixed;
+  total: Fixed;
+}
+
+/**
+ * The treasury's change next turn as the turn itself works it out (`processSettlementTurn`, the
+ * unit upkeep and the deals' payments): what the top bar promises and its "why?" lines. It
+ * differs from `goldPerTurn`, the plain income the AI and the deal rules reason with, by what a
+ * turn also does: a specialized town sends part of its production to its city instead of
+ * selling it, an idle city sells its production, and deals pay gold every turn. One-off gains
+ * (a village, pillage, a captured settlement, overflow from a finished build) are not forecast.
+ */
+export function goldForecast(ctx: EngineContext, state: GameState, player: PlayerId): GoldForecast {
+  return withSourceMemo(state, () => {
+    const rules = ctx.content.rules.settlements;
+    const f: GoldForecast = {
+      settlements: 0,
+      towns: 0,
+      idle: 0,
+      buildings: 0,
+      units: -unitUpkeep(ctx, state, player),
+      deals: 0,
+      total: 0,
+    };
+    for (const s of settlementsOf(state, player)) {
+      // A settlement being razed yields nothing and keeps nothing up.
+      if (s.razing) continue;
+      const y = computeSettlementYields(ctx, state, s);
+      const production = y.total.production ?? 0;
+      f.settlements += y.total.gold ?? 0;
+      for (const b of s.buildings)
+        f.buildings -= toFixed(ctx.content.entities.building[b]!.maintenance);
+      if (s.kind === 'town') {
+        const spec = s.specialization
+          ? ctx.content.entities.specialization[s.specialization]
+          : undefined;
+        const city = spec?.send?.yield === 'production' ? nearestCity(ctx, state, s) : undefined;
+        const sent =
+          spec?.send && city && production > 0 ? percentOf(production, spec.send.percent) : 0;
+        // What it sends is built into the city's first item, or sold too if the city is idle.
+        const built = sent > 0 && city && state.settlements[city]!.queue.length > 0 ? sent : 0;
+        f.towns += percentOf(production - sent, rules.townGoldPercent) + (sent - built);
+      } else if (s.queue.length === 0 && !s.puppet && production > 0) {
+        f.idle += percentOf(production, rules.townGoldPercent);
+      }
+    }
+    for (const pay of state.diplomacy.payments) {
+      if (!state.players[pay.from]?.alive || !state.players[pay.to]?.alive) continue;
+      if (pay.to === player) f.deals += toFixed(pay.gold);
+      if (pay.from === player) f.deals -= toFixed(pay.gold);
+    }
+    f.total = f.settlements + f.towns + f.idle + f.buildings + f.units + f.deals;
+    return f;
+  });
+}
+
 /** Gold a player makes per turn after building and unit upkeep. */
 export function goldPerTurn(ctx: EngineContext, state: GameState, player: PlayerId): Fixed {
   let gold = -unitUpkeep(ctx, state, player);

@@ -72,11 +72,57 @@ describe('Civilopedia', () => {
           target: { scope: 'settlements' },
         },
       ]),
-    ).toEqual(['+10% science in each settlement']);
+    ).toEqual(['+10% science in every settlement']);
     // Nested conditions read as words, not raw values.
     expect(texts.get('civ:civ_aztec')).toContain(
-      'needs: has improvement Farm and on river or adjacent to terrain Lake',
+      '+1 food on Farms beside a river or next to a Lake tile',
     );
-    expect(texts.get('leader:leader_hannibal')).toContain('+5 strength on hills');
+    expect(texts.get('leader:leader_hannibal')).toContain('+5 strength for every unit on Hills');
+    // What sits in one settlement doesn't claim every settlement.
+    expect(
+      effectLines(
+        content,
+        [
+          {
+            effect: 'modify_growth',
+            params: { percent: 15 },
+            target: { scope: 'settlements' },
+            condition: { settlement_on_river: true },
+          },
+        ],
+        { local: true },
+      ),
+    ).toEqual(['+15% growth in a settlement on a river']);
+  });
+
+  it('writes every effect in the base game as words', () => {
+    // Every list of effects anywhere in the content (abilities, buildings, policies, beliefs,
+    // legacies, tiers, monopolies, resolutions...), read as the player would read it.
+    const lines = new Map<string, string>();
+    const visit = (owner: string, v: unknown) => {
+      if (Array.isArray(v)) {
+        if (
+          v.length > 0 &&
+          v.every((x) => x && typeof x === 'object' && typeof x.effect === 'string')
+        ) {
+          for (const local of [false, true])
+            for (const line of effectLines(content, v, { local })) lines.set(line, owner);
+        } else v.forEach((x) => visit(owner, x));
+      } else if (v && typeof v === 'object') Object.values(v).forEach((x) => visit(owner, x));
+    };
+    for (const group of Object.values(content.entities))
+      for (const [id, def] of Object.entries(group)) visit(id, def);
+    visit('rules', content.rules);
+    expect(lines.size).toBeGreaterThan(300);
+    const bad = [...lines].filter(
+      ([line]) =>
+        // Raw data, ids, empty slots in a sentence, doubled spaces, a dangling colon or comma.
+        /[{}[\]"_]|undefined|NaN|null|true|false| {2}|toward (?:in|$)|: *$|, *$|^\s|\s$/.test(
+          line,
+        ) ||
+        // A sentence starts with a capital, a sign or a number.
+        !/^[A-Z+−0-9]/.test(line),
+    );
+    expect(bad.map(([line, owner]) => `${owner}: ${line}`)).toEqual([]);
   });
 });

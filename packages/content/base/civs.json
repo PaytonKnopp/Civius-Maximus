@@ -1575,7 +1575,7 @@
       "Quirigua"
     ],
     "ability": {
-      "name": "The Long Count",
+      "name": "Calendar Keepers",
       "description": "Campuses +1 science for every two neighboring farms.",
       "effects": [
         {
@@ -1589,7 +1589,7 @@
                 "improvement": "improvement_farm"
               },
               "every": 2,
-              "label": "Farms (The Long Count)"
+              "label": "Farms (Calendar Keepers)"
             }
           },
           "target": {
@@ -1773,7 +1773,7 @@
       "Magdala"
     ],
     "ability": {
-      "name": "Aksumite Legacy",
+      "name": "Keepers of the Ark",
       "description": "Tiles with a resource +1 faith.",
       "effects": [
         {

@@ -1,3 +1,4 @@
+import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 import { applyAction } from '../game';
 import { tileIndex } from '../map/hex';
@@ -19,6 +20,7 @@ import {
   treeColumns,
   unlocksOf,
 } from './rules';
+import { policySlotsTurn } from './handlers';
 import { policySlots } from './sources';
 
 const ISLAND = [
@@ -209,6 +211,31 @@ describe('governments and policies', () => {
       wildcard: 1,
     });
     expect(after.players.p1!.policies.military).toEqual([]);
+  });
+
+  it('takes the last cards out when a kind has fewer slots than cards (a slot was lost)', () => {
+    const { s } = capital();
+    const slots = policySlots(ctx, s, 'p1');
+    // One card more than the government's economic slots, as after a celebration or the loss
+    // of a wonder that held a slot.
+    s.players.p1!.civics.done.push(
+      'civic_craftsmanship',
+      'civic_early_empire',
+      'civic_state_workforce',
+    );
+    const cards = ctx.content.ids.policy
+      .filter((id) => ctx.content.entities.policy[id]!.slot === 'economic')
+      .filter((id) => {
+        const need = ctx.content.entities.policy[id]!.requiresCivic;
+        return !need || s.players.p1!.civics.done.includes(need);
+      })
+      .slice(0, slots.economic + 1);
+    expect(cards.length).toBe(slots.economic + 1);
+    s.players.p1!.policies.economic = cards;
+    const next = produce(s, (d) => policySlotsTurn(d, ctx));
+    expect(next.players.p1!.policies.economic).toEqual(cards.slice(0, slots.economic));
+    // And the turn does it by itself, after everything that can take a slot away.
+    expect(endTurn(s).players.p1!.policies.economic.length).toBeLessThanOrEqual(slots.economic);
   });
 
   it('raises the settlement limit with civics', () => {

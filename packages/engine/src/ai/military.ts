@@ -427,6 +427,7 @@ export function goNear(t: Turn, u: UnitState, center: number, ring: number): boo
         areas[tile] === areas[u.tile] &&
         distance(map, tile, center) === ring &&
         t.isExplored(tile) &&
+        t.canReach(u, tile) &&
         canTraverse(t.ctx, t.state, u, tile) &&
         !hasForeignUnit(t.state, u, tile) &&
         hasRoom(t.ctx, t.state, u, tile) &&
@@ -469,6 +470,7 @@ function explore(t: Turn, u: UnitState, homeRange?: number): boolean {
         (tile) =>
           tile !== u.tile &&
           getBit(explored, tile) &&
+          t.canReach(u, tile) &&
           canTraverse(t.ctx, t.state, u, tile) &&
           !hasForeignUnit(t.state, u, tile) &&
           hasRoom(t.ctx, t.state, u, tile) &&

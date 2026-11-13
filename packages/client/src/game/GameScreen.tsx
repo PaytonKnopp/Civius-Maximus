@@ -79,8 +79,9 @@ import { CombatPreview, type Side } from './CombatPreview';
 import { CaptureDialog, GameOver, PlayerPanel, WarPrompt } from './Diplomacy';
 import { cloudAutosave } from '../cloud/autosave';
 import { getSettings, useSettings } from '../settings';
-import { AUTOSAVE, loadSave, ONLINE_AUTOSAVE, QUICKSAVE, storeSave } from './storage';
+import { AUTOSAVE, downloadSave, loadSave, ONLINE_AUTOSAVE, QUICKSAVE, storeSave } from './storage';
 import {
+  agree,
   civName,
   cssColor,
   empireBreakdown,
@@ -127,6 +128,7 @@ import { Minimap } from './Minimap';
 import { music, play, type Sfx } from '../audio';
 import { LeaderCard, LeaderHead } from '../ui/LeaderCard';
 import { escapeOpen } from '../ui/Menu';
+import { useFit } from '../ui/fit';
 import { type PanelMode, type Placing, SettlementPanel } from './SettlementPanel';
 import { TreeScreen } from './TreeScreen';
 import { UnitPanel } from './UnitPanel';
@@ -145,8 +147,11 @@ function toPathView(steps: ReturnType<typeof findPath>): PathView | null {
 }
 
 /** A notification for the viewer, or undefined if the event isn't worth one. */
+/** Unit models that ride (content: `unit.model`): their moves sound of hooves. */
+const MOUNTED = new Set(['horseman', 'knight', 'cavalry', 'chariot']);
+
 /** The sound for an event, as the viewer hears it (docs/06-ui-ux.md, "Music and sound"). */
-function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
+function soundFor(content: CompiledContent, e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
   switch (e.type) {
     case 'settlement_founded':
       return e.owner === me ? 'found' : null;
@@ -239,12 +244,12 @@ function soundFor(e: GameEvent, me: PlayerId, s: GameState): Sfx | null {
       return e.player === me ? 'notify' : null;
     case 'unit_moved': {
       if (e.owner !== me) return null;
-      const type = s.units[e.unit]?.type ?? '';
-      if (/galley|caravel|frigate|privateer|ironclad|destroyer|ship|boat/.test(type))
-        return 'move_ship';
-      if (/horse|cavalry|knight|chariot|keshig|companion|mandekalu|rough_rider/.test(type))
-        return 'move_horse';
-      return 'move';
+      // By what the unit is, not by its name: names missed six ships (the Dromon, the
+      // Quadrireme, submarines...) and five kinds of cavalry (the Mamluk, the Cossack...).
+      const def = content.entities.unit[s.units[e.unit]?.type ?? ''];
+      if (!def) return 'move';
+      if (content.entities.unitClass[def.class]?.domain === 'sea') return 'move_ship';
+      return MOUNTED.has(def.model ?? '') ? 'move_horse' : 'move';
     }
     case 'settlement_razing':
       return 'burning';
@@ -320,7 +325,7 @@ function noticeFor(
       const name = age ? resolveText(content, age.name) : e.age;
       return e.player === ME
         ? `${withArticle(name).replace(/^a/, 'A')} begins! (${e.score} era score last era) Choose your dedication.`
-        : `${civName(content, state, e.player)} enters ${withArticle(name)}`;
+        : `${civName(content, state, e.player)} ${agree(civName(content, state, e.player), 'enters')} ${withArticle(name)}`;
     }
     case 'disaster': {
       const def = content.entities.disaster[e.disaster];
@@ -358,7 +363,7 @@ function noticeFor(
         : undefined;
     }
     case 'congress_founded':
-      return `The World Congress has formed (${civName(content, state, e.by)} was first into the age). Diplomatic favor comes in every turn (U)`;
+      return `The World Congress has formed (${civName(content, state, e.by)} ${agree(civName(content, state, e.by), 'was')} first into the age). Diplomatic favor comes in every turn (U)`;
     case 'congress_session':
       // An emergency session has its own notice.
       return content.entities.resolution[e.agenda[0] ?? '']?.emergency
@@ -369,7 +374,7 @@ function noticeFor(
         { religion: 'religious', diplomatic: 'diplomatic' }[e.victory as string] ?? e.victory;
       return e.target === ME
         ? `Emergency: you are ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing you (U)`
-        : `Emergency: ${civName(content, state, e.target)} is ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing them (U)`;
+        : `Emergency: ${civName(content, state, e.target)} ${agree(civName(content, state, e.target), 'is')} ${e.percent}% of the way to a ${kind} victory. The World Congress meets this turn to vote on containing them (U)`;
     }
     case 'orders_cancelled': {
       const u = state.units[e.unit];
@@ -406,7 +411,7 @@ function noticeFor(
       return e.player === ME
         ? `+${e.amount} diplomatic victory point${e.amount === 1 ? '' : 's'}: ${e.reason} (${e.total} now)`
         : e.reason.startsWith('Name a World Leader') || e.amount >= 2
-          ? `${civName(content, state, e.player)} gains ${e.amount} diplomatic victory points (${e.total})`
+          ? `${civName(content, state, e.player)} ${agree(civName(content, state, e.player), 'gains')} ${e.amount} diplomatic victory points (${e.total})`
           : undefined;
     case 'spy_recruited':
       return e.player === ME ? `A new spy, ${e.name}, is ready (Y)` : undefined;
@@ -461,11 +466,11 @@ function noticeFor(
           : `${civName(content, state, e.by)} declared war on ${civName(content, state, e.target)}`;
     case 'peace_offered':
       return e.to === ME
-        ? `${civName(content, state, e.from)} offers peace (open their name above to accept)`
+        ? `${civName(content, state, e.from)} ${agree(civName(content, state, e.from), 'offers')} peace (open their name above to accept)`
         : `You offered peace to ${civName(content, state, e.to)}`;
     case 'deal_proposed':
       return e.to === ME
-        ? `${civName(content, state, e.from)} offers you a deal (open their name above)`
+        ? `${civName(content, state, e.from)} ${agree(civName(content, state, e.from), 'offers')} you a deal (open their name above)`
         : undefined;
     case 'deal_accepted': {
       const pact = e.alliance
@@ -679,7 +684,7 @@ function noticeFor(
     case 'player_defeated':
       return e.player === ME
         ? 'Your civilization has fallen'
-        : `${civName(content, state, e.player)} has been defeated`;
+        : `${civName(content, state, e.player)} ${agree(civName(content, state, e.player), 'has')} been defeated`;
     default:
       return undefined;
   }
@@ -938,6 +943,12 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     setTimeout(() => setNotices((n) => n.filter((x) => x.id !== id)), 2600);
   }, []);
 
+  // A failure inside the game (a turn that couldn't be played, an AI seat that failed and
+  // passed): it stays on screen until dismissed, with the save to send along with a report.
+  const [problem, setProblem] = useState<string | null>(() => game.takeProblem?.() ?? null);
+  // An autosave that fails (storage blocked or full) is said once, not every turn.
+  const autosaveFailed = useRef(false);
+
   // Online: who's connected, refusals from the host, and a lost connection.
   const online = game.online;
   const [seats, setSeats] = useState<SeatInfo[]>(() => online?.seats() ?? []);
@@ -1044,6 +1055,25 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         short: short.includes(id),
       }));
   }, [ctx, state, viewer]);
+  // The top bar's yields drop detail until they fit (ui/fit.ts): refit when a number changes.
+  const yieldsRef = useRef<HTMLUListElement>(null);
+  useFit(
+    yieldsRef,
+    5,
+    [
+      empire.science,
+      empire.culture,
+      empire.gold,
+      empire.goldPerTurn,
+      empire.faith,
+      empire.faithPerTurn,
+      empire.influence,
+      empire.influencePerTurn,
+      me.celebration.turnsLeft,
+      me.celebration.store,
+      ...strategic.map((r) => `${r.id}:${r.have}:${r.net}:${r.short}`),
+    ].join('|'),
+  );
   // Online: ask once (on a click) whether to notify, then tell the player when their turn comes
   // while they're in another tab (D118).
   useEffect(() => {
@@ -1077,8 +1107,18 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
   }, [state.turn]);
   // A hint counts as seen when it first shows, and stays up until dismissed or the turn ends.
   const [hintNow, setHintNow] = useState<{ id: string; turn: number } | null>(null);
+  // Not while the title screen or a menu covers the game, nor under the leader's introduction:
+  // a hint counts as seen when it first shows, and the quick game behind the title screen used
+  // to use up the first one before anyone had started a game.
+  const introOpen = state.turn <= 1 && me.alive && !introSeen.has(viewer);
   const hintsFree =
-    hintsEnabled && !busy && !passTo && overlay === null && state.status === 'playing';
+    hintsEnabled &&
+    !covered &&
+    !introOpen &&
+    !busy &&
+    !passTo &&
+    overlay === null &&
+    state.status === 'playing';
   const nextHint =
     hintsFree && hintNow === null ? hintFor({ ctx, state, viewer, next }, hintsSeen) : undefined;
   useEffect(() => {
@@ -1155,6 +1195,11 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
 
   useEffect(() => {
     const off = game.subscribe((s, events) => {
+      const trouble = game.takeProblem?.();
+      if (trouble) {
+        setProblem(trouble);
+        console.error('The game hit a problem:', trouble);
+      }
       pendingMoves.current.push(
         ...events.flatMap((e) =>
           e.type === 'unit_moved' &&
@@ -1187,7 +1232,16 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             s,
             `${game.online ? 'Online autosave' : 'Autosave'} · turn ${s.turn}`,
           );
-          void storeSave(id, save).catch(() => {});
+          void storeSave(id, save).then(
+            () => {
+              autosaveFailed.current = false;
+            },
+            () => {
+              if (autosaveFailed.current) return;
+              autosaveFailed.current = true;
+              notify("Couldn't autosave: this browser's storage is blocked or full");
+            },
+          );
           cloudAutosave(id, save);
         }
       }
@@ -1195,7 +1249,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
         if (e.visibleTo !== 'all' && !e.visibleTo.includes(viewer)) continue;
         const text = noticeFor(content, s, e, viewerRef.current);
         if (text) notify(text);
-        const cue = soundFor(e, viewer, s);
+        const cue = soundFor(content, e, viewer, s);
         if (cue) play(cue);
         if (cue === 'wonder' || cue === 'victory' || cue === 'defeat' || cue === 'era')
           music.duck(4);
@@ -1806,14 +1860,21 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
     openGovernment,
     placing,
     striking,
+    nuking,
     viewer,
     passTo,
+    game,
+    ctx,
+    state,
+    notify,
   ]);
 
   const inspected = selection?.kind === 'settlement' ? undefined : (pathTarget ?? inspect);
 
   return (
-    <div className="game">
+    // `data-drawn`: the map has drawn a frame (what the screenshot scripts wait for; the frame
+    // rate counter they used to read is off by default).
+    <div className="game" data-drawn={fps > 0 ? 'yes' : 'no'}>
       <div
         className="lab-canvas"
         ref={hostRef}
@@ -1821,7 +1882,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
       />
 
       <header className="topbar">
-        <ul className="empire-yields" aria-label="Your empire">
+        <ul className="empire-yields" aria-label="Your empire" ref={yieldsRef}>
           <li title={breakdown.science}>
             <Icon name="science" size={22} />
             <span className="mono val science">{perTurn(empire.science)}</span>
@@ -1830,19 +1891,19 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             <Icon name="culture" size={22} />
             <span className="mono val culture">{perTurn(empire.culture)}</span>
           </li>
-          <li title={breakdown.gold}>
+          <li title={breakdown.gold} className={empire.goldPerTurn < 0 ? 'losing' : ''}>
             <Icon name="gold" size={22} />
             <span className="mono val gold">{whole(empire.gold)}</span>
             <span className={`delta mono ${empire.goldPerTurn < 0 ? 'neg' : ''}`}>
               {perTurn(empire.goldPerTurn)}
             </span>
           </li>
-          <li title={breakdown.faith}>
+          <li title={breakdown.faith} className="minor">
             <Icon name="faith" size={22} />
             <span className="mono val faith">{whole(empire.faith)}</span>
             <span className="delta mono">{perTurn(empire.faithPerTurn)}</span>
           </li>
-          <li title={breakdown.influence}>
+          <li title={breakdown.influence} className="minor">
             <Icon name="influence" size={22} />
             <span className="mono val">{whole(empire.influence)}</span>
             <span className="delta mono">{perTurn(empire.influencePerTurn)}</span>
@@ -1855,6 +1916,7 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             {me.celebration.turnsLeft > 0 ? (
               <span className="mono val">
                 <span className="celebrating-label">Celebrating</span> {me.celebration.turnsLeft}
+                <small className="celebrating-turns"> {turnWord(me.celebration.turnsLeft)}</small>
               </span>
             ) : (
               <span
@@ -1903,7 +1965,13 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
                     </span>
                   </span>
                 ))}
-              {strategic.length > 3 && <span className="muted">+{strategic.length - 3}</span>}
+              {strategic.length > 3 && (
+                <span className="muted more-wide">+{strategic.length - 3}</span>
+              )}
+              {/* When the bar is short of room, only the first shows (ui/fit.ts, level 4). */}
+              {strategic.length > 1 && (
+                <span className="muted more-tight">+{strategic.length - 1}</span>
+              )}
             </li>
           )}
         </ul>
@@ -2030,7 +2098,15 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
             type="button"
             className="turn-pill"
             aria-live="polite"
-            title="Eras and ages (E): era score, dedications, timeline"
+            title={[
+              `Turn ${state.turn}${era ? ` · ${resolveText(content, era.name)} era` : ''}`,
+              me.ages
+                ? `${resolveText(content, content.entities.age[me.ages.age]?.name ?? '')} · era score ${me.ages.score}`
+                : '',
+              'Eras and ages (E): era score, dedications, timeline',
+            ]
+              .filter(Boolean)
+              .join('\n')}
             onClick={() => setOverlay({ kind: 'ages' })}
           >
             <span className="turn-label">Turn</span>
@@ -2142,6 +2218,26 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           online={online}
           colorOf={(p) => (p && colors[p] ? cssColor(colors[p]!.main) : undefined)}
         />
+      )}
+      {problem && (
+        <div className="online-bar problem-bar" role="alert">
+          <span>The game hit a problem: {problem}. Your game is still here.</span>
+          {game.saves && (
+            <button
+              type="button"
+              className="small"
+              title="Downloads this game as a file, to send with a bug report"
+              onClick={() =>
+                downloadSave(makeSave(game.state, `Problem report · turn ${game.state.turn}`))
+              }
+            >
+              Save a copy to send
+            </button>
+          )}
+          <button type="button" className="ghost small" onClick={() => setProblem(null)}>
+            Dismiss
+          </button>
+        </div>
       )}
       {online && (away.length > 0 || cutOff || reconnecting) && (
         <div className="online-bar" role="status">
@@ -2687,9 +2783,9 @@ export function GameScreen({ content, start, mode, quality, onGame, onExit, cove
           }
           title={
             !me.alive && (!state.result?.winner || state.status !== 'ended')
-              ? `${civName(content, state, viewer)} has fallen`
+              ? `${civName(content, state, viewer)} ${agree(civName(content, state, viewer), 'has')} fallen`
               : state.result?.winner
-                ? `${civName(content, state, state.result.winner)} wins`
+                ? `${civName(content, state, state.result.winner)} ${agree(civName(content, state, state.result.winner), 'wins')}`
                 : 'Game over'
           }
           text={(() => {

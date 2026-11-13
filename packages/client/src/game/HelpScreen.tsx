@@ -7,6 +7,8 @@ import { Switch, useEscape } from '../ui/Menu';
 export const KEYS: [string, string][] = [
   ['Enter', 'The next thing that needs you (then End turn)'],
   ['Esc', 'Close a screen, cancel placing, deselect'],
+  ['Arrows / W A S D', 'Move the map'],
+  ['+ / −', 'Zoom in and out'],
   ['Space', 'Skip the selected unit this turn'],
   ['B', 'Found a settlement with the selected settler'],
   ['F', 'Fortify the selected unit'],

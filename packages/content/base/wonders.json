@@ -619,7 +619,7 @@
     "type": "wonder",
     "id": "wonder_great_lighthouse",
     "name": "Great Lighthouse",
-    "description": "+2 gold here. Naval melee units start with Helmsman (+1 movement). +2 great admiral points. Built on the coast.",
+    "description": "+2 gold here. Naval melee units start with Steersman (+1 movement). +2 great admiral points. Built on the coast.",
     "icon": "GL",
     "cost": 220,
     "era": "era_classical",

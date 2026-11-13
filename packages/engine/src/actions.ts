@@ -1,10 +1,22 @@
 import { z } from 'zod';
 
-const PlayerRef = z.string().min(1).max(64);
+/**
+ * Ids arrive from the network and are looked up in plain objects (players, content), where
+ * "constructor" or "toString" would find JavaScript's own properties instead of nothing: no id
+ * may be the name of one (the fuzz test in fuzz.test.ts found the crash this prevents).
+ */
+const ownName = (s: string) => !(s in Object.prototype);
+const NOT_AN_ID = 'not a valid id';
+/** Any id made by the game (a spy, a great work, a camp, a route...). */
+const IdRef = z.string().min(1).max(64).refine(ownName, NOT_AN_ID);
+const PlayerRef = IdRef;
 const UnitRef = z.string().regex(/^u\d+$/);
 const TileRef = z.int().min(0).max(1_000_000);
 const SettlementRef = z.string().regex(/^s\d+$/);
-const ContentRef = z.string().regex(/^[a-z][a-z0-9_]*$/);
+const ContentRef = z
+  .string()
+  .regex(/^[a-z][a-z0-9_]*$/)
+  .refine(ownName, NOT_AN_ID);
 const BuildItem = z.strictObject({
   kind: z.enum(['unit', 'building', 'district', 'wonder', 'project']),
   id: ContentRef,
@@ -181,8 +193,8 @@ export const Action = z.discriminatedUnion('type', [
   z.strictObject({
     type: z.literal('move_great_work'),
     player: PlayerRef,
-    work: z.string().min(1).max(64),
-    settlement: z.string().min(1).max(64),
+    work: IdRef,
+    settlement: IdRef,
   }),
   /** Use a nuclear weapon on a tile in its range (it's used up). */
   z.strictObject({
@@ -200,7 +212,7 @@ export const Action = z.discriminatedUnion('type', [
         z.strictObject({
           resolution: ContentRef,
           option: ContentRef,
-          target: z.string().min(1).max(64).nullable().default(null),
+          target: IdRef.nullable().default(null),
           votes: z.int().min(1).max(10).default(1),
         }),
       )
@@ -210,28 +222,28 @@ export const Action = z.discriminatedUnion('type', [
   z.strictObject({
     type: z.literal('send_spy'),
     player: PlayerRef,
-    spy: z.string().min(1).max(64),
-    settlement: z.string().min(1).max(64),
+    spy: IdRef,
+    settlement: IdRef,
   }),
   /** A spy that has arrived starts a mission there (a `spyMission` id). */
   z.strictObject({
     type: z.literal('start_spy_mission'),
     player: PlayerRef,
-    spy: z.string().min(1).max(64),
+    spy: IdRef,
     mission: ContentRef,
   }),
   /** Call a spy home (it stops what it's doing). */
   z.strictObject({
     type: z.literal('recall_spy'),
     player: PlayerRef,
-    spy: z.string().min(1).max(64),
+    spy: IdRef,
   }),
   /** Swap two of your great works of the same kind (to theme a building). */
   z.strictObject({
     type: z.literal('swap_great_works'),
     player: PlayerRef,
-    a: z.string().min(1).max(64),
-    b: z.string().min(1).max(64),
+    a: IdRef,
+    b: IdRef,
   }),
   /** Upgrade a unit to its newer version, for gold, in your own territory. */
   z.strictObject({ type: z.literal('upgrade_unit'), player: PlayerRef, unit: UnitRef }),
@@ -321,13 +333,13 @@ export const Action = z.discriminatedUnion('type', [
     type: z.literal('plunder_route'),
     player: PlayerRef,
     unit: UnitRef,
-    route: z.string().min(1).max(64),
+    route: IdRef,
   }),
   /** Spend influence this turn toward befriending a hostile camp into a city-state. */
   z.strictObject({
     type: z.literal('befriend_camp'),
     player: PlayerRef,
-    camp: z.string().min(1).max(64),
+    camp: IdRef,
   }),
   /** As its suzerain, pay gold to command a city-state's soldiers for a while. */
   z.strictObject({ type: z.literal('levy_military'), player: PlayerRef, cityState: PlayerRef }),
@@ -343,7 +355,7 @@ export const Action = z.discriminatedUnion('type', [
     type: z.literal('remove_heresy'),
     player: PlayerRef,
     unit: UnitRef,
-    settlement: z.string().min(1).max(64),
+    settlement: IdRef,
   }),
   /** A missionary preaches its religion in a settlement it stands on or next to. */
   z.strictObject({

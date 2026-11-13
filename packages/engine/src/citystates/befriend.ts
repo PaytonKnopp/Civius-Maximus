@@ -1,4 +1,4 @@
-import { castDraft, type Draft } from 'immer';
+import { castDraft, current, type Draft } from 'immer';
 import type { Action } from '../actions';
 import { getBit } from '../bitset';
 import {
@@ -6,6 +6,7 @@ import {
   atWar,
   type EngineContext,
   type Emit,
+  HOSTILE,
   type RuleError,
   unitClassOf,
   unitIds,
@@ -13,9 +14,11 @@ import {
 import { view } from '../draft';
 import { toFixed } from '../fixed';
 import { nextRange } from '../rng';
-import { foundingProblem } from '../settlements/rules';
+import { distance, tilesWithin } from '../map/hex';
+import { foundingProblem, settlementIds } from '../settlements/rules';
 import { scaleCost } from '../speed';
-import type { GameState, PlayerId } from '../state';
+import type { GameState, PlayerId, UnitState } from '../state';
+import { canTraverse, hasForeignUnit, hasRoom } from '../units/movement';
 import { exploredBits } from '../units/vision';
 import { addEnvoys, createCityState } from './handlers';
 import { isCityState } from './rules';
@@ -51,9 +54,11 @@ export function befriendProblem(
     return { code: 'unknown', message: "You haven't found that camp" };
   if (freeCityStateDefs(ctx, state).length === 0)
     return { code: 'no_room', message: 'There are no more city-states to found' };
-  // The camp itself makes way for the city-state.
-  const site = foundingProblem(ctx, state, '', camp.tile);
-  if (site && site.code !== 'camp')
+  // The camp itself makes way for the city-state, so the site is judged without it: not in
+  // anyone's territory, and not too close to a settlement. (Asking with the camp still there
+  // stopped at "clear the camp first" and never reached those two rules.)
+  const camps = Object.fromEntries(Object.entries(state.camps).filter(([id]) => id !== campId));
+  if (foundingProblem(ctx, { ...state, camps }, '', camp.tile))
     return { code: 'no_site', message: "A city-state couldn't grow there" };
   if (camp.befriend?.[player]?.last === state.turn)
     return { code: 'done_this_turn', message: 'Already befriended this turn' };
@@ -111,7 +116,8 @@ function becomeCityState(
 ) {
   const camp = draft.camps[campId]!;
   const tile = camp.tile;
-  for (const u of camp.units) delete draft.units[u];
+  // Its raiders disband; a unit that has since changed sides is no raider of this camp.
+  for (const u of camp.units) if (draft.units[u]?.owner === HOSTILE) delete draft.units[u];
   delete draft.camps[campId];
   const free = freeCityStateDefs(ctx, view(draft));
   const [i, rng] = nextRange(draft.rng as GameState['rng'], 0, free.length - 1);
@@ -183,27 +189,82 @@ export const befriendHandlers = {
 };
 
 /**
- * Turn step (with the city-states): levied soldiers go back to their city-state when the levy
- * runs out, when their commander is no longer its suzerain, or goes to war with it.
+ * Where a soldier going back to its city-state appears: the city-state's settlement, or the
+ * nearest tile to it that the unit may stand on with room and no one else's units.
  */
-export function leviesTurn(draft: Draft<GameState>, emit: Emit) {
+function homeTile(ctx: EngineContext, state: GameState, unit: UnitState): number | undefined {
+  const town = settlementIds(state)
+    .map((id) => state.settlements[id]!)
+    .filter((x) => x.owner === unit.owner)
+    .sort(
+      (a, b) =>
+        distance(state.map, unit.tile, a.tile) - distance(state.map, unit.tile, b.tile) ||
+        Number(a.id.slice(1)) - Number(b.id.slice(1)),
+    )[0];
+  if (!town) return undefined;
+  return tilesWithin(state.map, town.tile, 4).find(
+    (t) =>
+      canTraverse(ctx, state, unit, t) &&
+      hasRoom(ctx, state, unit, t) &&
+      !hasForeignUnit(state, unit, t),
+  );
+}
+
+/**
+ * Turn step (with the city-states): levied soldiers go back to their city-state when the levy
+ * runs out, when their commander is no longer its suzerain, or goes to war with it. They go
+ * home: back at their city-state's settlement (or beside it), not left standing among the
+ * units and inside the settlements of the civ that had hired them.
+ */
+export function leviesTurn(draft: Draft<GameState>, ctx: EngineContext, emit: Emit) {
   const next = draft.turn + 1;
   const ended = new Set<string>();
-  for (const id of unitIds(draft)) {
-    const u = draft.units[id]!;
-    if (!u.levied) continue;
-    const from = u.levied.from;
+  /** Whether this levied soldier's time is up; with its city-state gone it simply stays. */
+  const over = (u: UnitState, holder: PlayerId): boolean => {
+    const from = u.levied!.from;
     const cs = draft.cityStates[from];
     if (!cs || !draft.players[from]?.alive) {
-      // Its city-state is gone: the soldier stays.
       delete u.levied;
-      continue;
+      return false;
     }
-    if (u.levied.until > next && cs.suzerain === u.owner && !atWar(draft, u.owner, from)) continue;
-    ended.add(`${u.owner}|${from}`);
-    u.owner = from;
+    return !(u.levied!.until > next && cs.suzerain === holder && !atWar(draft, holder, from));
+  };
+  const returning: string[] = [];
+  for (const id of unitIds(draft)) {
+    const u = draft.units[id]!;
+    // Soldiers packed in a commander step out of it to go home.
+    if (u.cargo?.some((c) => c.levied)) {
+      const kept = [];
+      for (const c of u.cargo) {
+        if (!c.levied || !over(c, u.owner)) {
+          kept.push(c);
+          continue;
+        }
+        ended.add(`${u.owner}|${c.levied.from}`);
+        draft.units[c.id] = { ...current(c), tile: u.tile };
+        returning.push(c.id);
+      }
+      if (kept.length > 0) u.cargo = kept;
+      else delete u.cargo;
+    }
+    if (!u.levied || !over(u, u.owner)) continue;
+    ended.add(`${u.owner}|${u.levied.from}`);
+    returning.push(id);
+  }
+  for (const id of returning) {
+    const u = draft.units[id]!;
+    u.owner = u.levied!.from;
     u.orders = null;
     delete u.levied;
+    const snap = current(draft);
+    const to = homeTile(ctx, snap, snap.units[id]!);
+    if (to !== undefined) {
+      u.tile = to;
+      u.moves = 0;
+    } else if (hasForeignUnit(snap, snap.units[id]!, u.tile)) {
+      // Nowhere to go and no room where it stands: it disbands.
+      delete draft.units[id];
+    }
   }
   for (const key of [...ended].sort()) {
     const [player, cityState] = key.split('|') as [string, string];

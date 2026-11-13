@@ -229,8 +229,12 @@ export function buildArticles(content: CompiledContent): Article[] {
       .filter(([, v]) => v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0))
       .map(([k, v]) => [k, Array.isArray(v) ? v : [String(v)]]),
   });
-  const effects = (title: string, list: Parameters<typeof effectLines>[1]): Block[] => {
-    const lines = effectLines(content, list);
+  const effects = (
+    title: string,
+    list: Parameters<typeof effectLines>[1],
+    local = false,
+  ): Block[] => {
+    const lines = effectLines(content, list, { local });
     return lines.length ? [{ kind: 'list', title, items: lines.map((l) => [l]) }] : [];
   };
   const push = (a: Omit<Article, 'kind'> & { kind: string }) => out.push(a);
@@ -355,6 +359,11 @@ export function buildArticles(content: CompiledContent): Article[] {
         : undefined;
 
   // Units.
+  /** "melee and anti-cavalry units": the classes a support unit helps. */
+  const supported = (classes: string[]) =>
+    classes.length > 0
+      ? `${classes.map((c) => name('unitClass', c).toLowerCase()).join(' and ')} units`
+      : 'units';
   for (const id of ids.unit) {
     const u = e.unit[id]!;
     const cls = e.unitClass[u.class];
@@ -398,6 +407,18 @@ export function buildArticles(content: CompiledContent): Article[] {
                 : undefined,
           ],
           ['Upkeep', u.upkeep ? `${upkeepOf({ content }, u.id)} gold a turn` : undefined],
+          [
+            'Strategic resources',
+            [
+              ...Object.entries(u.resourceCost ?? {}).map(
+                ([r, n]) => `${n} ${name('resource', r)} to train`,
+              ),
+              ...Object.entries(u.resourceUpkeep ?? {}).map(
+                ([r, n]) =>
+                  `${n} ${name('resource', r)} a turn (−${content.rules.strategic.shortageStrength} strength while short)`,
+              ),
+            ].join('; '),
+          ],
           ['Uses a citizen', u.populationCost ? `${u.populationCost}` : undefined],
           ['Requires', requires(u)],
           ['Upgrades to', link('unit', u.upgradesTo)],
@@ -413,7 +434,19 @@ export function buildArticles(content: CompiledContent): Article[] {
           [
             'Special',
             [
-              u.commander ? 'commander: strengthens nearby units' : '',
+              u.commander
+                ? `commander: carries ${u.commander.capacity} units packed, and gives +${u.commander.strength} strength to yours within ${u.commander.radius} tile${u.commander.radius === 1 ? '' : 's'}`
+                : '',
+              u.support?.heal
+                ? `heals your units within ${u.support.radius} tile${u.support.radius === 1 ? '' : 's'} by ${u.support.heal} more a turn`
+                : '',
+              u.support?.wallsPercent
+                ? `your ${supported(u.support.classes)} within ${u.support.radius} tile${u.support.radius === 1 ? '' : 's'} put ${u.support.wallsPercent === 100 ? 'all' : `${u.support.wallsPercent}%`} of their damage into a settlement's walls`
+                : '',
+              u.support?.bypassWalls
+                ? `the attacks of your ${supported(u.support.classes)} within ${u.support.radius} tile${u.support.radius === 1 ? '' : 's'} go past a settlement's walls`
+                : '',
+              u.ignoresZoc ? 'ignores zones of control' : '',
               u.movesAfterAttack ? 'can move after attacking' : '',
               u.ignoresWounds ? 'fights at full strength when wounded' : '',
               u.ignoresTerrainCost ? 'ignores terrain movement costs' : '',
@@ -476,7 +509,7 @@ export function buildArticles(content: CompiledContent): Article[] {
           ['Replaces', link('building', b.replaces)],
         ]),
         ...effects('Effects', b.effects),
-        ...effects('In this settlement', b.localEffects),
+        ...effects('In this settlement', b.localEffects, true),
       ],
     });
   }
@@ -518,7 +551,7 @@ export function buildArticles(content: CompiledContent): Article[] {
           ],
         ]),
         ...effects('Effects', d.effects),
-        ...effects('In this settlement', d.localEffects),
+        ...effects('In this settlement', d.localEffects, true),
       ],
     });
   }
@@ -565,7 +598,33 @@ export function buildArticles(content: CompiledContent): Article[] {
               .map((a) => `+${a.amount} ${a.yield}${a.label ? ` (${a.label})` : ''}`)
               .join('; '),
           ],
+          [
+            'For each point of appeal',
+            Object.keys(i.yieldsPerAppeal ?? {}).length > 0
+              ? yieldsText(i.yieldsPerAppeal)
+              : undefined,
+          ],
           ['Improves', i.resources ? links('resource', i.resources) : undefined],
+          [
+            'Goes on',
+            i.sites
+              .map((site) =>
+                [
+                  site.needsFeature && site.features.length > 0
+                    ? site.features.map((f) => name('feature', f)).join(' or ')
+                    : (site.terrains ?? []).map((x) => name('terrain', x)).join(', '),
+                  site.elevations.length === 1 ? `(${site.elevations[0]} land only)` : '',
+                  site.river ? 'beside a river' : '',
+                  site.coastal ? 'by the sea or a lake' : '',
+                  site.edge ? 'at the edge of your territory' : '',
+                  site.minAppeal !== undefined ? `with an appeal of ${site.minAppeal} or more` : '',
+                ]
+                  .filter(Boolean)
+                  .join(' '),
+              )
+              .filter(Boolean)
+              .join('; '),
+          ],
           ['Defense', i.defense ? `+${i.defense}` : undefined],
           ['Requires', requires(i)],
           ['Unique to', link('civ', i.civ)],
@@ -649,8 +708,22 @@ export function buildArticles(content: CompiledContent): Article[] {
         facts([
           ['Policy slots', slots],
           ['Requires', requires(g)],
+          [
+            'Ideology',
+            (() => {
+              const camp = content.rules.ideology.camps.find((x) => x.governments.includes(id));
+              return camp ? t(camp.name) : undefined;
+            })(),
+          ],
+          [
+            'Legacy',
+            g.legacy.length > 0
+              ? `Earned once for every ${content.rules.progress.legacy.everyTurns} turns in it (at Standard speed), up to ${content.rules.progress.legacy.max} times, and kept when you change government`
+              : undefined,
+          ],
         ]),
         ...effects('Effects', g.effects),
+        ...effects('Legacy bonus', g.legacy),
       ],
     });
   }
@@ -903,7 +976,9 @@ export function buildArticles(content: CompiledContent): Article[] {
           ],
           [
             'Stockpile',
-            x.stockpilePerTurn ? `+${x.stockpilePerTurn} per turn when improved` : undefined,
+            x.stockpilePerTurn
+              ? `+${x.stockpilePerTurn} a turn for each improved source`
+              : undefined,
           ],
           [
             'Monopoly',
@@ -972,7 +1047,13 @@ export function buildArticles(content: CompiledContent): Article[] {
         title: t(x.name),
         subtitle: x.title ? t(x.title) : undefined,
         group,
-        blocks: [...text(x.description), ...effects('Effects', x.effects)],
+        blocks: [
+          ...text(x.description),
+          // A governor and a town's specialization work in the one settlement they are in.
+          ...(kind === 'governor' || kind === 'specialization'
+            ? effects('In its settlement', x.effects, true)
+            : effects('Effects', x.effects)),
+        ],
       });
     }
   };

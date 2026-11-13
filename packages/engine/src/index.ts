@@ -57,6 +57,7 @@ export {
   validateAction,
 } from './game';
 export { stateHash } from './hash';
+export { checkInvariants } from './invariants';
 export {
   checkVictory,
   decodeOwners,
@@ -129,6 +130,8 @@ export {
   borderThreshold,
   developCandidates,
   foundingProblem,
+  type GoldForecast,
+  goldForecast,
   goldPerTurn,
   growthPerTurn,
   growthThreshold,
@@ -207,6 +210,7 @@ export {
   goalProgress,
   governmentChangeCost,
   isPolicyAvailable,
+  legacyTurns,
   nodeCost,
   nodeCostFor,
   civsWith,

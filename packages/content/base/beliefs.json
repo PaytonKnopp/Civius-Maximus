@@ -81,7 +81,7 @@
   {
     "type": "belief",
     "id": "bel_forge_god",
-    "name": "God of the Forge",
+    "name": "The Smith God",
     "kind": "pantheon",
     "description": "+1 production and +1 faith on Mines.",
     "effects": [
@@ -141,7 +141,7 @@
   {
     "type": "belief",
     "id": "bel_stone_circles",
-    "name": "Stone Circles",
+    "name": "Standing Stones",
     "kind": "pantheon",
     "description": "+1 production and +1 faith on quarries.",
     "effects": [
@@ -307,7 +307,7 @@
   {
     "type": "belief",
     "id": "bel_tithe",
-    "name": "Tithe",
+    "name": "Temple Dues",
     "kind": "founder",
     "description": "+2 gold in your holy city for every settlement following your religion.",
     "effects": [
@@ -326,7 +326,7 @@
   {
     "type": "belief",
     "id": "bel_pilgrimage",
-    "name": "Pilgrimage",
+    "name": "Offerings from Afar",
     "kind": "founder",
     "description": "+2 faith in your holy city for every settlement following your religion.",
     "effects": [
@@ -443,7 +443,7 @@
   {
     "type": "belief",
     "id": "bel_choral_music",
-    "name": "Choral Music",
+    "name": "Sacred Song",
     "kind": "follower",
     "description": "+2 culture with a Shrine or Temple.",
     "effects": [
@@ -484,7 +484,7 @@
   {
     "type": "belief",
     "id": "bel_fertility_rites",
-    "name": "Fertility Rites",
+    "name": "Blessing of Children",
     "kind": "follower",
     "description": "+15% growth.",
     "effects": [

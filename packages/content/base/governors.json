@@ -124,7 +124,7 @@
     "type": "governor",
     "id": "gov_steward",
     "name": "Bram",
-    "title": "the Steward",
+    "title": "the Reeve",
     "color": "#7aa84a",
     "description": "Keeps the granaries full: his settlement grows 15% faster.",
     "effects": [
