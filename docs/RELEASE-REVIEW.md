@@ -12,14 +12,14 @@ Updated with every commit, so this table is always the current position.
 |---|---|---|
 | 0 Baseline | Done | |
 | 1 Every screen | Done | |
-| 2 Reliability | Done | The long soak is still adding games; its count is under "Verified" |
+| 2 Reliability | Done | Only 21 of the soak's 71 games were played (the machine kept restarting); the rest can be run with one command |
 | 3 Online | Done | What only real devices can show is in "Could not verify" |
 | 4 Performance and compatibility | Done | |
 | 5 Audio | Done | How it sounds needs ears (checklist in PLAYTEST.md) |
 | 6 Writing and originality | Done | |
 | 7 First hour and defaults | Done | |
 | 8 Release hygiene | Done | |
-| Finish | In progress | Final re-run of every check, the summary |
+| Finish | Done | |
 
 Where it ran: one cloud machine (4 cores, no sound card, no graphics card: the headless browser
 draws 3D in software), one browser engine (Chromium). Anything about how the game sounds, how it
@@ -168,6 +168,14 @@ Rules bugs the invariants found in the first three games, all fixed with tests:
 Not bugs (the checks were too strict): a camp lists a dead raider until its next turn; a great
 work whose building is gone (a captured Palace) is "stored" by design.
 
+- **A unit could walk into an undefended enemy city and stand in it** (found by the last soak,
+  in a 12-civ game on a Huge map). Paths only avoided tiles with someone else's units, so an
+  empty enemy settlement was a tile like any other: the unit stood inside it while the city
+  stayed its owner's, and when another unit of its side then took the city, it marched in on
+  top of the first (two soldiers on one tile, which stacking forbids). Paths now never enter
+  or cross the settlement of someone the unit is at war with, and a unit that takes a city
+  moves in only if there is room. Both reference games are unchanged by it (no unit in them
+  ever walked into an enemy city), and so is the golden replay.
 - **A captured raider stayed on its camp's roster** (found by the last soak, in a game with a
   leader whose soldiers capture what they beat). The camp went on counting the unit as one of
   its own, and when that camp was later befriended, every unit on its roster was disbanded:
@@ -489,18 +497,17 @@ one. It cannot say whether anything sounds good.
 
 ## Verified, with numbers
 
-- **Checks:** `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test` (61 files, 455
+- **Checks:** `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test` (61 files, 457
   tests) and `pnpm build` pass on the last commit. `pnpm cx validate` is clean. CI's
   performance check passes.
-- **Soak** (`pnpm cx soak all`, on the final rules): 20 all-AI games played to the end
-  with 2 to 12 civs on Duel to Huge maps and twelve map types, 3,386 turns in all. After
-  every turn the invariants were checked; 73 times a game was saved, loaded and played
-  on beside the original to the same hash. Two rules slips found: the captured raider above,
-  fixed, and two soldiers on one tile once in a 12-civ game on a Huge map, which is being
-  traced as this is written (see "Left for you" if it is still there). No turn threw. Endings: science 8, culture 6, diplomatic 6. The other speeds, difficulties, starting eras and
+- **Soak** (`pnpm cx soak all`, on the final rules): 21 all-AI games played to the end
+  with 2 to 12 civs on Duel to Huge maps, twelve map types and two speeds, 3,606 turns in
+  all. After every turn the invariants were checked; 78 times a game was saved, loaded and played
+  on beside the original to the same hash. Two rules slips found, both fixed with tests (a unit
+  walking into an undefended enemy city, and a captured raider left on its camp's roster);
+  each game that showed one was played again on the fixed rules. No turn threw. Endings: science 9, culture 6, diplomatic 6. The other speeds, difficulties, starting eras and
   rule switches are the part of the 71-game list the machine's restarts did not leave time
-  for; `pnpm cx soak all --out file.jsonl`
-  carries on from where a run stopped.
+  for; `pnpm cx soak all --out file.jsonl` carries on from where a run stopped.
 - **Fuzz:** 6,000 malformed and 6,000 well-formed random actions against games at three stages
   (one crash found and fixed); 400 damaged copies of a save and 13 kinds of not-a-save (the
   loader hardened); 3,034 hostile messages from a seated online client (three fixes); a game
@@ -517,7 +524,7 @@ one. It cannot say whether anything sounds good.
   checked by a test for raw values; 24 how-to-play articles checked against the rules.
 - **What the top bar promises against what a turn gives** (every civ, every turn of the
   soak): science exact 90% of the time, culture 94%, faith 88%, influence
-  90% (the rest within a point or two: a settlement growing the same turn). Gold is exact
+  89% (the rest within a point or two: a settlement growing the same turn). Gold is exact
   28% of the time and close 42%: the rest are one-off sums no forecast can know
   (a village found, production sold when a wonder is lost, a deal ending).
 
@@ -569,7 +576,7 @@ Too big or too much a matter of taste for this pass:
 
 - **Who wins all-AI games.** The mechanics review's larger samples at Standard speed are won
   by science almost every time. In this pass's soak (Online speed, mostly six civs on Small
-  maps) the endings were science 8, culture 6, diplomatic 6; domination never won one, and religion won one game out
+  maps) the endings were science 9, culture 6, diplomatic 6; domination never won one, and religion won one game out
   of about forty played in the pass. The AI does not yet play for domination or religion well
   enough to win by them.
 - **AI navies** do not escort invasions or blockade.

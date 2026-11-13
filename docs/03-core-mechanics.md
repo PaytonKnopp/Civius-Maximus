@@ -545,7 +545,11 @@ recoil = 30 × e^(−0.04 × diff) × random(0.8, 1.2)   (dealt to attacker; mel
   get around this.
 - Cities and encampments get a **ranged strike** each turn (strength based on the best unit you
   can build).
-- A city is captured when its HP hits 0 and a **melee** unit moves in.
+- A city is captured when its HP hits 0 and a **melee** unit moves in. A unit can't walk into
+  (or through) the settlement of a civ it is at war with, even an empty one: it has to be
+  attacked (release pass, November 2026: a unit could stand inside an undefended enemy city,
+  which stayed its owner's). If one of the captor's own soldiers already stands in the city
+  (it was there before the war), the taker stays where it attacked from.
 
 ### Healing
 

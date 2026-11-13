@@ -188,6 +188,21 @@ describe('settlements at war', () => {
     expect(endTurn(r.state).settlements[capital]!.captureChoice).toBe(false);
   });
 
+  it('take the captor in only if there is room: never two soldiers on one tile', () => {
+    // A p1 soldier already stands in p2's capital (it was there before the war began).
+    const { s, capital } = siege();
+    const c = s.settlements[capital]!;
+    c.health = 1;
+    const inside = addUnit(s, 'p1', 'unit_warrior', c.tile);
+    const a = addUnit(s, 'p1', 'unit_swordsman', at(s, 3, 2));
+    const r = act(s, { type: 'attack', player: 'p1', unit: a.id, tile: c.tile });
+    expect(r.state.settlements[capital]!.owner).toBe('p1');
+    // The taker stays where it fought from; the soldier inside holds the city.
+    expect(r.state.units[a.id]!.tile).toBe(at(s, 3, 2));
+    expect(r.state.units[inside.id]!.tile).toBe(c.tile);
+    expect(checkInvariants(ctx, r.state).filter((p) => /military units/.test(p))).toEqual([]);
+  });
+
   it('send their governor home and drop policy cards whose slot fell with them', () => {
     const { s, capital } = siege(true);
     s.settings.domination = false;

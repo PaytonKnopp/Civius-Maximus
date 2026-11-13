@@ -1,8 +1,11 @@
+import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 import { emptyBits, encodeBits, getBit, setBit } from '../bitset';
 import { applyAction, createGame } from '../game';
 import { setRiverEdge } from '../map/hex';
 import { runReplay } from '../replay';
+import { foundSettlement } from '../settlements/handlers';
+import type { GameState } from '../state';
 import { act, addUnit, at, ctx, endTurn, testState } from '../testing/world';
 import { unitsNeedingOrders } from './handlers';
 import { stepMoves } from './movement';
@@ -125,6 +128,26 @@ describe('pathfinding', () => {
     const path = findPath(ctx, s, w, at(s, 2, 0))!;
     expect(path.map((p) => p.tile)).not.toContain(at(s, 1, 0));
     expect(path[path.length - 1]!.tile).toBe(at(s, 2, 0));
+  });
+
+  it("never walks into an enemy's settlement, nor through it: that takes an attack", () => {
+    // One row: the only way east goes through p2's capital.
+    let s = testState(['.......']);
+    s = produce(s, (d) => {
+      foundSettlement(d, ctx, 'p2', at(s, 3, 0), () => {});
+    });
+    s = structuredClone(s) as GameState;
+    const w = addUnit(s, 'p1', 'unit_warrior', at(s, 0, 0));
+    const city = at(s, 3, 0);
+    // At peace the empty city is crossed like any tile (as before).
+    expect(findPath(ctx, s, w, at(s, 6, 0))!.map((p) => p.tile)).toContain(city);
+    // At war it is neither a way through nor a place to stand.
+    const war = act(s, { type: 'declare_war', player: 'p1', target: 'p2' }).state;
+    expect(findPath(ctx, war, w, city)).toBeNull();
+    expect(findPath(ctx, war, w, at(s, 6, 0))).toBeNull();
+    expect(findPath(ctx, war, w, at(s, 2, 0))).not.toBeNull();
+    const r = applyAction(war, { type: 'move_unit', player: 'p1', unit: w.id, to: city }, ctx);
+    expect(r.ok ? undefined : r.error.code).toBe('no_path');
   });
 
   it('passes through friendly units but never stops on a full tile', () => {

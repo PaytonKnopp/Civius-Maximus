@@ -11,6 +11,10 @@ Full account: [docs/RELEASE-REVIEW.md](docs/RELEASE-REVIEW.md).
 
 **Fixed in play**
 
+- A unit can no longer walk into an undefended enemy city and stand in it: cities are taken
+  by attack.
+- A raider you capture stays yours when its old camp is later befriended (it used to vanish
+  with the camp's raiders).
 - Soldiers hired from a city-state now go home when the levy ends (they used to stay inside
   your city, on top of your own units).
 - A camp can no longer become a city-state inside someone's borders or right beside a

@@ -288,7 +288,11 @@ export function captureSettlement(
     if (u.owner !== captor && unitClassOf(ctx, u).combat) killUnit(draft, ctx, u.id, captor, emit);
   }
   captureCivilians(draft, ctx, s.tile, captor, emit);
-  advance(draft, ctx, unitId, s.tile, emit);
+  // The unit that took it marches in, unless one of its own side's soldiers already stands
+  // there (two would share the tile).
+  const taker = current(draft).units[unitId];
+  if (taker && hasRoom(ctx, current(draft), taker, s.tile))
+    advance(draft, ctx, unitId, s.tile, emit);
 
   const loss = ctx.content.rules.combat.settlement.capturePopulationLoss;
   s.owner = captor;

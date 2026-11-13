@@ -85,6 +85,18 @@ export function hasForeignUnit(state: GameState, unit: Unit, tile: number): bool
   return unitsOn(state, tile).some((u) => u.owner !== unit.owner);
 }
 
+/**
+ * True if the tile is the center of a settlement of someone the unit's owner is at war with.
+ * Such a place is taken by attack, never walked into: a unit could otherwise march into an
+ * undefended enemy city and stand in it while the city stayed its owner's.
+ */
+export function isEnemySettlement(state: GameState, unit: Unit, tile: number): boolean {
+  const id = state.map.tiles[tile]!.settlement;
+  if (id === null || id === undefined) return false;
+  const s = state.settlements[id];
+  return !!s && s.tile === tile && s.owner !== unit.owner && atWar(state, unit.owner, s.owner);
+}
+
 /** True if the unit can end its move on the tile without breaking stacking limits. */
 export function hasRoom(ctx: EngineContext, state: GameState, unit: Unit, tile: number): boolean {
   const layer = unitClassOf(ctx, unit).layer;
