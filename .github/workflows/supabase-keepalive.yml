@@ -1,33 +1,47 @@
 name: Keep Supabase awake
 
 # Free Supabase projects pause after 7 days without activity. This asks the database for one
-# public lobby every three days so the project stays awake between game nights. It does nothing
-# until the SUPABASE_URL and SUPABASE_ANON_KEY repository variables are set
-# (docs/guides/supabase.md).
+# public lobby every three days so the project stays awake between game nights. It needs the
+# SUPABASE_URL and SUPABASE_ANON_KEY repository variables (docs/guides/supabase.md) and fails
+# loudly, so GitHub emails you, if they are missing or Supabase stops answering.
+#
+# GitHub also switches off scheduled workflows after 60 days with no commits. The last step
+# re-enables this one on every run, which restarts that clock, so the keep-alive outlives a long
+# break from the project.
 
 on:
   schedule:
     - cron: '17 6 */3 * *'
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  actions: write # only to re-enable this workflow (last step)
 
 jobs:
   ping:
     runs-on: ubuntu-latest
-    if: ${{ vars.SUPABASE_URL != '' }}
     steps:
       - name: Ask for one lobby
         env:
           URL: ${{ vars.SUPABASE_URL }}
           KEY: ${{ vars.SUPABASE_ANON_KEY }}
         run: |
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "::error::Set the SUPABASE_URL and SUPABASE_ANON_KEY repository variables (docs/guides/supabase.md)."
+            exit 1
+          fi
           URL="${URL%/}"; URL="${URL%/rest/v1}"
           # The publishable key (sb_publishable_…) goes only as apikey; the legacy anon key is
           # also a Bearer token.
           AUTH=()
           case "$KEY" in eyJ*) AUTH=(-H "Authorization: Bearer $KEY") ;; esac
-          curl --fail --silent --show-error \
+          curl --fail --silent --show-error --retry 3 --retry-delay 10 \
             "$URL/rest/v1/lobbies?select=code&limit=1" \
             -H "apikey: $KEY" "${AUTH[@]}" > /dev/null
           echo "Supabase answered."
+
+      - name: Keep this schedule from being switched off
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow enable supabase-keepalive.yml --repo "$GITHUB_REPOSITORY"
