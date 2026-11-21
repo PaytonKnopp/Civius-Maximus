@@ -148,8 +148,11 @@ nothing but strangers' sign-ups.
 
 - **Pausing:** free projects pause after a week without use. Once the repository variables
   exist, the **Keep Supabase awake** workflow asks the database a tiny question every three
-  days. If a project paused anyway: open it in Supabase → **Restore project** (a minute or two;
-  nothing is lost).
+  days, and re-enables itself each time so GitHub's 60-days-without-commits rule can't switch it
+  off. If the variables go missing or Supabase stops answering, the run fails and GitHub emails
+  you. Supabase's "scheduled to be paused" warning email is only a heads-up; with the workflow
+  running you can ignore it. If a project paused anyway: open it in Supabase → **Restore
+  project** (a minute or two; nothing is lost; you have 90 days).
 - **Space:** the free database is 500 MB. A save is 0.3–2 MB, and each player keeps at most 30,
   so a group of eight stays well under it. **Project Settings** → **Usage** shows where you are.
 - **Backups:** the free plan has no point-in-time backups. Saves also stay on each device, and
